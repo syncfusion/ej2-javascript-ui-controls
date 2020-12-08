@@ -7252,7 +7252,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         else if (input.hasAttribute('data-msg-containerid') === true) {
             // Append error message into custom div element
             let containerId = input.getAttribute('data-msg-containerid');
-            let divElement = this.element.querySelector('#' + containerId);
+            let divElement = select('#' + containerId, this.element);
             divElement.appendChild(errorElement);
         }
         else if (this.customPlacement != null) {
@@ -8022,7 +8022,7 @@ let Uploader = class Uploader extends Component {
         let dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
         if (this.dropArea) {
             this.dropZoneElement = (typeof (this.dropArea) !== 'string') ? this.dropArea :
-                document.querySelector(this.dropArea);
+                select(this.dropArea, document);
             let element = this.element;
             let enableDropText = false;
             while (element.parentNode) {
@@ -9671,8 +9671,8 @@ let Uploader = class Uploader extends Component {
     templateComplier(uploadTemplate) {
         if (uploadTemplate) {
             try {
-                if (document.querySelectorAll(uploadTemplate).length) {
-                    return compile(document.querySelector(uploadTemplate).innerHTML.trim());
+                if (selectAll(uploadTemplate, document).length) {
+                    return compile(select(uploadTemplate, document).innerHTML.trim());
                 }
             }
             catch (exception) {

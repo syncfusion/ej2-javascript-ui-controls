@@ -20,6 +20,8 @@ import { FocusStrategy } from '../services/focus-strategy';
 import { iterateExtend, setChecked } from '../base/util';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { VirtualFreezeRenderer } from '../renderer/virtual-freeze-renderer';
+import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from '../base/interface';
+
 
 
 /**
@@ -55,6 +57,12 @@ export class Selection implements IAction {
      * @hidden
      */
     public prevRowIndex: number;
+    /**
+     *  @hidden
+     */
+    public selectedColumnsIndexes: number[] = [];
+    public isColumnSelected: boolean;
+    private prevColIndex: number;
     public checkBoxState: boolean = false;
     private selectionSettings: SelectionSettings;
     private prevCIdxs: IIndex;
@@ -113,6 +121,7 @@ export class Selection implements IAction {
     public isInteracted: boolean;
     private isHeaderCheckboxClicked: boolean;
     private checkSelectAllClicked: boolean;
+    private needColumnSelection: boolean = false;
     /**
      * @hidden
      */
@@ -745,6 +754,7 @@ export class Selection implements IAction {
             }
             this.clearRowSelection();
             this.clearCellSelection();
+            this.clearColumnSelection();
             this.prevRowIndex = undefined;
             this.enableSelectMultiTouch = false;
             this.isInteracted = false;
@@ -2259,6 +2269,10 @@ export class Selection implements IAction {
                 this.clearRowSelection();
                 this.prevRowIndex = undefined;
             }
+            if (this.selectedColumnsIndexes.length > 1) {
+                this.clearColumnSelection();
+                this.prevColIndex = undefined;
+            }
             this.enableSelectMultiTouch = false;
             this.hidePopUp();
         }
@@ -2268,6 +2282,7 @@ export class Selection implements IAction {
             this.clearSelection();
             this.prevRowIndex = undefined;
             this.prevCIdxs = undefined;
+            this.prevColIndex = undefined;
         }
         this.isPersisted = true;
         this.checkBoxSelectionChanged();
@@ -2789,6 +2804,10 @@ export class Selection implements IAction {
             if (!this.parent.isCheckBoxSelection && Browser.isDevice && !this.isSingleSel()) {
                 this.showPopup(e);
             }
+        } else if ((e.target as HTMLTableCellElement).classList.contains('e-headercell') &&
+            !(e.target as HTMLTableCellElement).classList.contains('e-stackedheadercell')) {
+            let uid: string = (e.target as HTMLTableCellElement).querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            this.headerSelectionHandler(this.parent.getColumnIndexByUid(uid));
         }
         this.isMultiCtrlRequest = false;
         this.isMultiShiftRequest = false;
@@ -2883,7 +2902,8 @@ export class Selection implements IAction {
                 }
             }
         }
-        let clear: boolean = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump) ||
+        let clear: boolean = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump &&
+            this.selectionSettings.mode !== 'Column') ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
                 (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
@@ -2915,9 +2935,14 @@ export class Selection implements IAction {
             prev.cellIndex = !isNullOrUndefined(prev.cellIndex) ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
             cellIndex = cIdx;
         }
-        if (headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 && e.keyArgs.action !== 'space' &&
-            rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) { return; }
+        if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
+            e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&
+            this.selectionSettings.mode !== 'Column') { return; }
         this.preventFocus = true;
+        let columnIndex: number = this.getKeyColIndex(e);
+        if (this.needColumnSelection) {
+            cellIndex = columnIndex;
+        }
         switch (e.keyArgs.action) {
             case 'downArrow':
             case 'upArrow':
@@ -2962,9 +2987,33 @@ export class Selection implements IAction {
                 }
                 break;
         }
+        this.needColumnSelection = false;
         this.preventFocus = false;
         this.positionBorders();
         this.updateAutoFillPosition();
+    }
+
+    private getKeyColIndex(e: CellFocusArgs): number {
+        let uid: string;
+        let index: number = null;
+        let stackedHeader: HTMLElement = (e.element as HTMLTableCellElement).querySelector('.e-stackedheadercelldiv');
+        if (this.selectionSettings.mode === 'Column' && parentsUntil(e.element, 'e-columnheader')) {
+            this.needColumnSelection =  e.container.isHeader ? true : false;
+            if (stackedHeader) {
+                if (e.keyArgs.action === 'rightArrow' || e.keyArgs.action === 'leftArrow') {
+                    return index;
+                }
+                uid = stackedHeader.getAttribute('e-mappinguid');
+                let innerColumn: Column[] = this.getstackedColumns(this.parent.getColumnByUid(uid).columns as Column[]);
+                let lastIndex: number = this.parent.getColumnIndexByUid(innerColumn[innerColumn.length - 1].uid);
+                let firstIndex: number = this.parent.getColumnIndexByUid(innerColumn[0].uid);
+                index = this.prevColIndex >= lastIndex ? firstIndex : lastIndex;
+            } else {
+                index = this.parent.getColumnIndexByUid((e.element as HTMLTableCellElement)
+                    .querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
+            }
+        }
+        return index;
     }
 
     /**
@@ -3013,6 +3062,9 @@ export class Selection implements IAction {
         if (this.isCellType()) {
             this.selectCell({ rowIndex, cellIndex }, true);
         }
+        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+            this.selectColumn(cellIndex);
+        }
     }
 
     private applyUpDown(rowIndex: number): void {
@@ -3037,7 +3089,9 @@ export class Selection implements IAction {
 
     private applyRightLeftKey(rowIndex?: number, cellIndex?: number): void {
         let gObj: IGrid = this.parent;
-        if (this.isCellType()) {
+        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+            this.selectColumn(cellIndex);
+        } else if (this.isCellType()) {
             this.selectCell({ rowIndex, cellIndex }, true);
             this.addAttribute(this.target);
         }
@@ -3076,8 +3130,24 @@ export class Selection implements IAction {
     private applyShiftLeftRightKey(rowIndex?: number, cellIndex?: number): void {
         let gObj: IGrid = this.parent;
         this.isMultiShiftRequest = true;
-        this.selectCellsByRange(this.prevCIdxs, { rowIndex, cellIndex });
+        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+            this.selectColumnsByRange(this.prevColIndex, cellIndex);
+        } else {
+            this.selectCellsByRange(this.prevCIdxs, { rowIndex, cellIndex });
+        }
         this.isMultiShiftRequest = false;
+    }
+
+    private getstackedColumns(column: Column[]): Column[] {
+        let innerColumnIndexes: Column[] = [];
+        for (let i: number = 0, len: number = column.length; i < len; i++) {
+            if (column[i].columns) {
+                this.getstackedColumns(column[i].columns as Column[]);
+            } else {
+                innerColumnIndexes.push(column[i]);
+            }
+        }
+        return innerColumnIndexes;
     }
 
     private applyCtrlHomeEndKey(rowIndex: number, cellIndex: number): void {
@@ -3135,6 +3205,290 @@ export class Selection implements IAction {
             selectedData = this.persistSelectedData;
         }
         return selectedData;
+    }
+
+    /**
+     * Select the column by passing start column index
+     * @param  {number} startIndex 
+     */
+    public selectColumn(index: number): void {
+        let gObj: IGrid = this.parent;
+        if (isNullOrUndefined(gObj.getColumns()[index])) {
+            return;
+        }
+        let selectedCol: Element = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(index).uid);
+        let isColSelected: boolean = selectedCol.classList.contains('e-columnselection');
+        if ((gObj.selectionSettings.mode !== 'Column')) {
+            return;
+        }
+        this.clearColDependency();
+        if (!isColSelected || !this.selectionSettings.enableToggle) {
+            let args: ColumnSelectingEventArgs = {
+                columnIndex: index, headerCell: selectedCol,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+            };
+            this.onActionBegin(args, events.columnSelecting);
+            if (args.cancel) {
+                return;
+            }
+            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected)) {
+                this.updateColSelection(selectedCol, index);
+            }
+            let selectedArgs: ColumnSelectEventArgs = {
+                columnIndex: index, headerCell: selectedCol,
+                target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
+            };
+            this.onActionComplete(selectedArgs, events.columnSelected);
+        }
+        this.updateColProps(index);
+    }
+
+    /**
+     * Select the columns by passing start and end column index
+     * @param  {number} startIndex
+     * @param  {number} endIndex  
+     */
+    public selectColumnsByRange(startIndex: number, endIndex?: number): void {
+        let gObj: IGrid = this.parent;
+        if (isNullOrUndefined(gObj.getColumns()[startIndex])) {
+            return;
+        }
+        let indexes: number[] = [];
+        if (gObj.selectionSettings.type === 'Single' || isNullOrUndefined(endIndex)) {
+            indexes[0] = startIndex;
+        } else {
+            let min: boolean = startIndex < endIndex;
+            for (let i: number = startIndex; min ? i <= endIndex : i >= endIndex; min ? i++ : i--) {
+                indexes.push(i);
+            }
+        }
+        this.selectColumns(indexes);
+    }
+
+    /**
+     * Select the columns by passing column indexes
+     * @param  {number[]} columnIndexes
+     */
+    public selectColumns(columnIndexes: number[]): void {
+        let gObj: IGrid = this.parent;
+        let selectedCol: Element[] | Element = this.getselectedCols();
+        if (gObj.selectionSettings.type === 'Single') {
+            columnIndexes = [columnIndexes[0]];
+        }
+        if (gObj.selectionSettings.mode !== 'Column') {
+            return;
+        }
+        this.clearColDependency();
+        let selectingArgs: ColumnSelectingEventArgs = {
+            columnIndex: columnIndexes[0], headerCell: selectedCol,
+            columnIndexes: columnIndexes,
+            cancel: false, target: this.actualTarget,
+            isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
+            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+        };
+        this.onActionBegin(selectingArgs, events.columnSelecting);
+        if (selectingArgs.cancel) {
+            return;
+        }
+        for (let i: number = 0, len: number = columnIndexes.length; i < len; i++) {
+            this.updateColSelection(gObj.getColumnHeaderByUid(gObj.getColumnByIndex(columnIndexes[i]).uid), columnIndexes[i]);
+        }
+        selectedCol = this.getselectedCols();
+        let selectedArgs: ColumnSelectEventArgs = {
+            columnIndex: columnIndexes[0], headerCell: selectedCol,
+            columnIndexes: columnIndexes,
+            target: this.actualTarget,
+            isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
+        };
+        this.onActionComplete(selectedArgs, events.columnSelected);
+        this.updateColProps(columnIndexes[0]);
+    }
+
+    /**
+     * Select the column with existing column by passing column index
+     * @param  {number} startIndex
+     */
+    public selectColumnWithExisting(startIndex: number): void {
+        let gObj: IGrid = this.parent;
+        if (isNullOrUndefined(gObj.getColumns()[startIndex])) {
+            return;
+        }
+        let frzCols: number = gObj.getFrozenColumns();
+        let isFreeze: boolean = frzCols && startIndex >= frzCols;
+        let newCol: Element = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(startIndex).uid);
+        let selectedCol: Element[] | Element = this.getselectedCols();
+        if (gObj.selectionSettings.type === 'Single') {
+            this.clearColDependency();
+        }
+        if ( gObj.selectionSettings.mode !== 'Column') {
+            return;
+        }
+        let rows: Element[] = !isFreeze ? gObj.getDataRows() : gObj.getMovableRows();
+        if (this.selectedColumnsIndexes.indexOf(startIndex) > -1) {
+            let deselectedArgs: ColumnDeselectEventArgs = {
+                columnIndex: startIndex, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted
+            };
+            let isCanceled: boolean = this.columnDeselect(deselectedArgs, events.columnDeselecting);
+            if (isCanceled) {
+                return;
+            }
+            this.selectedColumnsIndexes.splice(this.selectedColumnsIndexes.indexOf(startIndex), 1);
+            addRemoveActiveClasses([newCol], false, 'e-columnselection');
+            let index: number = isFreeze ? startIndex - frzCols : startIndex;
+            index = index + gObj.getIndentCount();
+            for (let j: number = 0, len: number = rows.length; j < len; j++) {
+                addRemoveActiveClasses([rows[j].childNodes[index] as Element], false, 'e-columnselection');
+            }
+            this.columnDeselect(deselectedArgs, events.columnDeselected);
+            this.parent.getColumns()[startIndex].isSelected = false;
+        } else {
+            let selectingArgs: ColumnSelectingEventArgs = {
+                columnIndex: startIndex, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+            };
+            this.onActionBegin(selectingArgs, events.columnSelecting);
+            if (selectingArgs.cancel) {
+                return;
+            }
+            this.updateColSelection(newCol, startIndex);
+            selectedCol = this.getselectedCols();
+            let selectedArgs: ColumnSelectEventArgs = {
+                columnIndex: startIndex, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
+            };
+            this.onActionComplete(selectedArgs, events.columnSelected);
+        }
+        this.updateColProps(startIndex);
+    }
+
+    /**
+     * Clear the column selection
+     */
+    public clearColumnSelection(): void {
+        if (this.isColumnSelected) {
+            let gObj: IGrid = this.parent;
+            let frzCols: number = gObj.getFrozenColumns();
+            let index: number = this.selectedColumnsIndexes[this.selectedColumnsIndexes.length - 1];
+            let isFreeze: boolean = frzCols && index >= frzCols;
+            let selectedCol: Element = !isFreeze ? gObj.getColumnHeaderByIndex(index) :
+                gObj.getHeaderContent().querySelectorAll('.e-headercell')[index];
+            let deselectedArgs: ColumnDeselectEventArgs = {
+                columnIndex: index, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted
+            };
+            let isCanceled: boolean = this.columnDeselect(deselectedArgs, events.columnDeselecting);
+            if (isCanceled) {
+                return;
+            }
+            let selectedHeader: NodeListOf<Element> = gObj.getHeaderContent().querySelectorAll('.e-columnselection');
+            let selectedCells: Element[] = this.getSelectedColumnCells();
+            for (let i: number = 0, len: number = selectedHeader.length; i < len; i++) {
+                addRemoveActiveClasses([selectedHeader[i]], false, 'e-columnselection');
+            }
+            for (let i: number = 0, len: number = selectedCells.length; i < len; i++) {
+                addRemoveActiveClasses([selectedCells[i]], false, 'e-columnselection');
+            }
+            this.columnDeselect(deselectedArgs, events.columnDeselected);
+            this.selectedColumnsIndexes = [];
+            this.isColumnSelected = false;
+            this.parent.getColumns().filter((col: Column) => col.isSelected = false);
+        }
+    }
+
+    private getselectedCols(): Element[] {
+        let gObj: IGrid = this.parent;
+        let selectedCol: Element | Element[];
+        if (this.selectedColumnsIndexes.length > 1) {
+            selectedCol = [];
+            for (let i: number = 0; i < this.selectedColumnsIndexes.length; i++) {
+                (selectedCol).push(gObj.getColumnHeaderByUid(gObj.getColumnByIndex(this.selectedColumnsIndexes[i]).uid));
+            }
+        } else {
+            selectedCol = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(this.selectedColumnsIndexes[0]).uid);
+        }
+        return selectedCol as Element[];
+    }
+
+    private getSelectedColumnCells(): Element[] {
+        let gObj: IGrid = this.parent;
+        let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
+        let rows: Element[] = isRowTemplate ? gObj.getRows() : gObj.getDataRows();
+        let movableRows: Element[];
+        if (gObj.getFrozenColumns() && gObj.getContent().querySelector('.e-movablecontent')) {
+            movableRows = isRowTemplate ? gObj.getMovableRows() : gObj.getMovableDataRows();
+            rows = gObj.addMovableRows(rows as HTMLElement[], movableRows as HTMLElement[]);
+        }
+        let seletedcells: Element[] = [];
+        for (let i: number = 0, len: number = rows.length; i < len; i++) {
+            seletedcells = seletedcells.concat([].slice.call(rows[i].querySelectorAll('.e-columnselection')));
+        }
+        return seletedcells;
+    }
+
+    private columnDeselect(args: ColumnDeselectEventArgs, event: string): boolean {
+        if (event === 'columnDeselected') {
+            delete args.cancel;
+        }
+        this.onActionComplete(args, event);
+        return args.cancel;
+    }
+
+    private updateColProps(startIndex: number): void {
+        this.prevColIndex = startIndex;
+        this.isColumnSelected = this.selectedColumnsIndexes.length && true;
+    }
+
+    private clearColDependency(): void {
+        this.clearColumnSelection();
+        this.selectedColumnsIndexes = [];
+    }
+
+    private updateColSelection(selectedCol: Element, startIndex: number): void {
+        if (isNullOrUndefined(this.parent.getColumns()[startIndex])) {
+            return;
+        }
+        let frzCols: number = this.parent.getFrozenColumns();
+        let isFreeze: boolean = frzCols && startIndex >= frzCols;
+        let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
+        let rows: Element[] = !isFreeze ? !isRowTemplate ? this.parent.getDataRows() : this.parent.getRows() :
+            !isRowTemplate ? this.parent.getMovableRows() : this.parent.getMovableRows();
+        this.selectedColumnsIndexes.push(startIndex);
+        this.parent.getColumns()[startIndex].isSelected = true;
+        startIndex = isFreeze ? startIndex - frzCols : startIndex + this.parent.getIndentCount();
+        addRemoveActiveClasses([selectedCol], true, 'e-columnselection');
+        for (let j: number = 0, len: number = rows.length; j < len; j++) {
+            if (rows[j].classList.contains('e-row')) {
+                if ((rows[j].classList.contains('e-editedrow') || rows[j].classList.contains('e-addedrow')) &&
+                    this.parent.editSettings.mode === 'Normal' && !isNullOrUndefined(rows[j].querySelector('tr').childNodes[startIndex])) {
+                    addRemoveActiveClasses([rows[j].querySelector('tr').childNodes[startIndex] as Element], true, 'e-columnselection');
+                } else if (!isNullOrUndefined(rows[j].childNodes[startIndex])) {
+                    addRemoveActiveClasses([rows[j].childNodes[startIndex] as Element], true, 'e-columnselection');
+                }
+            }
+        }
+    }
+
+    private headerSelectionHandler(colIndex: number): void {
+        if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
+            this.selectColumn(colIndex);
+        } else if (this.isMultiShiftRequest) {
+            this.selectColumnsByRange(isUndefined(this.prevColIndex) ? colIndex : this.prevColIndex, colIndex);
+        } else {
+            this.selectColumnWithExisting(colIndex);
+        }
     }
 
     private addEventListener_checkbox(): void {

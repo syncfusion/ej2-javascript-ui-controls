@@ -5138,31 +5138,26 @@ class PivotEngine {
             }
         }
         else if (type && type.toLowerCase() === 'calculatedfield') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    let calcField = this.calculatedFields[this.fields[value]];
-                    let actualFormula = calcField.formula;
-                    let aggregateField = {};
-                    if (this.calculatedFormulas[calcField.name]) {
-                        let calculatedFormulas = this.calculatedFormulas[calcField.name];
-                        for (let len = 0, lmt = calculatedFormulas.length; len < lmt; len++) {
-                            let aggregatedValue = calculatedFormulas[len];
-                            let value = aggregateField[aggregatedValue.formula];
-                            if (value === undefined) {
-                                let type = aggregatedValue.type;
-                                value = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type);
-                                aggregateField[aggregatedValue.formula] = value;
-                            }
-                            actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value));
-                        }
+            isValueExist = true;
+            this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+            let calcField = this.calculatedFields[this.fields[value]];
+            let actualFormula = calcField.formula;
+            let aggregateField = {};
+            if (this.calculatedFormulas[calcField.name]) {
+                let calculatedFormulas = this.calculatedFormulas[calcField.name];
+                for (let len = 0, lmt = calculatedFormulas.length; len < lmt; len++) {
+                    let aggregatedValue = calculatedFormulas[len];
+                    let value = aggregateField[aggregatedValue.formula];
+                    if (value === undefined) {
+                        let type = aggregatedValue.type;
+                        value = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type);
+                        aggregateField[aggregatedValue.formula] = value;
                     }
-                    cellValue = this.evaluate(actualFormula);
-                    cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                    actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value));
                 }
-                ri++;
             }
+            cellValue = this.evaluate(actualFormula);
+            cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
         }
         else {
             cellValue = undefined;
@@ -13399,7 +13394,8 @@ class DrillThroughDialog {
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: !this.parent.editSettings.allowEditing,
-            allowPaging: this.parent.editSettings.allowEditing
+            allowPaging: this.parent.editSettings.allowEditing,
+            pageSettings: { pageSize: 20 }
         });
         if (isBlazor()) {
             /* tslint:disable-next-line */
@@ -21225,6 +21221,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         /** @hidden */
         this.rowRangeSelection = { enable: false, startIndex: 0, endIndex: 0 };
         /** @hidden */
+        this.isStaticRefresh = false;
+        /** @hidden */
         this.resizeInfo = {};
         /** @hidden */
         this.scrollPosObject = {
@@ -24396,61 +24394,66 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     /** @hidden */
     refreshData() {
         let pivot = this;
-        if (isBlazor()) {
-            if (pivot.dataType === 'olap') {
-                if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                    pivot.allowServerDataBinding = false;
-                    pivot.setProperties({
-                        dataSourceSettings: {
-                            dataSource: undefined
-                        }
-                    }, true);
-                    pivot.allowServerDataBinding = true;
+        if (!pivot.isStaticRefresh) {
+            if (isBlazor()) {
+                if (pivot.dataType === 'olap') {
+                    if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
+                        pivot.allowServerDataBinding = false;
+                        pivot.setProperties({
+                            dataSourceSettings: {
+                                dataSource: undefined
+                            }
+                        }, true);
+                        pivot.allowServerDataBinding = true;
+                    }
                 }
             }
-        }
-        if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
-            if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                if (isBlazor() && pivot.enableVirtualization) {
-                    if (!pivot.element.querySelector('.e-spinner-pane')) {
-                        this.showWaitingPopup();
+            if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
+                if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
+                    if (isBlazor() && pivot.enableVirtualization) {
+                        if (!pivot.element.querySelector('.e-spinner-pane')) {
+                            this.showWaitingPopup();
+                        }
+                        pivot.initEngine();
+                    }
+                    else {
+                        if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
+                            if (!this.element.querySelector('.e-spinner-pane')) {
+                                this.showWaitingPopup();
+                            }
+                            this.engineModule.data = pivot.remoteData;
+                            this.initEngine();
+                        }
+                        else {
+                            setTimeout(pivot.getData.bind(pivot), 100);
+                        }
+                    }
+                }
+                else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
+                    (pivot.dataSourceSettings.dataSource && pivot.dataSourceSettings.dataSource.length > 0 || this.engineModule.data.length > 0)) {
+                    if (pivot.dataType === 'pivot') {
+                        this.hideWaitingPopup();
+                        pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                     }
                     pivot.initEngine();
                 }
                 else {
-                    if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
-                        if (!this.element.querySelector('.e-spinner-pane')) {
-                            this.showWaitingPopup();
-                        }
-                        this.engineModule.data = pivot.remoteData;
-                        this.initEngine();
+                    if (this.dataSourceSettings.mode === 'Server') {
+                        this.getEngine("onRefresh");
                     }
-                    else {
-                        setTimeout(pivot.getData.bind(pivot), 100);
-                    }
+                    this.hideWaitingPopup();
                 }
             }
-            else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (pivot.dataSourceSettings.dataSource && pivot.dataSourceSettings.dataSource.length > 0 || this.engineModule.data.length > 0)) {
-                if (pivot.dataType === 'pivot') {
-                    this.hideWaitingPopup();
-                    pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
-                }
-                pivot.initEngine();
+            else if (isBlazor() && pivot.dataType === 'pivot' &&
+                this.engineModule.data && this.engineModule.data.length > 0) {
+                this.initEngine();
             }
             else {
-                if (this.dataSourceSettings.mode === 'Server') {
-                    this.getEngine("onRefresh");
-                }
                 this.hideWaitingPopup();
             }
         }
-        else if (isBlazor() && pivot.dataType === 'pivot' &&
-            this.engineModule.data && this.engineModule.data.length > 0) {
-            this.initEngine();
-        }
         else {
-            this.hideWaitingPopup();
+            pivot.isStaticRefresh = false;
         }
     }
     getValueCellInfo(aggregateObj) {
@@ -28512,7 +28515,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
-        let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
         let localeObj = this.pivotGridModule ? this.pivotGridModule.localeObj :
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         let isDrillThrough = this.pivotGridModule ?
@@ -29382,6 +29385,7 @@ let PivotFieldList = class PivotFieldList extends Component {
             control.trigger(fieldListRefreshed, eventArgs);
             if (!this.isPopupView) {
                 this.staticPivotGridModule = control;
+                control.isStaticRefresh = true;
             }
             if (control.enableVirtualization && isBlazor()) {
                 control.renderPivotGrid();

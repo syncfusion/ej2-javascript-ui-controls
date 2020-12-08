@@ -401,7 +401,6 @@ export class KanbanDialog {
     }
 
     public destroy(): void {
-        this.parent.resetTemplates();
         this.destroyToolTip();
         this.destroyComponents();
         if (this.dialogObj) {

@@ -4173,31 +4173,26 @@ export class PivotEngine {
                 ri++;
             }
         } else if (type && type.toLowerCase() === 'calculatedfield') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    let calcField: ICalculatedFields = this.calculatedFields[this.fields[value]];
-                    let actualFormula: string = calcField.formula;
-                    let aggregateField: { [key: string]: Object } = {};
-                    if (this.calculatedFormulas[calcField.name]) {
-                        let calculatedFormulas: Object[] = <Object[]>this.calculatedFormulas[calcField.name];
-                        for (let len: number = 0, lmt: number = calculatedFormulas.length; len < lmt; len++) {
-                            let aggregatedValue: { [key: string]: Object } = <{ [key: string]: Object }>calculatedFormulas[len];
-                            let value: number = <number>aggregateField[<string>aggregatedValue.formula];
-                            if (value === undefined) {
-                                let type: string = <string>aggregatedValue.type;
-                                value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type);
-                                aggregateField[<string>aggregatedValue.formula] = value;
-                            }
-                            actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
-                        }
+            isValueExist = true;
+            this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+            let calcField: ICalculatedFields = this.calculatedFields[this.fields[value]];
+            let actualFormula: string = calcField.formula;
+            let aggregateField: { [key: string]: Object } = {};
+            if (this.calculatedFormulas[calcField.name]) {
+                let calculatedFormulas: Object[] = <Object[]>this.calculatedFormulas[calcField.name];
+                for (let len: number = 0, lmt: number = calculatedFormulas.length; len < lmt; len++) {
+                    let aggregatedValue: { [key: string]: Object } = <{ [key: string]: Object }>calculatedFormulas[len];
+                    let value: number = <number>aggregateField[<string>aggregatedValue.formula];
+                    if (value === undefined) {
+                        let type: string = <string>aggregatedValue.type;
+                        value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type);
+                        aggregateField[<string>aggregatedValue.formula] = value;
                     }
-                    cellValue = this.evaluate(actualFormula);
-                    cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                    actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
                 }
-                ri++;
             }
+            cellValue = this.evaluate(actualFormula);
+            cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
         } else {
             cellValue = undefined;
             while (rowIndex[ri] !== undefined) {

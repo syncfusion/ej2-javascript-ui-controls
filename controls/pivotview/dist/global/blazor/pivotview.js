@@ -5236,31 +5236,26 @@ var PivotEngine = /** @class */ (function () {
             }
         }
         else if (type && type.toLowerCase() === 'calculatedfield') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    var calcField = this.calculatedFields[this.fields[value]];
-                    var actualFormula = calcField.formula;
-                    var aggregateField = {};
-                    if (this.calculatedFormulas[calcField.name]) {
-                        var calculatedFormulas = this.calculatedFormulas[calcField.name];
-                        for (var len = 0, lmt = calculatedFormulas.length; len < lmt; len++) {
-                            var aggregatedValue = calculatedFormulas[len];
-                            var value_1 = aggregateField[aggregatedValue.formula];
-                            if (value_1 === undefined) {
-                                var type_1 = aggregatedValue.type;
-                                value_1 = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type_1);
-                                aggregateField[aggregatedValue.formula] = value_1;
-                            }
-                            actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value_1));
-                        }
+            isValueExist = true;
+            this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+            var calcField = this.calculatedFields[this.fields[value]];
+            var actualFormula = calcField.formula;
+            var aggregateField = {};
+            if (this.calculatedFormulas[calcField.name]) {
+                var calculatedFormulas = this.calculatedFormulas[calcField.name];
+                for (var len = 0, lmt = calculatedFormulas.length; len < lmt; len++) {
+                    var aggregatedValue = calculatedFormulas[len];
+                    var value_1 = aggregateField[aggregatedValue.formula];
+                    if (value_1 === undefined) {
+                        var type_1 = aggregatedValue.type;
+                        value_1 = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type_1);
+                        aggregateField[aggregatedValue.formula] = value_1;
                     }
-                    cellValue = this.evaluate(actualFormula);
-                    cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                    actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value_1));
                 }
-                ri++;
             }
+            cellValue = this.evaluate(actualFormula);
+            cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
         }
         else {
             cellValue = undefined;
@@ -13687,7 +13682,8 @@ var DrillThroughDialog = /** @class */ (function () {
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: !this.parent.editSettings.allowEditing,
-            allowPaging: this.parent.editSettings.allowEditing
+            allowPaging: this.parent.editSettings.allowEditing,
+            pageSettings: { pageSize: 20 }
         });
         if (sf.base.isBlazor()) {
             /* tslint:disable-next-line */
@@ -21883,6 +21879,8 @@ var PivotView = /** @class */ (function (_super) {
         /** @hidden */
         _this_1.rowRangeSelection = { enable: false, startIndex: 0, endIndex: 0 };
         /** @hidden */
+        _this_1.isStaticRefresh = false;
+        /** @hidden */
         _this_1.resizeInfo = {};
         /** @hidden */
         _this_1.scrollPosObject = {
@@ -25084,61 +25082,66 @@ var PivotView = /** @class */ (function (_super) {
     /** @hidden */
     PivotView.prototype.refreshData = function () {
         var pivot = this;
-        if (sf.base.isBlazor()) {
-            if (pivot.dataType === 'olap') {
-                if (pivot.dataSourceSettings.dataSource instanceof sf.data.DataManager) {
-                    pivot.allowServerDataBinding = false;
-                    pivot.setProperties({
-                        dataSourceSettings: {
-                            dataSource: undefined
-                        }
-                    }, true);
-                    pivot.allowServerDataBinding = true;
+        if (!pivot.isStaticRefresh) {
+            if (sf.base.isBlazor()) {
+                if (pivot.dataType === 'olap') {
+                    if (pivot.dataSourceSettings.dataSource instanceof sf.data.DataManager) {
+                        pivot.allowServerDataBinding = false;
+                        pivot.setProperties({
+                            dataSourceSettings: {
+                                dataSource: undefined
+                            }
+                        }, true);
+                        pivot.allowServerDataBinding = true;
+                    }
                 }
             }
-        }
-        if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
-            if (pivot.dataSourceSettings.dataSource instanceof sf.data.DataManager) {
-                if (sf.base.isBlazor() && pivot.enableVirtualization) {
-                    if (!pivot.element.querySelector('.e-spinner-pane')) {
-                        this.showWaitingPopup();
+            if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
+                if (pivot.dataSourceSettings.dataSource instanceof sf.data.DataManager) {
+                    if (sf.base.isBlazor() && pivot.enableVirtualization) {
+                        if (!pivot.element.querySelector('.e-spinner-pane')) {
+                            this.showWaitingPopup();
+                        }
+                        pivot.initEngine();
+                    }
+                    else {
+                        if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
+                            if (!this.element.querySelector('.e-spinner-pane')) {
+                                this.showWaitingPopup();
+                            }
+                            this.engineModule.data = pivot.remoteData;
+                            this.initEngine();
+                        }
+                        else {
+                            setTimeout(pivot.getData.bind(pivot), 100);
+                        }
+                    }
+                }
+                else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
+                    (pivot.dataSourceSettings.dataSource && pivot.dataSourceSettings.dataSource.length > 0 || this.engineModule.data.length > 0)) {
+                    if (pivot.dataType === 'pivot') {
+                        this.hideWaitingPopup();
+                        pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                     }
                     pivot.initEngine();
                 }
                 else {
-                    if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
-                        if (!this.element.querySelector('.e-spinner-pane')) {
-                            this.showWaitingPopup();
-                        }
-                        this.engineModule.data = pivot.remoteData;
-                        this.initEngine();
+                    if (this.dataSourceSettings.mode === 'Server') {
+                        this.getEngine("onRefresh");
                     }
-                    else {
-                        setTimeout(pivot.getData.bind(pivot), 100);
-                    }
+                    this.hideWaitingPopup();
                 }
             }
-            else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (pivot.dataSourceSettings.dataSource && pivot.dataSourceSettings.dataSource.length > 0 || this.engineModule.data.length > 0)) {
-                if (pivot.dataType === 'pivot') {
-                    this.hideWaitingPopup();
-                    pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
-                }
-                pivot.initEngine();
+            else if (sf.base.isBlazor() && pivot.dataType === 'pivot' &&
+                this.engineModule.data && this.engineModule.data.length > 0) {
+                this.initEngine();
             }
             else {
-                if (this.dataSourceSettings.mode === 'Server') {
-                    this.getEngine("onRefresh");
-                }
                 this.hideWaitingPopup();
             }
         }
-        else if (sf.base.isBlazor() && pivot.dataType === 'pivot' &&
-            this.engineModule.data && this.engineModule.data.length > 0) {
-            this.initEngine();
-        }
         else {
-            this.hideWaitingPopup();
+            pivot.isStaticRefresh = false;
         }
     };
     PivotView.prototype.getValueCellInfo = function (aggregateObj) {
@@ -29272,7 +29275,7 @@ var PivotFieldList = /** @class */ (function (_super) {
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
-        var pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        var pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
         var localeObj = this.pivotGridModule ? this.pivotGridModule.localeObj :
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         var isDrillThrough = this.pivotGridModule ?
@@ -30147,6 +30150,7 @@ var PivotFieldList = /** @class */ (function (_super) {
             control.trigger(fieldListRefreshed, eventArgs);
             if (!this.isPopupView) {
                 this.staticPivotGridModule = control;
+                control.isStaticRefresh = true;
             }
             if (control.enableVirtualization && sf.base.isBlazor()) {
                 control.renderPivotGrid();

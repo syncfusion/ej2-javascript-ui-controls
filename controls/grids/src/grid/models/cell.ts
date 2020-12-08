@@ -21,6 +21,8 @@ export class Cell<T> {
 
     public isSelected: boolean;
 
+    public isColumnSelected: boolean;
+
     public column: T;
 
     public rowID: string;

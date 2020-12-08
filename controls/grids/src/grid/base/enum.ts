@@ -215,7 +215,9 @@ export type SelectionMode =
     /**  Defines SelectionMode as Row */
     'Row' |
     /**  Defines SelectionMode as Both */
-    'Both';
+    'Both' |
+    /**  Defines SelectionMode as Column */
+    'Column';
 
 /** 
  * Print mode options are

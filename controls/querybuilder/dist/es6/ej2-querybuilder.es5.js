@@ -912,7 +912,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else if (value instanceof Array) {
                 for (var i = 0; i < value.length; i++) {
-                    if (value[i] instanceof Date) {
+                    if (value[i] && value[i] instanceof Date) {
                         value[i] = this.intl.formatDate(value[i], format);
                     }
                 }
@@ -928,7 +928,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             column = dropDownObj.getDataByValue(dropDownObj.value);
             var valueColl = [];
             for (var i = 0, iLen = tempColl.length; i < iLen; i++) {
-                if (column.type === 'date' && value[i] instanceof Date) {
+                if (tempColl.length > 1 && column.type === 'date' && value[i] && value[i] instanceof Date) {
                     valueColl.push(this.intl.formatDate(value[i], format));
                 }
                 else {
@@ -1761,11 +1761,16 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                         selectedValue = this.parseDate(itemData.value, itemData.format);
                                     }
                                 }
-                                if ((this.isImportRules || this.isPublic) && rule && rule.value) {
+                                if ((this.isImportRules || this.isPublic) && rule) {
                                     column = this.getColumn(rule.field);
-                                    selVal = (length_1 > 1) ? rule.value[i] : rule.value;
-                                    selectedValue = this.parseDate(selVal, column.format);
                                     format = column.format;
+                                    if (rule.value) {
+                                        selVal = (length_1 > 1) ? rule.value[i] : rule.value;
+                                        selectedValue = this.parseDate(selVal, column.format);
+                                    }
+                                    else {
+                                        selectedValue = rule.value;
+                                    }
                                 }
                                 if (format) {
                                     var formatObj = this.getFormat(format);
@@ -2216,10 +2221,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     if (typeof rule.rules[index].value === 'string') {
                         rule.rules[index].value = [];
                     }
-                    rule.rules[index].value[i] = '';
+                    rule.rules[index].value[i] = selectedValue;
                 }
                 else {
-                    rule.rules[index].value = '';
+                    rule.rules[index].value = selectedValue;
                 }
             }
             else {
@@ -2944,7 +2949,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 index++;
             }
             column = this.getColumn(rule.rules[index].field);
-            if (column && column.template) {
+            if (column && column.template && clnruleElem.querySelector('.e-template')) {
                 this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
@@ -3398,21 +3403,23 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             for (var j = 0, jLen = value.length; j < jLen; j++) {
                 if (value[j] !== '') {
                     if (j === 0) {
+                        var gte = 'greaterthanorequal';
+                        var lt = 'lessthan';
                         switch (operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = new Predicate(ruleColl.field, 'greaterthanorequal', this.getDate(value[j], format));
+                                    pred = new Predicate(ruleColl.field, gte, value[j] ? this.getDate(value[j], format) : null);
                                 }
                                 else {
-                                    pred = new Predicate(ruleColl.field, 'greaterthanorequal', value[j]);
+                                    pred = new Predicate(ruleColl.field, gte, value[j]);
                                 }
                                 break;
                             case 'notbetween':
                                 if (column.type === 'date') {
-                                    pred = new Predicate(ruleColl.field, 'lessthan', this.getDate(value[j], format));
+                                    pred = new Predicate(ruleColl.field, lt, value[j] ? this.getDate(value[j], format) : null);
                                 }
                                 else {
-                                    pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                                    pred = new Predicate(ruleColl.field, lt, value[j]);
                                 }
                                 break;
                             case 'in':
@@ -3424,12 +3431,18 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     else {
+                        var gt = 'greaterthan';
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    var currDate = this.getDate(value[j], format);
-                                    var nextDate = new Date(currDate.setDate(currDate.getDate() + 1));
-                                    pred = pred.and(ruleColl.field, 'lessthan', nextDate);
+                                    if (value[j]) {
+                                        var currDate = this.getDate(value[j], format);
+                                        var nextDate = new Date(currDate.setDate(currDate.getDate() + 1));
+                                        pred = pred.and(ruleColl.field, 'lessthan', nextDate);
+                                    }
+                                    else {
+                                        pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                                    }
                                 }
                                 else {
                                     pred = pred.and(ruleColl.field, 'lessthanorequal', value[j]);
@@ -3437,7 +3450,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                 break;
                             case 'notbetween':
                                 if (column.type === 'date') {
-                                    pred = pred.or(ruleColl.field, 'greaterthan', this.getDate(value[j], format));
+                                    pred = pred.or(ruleColl.field, gt, value[j] ? this.getDate(value[j], format) : value[j]);
                                 }
                                 else {
                                     pred = pred.or(ruleColl.field, 'greaterthan', value[j]);

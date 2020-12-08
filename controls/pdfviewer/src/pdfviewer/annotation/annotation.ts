@@ -332,6 +332,7 @@ export class Annotation {
                     if (inputFields && inputFields.className === 'e-pdfviewer-signatureformFields signature') {
                         inputFields.className = 'e-pdfviewer-signatureformFields';
                         inputFields.style.pointerEvents = '';
+                        inputFields.parentElement.style.pointerEvents = '';
                         this.pdfViewer.formFieldsModule.updateDataInSession(inputFields, '');
                     }
                 }
@@ -3375,7 +3376,7 @@ export class Annotation {
         let overlappedCollection: any = [];
         // tslint:disable-next-line
         let overlappedAnnotations: any = this.getOverlappedAnnotations(annotation, pageNumber);
-        if (overlappedAnnotations) {
+        if (overlappedAnnotations && this.overlappedCollections) {
             // tslint:disable-next-line
             let overlappedCollections: any = [];
             // tslint:disable-next-line
@@ -3660,14 +3661,16 @@ export class Annotation {
             if (annotation && annotation.isCommentLock === true) {
                 currentAnnotation.isCommentLock = annotation.isCommentLock;
             }
-            for (let j: number = 0; j < annotation.comments.length; j++) {
-                if (annotation.comments[j].isLock === true) {
-                    if (annotationType) {
-                        currentAnnotation.comments = annotation.comments;
-                        currentAnnotation.comments[j].isLock = annotation.comments[j].isLock;
-                    } else {
-                        currentAnnotation.properties.comments = annotation.comments;
-                        currentAnnotation.properties.comments[j].isLock = annotation.comments[j].isLock;
+            if (annotation.comments) {
+                for (let j: number = 0; j < annotation.comments.length; j++) {
+                    if (annotation.comments[j].isLock === true) {
+                        if (annotationType) {
+                            currentAnnotation.comments = annotation.comments;
+                            currentAnnotation.comments[j].isLock = annotation.comments[j].isLock;
+                        } else {
+                            currentAnnotation.properties.comments = annotation.comments;
+                            currentAnnotation.properties.comments[j].isLock = annotation.comments[j].isLock;
+                        }
                     }
                 }
             }
@@ -3788,7 +3791,6 @@ export class Annotation {
                 if (currentAnnotation.modifiedDate !== annotation.modifiedDate) {
                     redoClonedObject.modifiedDate = annotation.modifiedDate;
                     this.pdfViewer.nodePropertyChange(currentAnnotation, { modifiedDate: annotation.modifiedDate });
-                    this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
                 }
                 if (currentAnnotation.subject !== annotation.subject) {
                     redoClonedObject.subject = annotation.subject;
@@ -4018,9 +4020,11 @@ export class Annotation {
         if (annotation && annotation.isCommentLock === true) {
             newAnnotation.isCommentLock = annotation.isCommentLock;
         }
-        for (let j: number = 0; j < annotation.comments.length; j++) {
-            if (annotation.comments[j].isLock === true) {
-                newAnnotation.comments[j].isLock = annotation.comments[j].isLock;
+        if (annotation.comments) {
+            for (let j: number = 0; j < annotation.comments.length; j++) {
+                if (annotation.comments[j].isLock === true) {
+                    newAnnotation.comments[j].isLock = annotation.comments[j].isLock;
+                }
             }
         }
         if (annotation && annotation.note !== '' && annotation.note !== undefined) {

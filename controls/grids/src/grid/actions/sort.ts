@@ -365,7 +365,10 @@ export class Sort implements IAction {
             !(e.target as Element).classList.contains('e-rhandler') &&
             !(e.target as Element).classList.contains('e-columnmenu') &&
             !(e.target as Element).classList.contains('e-filtermenudiv') &&
-            !parentsUntil(e.target as Element, 'e-stackedheadercell')) {
+            !parentsUntil(e.target as Element, 'e-stackedheadercell') &&
+            !(gObj.allowSelection && gObj.selectionSettings.mode === 'Column' &&
+                (e.target as Element).classList.contains('e-headercell'))) {
+            let gObj: IGrid = this.parent;
             let colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
             let direction: SortDirection = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
                 'Descending';

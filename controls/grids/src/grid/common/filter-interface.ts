@@ -30,6 +30,7 @@ export interface IXLFilter extends Component<HTMLElement> {
     getQuery?: Function;
     searchSettings?: XLSearchSettings;
     getColumnByField?: Function;
+    getColumnHeaderByUid?: Function;
     dataSource?: Object[] | DataManager;
     getForeignKeyColumns?: Function;
     isReact?: boolean;

@@ -1,6 +1,6 @@
 import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction } from '../index';
-import { createElement, Browser } from '@syncfusion/ej2-base';
-import { Accordion, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { createElement, Browser, Internationalization } from '@syncfusion/ej2-base';
+import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -111,6 +111,7 @@ export class StickyNotesAnnotation {
      * @private
      */
     public isAnnotationRendered: boolean = false;
+    private globalize: Internationalization;
 
     /**
      * @private
@@ -465,6 +466,10 @@ export class StickyNotesAnnotation {
         let pageCollections: any = [];
         if (pageAnnotations.textMarkupAnnotation && pageAnnotations.textMarkupAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.textMarkupAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.textMarkupAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.textMarkupAnnotation[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.textMarkupAnnotation[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(pageAnnotations.textMarkupAnnotation[i], pageNumber));
@@ -472,6 +477,10 @@ export class StickyNotesAnnotation {
         }
         if (pageAnnotations.shapeAnnotation && pageAnnotations.shapeAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.shapeAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.shapeAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.shapeAnnotation[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.shapeAnnotation[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(pageAnnotations.shapeAnnotation[i], pageNumber));
@@ -479,6 +488,10 @@ export class StickyNotesAnnotation {
         }
         if (pageAnnotations.measureShapeAnnotation && pageAnnotations.measureShapeAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.measureShapeAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.measureShapeAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.measureShapeAnnotation[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.measureShapeAnnotation[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(pageAnnotations.measureShapeAnnotation[i], pageNumber));
@@ -486,6 +499,10 @@ export class StickyNotesAnnotation {
         }
         if (pageAnnotations.stampAnnotations && pageAnnotations.stampAnnotations.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.stampAnnotations.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.stampAnnotations[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.stampAnnotations[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.stampAnnotations[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(pageAnnotations.stampAnnotations[i], pageNumber));
@@ -493,6 +510,10 @@ export class StickyNotesAnnotation {
         }
         if (pageAnnotations.stickyNotesAnnotation && pageAnnotations.stickyNotesAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.stickyNotesAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.stickyNotesAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.stickyNotesAnnotation[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.stickyNotesAnnotation[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.updateStickyNotesAnnotationCollections(pageAnnotations.stickyNotesAnnotation[i], pageNumber));
@@ -500,6 +521,10 @@ export class StickyNotesAnnotation {
         }
         if (pageAnnotations.freeTextAnnotation && pageAnnotations.freeTextAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.freeTextAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.freeTextAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.freeTextAnnotation[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.freeTextAnnotation[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(pageAnnotations.freeTextAnnotation[i], pageNumber));
@@ -507,12 +532,20 @@ export class StickyNotesAnnotation {
         }
         if (pageAnnotations.signatureAnnotation && pageAnnotations.signatureAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.signatureAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.signatureAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.signatureAnnotation[i].ModifiedDate);
+                }
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewerBase.signatureModule.updateSignatureCollections(pageAnnotations.signatureAnnotation[i], pageNumber), true);
             }
         }
         if (pageAnnotations.signatureInkAnnotation && pageAnnotations.signatureInkAnnotation.length !== 0) {
             for (let i: number = 0; i < pageAnnotations.signatureInkAnnotation.length; i++) {
+                if (this.pdfViewer.dateTimeFormat) {
+                    // tslint:disable-next-line:max-line-length
+                    pageAnnotations.signatureInkAnnotation[i].ModifiedDate = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime(pageAnnotations.signatureInkAnnotation[i].ModifiedDate);
+                }
                 pageCollections.push(pageAnnotations.signatureInkAnnotation[i]);
                 // tslint:disable-next-line:max-line-length
                 this.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(pageAnnotations.signatureInkAnnotation[i], pageNumber));
@@ -1487,6 +1520,7 @@ export class StickyNotesAnnotation {
         this.pdfViewer.element.appendChild(commentMenuElement);
         this.commentMenuObj = new Context({
             target: '#' + this.pdfViewer.element.id + '_more-options', items: this.commentContextMenu,
+            beforeOpen: this.contextMenuBeforeOpen.bind(this),
             select: this.commentMenuItemSelect.bind(this),
         });
         if (this.pdfViewer.enableRtl) {
@@ -1500,6 +1534,28 @@ export class StickyNotesAnnotation {
         }
     }
 
+    private contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        // tslint:disable-next-line
+        let contextActiveDiv: any;
+        // tslint:disable-next-line
+        let contextDiv: any = document.querySelectorAll('#' + this.pdfViewer.element.id + '_more-options');
+        if (contextDiv) {
+            for (let i: number = 0; i < contextDiv.length; i++) {
+                if (contextDiv[i].style.visibility === 'visible') {
+                    contextActiveDiv = contextDiv[i].parentElement.nextSibling;
+                }
+            }
+         }
+        let isCommentLocked: boolean = this.checkIslockProperty(contextActiveDiv);
+        if (isCommentLocked) {
+             this.commentMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Edit')], false);
+             this.commentMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Delete Context')], false);
+         } else {
+             this.commentMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Edit')], true);
+             this.commentMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Delete Context')], true);
+         }
+     }
+
     // tslint:disable-next-line
     private commentMenuItemSelect(args: any): void {
         // tslint:disable-next-line
@@ -1512,29 +1568,24 @@ export class StickyNotesAnnotation {
                     contextActiveDiv = contextDiv[i].parentElement.nextSibling;
                 }
             }
-            let isCommentLocked: boolean = this.checkIslockProperty(contextActiveDiv);
             if (args.item) {
                 switch (args.item.text) {
                     case this.pdfViewer.localeObj.getConstant('Edit'):
-                        if (!isCommentLocked) {
-                            // tslint:disable-next-line
-                            let commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
-                            for (let i: number = 0; i < commentShow.length; i++) {
-                                commentShow[i].style.display = 'none';
-                            }
-                            contextActiveDiv.ej2_instances[0].enableEditMode = true;
+                        // tslint:disable-next-line
+                        let commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
+                        for (let i: number = 0; i < commentShow.length; i++) {
+                            commentShow[i].style.display = 'none';
                         }
-                        break;
+                        contextActiveDiv.ej2_instances[0].enableEditMode = true;
+                    break;
                     case this.pdfViewer.localeObj.getConstant('Delete Context'):
-                        if (!isCommentLocked) {
-                            if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
-                                this.pdfViewer.annotationModule.deleteAnnotation();
-                            } else {
-                                // tslint:disable-next-line:max-line-length
-                                this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
-                            }
+                        if (contextActiveDiv.parentElement.parentElement.firstChild === contextActiveDiv.parentElement) {
+                            this.pdfViewer.annotationModule.deleteAnnotation();
+                        } else {
+                            // tslint:disable-next-line:max-line-length
+                            this.modifyCommentDeleteProperty(contextActiveDiv.parentElement.parentElement, contextActiveDiv.parentElement);
                         }
-                        break;
+                    break;
                     case this.pdfViewer.localeObj.getConstant('Set Status'):
                         break;
                     case this.pdfViewer.localeObj.getConstant('Accepted'):
@@ -1718,10 +1769,10 @@ export class StickyNotesAnnotation {
 
     // tslint:disable-next-line
     private commentsDivClickEvent(event: any): void {
+        // tslint:disable-next-line
+        let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
         let isLocked : boolean = this.checkAnnotationSettings(event.currentTarget.parentElement.id);
         if (isLocked) {
-            // tslint:disable-next-line
-            let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
             if (this.pdfViewer.annotationModule.checkAllowedInteractions('Select', annotation)) {
                 isLocked = false;
             }
@@ -1802,6 +1853,10 @@ export class StickyNotesAnnotation {
                     }
                 }
             }
+            if (event.currentTarget && event.currentTarget.id && event.currentTarget.childNodes[1].ej2_instances[0]) {
+                // tslint:disable-next-line
+                this.pdfViewer.fireCommentSelect(event.currentTarget.id, event.currentTarget.childNodes[1].ej2_instances[0].value, annotation);
+            }
             this.commentDivOnSelect(event);
             event.preventDefault();
         }
@@ -1814,7 +1869,7 @@ export class StickyNotesAnnotation {
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[i].style.display = 'none';
         }
-        let isCommentLocked: boolean = this.checkIslockProperty(event.currentTarget.lastChild);
+        let isCommentLocked: boolean = this.checkIslockProperty(event.currentTarget.children[1]);
         if (isCommentLocked) {
             if (event.currentTarget.childElementCount === 2) {
                 event.currentTarget.lastChild.ej2_instances[0].enableEditMode = false;
@@ -2277,12 +2332,12 @@ export class StickyNotesAnnotation {
                                     } else {
                                         this.updateUndoRedoCollections(currentAnnotation, pageIndex, 'shape_measure');
                                     }
-                                    if (previousValue === '') {
+                                    if (!previousValue || previousValue === '') {
                                         // tslint:disable-next-line:max-line-length
-                                        this.pdfViewer.fireCommentAdd(currentAnnotation.note, currentAnnotation);
+                                        this.pdfViewer.fireCommentAdd(currentAnnotation.annotName, currentAnnotation.note, currentAnnotation);
                                     } else {
                                         // tslint:disable-next-line:max-line-length
-                                        this.pdfViewer.fireCommentEdit(currentAnnotation.note, currentAnnotation);
+                                        this.pdfViewer.fireCommentEdit(currentAnnotation.annotName, currentAnnotation.note, currentAnnotation);
                                     }
                                     return currentAnnotation;
                                 }
@@ -2297,10 +2352,14 @@ export class StickyNotesAnnotation {
     /**
      * @private
      */
-    public getDateAndTime(): string {
-        let date: Date = new Date();
-        // tslint:disable-next-line:max-line-length
-        let dateTime: string = date.getMonth() + 1 + '/' + date.toString().split(' ')[2] + '/' + date.getFullYear() + ', ' + date.toLocaleTimeString();
+    public getDateAndTime(date?: string): string {
+        if (!date) {
+           date = new Date().toLocaleString();
+        }
+        this.globalize = new Internationalization();
+        let dateOptions: object = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime' };
+        // tslint:disable-next-line
+        let dateTime: string =  this.globalize.formatDate(new Date(date), dateOptions);
         return dateTime;
     };
 
@@ -2367,9 +2426,9 @@ export class StickyNotesAnnotation {
             }
         }
         if (previousValue !== undefined) {
-            this.pdfViewer.fireCommentEdit(text, currentAnnotation);
+            this.pdfViewer.fireCommentEdit(annotName, text, currentAnnotation);
         } else {
-            this.pdfViewer.fireCommentAdd(text, currentAnnotation);
+            this.pdfViewer.fireCommentAdd(annotName, text, currentAnnotation);
         }
     }
 
@@ -2414,6 +2473,7 @@ export class StickyNotesAnnotation {
                 currentAnnotation.stateModel = 'Review';
                 // tslint:disable-next-line:max-line-length
                 this.pdfViewer.annotation.addAction(pageIndex, null, currentAnnotation, 'Status Property Added', '', clonedObject, currentAnnotation);
+                this.pdfViewer.fireCommentStatusChanged(statusElement.id, currentAnnotation.note, currentAnnotation, currentAnnotation.state);
             } else {
                 for (let j: number = 0; j < currentAnnotation.comments.length; j++) {
                     if (currentAnnotation.comments[j].annotName === statusElement.id) {
@@ -2425,6 +2485,7 @@ export class StickyNotesAnnotation {
                         currentAnnotation.comments[j].review = { state: text, stateModel: 'Review', author: author, modifiedDate: this.getDateAndTime(), annotId: statusElement.id };
                         // tslint:disable-next-line:max-line-length
                         this.pdfViewer.annotation.addAction(pageIndex, null, currentAnnotation, 'Status Property Added', '', clonedObj, currentAnnotation.comments[j]);
+                        this.pdfViewer.fireCommentStatusChanged(currentAnnotation.comments[j].annotName, currentAnnotation.comments[j].note, currentAnnotation, currentAnnotation.comments[j].state);
                     }
                 }
             }
@@ -2470,7 +2531,7 @@ export class StickyNotesAnnotation {
                     currentAnnotation.comments[positionValue].position = i;
                     clonedObject = cloneObject(currentAnnotation.comments[positionValue]);
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireCommentDelete(currentAnnotation.comments[positionValue].note, currentAnnotation);
+                    this.pdfViewer.fireCommentDelete(currentAnnotation.comments[positionValue].annotName, currentAnnotation.comments[positionValue].note, currentAnnotation);
                     currentAnnotation.comments.splice(positionValue, 1);
                     replyElement.remove();
                 }
@@ -3057,25 +3118,9 @@ export class StickyNotesAnnotation {
     }
 
     private setExistingAnnotationModifiedDate(date: string): string {
-        let modifiedTime: string;
-        let modifiedDate: string;
         let modifiedDateTime: string;
         if (date !== '') {
-            // tslint:disable-next-line
-            let time: number = parseInt(date.split(' ')[1].split(':')[0]);
-            let minutes: string = date.split(' ')[1].split(':')[1];
-            let month: string[] = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            if (date.split(' ').length === 3) {
-                modifiedTime = time + ':' + minutes + ' ' + date.split(' ')[2];
-            } else {
-                modifiedTime = this.updateModifiedTime(time, minutes);
-            }
-            // tslint:disable-next-line
-            let monthNumber: any = parseInt(date.split(' ')[0].split('/')[0]);
-            let monthString: string = month[monthNumber];
-            // tslint:disable-next-line
-            modifiedDate = monthString + ' ' + parseInt(date.split(' ')[0].split('/')[1]);
-            modifiedDateTime = modifiedDate + ', ' + modifiedTime;
+            modifiedDateTime = this.setModifiedDate(date);
         } else {
             modifiedDateTime = this.setModifiedDate();
         }
@@ -3096,15 +3141,21 @@ export class StickyNotesAnnotation {
         return modifiedTime;
     };
 
-    private setModifiedDate(): string {
-        let date: Date = new Date();
+    private setModifiedDate(data?: string): string {
+        let dateTime: string;
+        if (data) {
+            dateTime = this.getDateAndTime(data);
+        } else {
+            dateTime = this.getDateAndTime();
+        }
+        let date: Date = new Date(dateTime);
         let modifiedTime: string;
         let modifiedDate: string = date.toString().split(' ').splice(1, 2).join(' ');
         if (date.toLocaleTimeString().split(' ').length === 2) {
             // tslint:disable-next-line:max-line-length
             modifiedTime = date.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':') + ' ' + date.toLocaleTimeString().split(' ')[1];
         } else {
-            // tslint:disable-next-line
+             // tslint:disable-next-line
             let time: number = parseInt(date.toLocaleTimeString().split(':')[0]);
             let minutes: string = date.toLocaleTimeString().split(':')[1];
             modifiedTime = this.updateModifiedTime(time, minutes);

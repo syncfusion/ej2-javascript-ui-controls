@@ -8514,7 +8514,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
                 this.unRegisterSheet(args.sheetIndex, args.sheetCount);
                 break;
             case 'refreshCalculate':
-                args.value = this.autoCorrectFormula(args.value);
+                args.value = this.autoCorrectFormula(args.value, args.rowIndex, args.colIndex);
                 this.refreshCalculate(args.rowIndex, args.colIndex, args.value, args.isFormula, args.sheetIndex);
                 break;
             case 'getArgumentSeparator':
@@ -8802,11 +8802,40 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
         }
         this.calculateInstance.cell = '';
     };
-    WorkbookFormula.prototype.autoCorrectFormula = function (formula) {
+    WorkbookFormula.prototype.autoCorrectFormula = function (formula, rowIdx, colIdx) {
         if (!isNullOrUndefined(formula)) {
             formula = formula.toString();
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
                 formula += ')';
+            }
+            formula = formula.indexOf('=') === 0 ? formula.slice(1) : formula;
+            var lessEq = formula.match(/</g);
+            var greaterEq = formula.match(/>/g);
+            var equal = formula.match(/=/g);
+            if (lessEq) {
+                var lessOp = '';
+                for (var i = 0; i < lessEq.length; i++) {
+                    lessOp = lessOp + lessEq[i];
+                }
+                formula = formula.replace(lessOp, '<');
+            }
+            if (greaterEq) {
+                var greaterOp = '';
+                for (var j = 0; j < greaterEq.length; j++) {
+                    greaterOp = greaterOp + greaterEq[j];
+                }
+                formula = formula.replace(greaterOp, '>');
+            }
+            if (equal) {
+                var equalOp = '';
+                for (var c = 0; c < equal.length; c++) {
+                    equalOp = equalOp + equal[c];
+                }
+                formula = formula.split(equalOp).join('=');
+            }
+            formula = '=' + formula;
+            if (lessEq || greaterEq || equal) {
+                getCell(rowIdx, colIdx, this.parent.getActiveSheet()).formula = formula;
             }
         }
         return formula;
@@ -8819,17 +8848,19 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             var refersTo = this.parseSheetRef(definedname.refersTo);
             var range = getRangeFromAddress(refersTo);
             var cellRef = false;
-            range = range.split('$').join('');
-            range = range.split('=').join('');
-            if (range.indexOf(':') > -1) {
-                var rangeSplit = range.split(':');
-                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
-                    cellRef = true;
+            if (refersTo.indexOf('http:') < 0) {
+                range = range.split('$').join('');
+                range = range.split('=').join('');
+                if (range.indexOf(':') > -1) {
+                    var rangeSplit = range.split(':');
+                    if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                        cellRef = true;
+                    }
                 }
-            }
-            else if (range.indexOf(':') < 0) {
-                if (isCellReference(range)) {
-                    cellRef = true;
+                else if (range.indexOf(':') < 0) {
+                    if (isCellReference(range)) {
+                        cellRef = true;
+                    }
                 }
             }
             if (cellRef) {
@@ -16792,12 +16823,18 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     return;
                 }
             }
+            var cellLength = 0;
             if (isExternal && !rows.length) { // If image pasted
                 return;
             }
+            if (rows) {
+                for (var i = 0; i < rows.length; i++) {
+                    cellLength = rows[i].cells.length > cellLength ? rows[i].cells.length : cellLength;
+                }
+            }
             var rowIdx = selIdx[0];
             var cIdx = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                ? [0, 0, rows.length - 1, cellLength - 1] : getSwapRange(this.copiedShapeInfo ?
                 getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             var isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
@@ -16825,7 +16862,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0];
             cIdx = isExternal
-                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                ? [0, 0, rows.length - 1, cellLength - 1] : getSwapRange(this.copiedShapeInfo ?
                 getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
                 (cIdx[3] - cIdx[1] + 1) === 0;
@@ -16908,7 +16945,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                                     var cellArgs = {
                                         address: this.parent.sheets[sId].name + '!' + address,
                                         requestType: 'paste',
-                                        value: getCell(x + l, y + k, curSheet).value,
+                                        value: getCell(x + l, y + k, curSheet) ? getCell(x + l, y + k, curSheet).value : '',
                                         oldValue: prevCell.value,
                                         element: cellElem,
                                         displayText: this.parent.getDisplayText(cell)
@@ -33959,11 +33996,15 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             this.updateLeftColGroup(colGroupWidth);
         }
         if (sheet.showHeaders) {
-            detach(this.contentPanel.querySelector('.e-row-header tbody'));
-            this.getRowHeaderTable().appendChild(hFrag);
+            if (this.contentPanel.querySelector('.e-row-header tbody')) {
+                detach(this.contentPanel.querySelector('.e-row-header tbody'));
+                this.getRowHeaderTable().appendChild(hFrag);
+            }
         }
-        detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
-        this.getContentTable().appendChild(frag);
+        if (this.contentPanel.querySelector('.e-sheet-content tbody')) {
+            detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
+            this.getContentTable().appendChild(frag);
+        }
         this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();

@@ -166,6 +166,7 @@ export class TextSearch {
             this.searchBox.style.display = 'block';
         } else {
             this.searchBox.style.display = 'none';
+            (this.searchInput as HTMLInputElement).value = '';
         }
         this.onTextSearchClose();
     }

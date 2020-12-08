@@ -1997,7 +1997,7 @@ var TimePicker = /** @class */ (function (_super) {
             (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        if (!(sf.base.closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
+        if (!(sf.base.closest(target, '[id="' + this.popupObj.element.id + '"]')) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
             target !== (this.inputWrapper && this.inputWrapper.container)) {

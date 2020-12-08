@@ -539,7 +539,7 @@ var DateTimePicker = /** @class */ (function (_super) {
             (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        if (!(sf.base.closest(target, '#' + (this.popupObject && this.popupObject.element.id))) && target !== this.inputElement
+        if (!(sf.base.closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
             && target !== this.timeIcon && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
                 this.hide(event);

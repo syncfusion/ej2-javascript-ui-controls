@@ -1147,6 +1147,9 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
                 this.parent.eventWindow.openEditor(extend(data, { cancel: false, event: args.originalEvent }), 'Add');
                 break;
         }
+        if (isNullOrUndefined(this.toolbarObj)) {
+            return;
+        }
         var toolbarPopUp = this.toolbarObj.element.querySelector('.e-toolbar-pop');
         if (toolbarPopUp && args.item.type !== 'Input') {
             toolbarPopUp.ej2_instances[0].hide({ name: 'SlideUp', duration: 100 });
@@ -8990,7 +8993,6 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
      * @private
      */
     EventTooltip.prototype.destroy = function () {
-        this.parent.resetTemplates();
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
@@ -12306,16 +12308,6 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             _this.parent.eventsData = resultData.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
             _this.parent.blockData = resultData.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
-            for (var _b = 0, _c = resultData; _b < _c.length; _b++) {
-                var datas = _c[_b];
-                if (typeof datas[_this.parent.eventFields.startTime] === 'string') {
-                    datas[_this.parent.eventFields.startTime] = getDateFromString(datas[_this.parent.eventFields.startTime]);
-                }
-                if (typeof datas[_this.parent.eventFields.endTime] === 'string') {
-                    datas[_this.parent.eventFields.endTime] = getDateFromString(datas[_this.parent.eventFields.endTime]);
-                }
-                _this.parent.eventBase.processTimezone(datas, true);
-            }
             var processed = _this.parent.eventBase.processData(resultData);
             _this.parent.notify(dataReady, { processedData: processed });
             if (_this.parent.dragAndDropModule && _this.parent.dragAndDropModule.actionObj.action === 'drag') {

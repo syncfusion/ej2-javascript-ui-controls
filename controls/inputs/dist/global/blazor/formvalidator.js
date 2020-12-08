@@ -622,7 +622,7 @@ var FormValidator = /** @class */ (function (_super) {
         else if (input.hasAttribute('data-msg-containerid') === true) {
             // Append error message into custom div element
             var containerId = input.getAttribute('data-msg-containerid');
-            var divElement = this.element.querySelector('#' + containerId);
+            var divElement = sf.base.select('#' + containerId, this.element);
             divElement.appendChild(errorElement);
         }
         else if (this.customPlacement != null) {

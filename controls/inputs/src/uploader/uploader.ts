@@ -1,10 +1,10 @@
-import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';
 import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';
 import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest, remove } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { UploaderModel, AsyncSettingsModel, ButtonsPropsModel, FilesPropModel } from './uploader-model';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, select, selectAll } from '@syncfusion/ej2-base';
 
 const ROOT: string =  'e-uploader';
 const CONTROL_WRAPPER: string = 'e-upload e-control-wrapper';
@@ -1508,7 +1508,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let dropTextArea: HTMLElement = <HTMLElement>this.dropAreaWrapper.querySelector('.e-file-drop');
         if (this.dropArea) {
             this.dropZoneElement = (typeof(this.dropArea) !== 'string') ? this.dropArea :
-            document.querySelector(this.dropArea) as HTMLElement;
+            select(this.dropArea, document) as HTMLElement;
             let element: HTMLElement = this.element;
             let enableDropText: Boolean = false;
             while (element.parentNode) {
@@ -3144,8 +3144,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (uploadTemplate) {
             let exception: Object;
             try {
-                if (document.querySelectorAll(uploadTemplate).length) {
-                    return compile(document.querySelector(uploadTemplate).innerHTML.trim());
+                if (selectAll(uploadTemplate, document).length) {
+                    return compile(select(uploadTemplate, document).innerHTML.trim());
                 }
             } catch (exception) {
                 return compile(uploadTemplate);

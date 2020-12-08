@@ -66,6 +66,17 @@ export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'D
 export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' | 'p' | 'ft'| 'ft_in' | 'm';
 
 /**
+ * Enum for comment status of the annotation
+ */
+export enum CommentStatus {
+    None = 1,
+    Accepted = 2,
+    Canceled = 3,
+    Completed = 4,
+    Rejected = 5
+}
+
+/**
  * Enum unit for ContextMenu Actions
  */
 export type ContextMenuAction = 'None' | 'MouseUp' | 'RightClick';
@@ -102,6 +113,14 @@ export enum ContextMenuItem {
     Comment = 256,
 }
 
+/**
+ * Enum for signature type
+ */
+export enum SignatureType {
+    Draw = 'Draw',
+    Type = 'Type',
+    Image = 'Image'
+}
 
 /**
  * Enum unit for text alignment

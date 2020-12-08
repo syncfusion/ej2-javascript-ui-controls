@@ -5,7 +5,7 @@ import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data'
 import { ListBase, SortOrder } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove, select } from '@syncfusion/ej2-base';
 
 export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
@@ -574,7 +574,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (baseTemplate) {
             let exception: Object;
             try {
-                checkTemplate = (document.querySelectorAll(baseTemplate).length) ? true : false;
+                checkTemplate = (select(baseTemplate, document).length) ? true : false;
             } catch (exception) {
                 checkTemplate = false;
             }
@@ -591,7 +591,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             ele.innerHTML = '';
             let tempaltecheck: boolean = this.templateCompiler(template);
             if (tempaltecheck) {
-                compiledString = compile(document.querySelector(template).innerHTML.trim());
+                compiledString = compile(select(template, document).innerHTML.trim());
             } else {
                 compiledString = compile(template);
             }
@@ -1012,7 +1012,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             let groupcheck: boolean = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
-                let groupValue: string = document.querySelector(this.groupTemplate).innerHTML.trim();
+                let groupValue: string = select(this.groupTemplate, document).innerHTML.trim();
                 let tempHeaders: Element[] = ListBase.renderGroupTemplate(
                     groupValue as string, <{ [key: string]: Object }[]>dataSource,
                     (this.fields as FieldSettingsModel & { properties: Object }).properties,
@@ -1133,7 +1133,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         option.isStringTemplate = this.isStringTemplate;
         let itemcheck: boolean = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
-            let itemValue: string = document.querySelector(this.itemTemplate).innerHTML.trim();
+            let itemValue: string = select(this.itemTemplate, document).innerHTML.trim();
             return ListBase.renderContentTemplate(
                 this.createElement, itemValue, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);

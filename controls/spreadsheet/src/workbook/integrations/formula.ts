@@ -4,7 +4,7 @@ import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, Ag
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula} from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula } from '../common/index';
 import { workbookEditOperation, getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
 
 
@@ -124,7 +124,7 @@ export class WorkbookFormula {
             case 'unRegisterSheet':
                 this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount); break;
             case 'refreshCalculate':
-                args.value = this.autoCorrectFormula(<string>args.value);
+                args.value = this.autoCorrectFormula(<string>args.value, <number>args.rowIndex, <number>args.colIndex);
                 this.refreshCalculate(
                     <number>args.rowIndex, <number>args.colIndex, <string>args.value,
                     <boolean>args.isFormula, <number>args.sheetIndex
@@ -413,11 +413,40 @@ export class WorkbookFormula {
         this.calculateInstance.cell = '';
     }
 
-    private autoCorrectFormula(formula: string): string {
+    private autoCorrectFormula(formula: string, rowIdx: number, colIdx: number): string {
         if (!isNullOrUndefined(formula)) {
             formula = formula.toString();
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
                 formula += ')';
+            }
+            formula = formula.indexOf('=') === 0 ? formula.slice(1) : formula;
+            let lessEq: RegExpMatchArray = formula.match(/</g);
+            let greaterEq: RegExpMatchArray = formula.match(/>/g);
+            let equal: RegExpMatchArray = formula.match(/=/g);
+            if (lessEq) {
+                let lessOp: string = '';
+                for (let i: number = 0; i < lessEq.length; i++) {
+                    lessOp = lessOp + lessEq[i];
+                }
+                formula = formula.replace(lessOp, '<');
+            }
+            if (greaterEq) {
+                let greaterOp: string = '';
+                for (let j: number = 0; j < greaterEq.length; j++) {
+                    greaterOp = greaterOp + greaterEq[j];
+                }
+                formula = formula.replace(greaterOp, '>');
+            }
+            if (equal) {
+                let equalOp: string = '';
+                for (let c: number = 0; c < equal.length; c++) {
+                    equalOp = equalOp + equal[c];
+                }
+                formula = formula.split(equalOp).join('=');
+            }
+            formula = '=' + formula;
+            if (lessEq || greaterEq || equal) {
+                getCell(rowIdx, colIdx, this.parent.getActiveSheet()).formula = formula;
             }
         }
         return formula;
@@ -432,16 +461,18 @@ export class WorkbookFormula {
             let refersTo: string = this.parseSheetRef(definedname.refersTo);
             let range: string = getRangeFromAddress(refersTo);
             let cellRef: boolean = false;
-            range = range.split('$').join('');
-            range = range.split('=').join('');
-            if (range.indexOf(':') > -1) {
-                let rangeSplit: string[] = range.split(':');
-                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
-                    cellRef = true;
-                }
-            } else if (range.indexOf(':') < 0) {
-                if (isCellReference(range)) {
-                    cellRef = true;
+            if (refersTo.indexOf('http:') < 0) {
+                range = range.split('$').join('');
+                range = range.split('=').join('');
+                if (range.indexOf(':') > -1) {
+                    let rangeSplit: string[] = range.split(':');
+                    if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                        cellRef = true;
+                    }
+                } else if (range.indexOf(':') < 0) {
+                    if (isCellReference(range)) {
+                        cellRef = true;
+                    }
                 }
             }
             if (cellRef) {
@@ -612,7 +643,8 @@ export class WorkbookFormula {
         if (checkIsFormula(val)) {
             if (status === 'delete') {
                 for (i = 1; i <= count; i++) {
-                    deleteIdxs.push(startIdx + i); }
+                    deleteIdxs.push(startIdx + i);
+                }
             }
             splitFormula = this.parseFormula(val);
             for (i = 0; i < splitFormula.length; i++) {

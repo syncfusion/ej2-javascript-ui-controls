@@ -1886,7 +1886,6 @@ class KanbanDialog {
         }
     }
     destroy() {
-        this.parent.resetTemplates();
         this.destroyToolTip();
         this.destroyComponents();
         if (this.dialogObj) {

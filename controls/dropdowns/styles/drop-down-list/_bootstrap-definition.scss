@@ -34,7 +34,6 @@ $ddl-bigger-small-list-font-size: 14px !default;
     border-radius: 4px;
     box-shadow:  0 6px 12px $ddl-list-box-shadow-color;
     margin-top: 3px;
-    overflow: auto;
     @at-root {
       #{if(&, '&', '*')} .e-input-group {
         width: auto;

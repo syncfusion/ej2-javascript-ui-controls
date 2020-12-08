@@ -1,4 +1,4 @@
-import { EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, removeClass, extend, Browser } from '@syncfusion/ej2-base';
 import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo } from '../base/interface';
 import { CellType } from '../base/enum';
@@ -811,6 +811,9 @@ export class ContentFocus implements IFocus {
             && (!cell.classList.contains('e-templatecell') || cell.classList.contains('e-editedbatchcell'))
             && !cell.classList.contains('e-detailcell') : true;
     }
+    protected getGridSeletion(): boolean {
+        return !isBlazor() && this.parent.allowSelection && this.parent.selectionSettings.mode === 'Column';
+    }
 }
 /**
  * @hidden
@@ -861,7 +864,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
 
     public jump(action: string, current: number[]): SwapInfo {
         let frozenSwap: boolean = this.parent.frozenColumns > 0 &&
-            (action === 'leftArrow' || action === 'shiftTab') && current[1] === 0;
+            (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') && current[1] === 0;
         let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
         let isLastCell: boolean;
         let lastRow: boolean;
@@ -898,7 +901,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         if (action === 'upArrow' || action === 'shiftEnter') {
             current1[0] = this.matrix.matrix.length;
             current1[1] = previous[1];
-        } else if (action === 'rightArrow' || action === 'tab') {
+        } else if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
             current1[0] = previous[0];
             current1[1] = -1;
         }
@@ -973,9 +976,11 @@ export class FixedHeaderFocus extends HeaderFocus {
         let hMatrix: number[][] = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
         let isPresent: boolean = hMatrix && !isNullOrUndefined(hMatrix[current[0]]);
         return {
-            swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
-            || ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns && isPresent),
-            toHeader: (action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns,
+            swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1 || ((action === 'rightArrow' ||
+                (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') &&
+                current[1] === this.matrix.columns && isPresent),
+            toHeader: (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') &&
+                current[1] === this.matrix.columns,
             toFrozen: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
         };
     }
@@ -985,7 +990,7 @@ export class FixedHeaderFocus extends HeaderFocus {
 
     public getNextCurrent(previous: number[] = [], swap?: SwapInfo, active?: IFocus, action?: string): number[] {
         let current3: number[] = [];
-        if (action === 'leftArrow' || action === 'shiftTab') {
+        if (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) ||  action === 'shiftTab') {
             current3[0] = previous[0];
             current3[1] = active.matrix.columns + 1;
         } else if (action === 'upArrow' || action === 'shiftEnter') {

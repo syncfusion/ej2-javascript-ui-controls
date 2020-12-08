@@ -430,6 +430,12 @@ export class Column {
     public autoFit: boolean = false;
 
     private parent: IGrid;
+    /**
+     * @hidden
+     * Sets the selected state.
+     * @default false 
+     */
+    public isSelected: boolean;
 
     constructor(options: ColumnModel, parent?: IGrid) {
         merge(this, options);
@@ -453,7 +459,7 @@ export class Column {
         this.toJSON = () => {
             let col: object = {};
             let skip: string[] = ['filter', 'dataSource', isBlazor() ? ' ' : 'headerText', 'template', 'headerTemplate', 'edit',
-                'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
+            'editTemplate', 'filterTemplate', 'commandsTemplate', 'parent'];
             let keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {

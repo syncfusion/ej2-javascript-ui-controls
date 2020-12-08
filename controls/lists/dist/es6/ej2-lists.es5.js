@@ -2912,6 +2912,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.getLiFromObjOrElement(curViewDS[index + 2]) || null;
         var li = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
+        // tslint:disable-next-line
+        if (this.template && this.isReact) {
+            this.renderReactTemplates();
+        }
         ulElement.insertBefore(li[0], target);
     };
     /**

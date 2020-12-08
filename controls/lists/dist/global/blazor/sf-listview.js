@@ -525,7 +525,6 @@ var SfListView = /** @class */ (function () {
         liItem.classList.remove(FOCUSED);
     };
     SfListView.prototype.spaceKeyHandler = function (e) {
-        e.preventDefault();
         if (this.enable && this.showCheckBox && this.curUlElement) {
             var li = this.curUlElement.querySelector('.' + FOCUSED);
             if (!sf.base.isNullOrUndefined(li) && sf.base.isNullOrUndefined(li.querySelector('.' + CHECKED))) {

@@ -686,6 +686,276 @@ var Freeze = /** @class */ (function () {
 }());
 
 /**
+ * ColumnWidthService
+ * @hidden
+ */
+var ColumnWidthService = /** @class */ (function () {
+    function ColumnWidthService(parent) {
+        this.parent = parent;
+    }
+    ColumnWidthService.prototype.setMinwidthBycalculation = function (tWidth) {
+        var difference = 0;
+        var collection = this.parent.getColumns().filter(function (a) {
+            return sf.base.isNullOrUndefined(a.width) || a.width === 'auto' || a.width === '';
+        });
+        if (collection.length) {
+            if (!sf.base.isNullOrUndefined(this.parent.options.width) && this.parent.options.width !== 'auto') {
+                difference = (typeof this.parent.options.width === 'string' ? parseInt(this.parent.options.width, 10) : this.parent.options.width) - tWidth;
+            }
+            else {
+                difference = this.parent.element.getBoundingClientRect().width - tWidth;
+            }
+            var tmWidth = 0;
+            for (var _i = 0, collection_1 = collection; _i < collection_1.length; _i++) {
+                var cols = collection_1[_i];
+                tmWidth += !sf.base.isNullOrUndefined(cols.minWidth) ?
+                    ((typeof cols.minWidth === 'string' ? parseInt(cols.minWidth, 10) : cols.minWidth)) : 0;
+            }
+            var minWidthValues = {};
+            for (var i = 0; i < collection.length; i++) {
+                if (tWidth === 0 && this.parent.options.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
+                    this.setUndefinedColumnWidth(collection);
+                }
+                if (tWidth !== 0 && difference < tmWidth) {
+                    minWidthValues[collection[i].field] = collection[i].minWidth + 'px';
+                }
+                else if (tWidth !== 0 && difference > tmWidth) {
+                    minWidthValues[collection[i].field] = '';
+                }
+            }
+            this.parent.dotNetRef.invokeMethodAsync('SetMinWidth', minWidthValues);
+        }
+    };
+    ColumnWidthService.prototype.setUndefinedColumnWidth = function (collection) {
+        for (var k = 0; k < collection.length; k++) {
+            if (k !== collection.length - 1) {
+                collection[k].width = 200;
+                this.setWidth(200, this.parent.getColumnIndexByField(collection[k].field));
+            }
+        }
+    };
+    ColumnWidthService.prototype.setColumnWidth = function (column, index, module, allowStopEvent) {
+        if (allowStopEvent === void 0) { allowStopEvent = true; }
+        if (this.parent.getColumns().length < 1) {
+            return;
+        }
+        var columnIndex = sf.base.isNullOrUndefined(index) ? this.parent.getNormalizedColumnIndex(column.uid) : index;
+        var cWidth = this.getWidth(column);
+        var tgridWidth = this.getTableWidth(this.parent.getColumns());
+        if (cWidth !== null) {
+            this.setWidth(cWidth, columnIndex);
+            if (this.parent.options.width !== 'auto' && this.parent.options.width.toString().indexOf('%') === -1) {
+                this.setMinwidthBycalculation(tgridWidth);
+            }
+            if ((this.parent.options.allowResizing && module === 'resize') || (this.parent.options.frozenColumns && this.parent.options.allowResizing)) {
+                this.setWidthToTable();
+            }
+            if (allowStopEvent) {
+                this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { index: columnIndex, width: cWidth, columnUid: column.uid });
+            }
+        }
+    };
+    ColumnWidthService.prototype.setWidth = function (width, index, clear) {
+        var chrome = 'chrome';
+        var webstore = 'webstore';
+        if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
+            !(Boolean(window[chrome]) && Boolean(window[chrome][webstore])) && this.parent.options.allowGrouping) {
+            var elementWidth = this.parent.element.offsetWidth;
+            width = parseInt(width, 10) / 100 * (elementWidth);
+        }
+        var header = this.parent.getHeaderTable();
+        var content = this.parent.getContentTable();
+        var fWidth = sf.base.formatUnit(width);
+        var headerCol;
+        var frzCols = this.parent.options.frozenColumns;
+        var mHdr = this.parent.getHeaderContent().querySelector('.e-movableheader');
+        var mCont = this.parent.getContent().querySelector('.e-movablecontent');
+        if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
+            headerCol = mHdr.querySelector('colgroup').children[index - frzCols];
+        }
+        else if (this.parent.options.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
+            var colGroup = mHdr.querySelector('colgroup');
+            headerCol = colGroup.children[(colGroup.children.length - 1) - index];
+        }
+        else {
+            headerCol = header.querySelector('colgroup').children[index];
+        }
+        if (headerCol && !clear) {
+            headerCol.style.width = fWidth;
+        }
+        else if (headerCol && clear) {
+            headerCol.style.width = ' ';
+        }
+        var contentCol;
+        if (frzCols && index >= frzCols) {
+            contentCol = this.parent.getContent().querySelector('.e-movablecontent')
+                .querySelector('colgroup').children[index - frzCols];
+        }
+        else if (this.parent.options.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
+            var colGroup = this.parent.getContent().querySelector('.e-movablecontent')
+                .querySelector('colgroup');
+            contentCol = colGroup.children[(colGroup.children.length - 1) - index];
+        }
+        else {
+            contentCol = content.querySelector('colgroup').children[index];
+        }
+        if (contentCol && !clear) {
+            contentCol.style.width = fWidth;
+        }
+        else if (contentCol && clear) {
+            contentCol.style.width = ' ';
+        }
+        if (this.parent.options.aggregatesCount != 0) {
+            var footerCol = void 0;
+            if (frzCols && index >= frzCols) {
+                var fmContent = this.parent.getFooterContent().querySelector('.e-movablefootercontent');
+                var fmColgroup = !sf.base.isNullOrUndefined(fmContent) ? fmContent.querySelector('colgroup') : null;
+                footerCol = !sf.base.isNullOrUndefined(fmColgroup) ? fmColgroup.children[index - frzCols] : null;
+            }
+            else {
+                var tcolGroup = this.parent.getFooterContent().querySelector('colgroup');
+                footerCol = !sf.base.isNullOrUndefined(tcolGroup) ? tcolGroup.children[index] : null;
+            }
+            if (contentCol && footerCol && !clear) {
+                footerCol.style.width = fWidth;
+            }
+            else if (contentCol && footerCol && clear) {
+                footerCol.style.width = ' ';
+            }
+        }
+        var edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
+        var editTableCol = [];
+        for (var i = 0; i < edit.length; i++) {
+            if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
+                for (var j = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                    editTableCol.push(edit[i].querySelector('colgroup').children[j]);
+                }
+            }
+        }
+        if (edit.length && editTableCol.length) {
+            editTableCol[index].style.width = fWidth;
+        }
+    };
+    ColumnWidthService.prototype.isWidthUndefined = function () {
+        var isWidUndefCount = this.parent.getColumns().filter(function (col) {
+            return sf.base.isNullOrUndefined(col.width) && sf.base.isNullOrUndefined(col.minWidth);
+        }).length;
+        return (this.parent.getColumns().length === isWidUndefCount);
+    };
+    ColumnWidthService.prototype.getWidth = function (column) {
+        //TODO: move it to c# side
+        // if (isNullOrUndefined(column.width) && this.parent.options.allowResizing
+        //     && isNullOrUndefined(column.minWidth) && !this.isWidthUndefined()) {
+        //     column.width = 200;
+        // }
+        // if (this.parent.options.frozenColumns && isNullOrUndefined(column.width) &&
+        //     column.index < this.parent.options.frozenColumns) {
+        //     column.width = 200;
+        // }
+        if (!column.width) {
+            return null;
+        }
+        var width = parseInt(column.width.toString(), 10);
+        if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {
+            return column.minWidth;
+        }
+        else if ((column.maxWidth && width > parseInt(column.maxWidth.toString(), 10))) {
+            return column.maxWidth;
+        }
+        else {
+            return column.width;
+        }
+    };
+    ColumnWidthService.prototype.getTableWidth = function (columns) {
+        var tWidth = 0;
+        for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
+            var column = columns_1[_i];
+            var cWidth = this.getWidth(column);
+            if (column.width === 'auto') {
+                cWidth = 0;
+            }
+            if (column.visible !== false && cWidth !== null) {
+                tWidth += parseInt(cWidth.toString(), 10);
+            }
+        }
+        return tWidth;
+    };
+    ColumnWidthService.prototype.calcMovableOrFreezeColWidth = function (tableType) {
+        var columns = this.parent.getColumns().slice();
+        if (tableType === 'movable') {
+            columns.splice(0, this.parent.options.frozenColumns);
+        }
+        else if (tableType === 'freeze') {
+            columns.splice(this.parent.options.frozenColumns, columns.length);
+        }
+        return sf.base.formatUnit(this.getTableWidth(columns));
+    };
+    ColumnWidthService.prototype.setWidthToFrozenTable = function () {
+        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
+        this.parent.getHeaderTable().style.width = freezeWidth;
+        this.parent.getContentTable().style.width = freezeWidth;
+        if (this.parent.getFooterContent() && this.parent.getFooterContent().querySelector('.e-frozenfootercontent').firstElementChild) {
+            this.parent.getFooterContent().querySelector('.e-frozenfootercontent').firstElementChild.style.width = freezeWidth;
+        }
+    };
+    ColumnWidthService.prototype.setWidthToMovableTable = function () {
+        var movableWidth = '';
+        var isColUndefined = this.parent.getColumns().filter(function (a) { return sf.base.isNullOrUndefined(a.width); }).length >= 1;
+        var isWidthAuto = this.parent.getColumns().filter(function (a) { return (a.width === 'auto'); }).length >= 1;
+        if (typeof this.parent.options.width === 'number' && !isColUndefined && !isWidthAuto) {
+            movableWidth = sf.base.formatUnit(this.parent.options.width - parseInt(this.calcMovableOrFreezeColWidth('freeze').split('px')[0], 10) - 5);
+        }
+        else if (!isColUndefined && !isWidthAuto) {
+            movableWidth = this.calcMovableOrFreezeColWidth('movable');
+        }
+        if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
+            this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild.style.width
+                = movableWidth;
+        }
+        if (this.parent.getFooterContent() && this.parent.getFooterContent().querySelector('.e-movablefootercontent').firstElementChild) {
+            this.parent.getFooterContent().querySelector('.e-movablefootercontent').firstElementChild.style.width = movableWidth;
+        }
+        this.parent.getContent().querySelector('.e-movablecontent').firstElementChild.style.width =
+            movableWidth;
+    };
+    ColumnWidthService.prototype.setWidthToFrozenEditTable = function () {
+        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
+        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[0].style.width = freezeWidth;
+    };
+    ColumnWidthService.prototype.setWidthToMovableEditTable = function () {
+        var movableWidth = this.calcMovableOrFreezeColWidth('movable');
+        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1].style.width = movableWidth;
+    };
+    ColumnWidthService.prototype.setWidthToTable = function () {
+        var tWidth = sf.base.formatUnit(this.getTableWidth(this.parent.getColumns()));
+        if (this.parent.options.frozenColumns) {
+            this.setWidthToFrozenTable();
+            this.setWidthToMovableTable();
+        }
+        else {
+            if (this.parent.options.hasDetailTemplate) {
+                //this.setColumnWidth(new Column({ width: '30px' }));
+                this.setWidth('30', 0);
+            }
+            this.parent.getHeaderTable().style.width = tWidth;
+            this.parent.getContentTable().style.width = tWidth;
+            if (this.parent.options.aggregatesCount != 0) {
+                this.parent.getFooterContent().querySelector(".e-table").style.width = tWidth;
+            }
+        }
+        var edit = this.parent.element.querySelector('.e-table.e-inline-edit');
+        if (edit && this.parent.options.frozenColumns) {
+            this.setWidthToFrozenEditTable();
+            this.setWidthToMovableEditTable();
+        }
+        else if (edit) {
+            edit.style.width = tWidth;
+        }
+    };
+    return ColumnWidthService;
+}());
+
+/**
  * Header drag and drop handling
  */
 var HeaderDragDrop = /** @class */ (function () {
@@ -1355,271 +1625,6 @@ var Reorder = /** @class */ (function () {
         return 'reorder';
     };
     return Reorder;
-}());
-
-/**
- * ColumnWidthService
- * @hidden
- */
-var ColumnWidthService = /** @class */ (function () {
-    function ColumnWidthService(parent) {
-        this.parent = parent;
-    }
-    ColumnWidthService.prototype.setMinwidthBycalculation = function (tWidth) {
-        var difference = 0;
-        var collection = this.parent.getColumns().filter(function (a) {
-            return sf.base.isNullOrUndefined(a.width) || a.width === 'auto';
-        });
-        if (collection.length) {
-            if (!sf.base.isNullOrUndefined(this.parent.options.width) && this.parent.options.width !== 'auto') {
-                difference = (typeof this.parent.options.width === 'string' ? parseInt(this.parent.options.width, 10) : this.parent.options.width) - tWidth;
-            }
-            var tmWidth = 0;
-            for (var _i = 0, collection_1 = collection; _i < collection_1.length; _i++) {
-                var cols = collection_1[_i];
-                tmWidth += !sf.base.isNullOrUndefined(cols.minWidth) ?
-                    ((typeof cols.minWidth === 'string' ? parseInt(cols.minWidth, 10) : cols.minWidth)) : 0;
-            }
-            for (var i = 0; i < collection.length; i++) {
-                if (tWidth === 0 && this.parent.options.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
-                    this.setUndefinedColumnWidth(collection);
-                }
-                if (tWidth !== 0 && difference < tmWidth) {
-                    this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
-                }
-                else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
-                }
-            }
-        }
-    };
-    ColumnWidthService.prototype.setUndefinedColumnWidth = function (collection) {
-        for (var k = 0; k < collection.length; k++) {
-            if (k !== collection.length - 1) {
-                collection[k].width = 200;
-                this.setWidth(200, this.parent.getColumnIndexByField(collection[k].field));
-            }
-        }
-    };
-    ColumnWidthService.prototype.setColumnWidth = function (column, index, module, allowStopEvent) {
-        if (allowStopEvent === void 0) { allowStopEvent = true; }
-        if (this.parent.getColumns().length < 1) {
-            return;
-        }
-        var columnIndex = sf.base.isNullOrUndefined(index) ? this.parent.getNormalizedColumnIndex(column.uid) : index;
-        var cWidth = this.getWidth(column);
-        var tgridWidth = this.getTableWidth(this.parent.getColumns());
-        if (cWidth !== null) {
-            this.setWidth(cWidth, columnIndex);
-            if (this.parent.options.width !== 'auto' && this.parent.options.width.toString().indexOf('%') === -1) {
-                this.setMinwidthBycalculation(tgridWidth);
-            }
-            if ((this.parent.options.allowResizing && module === 'resize') || (this.parent.options.frozenColumns && this.parent.options.allowResizing)) {
-                this.setWidthToTable();
-            }
-            if (allowStopEvent) {
-                this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { index: columnIndex, width: cWidth, columnUid: column.uid });
-            }
-        }
-    };
-    ColumnWidthService.prototype.setWidth = function (width, index, clear) {
-        var chrome = 'chrome';
-        var webstore = 'webstore';
-        if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
-            !(Boolean(window[chrome]) && Boolean(window[chrome][webstore])) && this.parent.options.allowGrouping) {
-            var elementWidth = this.parent.element.offsetWidth;
-            width = parseInt(width, 10) / 100 * (elementWidth);
-        }
-        var header = this.parent.getHeaderTable();
-        var content = this.parent.getContentTable();
-        var fWidth = sf.base.formatUnit(width);
-        var headerCol;
-        var frzCols = this.parent.options.frozenColumns;
-        var mHdr = this.parent.getHeaderContent().querySelector('.e-movableheader');
-        var mCont = this.parent.getContent().querySelector('.e-movablecontent');
-        if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
-            headerCol = mHdr.querySelector('colgroup').children[index - frzCols];
-        }
-        else if (this.parent.options.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
-            var colGroup = mHdr.querySelector('colgroup');
-            headerCol = colGroup.children[(colGroup.children.length - 1) - index];
-        }
-        else {
-            headerCol = header.querySelector('colgroup').children[index];
-        }
-        if (headerCol && !clear) {
-            headerCol.style.width = fWidth;
-        }
-        else if (headerCol && clear) {
-            headerCol.style.width = ' ';
-        }
-        var contentCol;
-        if (frzCols && index >= frzCols) {
-            contentCol = this.parent.getContent().querySelector('.e-movablecontent')
-                .querySelector('colgroup').children[index - frzCols];
-        }
-        else if (this.parent.options.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
-            var colGroup = this.parent.getContent().querySelector('.e-movablecontent')
-                .querySelector('colgroup');
-            contentCol = colGroup.children[(colGroup.children.length - 1) - index];
-        }
-        else {
-            contentCol = content.querySelector('colgroup').children[index];
-        }
-        if (contentCol && !clear) {
-            contentCol.style.width = fWidth;
-        }
-        else if (contentCol && clear) {
-            contentCol.style.width = ' ';
-        }
-        if (this.parent.options.aggregatesCount != 0) {
-            var footerCol = void 0;
-            if (frzCols && index >= frzCols) {
-                var fmContent = this.parent.getFooterContent().querySelector('.e-movablefootercontent');
-                var fmColgroup = !sf.base.isNullOrUndefined(fmContent) ? fmContent.querySelector('colgroup') : null;
-                footerCol = !sf.base.isNullOrUndefined(fmColgroup) ? fmColgroup.children[index - frzCols] : null;
-            }
-            else {
-                var tcolGroup = this.parent.getFooterContent().querySelector('colgroup');
-                footerCol = !sf.base.isNullOrUndefined(tcolGroup) ? tcolGroup.children[index] : null;
-            }
-            if (contentCol && footerCol && !clear) {
-                footerCol.style.width = fWidth;
-            }
-            else if (contentCol && footerCol && clear) {
-                footerCol.style.width = ' ';
-            }
-        }
-        var edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
-        var editTableCol = [];
-        for (var i = 0; i < edit.length; i++) {
-            if (parentsUntil(edit[i], 'e-grid').id === this.parent.element.id) {
-                for (var j = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
-                    editTableCol.push(edit[i].querySelector('colgroup').children[j]);
-                }
-            }
-        }
-        if (edit.length && editTableCol.length) {
-            editTableCol[index].style.width = fWidth;
-        }
-    };
-    ColumnWidthService.prototype.isWidthUndefined = function () {
-        var isWidUndefCount = this.parent.getColumns().filter(function (col) {
-            return sf.base.isNullOrUndefined(col.width) && sf.base.isNullOrUndefined(col.minWidth);
-        }).length;
-        return (this.parent.getColumns().length === isWidUndefCount);
-    };
-    ColumnWidthService.prototype.getWidth = function (column) {
-        //TODO: move it to c# side
-        // if (isNullOrUndefined(column.width) && this.parent.options.allowResizing
-        //     && isNullOrUndefined(column.minWidth) && !this.isWidthUndefined()) {
-        //     column.width = 200;
-        // }
-        // if (this.parent.options.frozenColumns && isNullOrUndefined(column.width) &&
-        //     column.index < this.parent.options.frozenColumns) {
-        //     column.width = 200;
-        // }
-        if (!column.width) {
-            return null;
-        }
-        var width = parseInt(column.width.toString(), 10);
-        if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {
-            return column.minWidth;
-        }
-        else if ((column.maxWidth && width > parseInt(column.maxWidth.toString(), 10))) {
-            return column.maxWidth;
-        }
-        else {
-            return column.width;
-        }
-    };
-    ColumnWidthService.prototype.getTableWidth = function (columns) {
-        var tWidth = 0;
-        for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
-            var column = columns_1[_i];
-            var cWidth = this.getWidth(column);
-            if (column.width === 'auto') {
-                cWidth = 0;
-            }
-            if (column.visible !== false && cWidth !== null) {
-                tWidth += parseInt(cWidth.toString(), 10);
-            }
-        }
-        return tWidth;
-    };
-    ColumnWidthService.prototype.calcMovableOrFreezeColWidth = function (tableType) {
-        var columns = this.parent.getColumns().slice();
-        if (tableType === 'movable') {
-            columns.splice(0, this.parent.options.frozenColumns);
-        }
-        else if (tableType === 'freeze') {
-            columns.splice(this.parent.options.frozenColumns, columns.length);
-        }
-        return sf.base.formatUnit(this.getTableWidth(columns));
-    };
-    ColumnWidthService.prototype.setWidthToFrozenTable = function () {
-        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
-        this.parent.getHeaderTable().style.width = freezeWidth;
-        this.parent.getContentTable().style.width = freezeWidth;
-        if (this.parent.getFooterContent() && this.parent.getFooterContent().querySelector('.e-frozenfootercontent').firstElementChild) {
-            this.parent.getFooterContent().querySelector('.e-frozenfootercontent').firstElementChild.style.width = freezeWidth;
-        }
-    };
-    ColumnWidthService.prototype.setWidthToMovableTable = function () {
-        var movableWidth = '';
-        var isColUndefined = this.parent.getColumns().filter(function (a) { return sf.base.isNullOrUndefined(a.width); }).length >= 1;
-        var isWidthAuto = this.parent.getColumns().filter(function (a) { return (a.width === 'auto'); }).length >= 1;
-        if (typeof this.parent.options.width === 'number' && !isColUndefined && !isWidthAuto) {
-            movableWidth = sf.base.formatUnit(this.parent.options.width - parseInt(this.calcMovableOrFreezeColWidth('freeze').split('px')[0], 10) - 5);
-        }
-        else if (!isColUndefined && !isWidthAuto) {
-            movableWidth = this.calcMovableOrFreezeColWidth('movable');
-        }
-        if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
-            this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild.style.width
-                = movableWidth;
-        }
-        if (this.parent.getFooterContent() && this.parent.getFooterContent().querySelector('.e-movablefootercontent').firstElementChild) {
-            this.parent.getFooterContent().querySelector('.e-movablefootercontent').firstElementChild.style.width = movableWidth;
-        }
-        this.parent.getContent().querySelector('.e-movablecontent').firstElementChild.style.width =
-            movableWidth;
-    };
-    ColumnWidthService.prototype.setWidthToFrozenEditTable = function () {
-        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
-        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[0].style.width = freezeWidth;
-    };
-    ColumnWidthService.prototype.setWidthToMovableEditTable = function () {
-        var movableWidth = this.calcMovableOrFreezeColWidth('movable');
-        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1].style.width = movableWidth;
-    };
-    ColumnWidthService.prototype.setWidthToTable = function () {
-        var tWidth = sf.base.formatUnit(this.getTableWidth(this.parent.getColumns()));
-        if (this.parent.options.frozenColumns) {
-            this.setWidthToFrozenTable();
-            this.setWidthToMovableTable();
-        }
-        else {
-            if (this.parent.options.hasDetailTemplate) {
-                //this.setColumnWidth(new Column({ width: '30px' }));
-                this.setWidth('30', 0);
-            }
-            this.parent.getHeaderTable().style.width = tWidth;
-            this.parent.getContentTable().style.width = tWidth;
-            if (this.parent.options.aggregatesCount != 0) {
-                this.parent.getFooterContent().querySelector(".e-table").style.width = tWidth;
-            }
-        }
-        var edit = this.parent.element.querySelector('.e-table.e-inline-edit');
-        if (edit && this.parent.options.frozenColumns) {
-            this.setWidthToFrozenEditTable();
-            this.setWidthToMovableEditTable();
-        }
-        else if (edit) {
-            edit.style.width = tWidth;
-        }
-    };
-    return ColumnWidthService;
 }());
 
 var resizeClassList = {
@@ -5094,6 +5099,7 @@ var SfGrid = /** @class */ (function () {
         this.toolTipModule = new CustomToolTip(this);
         this.rowDragAndDropModule = new RowDD(this);
         this.selectionModule = new Selection(this);
+        this.widthService = new ColumnWidthService(this);
         this.isRendered = this.options.isPrerendered;
         this.keyModule = new sf.base.KeyboardEvents(this.element, {
             keyAction: this.keyActionHandler.bind(this),
@@ -5116,6 +5122,7 @@ var SfGrid = /** @class */ (function () {
         else {
             this.clientActions();
         }
+        this.lastRowBorderCheck();
         this.wireEvents();
     };
     SfGrid.prototype.getHeaderContent = function () { return this.header; };
@@ -5423,6 +5430,13 @@ var SfGrid = /** @class */ (function () {
         this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
         this.dotNetRef.invokeMethodAsync('SetIndentWidth', indentWidth + 'px');
     };
+    SfGrid.prototype.resetColumnWidth = function () {
+        if ((this.options.width === 'auto' || typeof (this.options.width) === 'string' && this.options.width.indexOf('%') !== -1)
+            && this.getColumns().filter(function (col) { return (!col.width || col.width === 'auto') && col.minWidth; }).length > 0) {
+            var tgridWidth = this.widthService.getTableWidth(this.getColumns());
+            this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
+    };
     SfGrid.prototype.contentReady = function (action) {
         if (action === void 0) { action = null; }
         if (this.getColumns().some(function (x) { return x.autoFit; })) {
@@ -5436,9 +5450,21 @@ var SfGrid = /** @class */ (function () {
             this.virtualContentModule.onDataReady();
         }
         this.recalcIndentWidth();
+        this.resetColumnWidth();
+        this.lastRowBorderCheck();
         if (action === 'Paging') { //restore focus on paging.
             if (!parentsUntil(document.activeElement, 'e-grid')) {
                 this.element.focus();
+            }
+        }
+    };
+    SfGrid.prototype.lastRowBorderCheck = function () {
+        if (!this.options.enableVirtualization) {
+            if (this.getContent().querySelector(".e-table").scrollHeight < this.getContent().clientHeight) {
+                this.dotNetRef.invokeMethodAsync('LastRowBorder', true);
+            }
+            else {
+                this.dotNetRef.invokeMethodAsync('LastRowBorder', false);
             }
         }
     };
@@ -5449,6 +5475,9 @@ var SfGrid = /** @class */ (function () {
         sf.base.EventHandler.add(this.element, 'keydown', this.gridKeyDownHandler, this);
         sf.base.EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
         sf.base.EventHandler.add(document.body, 'keydown', this.documentKeyHandler, this);
+        if (this.options.allowEditing) {
+            sf.base.EventHandler.add(this.element, 'dblclick', this.doubleClickHandler, this);
+        }
     };
     SfGrid.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
@@ -5457,6 +5486,12 @@ var SfGrid = /** @class */ (function () {
         sf.base.EventHandler.remove(this.element, 'keydown', this.gridKeyDownHandler);
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
         sf.base.EventHandler.remove(document.body, 'keydown', this.documentKeyHandler);
+        sf.base.EventHandler.remove(this.element, 'dblclick', this.doubleClickHandler);
+    };
+    SfGrid.prototype.doubleClickHandler = function (e) {
+        if (e.target.tagName == 'TD') {
+            e.target.blur();
+        }
     };
     SfGrid.prototype.setOptions = function (newOptions, options) {
         var oldOptions = sf.base.extend(options, {});
@@ -5497,6 +5532,9 @@ var SfGrid = /** @class */ (function () {
         var datetimePicker = parentsUntil(e.target, 'e-datepicker');
         var daterangePicker = parentsUntil(e.target, 'e-daterangepicker') || parentsUntil(e.target, 'e-zoomin');
         if (!popupElement && !datetimePicker && !daterangePicker && !(e.target.classList.contains('e-cc-cancel')) && !(e.target.classList.contains('e-choosercheck')) && !(e.target.classList.contains('e-fltrcheck')) && !(e.target.classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+            if (this.element.querySelector('.e-datetimepicker') != null) {
+                this.element.querySelector('.e-datetimepicker').blur();
+            }
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     };
@@ -5537,8 +5575,8 @@ var SfGrid = /** @class */ (function () {
             }
         }
         //TODO: datepicker in dialog editing
-        if ((e.key == "Tab" || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter")
-            && e.target.classList.contains('e-datepicker')) {
+        if ((e.key == "Tab" || e.key == 'Escape' || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter")
+            && (e.target.classList.contains('e-datepicker') || e.target.classList.contains('e-datetimepicker'))) {
             e.target.blur();
         }
         if (e.key == "Shift" || e.key == "Control" || e.key == "Alt") {
@@ -5921,7 +5959,10 @@ var Grid = {
         if (!sf.base.isNullOrUndefined(element)) {
             element.focus();
         }
-    }
+    },
+    isMacDevice: function () {
+        return navigator.userAgent.indexOf("Mac OS") !== -1;
+    },
 };
 
 return Grid;

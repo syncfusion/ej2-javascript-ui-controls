@@ -292,6 +292,10 @@ export class CellRenderer implements ICellRenderer<Column> {
             }
         }
 
+        if (cell.isColumnSelected) {
+            classes.push(...['e-columnselection']);
+        }
+
         if (!isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
         }

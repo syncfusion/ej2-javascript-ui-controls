@@ -1,6 +1,6 @@
 
 import { BaseEventArgs } from '@syncfusion/ej2-base';
-import { AnnotationType } from './index';
+import { AnnotationType, CommentStatus } from './index';
 import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
 /**
  * Exports types used by PDF viewer.
@@ -19,6 +19,20 @@ export interface LoadEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     pageData: any;
+}
+
+/**
+ * This event arguments provides the necessary information about formField event.
+ */
+export interface FormFieldFocusOutEventArgs extends BaseEventArgs {
+    /**
+     * specifies the name of field.
+     */
+    fieldName: string;
+    /**
+     * specifies the value from formField.
+     */
+    value: string;
 }
 
 /**
@@ -290,7 +304,11 @@ export interface AnnotationRemoveEventArgs extends BaseEventArgs {
 /**
  * This event arguments provides the necessary information about comment event.
  */
-export interface CommentClickEventArgs extends BaseEventArgs {
+export interface CommentEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the id for the annotation comments
+     */
+    id: string;
     /**
      * Gets the text
      */
@@ -299,6 +317,10 @@ export interface CommentClickEventArgs extends BaseEventArgs {
      * specifies the annotation for the comment.
      */
     annotation: string;
+    /**
+     * specifies the status of the annotation
+     */
+    status?: CommentStatus;
 }
 
 /**

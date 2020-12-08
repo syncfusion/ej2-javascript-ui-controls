@@ -2007,3 +2007,68 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
         expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
     });   
 });
+describe('bug(EJ2-44058): When template is used, highlight is not working in the DropDown components', () => {
+    let atcObj: any;
+    let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+    let empList: { [key: string]: Object }[] = [
+        { Name: 'Andrew Fuller', Eimg: '7', Designation: 'Team Lead', Country: 'England' },
+        { Name: 'Anne Dodsworth', Eimg: '1', Designation: 'Developer', Country: 'USA' },
+        { Name: 'Janet Leverling', Eimg: '3', Designation: 'HR', Country: 'USA' },
+        { Name: 'Laura Callahan', Eimg: '2', Designation: 'Product Manager', Country: 'USA' },
+        { Name: 'Margaret Peacock', Eimg: '6', Designation: 'Developer', Country: 'USA' },
+        { Name: 'Michael Suyama', Eimg: '9', Designation: 'Team Lead', Country: 'USA' },
+        { Name: '111Nancy Davolio', Eimg: '4', Designation: 'hahahProduct Manager111', Country: 'USA11' },
+        { Name: 'Robert King', Eimg: '8', Designation: 'Developer ', Country: 'England' },
+        { Name: 'Steven Buchanan', Eimg: '10', Designation: 'CEO', Country: 'England' }    
+    ];    
+    beforeAll(() => {
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        atcObj.destroy();
+        element.remove();
+    });
+    it('highlight by StartsWith', (done) => {
+        atcObj = new AutoComplete({
+            dataSource: empList,
+            fields: { value: 'Name' },
+            highlight: true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
+        });
+        atcObj.appendTo(element);
+        atcObj.filterType = 'StartsWith';
+        atcObj.dataBind()
+        e.keyCode = 76;
+        atcObj.inputElement.value = 'J';
+        atcObj.onInput(e);
+        atcObj.onFilterUp(e);
+        setTimeout(() => {
+            let highlight: HTMLElement[] = atcObj.liCollections[0].querySelectorAll('.e-highlight');
+            expect(highlight.length === 1).toBe(true);
+            atcObj.hidePopup();
+            done();
+        }, 450);
+    });
+    it('highlight by EndsWith', (done) => {
+        atcObj = new AutoComplete({
+            dataSource: empList,
+            fields: { value: 'Name' },
+            highlight: true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
+        });
+        atcObj.appendTo(element);
+        atcObj.filterType = 'EndsWith';
+        atcObj.dataBind()
+        e.keyCode = 76;
+        atcObj.inputElement.value = 'K';
+        atcObj.onInput(e);
+        atcObj.onFilterUp(e);
+        setTimeout(() => {
+            let highlight: HTMLElement[] = atcObj.liCollections[0].querySelectorAll('.e-highlight');
+            expect(highlight.length === 1).toBe(true);
+            atcObj.hidePopup();
+            done();
+        }, 450);
+    });
+});

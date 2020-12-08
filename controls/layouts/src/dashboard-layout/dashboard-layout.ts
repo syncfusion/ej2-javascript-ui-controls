@@ -3103,7 +3103,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.updatePanelsDynamically(newProp.panels);
                         this.isRenderComplete = true;
                     } else if (!(newProp.panels[0] && newProp.panels.length)) {
+                        this.isRenderComplete = false;
                         this.updatePanelsDynamically(this.panels);
+                        this.isRenderComplete = true;
                     } else { this.restrictDynamicUpdate = false; }
                     break;
                 case 'columns':
@@ -3112,8 +3114,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.updatePanelsDynamically(newProp.panels);
                     }
                     this.setProperties({ columns: newProp.columns }, true);
-                    this.panelCollection = [];
-                    this.maxColumnValue = this.columns;
+                    this.panelCollection = []; this.maxColumnValue = this.columns;
                     this.calculateCellSize();
                     this.panels.forEach((panel: PanelModel) => {
                         this.setMinMaxValues(panel);

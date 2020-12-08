@@ -739,14 +739,10 @@ describe('Filtering module => ', () => {
                 }, done);
         });
         // test initial filtering scenario
-        it('showFilterBarStatus testing initial filter', (done: Function) => {
-            actionComplete = (args?: Object): void => {
+        it('showFilterBarStatus testing initial filter', () => {
             expect((<any>gridObj.getHeaderContent().querySelectorAll('#EmployeeID_filterBarcell')[0]).value).toBe('5');
             expect(gridObj.currentViewData.length).toBe(4);
             expect(gridObj.getPager().querySelectorAll('.e-pagerexternalmsg')[0].innerHTML).toBe('EmployeeID: 5');
-            done();
-            }
-            gridObj.actionComplete = actionComplete;
         });
 
         it('showFilterBarStatus testing with aditional filter', (done: Function) => {
@@ -1506,13 +1502,9 @@ describe('Filtering module => ', () => {
                     actionComplete: actionComplete,
                 }, done);
             });
-            it('Checking Initial filter', function (done) {
-                var dataBound = function (args: Object) {
+            it('Checking Initial filter', ()=> {
                     expect(gridObj.filterSettings.columns.length).toBe(5);
                     expect(gridObj.currentViewData.length).toBe(1);
-                    done();
-                };
-                gridObj.dataBound = dataBound;
             });
 
             it('Clear filtering with Excel filter', function (done) {

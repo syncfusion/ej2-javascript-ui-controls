@@ -170,17 +170,11 @@ describe('Foreign Key =>', () => {
         });
 
 // test case continuously failed so exculde this
-        it('clear Filtering', (done: Function) => {
-            gridObj.actionComplete = (args) => {
-                if (args.requestType === 'filtering') {
-                    expect(gridObj.filterSettings.columns.length).toBe(0);
-                    !(<any>gridObj.filterModule).filterModule.excelFilterBase.dialogObj.isDestroyed && 
-                    (<any>gridObj.filterModule).filterModule.closeDialog();
-                    done();
-                }
-            };
+        it('clear Filtering', () => {
             gridObj.filterSettings.columns = [];
-            gridObj.dataBind();
+            expect(gridObj.filterSettings.columns.length).toBe(0);
+            !(<any>gridObj.filterModule).filterModule.excelFilterBase.dialogObj.isDestroyed &&
+                (<any>gridObj.filterModule).filterModule.closeDialog();
         });
 
     });

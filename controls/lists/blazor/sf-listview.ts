@@ -495,7 +495,6 @@ class SfListView {
     }
 
     private spaceKeyHandler(e: KeyboardEventArgs): void {
-        e.preventDefault();
         if (this.enable && this.showCheckBox && this.curUlElement) {
             let li: Element = this.curUlElement.querySelector('.' + FOCUSED);
             if (!isNullOrUndefined(li) && isNullOrUndefined(li.querySelector('.' + CHECKED))) {

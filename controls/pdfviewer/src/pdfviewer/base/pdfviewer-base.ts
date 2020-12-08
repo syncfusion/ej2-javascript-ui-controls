@@ -3627,11 +3627,11 @@ public mouseDownHandler(event: MouseEvent): void {
     private renderElementsVirtualScroll(pageNumber: number): void {
         let lowerLimit: number = 1;
         let higherLimit: number = 3;
-        if (this.pageStopValue === 100) {
+        if (this.pageStopValue <= 200) {
             lowerLimit = 4;
             higherLimit = 4;
         } else {
-            lowerLimit = 1;
+            lowerLimit = 2;
             higherLimit = 3;
         }
         let pageValue: number = pageNumber + lowerLimit;
@@ -4413,7 +4413,11 @@ public mouseDownHandler(event: MouseEvent): void {
             if (this.pageSize[i] != null) {
                 let pageHeight: number = this.getPageHeight(i);
                 if (pageHeight < 150) {
-                    this.pageStopValue = 100;
+                    this.pageStopValue = 75;
+                } else if (pageHeight >= 150 && pageHeight < 300) {
+                    this.pageStopValue = 125;
+                } else if (pageHeight >= 300 && pageHeight < 500) {
+                    this.pageStopValue = 200;
                 } else {
                     this.pageStopValue = 300;
                 }
@@ -6319,7 +6323,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 }
                 let obj: IElement = findActiveElement(evt, this, this.pdfViewer);
                 // tslint:disable-next-line:max-line-length
-                if ((this.isShapeAnnotationModule() && !this.isCalibrateAnnotationModule()) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
+                if ((this.isShapeAnnotationModule() && this.isCalibrateAnnotationModule()) && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
                     this.pdfViewer.annotation.onShapesMouseup(obj as PdfAnnotationBaseModel, evt);
                 }
                 this.isAnnotationDrawn = false;

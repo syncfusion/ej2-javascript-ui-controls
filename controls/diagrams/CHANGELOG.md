@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.3.53 (2020-12-08)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#301443` - This issue "update annotation for BPMN node, the node position gets changed " has been fixed.
+
 ## 18.3.52 (2020-12-01)
 
 ### Diagram

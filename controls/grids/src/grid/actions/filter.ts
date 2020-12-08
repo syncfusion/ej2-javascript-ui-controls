@@ -427,6 +427,17 @@ export class Filter implements IAction {
         this.values[this.column.field] = this.setFormatForFlColumn(getFlvalue, this.column);
     }
 
+    // To skip the second time request to server while applying initial filtering - EJ2-44361
+    private skipUid(col: object[]): boolean {
+        let flag: boolean = true;
+        let colLen: number = Object.keys((col)).length;
+        for (let i: number = 0; i < colLen ; i++) {
+            let key: Object[] = Object.keys(col[i]);
+            if (key.length === 1 && key[0] === 'uid') {
+                flag = false; } }
+        return flag;
+    }
+
     private onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) {
             return;
@@ -434,7 +445,8 @@ export class Filter implements IAction {
         for (let prop of Object.keys(e.properties)) {
             switch (prop) {
                 case 'columns':
-                    if (this.contentRefresh) {
+                    let col: string = 'columns';
+                    if (this.contentRefresh && this.skipUid(e.properties[col])) {
                         this.parent.notify(events.modelChanged, {
                             currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
                                 this.column.field : undefined, action: 'filter',

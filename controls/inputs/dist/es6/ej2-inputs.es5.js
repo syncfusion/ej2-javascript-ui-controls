@@ -7388,7 +7388,7 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         else if (input.hasAttribute('data-msg-containerid') === true) {
             // Append error message into custom div element
             var containerId = input.getAttribute('data-msg-containerid');
-            var divElement = this.element.querySelector('#' + containerId);
+            var divElement = select('#' + containerId, this.element);
             divElement.appendChild(errorElement);
         }
         else if (this.customPlacement != null) {
@@ -8193,7 +8193,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
         if (this.dropArea) {
             this.dropZoneElement = (typeof (this.dropArea) !== 'string') ? this.dropArea :
-                document.querySelector(this.dropArea);
+                select(this.dropArea, document);
             var element = this.element;
             var enableDropText = false;
             while (element.parentNode) {
@@ -9878,8 +9878,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.templateComplier = function (uploadTemplate) {
         if (uploadTemplate) {
             try {
-                if (document.querySelectorAll(uploadTemplate).length) {
-                    return compile(document.querySelector(uploadTemplate).innerHTML.trim());
+                if (selectAll(uploadTemplate, document).length) {
+                    return compile(select(uploadTemplate, document).innerHTML.trim());
                 }
             }
             catch (exception) {

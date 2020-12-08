@@ -159,7 +159,7 @@ export class StampAnnotation {
                         currentLocation = this.calculateImagePosition(position, true);
                     }
                     // tslint:disable-next-line
-                    let rotation: number = this.retrieveRotationAngle(annotation['RotateAngle']);
+                    let rotation: number = annotation['RotateAngle'];
                     for (let d: number = 0; d < Apperance.length; d++) {
                         // tslint:disable-next-line
                         let stampShapes: any = Apperance[d];
@@ -197,7 +197,7 @@ export class StampAnnotation {
                         currentLocation = this.calculateImagePosition(position, true);
                     }
                     // tslint:disable-next-line
-                    let rotation: number = this.retrieveRotationAngle(annotation['RotateAngle']);
+                    let rotation: number = annotation['RotateAngle'];
                     // tslint:disable-next-line:max-line-length
                     this.renderStamp(currentLocation.left, currentLocation.top, currentLocation.width, currentLocation.height, pageIndex, opacity, rotation, canvass, annotation);
                     this.isExistingStamp = false;
@@ -250,11 +250,17 @@ export class StampAnnotation {
         // tslint:disable-next-line:max-line-length
         let author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
         if (this.pdfViewerBase.isDynamicStamp) {
-            // tslint:disable-next-line
-            let today: any = (new Date()).toString().split(' ').splice(1, 3).join(' ');
-            // tslint:disable-next-line
-            let time: any = (new Date()).toLocaleTimeString();
-            this.dynamicText = 'By ' + author + ' at ' + time + ' , ' + today + '   ';
+            if (this.pdfViewer.dateTimeFormat) {
+                let dateTime: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                // tslint:disable-next-line:max-line-length
+                this.dynamicText = 'By ' + author + ' at ' + dateTime.split(' ')[1] + dateTime.split(' ')[2] + ' , ' + dateTime.split(' ')[0]  + ' ';
+            } else {
+                // tslint:disable-next-line
+                let today: any = (new Date()).toString().split(' ').splice(1, 3).join(' ');
+                // tslint:disable-next-line
+                let time: any = (new Date()).toLocaleTimeString();
+                this.dynamicText = 'By ' + author + ' at ' + time + ' , ' + today + '   ';
+            }
         }
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
@@ -629,6 +635,7 @@ export class StampAnnotation {
         let annotationObject: IStampAnnotation = null;
         let annotationName: string;
         let author: string;
+        let isCommentsLock: boolean;
         // tslint:disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
         // tslint:disable-next-line
@@ -636,6 +643,7 @@ export class StampAnnotation {
         if (isExistingStamp) {
             annotationName = annotation.AnnotName;
             author = annotation.Author;
+            isCommentsLock = annotation.IsCommentLock;
             // tslint:disable-next-line:max-line-length
             annotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
             // tslint:disable-next-line:max-line-length
@@ -648,12 +656,12 @@ export class StampAnnotation {
             annotationName = this.pdfViewer.annotation.createGUID();
             // tslint:disable-next-line:max-line-length
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
+            isCommentsLock = false;
         }
         if (!modifiedDate) {
             modifiedDate = annotation.ModifiedDate ? annotation.ModifiedDate : new Date().toLocaleString();
         }
         let annotationAddMode: string = annotation ? annotation.annotationAddMode : 'UI Drawn Annotation ';
-        let isCommentsLock: boolean = annotation.IsCommentLock ? annotation.IsCommentLock : false;
         let isPrint: boolean;
         if (!isExistingStamp) {
             isPrint = this.pdfViewer.customStampSettings.isPrint;
@@ -702,24 +710,6 @@ export class StampAnnotation {
             }
         }
         this.pdfViewerBase.customStampCount += 1;
-    }
-    private retrieveRotationAngle(angleString: number): number {
-        let angle: number = 0;
-        switch (angleString) {
-            case 0:
-                angle = 0;
-                break;
-            case 1:
-                angle = 90;
-                break;
-            case 2:
-                angle = 180;
-                break;
-            case 3:
-                angle = 270;
-                break;
-        }
-        return angle;
     }
     /**
      * @private

@@ -6849,8 +6849,11 @@ describe('DateRangePicker', () => {
             rightCalendarTitleClick();
             if (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling) {
                 ((document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling)as HTMLElement).click();
-            } else {
+            } else if(<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').parentElement.previousElementSibling) {
                 ((document.querySelector('.e-right-calendar .e-focused-date').parentElement.previousElementSibling.lastElementChild) as HTMLElement).click();
+            } else {
+                document.querySelector('.e-right-calendar .e-header .e-prev').dispatchEvent(clickEvent);
+                ((document.querySelector('.e-right-calendar .e-focused-date').parentElement.parentElement.lastElementChild.lastElementChild) as HTMLElement).click();
             }
             expect(document.querySelectorAll('.e-start-date').length).toBe(2)
             expect((<HTMLElement>document.querySelector('.e-start-date')).textContent).toBe('' + new Date().getDate())

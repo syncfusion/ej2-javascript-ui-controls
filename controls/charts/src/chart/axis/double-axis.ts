@@ -321,7 +321,10 @@ export class Double {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
+        let duplicateTempInterval: number;
+        for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval);
+                tempInterval += axis.visibleRange.interval) {
+            duplicateTempInterval = tempInterval;
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);

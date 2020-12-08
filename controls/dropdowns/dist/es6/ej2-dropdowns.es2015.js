@@ -114,7 +114,7 @@ function findTextNode(element, pattern, isBlazor$$1) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
             }
             else {
-                element.innerHTML = element.innerHTML.replace(pattern, '<span class="e-highlight">$1</span>');
+                element.innerHTML = (element.innerHTML).trim().replace(pattern, '<span class="e-highlight">$1</span>');
             }
             break;
         }
@@ -323,7 +323,7 @@ let DropDownBase = class DropDownBase extends Component {
         let checkTemplate = false;
         if (baseTemplate) {
             try {
-                checkTemplate = (document.querySelectorAll(baseTemplate).length) ? true : false;
+                checkTemplate = (select(baseTemplate, document).length) ? true : false;
             }
             catch (exception) {
                 checkTemplate = false;
@@ -341,7 +341,7 @@ let DropDownBase = class DropDownBase extends Component {
             ele.innerHTML = '';
             let tempaltecheck = this.templateCompiler(template);
             if (tempaltecheck) {
-                compiledString = compile(document.querySelector(template).innerHTML.trim());
+                compiledString = compile(select(template, document).innerHTML.trim());
             }
             else {
                 compiledString = compile(template);
@@ -740,7 +740,7 @@ let DropDownBase = class DropDownBase extends Component {
             let headerItems = listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             let groupcheck = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
-                let groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
+                let groupValue = select(this.groupTemplate, document).innerHTML.trim();
                 let tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option, this);
             }
             else {
@@ -854,7 +854,7 @@ let DropDownBase = class DropDownBase extends Component {
         option.isStringTemplate = this.isStringTemplate;
         let itemcheck = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
-            let itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
+            let itemValue = select(this.itemTemplate, document).innerHTML.trim();
             return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option, this);
         }
         else {
@@ -2168,7 +2168,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     ;
     checkSelector(id) {
-        return '#' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1');
+        return '[id="' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1') + '"]';
     }
     onDocumentClick(e) {
         let target = e.target;
@@ -3380,7 +3380,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         });
     }
     destroyPopup() {
-        let popupHolderEle = document.querySelector('#' + this.element.id + '_popup_holder');
+        let popupHolderEle = select('#' + this.element.id + '_popup_holder', document);
         if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
             popupHolderEle.appendChild(this.serverPopupEle);
             // tslint:disable-next-line
@@ -3530,7 +3530,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         let footercheck = this.dropdownCompiler(this.footerTemplate);
         if (footercheck) {
-            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.footerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = compile(this.footerTemplate);
@@ -3556,7 +3556,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         let headercheck = this.dropdownCompiler(this.headerTemplate);
         if (headercheck) {
-            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.headerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = compile(this.headerTemplate);
@@ -3859,7 +3859,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (!this.isServerBlazor) {
             this.invokeRenderPopup();
         }
-        let popupHolderEle = !this.isFiltering() || document.querySelector('#' + this.element.id + '_popup_holder');
+        let popupHolderEle = !this.isFiltering() || select('#' + this.element.id + '_popup_holder', document);
         let isDropdownComp = this.getModuleName() === 'dropdownlist' || !this.isFiltering();
         if (this.isServerBlazor && popupHolderEle && !isNullOrUndefined(this.list) && isDropdownComp) {
             this.invokeRenderPopup();
@@ -10187,7 +10187,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let checkTemplate = false;
         if (multiselectTemplate) {
             try {
-                checkTemplate = (document.querySelectorAll(multiselectTemplate).length) ? true : false;
+                checkTemplate = (select(multiselectTemplate, document).length) ? true : false;
             }
             catch (exception) {
                 checkTemplate = false;
@@ -10211,7 +10211,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let valuecheck = this.multiCompiler(this.valueTemplate);
             if (valuecheck) {
-                compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+                compiledString = compile(select(this.valueTemplate, document).innerHTML.trim());
             }
             else {
                 compiledString = compile(this.valueTemplate);
@@ -10415,7 +10415,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         addClass([this.header], HEADER$1);
         let headercheck = this.multiCompiler(this.headerTemplate);
         if (headercheck) {
-            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.headerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = compile(this.headerTemplate);
@@ -10445,7 +10445,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         addClass([this.footer], FOOTER$1);
         let footercheck = this.multiCompiler(this.footerTemplate);
         if (footercheck) {
-            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.footerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = compile(this.footerTemplate);
@@ -11149,7 +11149,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     onDocumentClick(e) {
         if (this.mode !== 'CheckBox') {
             let target = e.target;
-            if (!(!isNullOrUndefined(this.popupObj) && closest(target, '#' + this.popupObj.element.id)) &&
+            if (!(!isNullOrUndefined(this.popupObj) && closest(target, '[id="' + this.popupObj.element.id + '"]')) &&
                 !this.overAllWrapper.contains(e.target)) {
                 this.scrollFocusStatus = false;
             }
@@ -11321,16 +11321,16 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         }
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
-                        wrapperleng = this.viewWrapper.offsetWidth;
+                        wrapperleng = this.viewWrapper.offsetWidth +
+                            parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             let textArr = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            if (this.viewWrapper.innerHTML === '') {
-                                remaining++;
-                            }
-                            wrapperleng = this.viewWrapper.offsetWidth;
+                            remaining++;
+                            wrapperleng = this.viewWrapper.offsetWidth +
+                                parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         }
                         break;
                     }
@@ -12448,8 +12448,8 @@ class CheckBoxSelection {
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
             if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
-                !this.parent.isDynamicDataChange) || (this.parent.isDynamicDataChange &&
-                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
+                !(this.parent.isDynamicDataChange && isBlazor())) || (this.parent.isDynamicDataChange &&
+                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1 && isBlazor())) {
                 this.checkAllParent.style.display = 'none';
             }
             else {
@@ -12700,12 +12700,12 @@ class CheckBoxSelection {
     onDocumentClick(e) {
         if (this.parent.getLocaleName() !== 'listbox') {
             let target = e.target;
-            if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
+            if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) {
                 if (!(this.filterInput && this.filterInput.value !== '')) {
                     e.preventDefault();
                 }
             }
-            if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) &&
+            if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) &&
                 !this.parent.overAllWrapper.contains(e.target)) {
                 if (this.parent.overAllWrapper.classList.contains(dropDownBaseClasses.focus) || this.parent.isPopupOpen()) {
                     this.parent.inputFocus = false;

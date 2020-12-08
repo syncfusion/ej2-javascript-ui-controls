@@ -954,7 +954,7 @@ export class DateTimePicker extends DatePicker {
             (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
                 event.preventDefault();
             }
-        if (!(closest(target, '#' + (this.popupObject && this.popupObject.element.id))) && target !== this.inputElement
+        if (!(closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
             && target !== this.timeIcon && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
                 this.hide(event);

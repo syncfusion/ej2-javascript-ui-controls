@@ -5,6 +5,7 @@ import { Scroll } from './scroll';
 import { Freeze } from './freeze';
 import { BlazorGridElement, IGridOptions, Column, ScrollPositionType } from './interfaces';
 import { iterateArrayOrObject, parentsUntil, getRowHeight } from './util';
+import { ColumnWidthService } from './width-controller';
 import { HeaderDragDrop } from './header-drag-drop';
 import { ContentDragDrop } from './content-drag-drop';
 import { Reorder } from './reorder';
@@ -50,6 +51,7 @@ export class SfGrid {
     private toolTipModule: CustomToolTip;
     public rowDragAndDropModule: RowDD;
     public selectionModule : Selection;
+    private widthService: ColumnWidthService;
 
     private stackedColumn: Column;
     private inViewIndexes: number[] = [];
@@ -90,6 +92,7 @@ export class SfGrid {
         this.toolTipModule = new CustomToolTip(this);
         this.rowDragAndDropModule = new RowDD(this);
         this.selectionModule = new Selection(this);
+        this.widthService = new ColumnWidthService(this);        
         this.isRendered = this.options.isPrerendered;
         this.keyModule = new KeyboardEvents(
             this.element,
@@ -114,6 +117,7 @@ export class SfGrid {
         } else {
             this.clientActions();
         }
+        this.lastRowBorderCheck();
         this.wireEvents();
     }
 
@@ -452,6 +456,14 @@ export class SfGrid {
         this.dotNetRef.invokeMethodAsync('SetIndentWidth', indentWidth + 'px');
     }
 
+    public resetColumnWidth(): void {
+        if ((this.options.width === 'auto' || typeof (this.options.width) === 'string' && this.options.width.indexOf('%') !== -1)
+            && this.getColumns().filter((col: Column) => (!col.width || col.width === 'auto') && col.minWidth).length > 0) {
+            let tgridWidth: number = this.widthService.getTableWidth(this.getColumns());
+            this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
+    }
+
     public contentReady(action: string = null): void {
         if (this.getColumns().some(x => x.autoFit)) {
             this.resizeModule.autoFit();
@@ -464,9 +476,21 @@ export class SfGrid {
             this.virtualContentModule.onDataReady();
         }
         this.recalcIndentWidth();
+        this.resetColumnWidth();
+        this.lastRowBorderCheck();
         if (action === 'Paging') { //restore focus on paging.
             if (!parentsUntil(document.activeElement, 'e-grid')) {
                 this.element.focus();
+            }
+        }
+    }
+
+    public lastRowBorderCheck(): void {
+        if (!this.options.enableVirtualization) {
+            if (this.getContent().querySelector(".e-table").scrollHeight < this.getContent().clientHeight) {
+                this.dotNetRef.invokeMethodAsync('LastRowBorder', true);
+            } else {
+                this.dotNetRef.invokeMethodAsync('LastRowBorder', false);
             }
         }
     }
@@ -478,6 +502,9 @@ export class SfGrid {
         EventHandler.add(this.element,'keydown', this.gridKeyDownHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
         EventHandler.add(document.body,'keydown', this.documentKeyHandler, this);
+        if (this.options.allowEditing) {
+            EventHandler.add(this.element, 'dblclick', this.doubleClickHandler, this);
+        }
     }
 
     public unWireEvents(): void {
@@ -487,6 +514,13 @@ export class SfGrid {
         EventHandler.remove(this.element, 'keydown', this.gridKeyDownHandler);
         EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
         EventHandler.remove(document.body,'keydown', this.documentKeyHandler);
+        EventHandler.remove(this.element, 'dblclick', this.doubleClickHandler);
+    }
+
+    private doubleClickHandler(e: MouseEventArgs): void {
+        if ((e.target as HTMLElement).tagName == 'TD') {
+            (e.target as HTMLElement).blur();
+        }
     }
 
     public setOptions(newOptions: IGridOptions, options: IGridOptions) {
@@ -529,6 +563,9 @@ export class SfGrid {
         let datetimePicker: Element = parentsUntil(<Element>e.target, 'e-datepicker');
         let daterangePicker: Element = parentsUntil(<Element>e.target, 'e-daterangepicker') || parentsUntil(<Element>e.target, 'e-zoomin');
         if (!popupElement && !datetimePicker && !daterangePicker && !((<Element>e.target).classList.contains('e-cc-cancel')) && !((<Element>e.target).classList.contains('e-choosercheck')) && !((<Element>e.target).classList.contains('e-fltrcheck')) && !((<Element>e.target).classList.contains('e-icon-filter')) && !CCButton && (this.element.querySelectorAll('.e-filter-popup.e-popup-open').length || this.element.querySelectorAll('.e-ccdlg.e-popup-open').length)) {
+            if (this.element.querySelector('.e-datetimepicker') != null) {
+                (this.element.querySelector('.e-datetimepicker') as HTMLElement).blur();
+            }
             this.dotNetRef.invokeMethodAsync('FilterPopupClose');
         }
     }
@@ -576,8 +613,8 @@ export class SfGrid {
         }
 
         //TODO: datepicker in dialog editing
-        if ((e.key == "Tab" || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter") 
-            && (e.target as HTMLElement).classList.contains('e-datepicker')) {
+        if ((e.key == "Tab" || e.key == 'Escape' || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter") 
+            && ((e.target as HTMLElement).classList.contains('e-datepicker') || (e.target as HTMLElement).classList.contains('e-datetimepicker'))) {
             (e.target as HTMLElement).blur();
         }
 

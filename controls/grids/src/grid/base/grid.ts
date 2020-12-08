@@ -83,6 +83,7 @@ import { ILogger } from '../actions/logger';
 import { gridObserver, BlazorAction } from '../actions/blazor-action';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
+import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';
 
 
 /** 
@@ -226,7 +227,7 @@ export class Predicate extends ChildProperty<Predicate> {
      * If ignoreAccent is set to true, then filter ignores the diacritic characters or accents while filtering.
      * @default false
      */
-    @Property()
+    @Property(false)
     public ignoreAccent: boolean;
 
     /**   
@@ -1783,6 +1784,34 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public cellDeselected: EmitType<CellDeselectEventArgs>;
 
+    /** 
+     * Triggers before column selection occurs.
+     * @event
+     */
+    @Event()
+    public columnSelecting: EmitType<ColumnSelectingEventArgs>;
+
+    /** 
+     * Triggers after a column is selected.
+     * @event
+     */
+    @Event()
+    public columnSelected: EmitType<ColumnSelectEventArgs>;
+
+    /** 
+     * Triggers before deselecting the selected column.
+     * @event 
+     */
+    @Event()
+    public columnDeselecting: EmitType<ColumnDeselectEventArgs>;
+
+    /**
+     * Triggers when a selected column is deselected.
+     * @event
+     */
+    @Event()
+    public columnDeselected: EmitType<ColumnDeselectEventArgs>;
+
     /**  
      * Triggers when column header element drag (move) starts. 
      * @event
@@ -2919,7 +2948,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (checkCursor) { this.updateDefaultCursor(); }
         if (requireGridRefresh) {
-            if (freezeRefresh || this.frozenColumns || this.frozenRows) {
+            if (freezeRefresh || this.getFrozenColumns() || this.frozenRows) {
                 if (!(isBlazor() && this.isServerRendered)) {
                     this.freezeRefresh();
                 }
@@ -3955,6 +3984,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getSelectedRecords(): Object[] {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
+    }
+
+    /**
+     * Gets the collection of selected columns uid. 
+     * @return {string[]}
+     * @isGenericType true
+     */
+    public getSelectedColumnsUid(): string[] {
+        let uid: string[] = [];
+        if (this.selectionModule) {
+            this.selectionModule.selectedColumnsIndexes.filter((i: number) => uid.push(this.getColumns()[i].uid));
+        }
+        return uid;
     }
 
     /**

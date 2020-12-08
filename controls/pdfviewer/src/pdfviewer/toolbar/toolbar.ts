@@ -658,16 +658,20 @@ export class Toolbar {
      */
     public updateCurrentPage(pageIndex: number): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            if (this.currentPageBox.value === pageIndex) {
-                (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
+            if (!isBlazor()) {
+                if (this.currentPageBox.value === pageIndex) {
+                    (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
+                }
+                this.currentPageBox.value = pageIndex;
+            } else {
+                this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
             }
-            this.currentPageBox.value = pageIndex;
+            this.pdfViewerBase.currentPageNumber = pageIndex;
+            this.pdfViewer.currentPageNumber = pageIndex;
         } else {
             this.pdfViewerBase.mobileSpanContainer.innerHTML = pageIndex.toString();
             this.pdfViewerBase.mobilecurrentPageContainer.innerHTML = pageIndex.toString();
         }
-        this.pdfViewerBase.currentPageNumber = pageIndex;
-        this.pdfViewer.currentPageNumber = pageIndex;
     }
     /**
      * @private

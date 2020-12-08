@@ -2036,7 +2036,6 @@ var KanbanDialog = /** @class */ (function () {
         }
     };
     KanbanDialog.prototype.destroy = function () {
-        this.parent.resetTemplates();
         this.destroyToolTip();
         this.destroyComponents();
         if (this.dialogObj) {

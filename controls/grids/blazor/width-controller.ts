@@ -18,11 +18,14 @@ export class ColumnWidthService {
     public setMinwidthBycalculation(tWidth?: number): void {
         let difference: number = 0;
         let collection: Column[] = this.parent.getColumns().filter((a: Column) => {
-            return isNullOrUndefined(a.width) || a.width === 'auto';
+            return isNullOrUndefined(a.width) || a.width === 'auto' || a.width === '';
         });
         if (collection.length) {
             if (!isNullOrUndefined(this.parent.options.width) && this.parent.options.width !== 'auto') {
                 difference = (typeof this.parent.options.width === 'string' ? parseInt(this.parent.options.width, 10) : this.parent.options.width) - tWidth;
+            }
+            else {
+                difference = this.parent.element.getBoundingClientRect().width - tWidth;
             }
             let tmWidth: number = 0;
             for (let cols of collection) {
@@ -30,16 +33,18 @@ export class ColumnWidthService {
                 tmWidth += !isNullOrUndefined(cols.minWidth) ?
                     ((typeof cols.minWidth === 'string' ? parseInt(cols.minWidth, 10) : cols.minWidth)) : 0;
             }
+            let minWidthValues = {};
             for (let i: number = 0; i < collection.length; i++) {
                 if (tWidth === 0 && this.parent.options.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
                     this.setUndefinedColumnWidth(collection);
                 }
                 if (tWidth !== 0 && difference < tmWidth) {
-                    this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
+                    minWidthValues[collection[i].field] = collection[i].minWidth + 'px';
                 } else if (tWidth !== 0 && difference > tmWidth) {
-                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
+                    minWidthValues[collection[i].field] = '';
                 }
             }
+            this.parent.dotNetRef.invokeMethodAsync('SetMinWidth', minWidthValues);
         }
     }
 

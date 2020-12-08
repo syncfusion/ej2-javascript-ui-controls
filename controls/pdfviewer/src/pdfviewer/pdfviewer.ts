@@ -2,7 +2,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, SignatureIndicatorSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // tslint:disable-next-line:max-line-length
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel , InkAnnotationSettingsModel } from './pdfviewer-model';
@@ -12,7 +12,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -37,7 +37,7 @@ import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, CommentClickEventArgs, BeforeAddFreeTextEventArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -126,6 +126,69 @@ export class AnnotationToolbarSettings extends ChildProperty<AnnotationToolbarSe
      */
     @Property()
     public annotationToolbarItem: AnnotationToolbarItem[];
+}
+
+/**
+ * The `SignatureFieldSettings` module is used to set the properties of signature field in PDF Viewer
+ */
+export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings> {
+
+    /**
+     * Specifies the properties of the signature indicator in the signature field.
+     */
+    @Property()
+    public signatureIndicatorSettings: SignatureIndicatorSettingsModel;
+}
+
+/**
+ * The `SignatureIndicatorSettings` module is used to provide the properties of signature Indicator in the signature field
+ */
+export class SignatureIndicatorSettings extends ChildProperty<SignatureIndicatorSettings> {
+
+    /**
+     * Specifies the opacity of the signature indicator.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Specifies the color of the signature indicator.
+     */
+    @Property('orange')
+    public backgroundColor: string;
+
+    /**
+     * Specifies the width of the signature indicator. Maximum width is half the width of the signature field. 
+     * Minimum width is the default value.
+     */
+    @Property(19)
+    public width: number;
+
+    /**
+     * Specifies the height of the signature indicator. Maximum height is half the height of the signature field. 
+     * Minimum height is the default value.
+     */
+    @Property(10)
+    public height: number;
+
+    /**
+     * Specifies the signature Indicator's font size. The maximum size of the font is half the height of the signature field.
+     */
+    @Property(10)
+    public fontSize: number;
+
+    /**
+     * Specifies the text of the signature Indicator.
+     */
+    @Property('Sign')
+    public text: string;
+
+    /**
+     * Specifies the color of the text of signature indicator.
+     */
+    @Property('black')
+    public color: string;
+
 }
 
 /**
@@ -2259,6 +2322,19 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(false)
     public isReadOnly: boolean;
+
+    /**
+     * specifies the type of the signature.
+     */
+    @Property([''])
+    public signatureType: SignatureType[];
+
+    /**
+     * specifies the fontName of the signature.
+     */
+    @Property('')
+    public fontName: string;
+
 }
 /**
  * The `ContextMenuSettings` is used to show the context menu of PDF document.
@@ -2553,7 +2629,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Gets the form fields present in the loaded PDF document. It used to get the form fields id, name, type and it's values.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ name: '', id: '', type: '', isReadOnly: false, value: '' })
+    @Property({ name: '', id: '', type: '', isReadOnly: false, value: '', signatureType: [''], fontName: '' })
     public formFieldCollections: FormFieldModel[];
 
     /**
@@ -2646,6 +2722,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(false)
     public enableDesktopMode: boolean;
+
+    /**
+     * Gets or sets a boolean value to show or hide the save signature check box option in the signature dialog. 
+     * FALSE by default
+     * @default false
+     */
+    @Property(false)
+    public hideSaveSignature: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -2760,6 +2844,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public isMaintainSelection: boolean;
 
     /**
+     * Customize desired date and time format
+     */
+    @Property('M/d/yyyy h:mm:ss a')
+    public dateTimeFormat: string;
+
+    /**
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
@@ -2787,6 +2877,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
     @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts' })
     public serverActionSettings: ServerActionSettingsModel;
+
+    /**
+     * Defines the  properties of signature field
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ signatureIndicatorSettings: { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: 'Sign', color: 'black'}})
+    public signatureFieldSettings: SignatureFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
@@ -3524,7 +3621,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @blazorProperty 'commentAdd'
      */
     @Event()
-    public commentAdd: EmitType<CommentClickEventArgs>;
+    public commentAdd: EmitType<CommentEventArgs>;
 
     /**
      * Triggers when the comment is edited for the annotation in the comment panel.
@@ -3532,7 +3629,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @blazorProperty 'commentEdit'
      */
     @Event()
-    public commentEdit: EmitType<CommentClickEventArgs>;
+    public commentEdit: EmitType<CommentEventArgs>;
 
     /**
      * Triggers when the comment is deleted for the annotation in the comment panel.
@@ -3540,7 +3637,23 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @blazorProperty 'commentDelete'
      */
     @Event()
-    public commentDelete: EmitType<CommentClickEventArgs>;
+    public commentDelete: EmitType<CommentEventArgs>;
+
+    /**
+     * Triggers when the comment is selected for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentSelect
+     */
+    @Event()
+    public commentSelect: EmitType<CommentEventArgs>;
+
+    /**
+     * Triggers when the comment for status is changed for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentStatusChanged'
+     */
+    @Event()
+    public commentStatusChanged: EmitType<CommentEventArgs>;
 
     /**
      * Triggers the event before adding a text in the freeText annotation.
@@ -3549,6 +3662,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public beforeAddFreeText: EmitType<BeforeAddFreeTextEventArgs>;
+
+    /**
+     * Triggers when focus out from the form fields.
+     * @event
+     * @blazorProperty 'formFieldFocusOut'
+     */
+    @Event()
+    public formFieldFocusOut: EmitType<FormFieldFocusOutEventArgs>;
 
     /**
      * PDF document annotation collection.
@@ -4000,6 +4121,31 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Update the form field values from externally.
+     * @returns void
+     */
+    // tslint:disable-next-line
+    public updateFormFieldsValue(fieldValue: any): void {
+        // tslint:disable-next-line
+        let target: any = document.getElementById(fieldValue.id);
+        if (fieldValue.type === 'Textbox' || fieldValue.type === 'Password') {
+            target.value = fieldValue.value;
+        } else if (fieldValue.type === 'RadioButton' || fieldValue.type === 'CheckBox') {
+            if (fieldValue.type === 'CheckBox') {
+                target.style.appearance = 'auto';
+            }
+            target.checked = fieldValue.value;
+        } else if (fieldValue.type === 'DropDown' || fieldValue.type === 'ListBox') {
+            target.options[target.selectedIndex].text = fieldValue.value;
+        }
+        if (fieldValue.type === 'SignatureField') {
+            this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
+        } else {
+            this.formFieldsModule.updateDataInSession(target);
+        }
+    }
+
+    /**
      * Perform undo action for the edited annotations
      * @returns void
      */
@@ -4312,6 +4458,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
+    public fireFocusOutFormField(fieldName: string, value: string): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: FormFieldFocusOutEventArgs = { name: 'formFieldFocusOut', fieldName: fieldName, value: value};
+        // tslint:disable-next-line
+        this.trigger('formFieldFocusOut', eventArgs);
+    }
+
+    /**
+     * @private
+     */
     // tslint:disable-next-line
     public fireAnnotationAdd(pageNumber: number, index: string, type: AnnotationType, bounds: any, settings: any, textMarkupContent?: string, tmStartIndex?: number, tmEndIndex?: number, labelSettings?: ShapeLabelSettingsModel, multiPageCollection?: any): void {
         let eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
@@ -4372,9 +4528,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireCommentAdd(text: string, annotation: any): void {
+    public fireCommentAdd(id: string, text: string, annotation: any): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentClickEventArgs = { name: 'CommentAdd', text: text, annotation: annotation };
+        let eventArgs: CommentEventArgs = { name: 'CommentAdd', id: id, text: text, annotation: annotation };
         // tslint:disable-next-line
         this.trigger('commentAdd', eventArgs);
     }
@@ -4383,9 +4539,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireCommentEdit(text: string, annotation: any): void {
+    public fireCommentEdit(id: string, text: string, annotation: any): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentClickEventArgs = { name: 'CommentEdit', text: text, annotation: annotation };
+        let eventArgs: CommentEventArgs = { name: 'CommentEdit', id: id, text: text, annotation: annotation };
         // tslint:disable-next-line
         this.trigger('commentEdit', eventArgs);
     }
@@ -4394,11 +4550,33 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireCommentDelete(text: string, annotation: any): void {
+    public fireCommentDelete(id: string, text: string, annotation: any): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: CommentClickEventArgs = { name: 'CommentDelete', text: text, annotation: annotation };
+        let eventArgs: CommentEventArgs = { name: 'CommentDelete', id: id, text: text, annotation: annotation };
         // tslint:disable-next-line
         this.trigger('commentDelete', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireCommentSelect(id: string ,text: string, annotation: any): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: CommentEventArgs = { name: 'CommentSelect', id: id, text: text, annotation: annotation };
+        // tslint:disable-next-line
+        this.trigger('commentSelect', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireCommentStatusChanged(id: string, text: string, annotation: any, statusChange: CommentStatus): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: CommentEventArgs = { name: 'CommentStatusChanged', id: id, text: text, annotation: annotation, status: statusChange};
+        // tslint:disable-next-line
+        this.trigger('commentStatusChanged', eventArgs);
     }
 
     /**

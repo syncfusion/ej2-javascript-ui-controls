@@ -34304,7 +34304,13 @@ class TextPosition {
             }
         }
         else {
-            endPosition.setPositionParagraph(fieldBegin.line, selection.getStartLineOffset(fieldBegin.line));
+            if (fieldBegin.fieldSeparator) {
+                // tslint:disable-next-line:max-line-length
+                endPosition.setPositionParagraph(fieldBegin.line, fieldBegin.fieldSeparator.line.getOffset(fieldBegin.fieldSeparator, fieldBegin.fieldSeparator.length));
+            }
+            else {
+                endPosition.setPositionParagraph(fieldBegin.line, selection.getStartLineOffset(fieldBegin.line));
+            }
         }
     }
     /**
@@ -51656,6 +51662,9 @@ class Editor {
                     this.documentHelper.fieldEndParagraph = inline.line.paragraph;
                 }
                 // inline.line.paragraph.addFieldCharacter(inline.fieldEnd);
+                if (inline.fieldEnd) {
+                    inline.fieldEnd.fieldBegin = undefined;
+                }
                 inline.fieldEnd = undefined;
             }
         }

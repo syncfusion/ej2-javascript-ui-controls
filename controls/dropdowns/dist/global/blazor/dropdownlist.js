@@ -852,7 +852,7 @@ var DropDownList = /** @class */ (function (_super) {
     };
     
     DropDownList.prototype.checkSelector = function (id) {
-        return '#' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1');
+        return '[id="' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1') + '"]';
     };
     DropDownList.prototype.onDocumentClick = function (e) {
         var target = e.target;
@@ -2074,7 +2074,7 @@ var DropDownList = /** @class */ (function (_super) {
         });
     };
     DropDownList.prototype.destroyPopup = function () {
-        var popupHolderEle = document.querySelector('#' + this.element.id + '_popup_holder');
+        var popupHolderEle = sf.base.select('#' + this.element.id + '_popup_holder', document);
         if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
             popupHolderEle.appendChild(this.serverPopupEle);
             // tslint:disable-next-line
@@ -2224,7 +2224,7 @@ var DropDownList = /** @class */ (function (_super) {
         }
         var footercheck = this.dropdownCompiler(this.footerTemplate);
         if (footercheck) {
-            compiledString = sf.base.compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+            compiledString = sf.base.compile(sf.base.select(this.footerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = sf.base.compile(this.footerTemplate);
@@ -2250,7 +2250,7 @@ var DropDownList = /** @class */ (function (_super) {
         }
         var headercheck = this.dropdownCompiler(this.headerTemplate);
         if (headercheck) {
-            compiledString = sf.base.compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+            compiledString = sf.base.compile(sf.base.select(this.headerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = sf.base.compile(this.headerTemplate);
@@ -2555,7 +2555,7 @@ var DropDownList = /** @class */ (function (_super) {
         if (!this.isServerBlazor) {
             this.invokeRenderPopup();
         }
-        var popupHolderEle = !this.isFiltering() || document.querySelector('#' + this.element.id + '_popup_holder');
+        var popupHolderEle = !this.isFiltering() || sf.base.select('#' + this.element.id + '_popup_holder', document);
         var isDropdownComp = this.getModuleName() === 'dropdownlist' || !this.isFiltering();
         if (this.isServerBlazor && popupHolderEle && !sf.base.isNullOrUndefined(this.list) && isDropdownComp) {
             this.invokeRenderPopup();

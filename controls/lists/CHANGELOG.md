@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.3.53 (2020-12-08)
+
+### ListView
+
+#### Bug Fixes
+
+- `#302538` - The issue with "The space key is not accepted in input text while using inside of Listview Template" has been fixed.
+
+- `#305040` - `The template issue in ListView component when using AddItem method` has been resolved.
+
 ## 18.3.47 (2020-11-05)
 
 ### ListBase

@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, CommentClickEventArgs, BeforeAddFreeTextEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -72,6 +72,62 @@ export interface AnnotationToolbarSettingsModel {
      * shows only the defined options in the PdfViewer.
      */
     annotationToolbarItem?: AnnotationToolbarItem[];
+
+}
+
+/**
+ * Interface for a class SignatureFieldSettings
+ */
+export interface SignatureFieldSettingsModel {
+
+    /**
+     * Specifies the properties of the signature indicator in the signature field.
+     */
+    signatureIndicatorSettings?: SignatureIndicatorSettingsModel;
+
+}
+
+/**
+ * Interface for a class SignatureIndicatorSettings
+ */
+export interface SignatureIndicatorSettingsModel {
+
+    /**
+     * Specifies the opacity of the signature indicator.
+     */
+    opacity?: number;
+
+    /**
+     * Specifies the color of the signature indicator.
+     */
+    backgroundColor?: string;
+
+    /**
+     * Specifies the width of the signature indicator. Maximum width is half the width of the signature field. 
+     * Minimum width is the default value.
+     */
+    width?: number;
+
+    /**
+     * Specifies the height of the signature indicator. Maximum height is half the height of the signature field. 
+     * Minimum height is the default value.
+     */
+    height?: number;
+
+    /**
+     * Specifies the signature Indicator's font size. The maximum size of the font is half the height of the signature field.
+     */
+    fontSize?: number;
+
+    /**
+     * Specifies the text of the signature Indicator.
+     */
+    text?: string;
+
+    /**
+     * Specifies the color of the text of signature indicator.
+     */
+    color?: string;
 
 }
 
@@ -1963,6 +2019,16 @@ export interface FormFieldModel {
      */
     isReadOnly?: boolean;
 
+    /**
+     * specifies the type of the signature.
+     */
+    signatureType?: SignatureType[];
+
+    /**
+     * specifies the fontName of the signature.
+     */
+    fontName?: string;
+
 }
 
 /**
@@ -2270,6 +2336,13 @@ export interface PdfViewerModel extends ComponentModel{
     enableDesktopMode?: boolean;
 
     /**
+     * Gets or sets a boolean value to show or hide the save signature check box option in the signature dialog. 
+     * FALSE by default
+     * @default false
+     */
+    hideSaveSignature?: boolean;
+
+    /**
      * Enable or disable the free text annotation in the Pdfviewer.
      * @default true
      */
@@ -2366,6 +2439,11 @@ export interface PdfViewerModel extends ComponentModel{
     isMaintainSelection?: boolean;
 
     /**
+     * Customize desired date and time format
+     */
+    dateTimeFormat?: string;
+
+    /**
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
@@ -2389,6 +2467,12 @@ export interface PdfViewerModel extends ComponentModel{
      */
     // tslint:disable-next-line:max-line-length
     serverActionSettings?: ServerActionSettingsModel;
+
+    /**
+     * Defines the  properties of signature field
+     */
+    // tslint:disable-next-line:max-line-length
+    signatureFieldSettings?: SignatureFieldSettingsModel;
 
     /**
      * Defines the settings of highlight annotation.
@@ -2879,21 +2963,35 @@ export interface PdfViewerModel extends ComponentModel{
      * @event
      * @blazorProperty 'commentAdd'
      */
-    commentAdd?: EmitType<CommentClickEventArgs>;
+    commentAdd?: EmitType<CommentEventArgs>;
 
     /**
      * Triggers when the comment is edited for the annotation in the comment panel.
      * @event
      * @blazorProperty 'commentEdit'
      */
-    commentEdit?: EmitType<CommentClickEventArgs>;
+    commentEdit?: EmitType<CommentEventArgs>;
 
     /**
      * Triggers when the comment is deleted for the annotation in the comment panel.
      * @event
      * @blazorProperty 'commentDelete'
      */
-    commentDelete?: EmitType<CommentClickEventArgs>;
+    commentDelete?: EmitType<CommentEventArgs>;
+
+    /**
+     * Triggers when the comment is selected for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentSelect
+     */
+    commentSelect?: EmitType<CommentEventArgs>;
+
+    /**
+     * Triggers when the comment for status is changed for the annotation in the comment panel.
+     * @event
+     * @blazorProperty 'commentStatusChanged'
+     */
+    commentStatusChanged?: EmitType<CommentEventArgs>;
 
     /**
      * Triggers the event before adding a text in the freeText annotation.
@@ -2901,6 +2999,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'beforeAddFreeText'
      */
     beforeAddFreeText?: EmitType<BeforeAddFreeTextEventArgs>;
+
+    /**
+     * Triggers when focus out from the form fields.
+     * @event
+     * @blazorProperty 'formFieldFocusOut'
+     */
+    formFieldFocusOut?: EmitType<FormFieldFocusOutEventArgs>;
 
     /**
      * PDF document annotation collection.

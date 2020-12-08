@@ -3582,13 +3582,13 @@ export class DateRangePicker extends CalendarBase {
         }
         let target: HTMLElement = <HTMLElement>e.target;
         if (!this.inputWrapper.container.contains(target as Node) ||
-            (!isNullOrUndefined(this.popupObj) && !closest(target, this.popupWrapper.id))) {
+            (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]'))) {
             if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
                 this.closeEventArgs && !this.closeEventArgs.cancel)) { e.preventDefault(); }
         }
         if ((isNullOrUndefined(this.targetElement) ||
             (!isNullOrUndefined(this.targetElement) && !(target === this.targetElement))) &&
-            !(closest(target, '#' + this.popupObj.element.id))
+            !(closest(target, '[id="' + this.popupWrapper.id + '"]'))
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
             && !(closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day')))) {
             this.preventBlur = false;

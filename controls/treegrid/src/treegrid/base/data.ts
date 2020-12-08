@@ -3,7 +3,7 @@ import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamO
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { getObject, BeforeDataBoundArgs, VirtualContentRenderer, getUid } from '@syncfusion/ej2-grids';
+import { getObject, BeforeDataBoundArgs, VirtualContentRenderer, getUid, Row, Column } from '@syncfusion/ej2-grids';
 import { ColumnModel as GridColumnModel, NotifyArgs, SaveEventArgs, Action, VirtualInfo } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, isCountRequired } from '../utils';
 import * as events from './constant';
@@ -301,6 +301,13 @@ public isRemote(): boolean {
       dm.executeQuery(qry).then((e: ReturnOption) => {
         let datas: ITreeData[] = this.parent.grid.currentViewData;
         let inx: number = datas.indexOf(rowDetails.record);
+        if (inx === -1) {
+          this.parent.grid.getRowsObject().forEach((rows: Row<Column>) => {
+            if ((rows.data as ITreeData).uniqueID === rowDetails.record.uniqueID) {
+              inx = rows.index;
+            }
+          });
+        }
         let haveChild: boolean[] = getObject('actual.nextLevel', e);
         let result: ITreeData[] = <ITreeData[]>e.result;
         rowDetails.record.childRecords = result;

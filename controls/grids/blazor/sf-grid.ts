@@ -207,7 +207,11 @@ let Grid: object = {
         if (!isNullOrUndefined(element)) {
             element.focus();
         }
-    }
+    },
+
+    isMacDevice() {
+		return navigator.userAgent.indexOf("Mac OS") !== -1;
+	},
 };
 
 export default Grid;

@@ -25,8 +25,11 @@ export class FormFields {
      */
     // tslint:disable-next-line
     public readOnlyCollection: any = [];
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private currentTarget: any;
+    public currentTarget: any;
     /**
      * @private
      */
@@ -70,6 +73,12 @@ export class FormFields {
                             let bounds: any = currentData['LineBounds'];
                             // tslint:disable-next-line
                             let font: any = currentData['Font'];
+                            // tslint:disable-next-line
+                            let divElement: any = document.createElement('div');
+                            if (currentData.Name === 'Textbox') {
+                                divElement.style.background = 'white';
+                            }
+                            this.applyPosition(divElement, bounds, font);
                             this.applyPosition(inputField, bounds, font);
                             // tslint:disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
@@ -78,7 +87,8 @@ export class FormFields {
                             this.applyTabIndex(currentData, inputField, pageIndex);
                             this.checkIsRequiredField(currentData, inputField);
                             this.applyDefaultColor(inputField);
-                            textLayer.appendChild(inputField);
+                            divElement.appendChild(inputField);
+                            textLayer.appendChild(divElement);
                             inputField.addEventListener('focus', this.focusFormFields.bind(this));
                             inputField.addEventListener('blur', this.blurFormFields.bind(this));
                             inputField.addEventListener('click', this.updateFormFields.bind(this));
@@ -201,7 +211,7 @@ export class FormFields {
                 let type: FormFieldType = currentData['Name'];
                 if (currentData.Name !== 'ink') {
                     // tslint:disable-next-line
-                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData) };
+                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData), signatureType:[], fontName: '' };
                     this.pdfViewer.formFieldCollections.push(formFieldCollection);
                 }
             }
@@ -390,6 +400,11 @@ export class FormFields {
     private blurFormFields(event: MouseEvent): void {
         // tslint:disable-next-line
         let currentTarget: any = event.target;
+        if (currentTarget.type === 'checkbox') {
+            this.pdfViewer.fireFocusOutFormField(currentTarget.name, currentTarget.checked);
+        } else {
+            this.pdfViewer.fireFocusOutFormField(currentTarget.name, currentTarget.value);
+        }
         // tslint:disable-next-line
         let backgroundcolor: any = currentTarget.style.backgroundColor;
         // tslint:disable-next-line
@@ -419,24 +434,32 @@ export class FormFields {
     /**
      * @private
      */
-    public drawSignature(signatureType?: string): void {
+    // tslint:disable-next-line
+    public drawSignature(signatureType?: string, value?: string, target?: any, fontname?: string): void {
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
         let bounds: any;
+        // tslint:disable-next-line
+        let currentField: any = this.currentTarget ? this.currentTarget : target;
+        let currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
+        let currentFont: string = fontname ? fontname : this.pdfViewerBase.signatureModule.fontName;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        let currentWidth: number = parseFloat(this.currentTarget.style.width) / zoomvalue;
-        let currentHeight: number = parseFloat(this.currentTarget.style.height) / zoomvalue;
-        let currentLeft: number = parseFloat(this.currentTarget.style.left) / zoomvalue;
-        let currentTop: number = parseFloat(this.currentTarget.style.top) / zoomvalue;
-        let currentPage: number = parseFloat(this.currentTarget.id.split('_')[1]);
+        let currentWidth: number = parseFloat(currentField.style.width) / zoomvalue;
+        let currentHeight: number = parseFloat(currentField.style.height) / zoomvalue;
+        let currentLeft: number = parseFloat(currentField.style.left) / zoomvalue;
+        let currentTop: number = parseFloat(currentField.style.top) / zoomvalue;
+        let currentPage: number = parseFloat(currentField.id.split('_')[1]);
         let signatureFontFamily: string;
         let signatureFontSize: number;
         if (signatureType === 'Type') {
+            if (!currentFont) {
+                currentFont = 'Helvetica';
+            }
             bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
             annot = {
                 // tslint:disable-next-line:max-line-length
-                id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
-                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: this.pdfViewerBase.signatureModule.fontName, fontSize: (bounds.height / 2)
+                id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
             };
             signatureFontFamily = annot.fontFamily;
             signatureFontSize = annot.fontSize;
@@ -444,21 +467,21 @@ export class FormFields {
             bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
             annot = {
                 // tslint:disable-next-line:max-line-length
-                id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+                id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
                 shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
         } else {
             // tslint:disable-next-line
             if (this.pdfViewer.signatureFitMode === 'Default') {
                 // tslint:disable-next-line
-                let signatureBounds: any = this.updateSignatureAspectRatio(this.pdfViewerBase.signatureModule.outputString);
+                let signatureBounds: any = this.updateSignatureAspectRatio(currentValue, false, currentField);
                 bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
             } else {
                 bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
             }
             annot = {
                 // tslint:disable-next-line:max-line-length
-                id: this.currentTarget.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: this.pdfViewerBase.signatureModule.outputString, modifiedDate: '',
+                id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
                 shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
         }
@@ -468,12 +491,15 @@ export class FormFields {
         // tslint:disable-next-line
         this.pdfViewer.renderDrawing(canvass as any, currentPage);
         this.pdfViewerBase.signatureModule.showSignatureDialog(false);
-        this.currentTarget.className = 'e-pdfviewer-signatureformFields signature';
-        this.updateDataInSession(this.currentTarget, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
-        this.currentTarget.style.pointerEvents = 'none';
+        currentField.className = 'e-pdfviewer-signatureformFields signature';
+        this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
+        currentField.style.pointerEvents = 'none';
+        currentField.parentElement.style.pointerEvents = 'none';
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity );
+        this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
     }
+
     private updateFormFieldsValue(event: MouseEvent): void {
         // tslint:disable-next-line
         let currentTarget: any = event.target;
@@ -545,7 +571,7 @@ export class FormFields {
      * @private
      */
     // tslint:disable-next-line
-    public updateSignatureAspectRatio(data: any, isSignature?: boolean): any {
+    public updateSignatureAspectRatio(data: any, isSignature?: boolean, currentField?: any): any {
         // tslint:disable-next-line
         let collectionData: any = processPathData(data);
         // tslint:disable-next-line
@@ -588,8 +614,8 @@ export class FormFields {
                 }
             }
         }
-        signatureCavasWidth = signatureCanvas.clientWidth;
-        signatureCavasHeight = signatureCanvas.clientHeight;
+        signatureCavasWidth = signatureCanvas ? signatureCanvas.clientWidth : 650;
+        signatureCavasHeight = signatureCanvas ? signatureCanvas.clientHeight : 300;
         let newdifferenceX: number = maximumX - minimumX;
         let newdifferenceY: number = maximumY - minimumY;
         let ratioX: number = newdifferenceX / signatureCavasWidth;
@@ -602,9 +628,9 @@ export class FormFields {
             currentHeight = this.pdfViewer.handWrittenSignatureSettings.height ? this.pdfViewer.handWrittenSignatureSettings.height : 100;
         } else {
             // tslint:disable-next-line
-            currentWidth = parseFloat(this.currentTarget.style.width) / zoomvalue;
+            currentWidth = parseFloat(currentField.style.width) / zoomvalue;
             // tslint:disable-next-line
-            currentHeight = parseFloat(this.currentTarget.style.height) / zoomvalue;
+            currentHeight = parseFloat(currentField.style.height) / zoomvalue;
         }
         let currentLeftDiff: number = (signatureCavasWidth - newdifferenceX) / 2;
         let currentTopDiff: number = (signatureCavasHeight - newdifferenceY) / 2;
@@ -1050,6 +1076,12 @@ export class FormFields {
         let font: any = data['Font'];
         let left: number = this.ConvertPointToPixel(bounds.X);
         let top: number = this.ConvertPointToPixel(bounds.Y);
+        // tslint:disable-next-line:max-line-length
+        let height: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height > bounds.Height / 2 ? bounds.Height / 2 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.height;
+        // tslint:disable-next-line:max-line-length
+        let width: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width > bounds.Width / 2 ? bounds.Width / 2 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.width;
+        // tslint:disable-next-line:max-line-length
+        let fontSize: number = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize > height / 2 ? 10 : this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.fontSize;
         span.style.position = 'absolute';
         span.id = 'signIcon' + pageIndex + '_' + index;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
@@ -1060,15 +1092,19 @@ export class FormFields {
             span.style.width = 10 + 'px';
             span.style.fontSize = '3px';
         } else {
-            span.style.height = 10 + 'px';
-            span.style.width = 19 + 'px';
-            span.style.fontSize = '8px';
+            span.style.height = height + 'px';
+            span.style.width = width + 'px';
+            span.style.fontSize = fontSize;
         }
         span.style.padding = '2px';
         span.style.textAlign = 'center';
         span.style.boxSizing = 'content-box';
-        span.innerHTML = 'Sign';
-        span.style.backgroundColor = 'red';
+        // tslint:disable-next-line
+        span.innerHTML = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text : 'Sign';
+        span.style.color = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color : 'black';
+        // tslint:disable-next-line
+        span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor :'orange';
+        span.style.opacity = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity : 1;
         textLayer.appendChild(span);
         this.addSignaturePath(data);
         return inputField;
@@ -1121,7 +1157,9 @@ export class FormFields {
      */
     // tslint:disable-next-line:max-line-length
     public setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, fontHeight: number, width: number, height: number, isPrint: boolean): void {
-        textDiv.style.position = 'absolute';
+        if (textDiv && (textDiv.tagName.toLowerCase() === 'div')) {
+            textDiv.style.position = 'absolute';
+        }
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         if (isPrint) {
             zoomvalue = 1;

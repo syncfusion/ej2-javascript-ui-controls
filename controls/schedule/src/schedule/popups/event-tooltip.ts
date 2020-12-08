@@ -184,7 +184,6 @@ export class EventTooltip {
      * @private
      */
     public destroy(): void {
-        this.parent.resetTemplates();
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;

@@ -305,7 +305,7 @@ export class TextLayer {
                     let initId: number;
                     let lastId: number;
                     let length: number;
-                    if (textDiv.textContent) {
+                    if (textDiv && textDiv.textContent) {
                         length = textDiv.textContent.length;
                         let textContent: string = textDiv.textContent;
                         textDiv.textContent = '';

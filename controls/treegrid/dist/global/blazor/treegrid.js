@@ -247,7 +247,7 @@ var Logger$1 = /** @class */ (function (_super) {
             var cOp = item.check(args, this.parent);
             if (cOp.success) {
                 var message = item.generateMessage(args, this.parent, cOp.options);
-                message = message.replace('EJ2Grid', 'EJ2TreeGrid');
+                message = message.replace('EJ2Grid', 'EJ2TreeGrid').replace('* Hierarchy Grid', '').replace('* Grouping', '');
                 var index = message.indexOf('https');
                 var gridurl = message.substring(index);
                 if (type[i] === 'module_missing') {
@@ -268,11 +268,19 @@ var Logger$1 = /** @class */ (function (_super) {
                 else if (type[i] === 'locale_missing') {
                     message = message.replace(gridurl, DOC_URL + '/global-local/#localization');
                 }
-                console[item.logType](message);
+                if (type[i] === 'datasource_syntax_mismatch') {
+                    if (!sf.base.isNullOrUndefined(this.treeGridObj) && !sf.base.isNullOrUndefined(this.treeGridObj.dataStateChange)) {
+                        console[item.logType](message);
+                    }
+                }
+                else {
+                    console[item.logType](message);
+                }
             }
         }
     };
     Logger$$1.prototype.treeLog = function (types, args, treeGrid) {
+        this.treeGridObj = treeGrid;
         if (!(types instanceof Array)) {
             types = [types];
         }
@@ -306,10 +314,10 @@ var treeGridDetails = {
             return opt;
         },
         generateMessage: function (args, parent, field) {
-            return ERROR + ':' + ' MAPPING FIELDS MISSING \n' + 'One of the following fields are missing which are ' +
-                'required for the hierarchy relation of records in Tree Grid.\n' +
+            return ERROR + ':' + ' MAPPING FIELDS MISSING \n' + 'One of the following fields is missing. It is ' +
+                'required for the hierarchical relationship of records in TreeGrid:\n' +
                 '* childMapping\n' + '* idMapping\n' + '* parentIdMapping\n' +
-                'Refer to the following documentation links for more details\n' +
+                'Refer to the following documentation links for more details.\n' +
                 (BASE_DOC_URL + "/api/treegrid#childmapping") + '\n' +
                 (BASE_DOC_URL + "/api/treegrid#idmapping") + '\n' +
                 (BASE_DOC_URL + "/api/treegrid#$parentidmapping");
@@ -1503,12 +1511,17 @@ var Render = /** @class */ (function () {
             container.appendChild(cellElement);
             args.cell.appendChild(container);
         }
-        if (this.parent.frozenColumns > this.parent.treeColumnIndex &&
-            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns + 1) {
+        if (this.parent.frozenColumns > this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
+            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns) {
             sf.base.addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
-        else if (this.parent.frozenColumns <= this.parent.treeColumnIndex &&
-            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1) {
+        else if (this.parent.frozenColumns < this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
+            (grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns
+                || grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1)) {
+            sf.base.addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+        }
+        else if (this.parent.frozenColumns === this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
+            grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex - 1) {
             sf.base.addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
         if (!sf.base.isNullOrUndefined(column) && column.showCheckbox) {
@@ -1886,6 +1899,13 @@ var DataManipulation = /** @class */ (function () {
         dm.executeQuery(qry).then(function (e) {
             var datas = _this.parent.grid.currentViewData;
             var inx = datas.indexOf(rowDetails.record);
+            if (inx === -1) {
+                _this.parent.grid.getRowsObject().forEach(function (rows) {
+                    if (rows.data.uniqueID === rowDetails.record.uniqueID) {
+                        inx = rows.index;
+                    }
+                });
+            }
             var haveChild = sf.grids.getObject('actual.nextLevel', e);
             var result = e.result;
             rowDetails.record.childRecords = result;

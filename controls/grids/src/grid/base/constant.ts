@@ -35,6 +35,14 @@ export const cellDeselecting: string = 'cellDeselecting';
 /** @hidden */
 export const cellDeselected: string = 'cellDeselected';
 /** @hidden */
+export const columnSelecting: string = 'columnSelecting';
+/** @hidden */
+export const columnSelected: string = 'columnSelected';
+/** @hidden */
+export const columnDeselecting: string = 'columnDeselecting';
+/** @hidden */
+export const columnDeselected: string = 'columnDeselected';
+/** @hidden */
 export const columnDragStart: string = 'columnDragStart';
 /** @hidden */
 export const columnDrag: string = 'columnDrag';

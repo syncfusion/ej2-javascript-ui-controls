@@ -24,6 +24,8 @@ export interface TreeItemDetails {
 
 export class Logger extends GridLogger {
 
+  private treeGridObj: TreeGrid;
+
   constructor(parent: IGrid) {
     Grid.Inject(GridLogger);
     super(parent);
@@ -45,7 +47,7 @@ export class Logger extends GridLogger {
         let cOp: CheckOptions = item.check(args, this.parent);
         if (cOp.success) {
           let message: string = item.generateMessage(args, this.parent, cOp.options);
-          message =  message.replace('EJ2Grid', 'EJ2TreeGrid');
+          message =  message.replace('EJ2Grid', 'EJ2TreeGrid').replace('* Hierarchy Grid', '').replace('* Grouping', '');
           let index: number = message.indexOf('https');
           let gridurl: string = message.substring(index);
           if (type[i] === 'module_missing') {
@@ -61,12 +63,19 @@ export class Logger extends GridLogger {
           } else if (type[i] === 'locale_missing') {
             message = message.replace(gridurl, DOC_URL + '/global-local/#localization');
           }
-          console[item.logType](message);
+          if (type[i] === 'datasource_syntax_mismatch') {
+            if (!isNullOrUndefined(this.treeGridObj) && !isNullOrUndefined(this.treeGridObj.dataStateChange)) {
+              console[item.logType](message);
+            }
+          } else {
+            console[item.logType](message);
+          }
         }
     }
   }
 
   public treeLog(types: string | string[], args: Object, treeGrid: TreeGrid): void {
+    this.treeGridObj = treeGrid;
     if (!(types instanceof Array)) { types = [types]; }
     let type: string[] = (<string[]>types);
     if (treeGrid.allowRowDragAndDrop) {
@@ -99,10 +108,10 @@ export const treeGridDetails: {[key: string]: TreeItemDetails} = {
         return opt;
       },
       generateMessage(args: Object, parent: TreeGrid, field: Object): string {
-        return ERROR + ':' + ' MAPPING FIELDS MISSING \n' + 'One of the following fields are missing which are ' +
-               'required for the hierarchy relation of records in Tree Grid.\n' +
+        return ERROR + ':' + ' MAPPING FIELDS MISSING \n' + 'One of the following fields is missing. It is ' +
+               'required for the hierarchical relationship of records in TreeGrid:\n' +
                '* childMapping\n' + '* idMapping\n' + '* parentIdMapping\n' +
-               'Refer to the following documentation links for more details\n' +
+               'Refer to the following documentation links for more details.\n' +
                 `${BASE_DOC_URL}/api/treegrid#childmapping` + '\n' +
                 `${BASE_DOC_URL}/api/treegrid#idmapping` + '\n' +
                 `${BASE_DOC_URL}/api/treegrid#$parentidmapping`;

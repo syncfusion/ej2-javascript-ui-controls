@@ -1056,7 +1056,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 value = this.intl.formatDate(value as Date , format) as string;
             } else if (value instanceof Array) {
                 for (let i: number = 0; i < value.length; i++) {
-                    if (value[i] instanceof Date) {
+                    if (value[i] && value[i] instanceof Date) {
                         value[i] = this.intl.formatDate(value[i] as Date, format) as string;
                     }
                 }
@@ -1071,7 +1071,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             column = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
             let valueColl: string[] = [];
             for (let i: number = 0, iLen: number = tempColl.length; i < iLen; i++) {
-                if (column.type === 'date' && value[i] instanceof Date) {
+                if (tempColl.length > 1 && column.type === 'date' && value[i] && value[i] instanceof Date) {
                     valueColl.push(this.intl.formatDate(value[i], format));
                 } else {
                     valueColl = value as string[];
@@ -1830,11 +1830,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                     selectedValue = this.parseDate(itemData.value as string, itemData.format);
                                 }
                             }
-                            if ((this.isImportRules || this.isPublic) && rule && rule.value) {
+                            if ((this.isImportRules || this.isPublic) && rule) {
                                 column = this.getColumn(rule.field);
-                                selVal = (length > 1) ? rule.value[i] as string : rule.value as string;
-                                selectedValue = this.parseDate(selVal, column.format);
                                 format = column.format;
+                                if (rule.value) {
+                                    selVal = (length > 1) ? rule.value[i] as string : rule.value as string;
+                                    selectedValue = this.parseDate(selVal, column.format);
+                                } else {
+                                    selectedValue = rule.value as null;
+                                }
                             }
                             if (format) {
                                 let formatObj: DateFormatOptions = this.getFormat(format);
@@ -2236,9 +2240,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (typeof rule.rules[index].value === 'string') {
                         rule.rules[index].value = [];
                     }
-                    rule.rules[index].value[i] = '';
+                    rule.rules[index].value[i] = selectedValue as null;
                 } else {
-                    rule.rules[index].value = '';
+                    rule.rules[index].value = selectedValue as null;
                 }
             } else {
                 rule.rules[index].value = selectedValue as null;
@@ -2903,7 +2907,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 index++;
             }
             column = this.getColumn(rule.rules[index].field);
-            if (column && column.template) {
+            if (column && column.template && clnruleElem.querySelector('.e-template')) {
                 this.templateDestroy(column, clnruleElem.querySelector('.e-template').id);
             }
             if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
@@ -3322,19 +3326,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         for (let j: number = 0, jLen: number = value.length; j < jLen; j++) {
             if (value[j] !== '') {
                 if (j === 0) {
+                    let gte: string = 'greaterthanorequal'; let lt: string = 'lessthan';
                     switch (operator) {
                         case 'between':
                             if (column.type === 'date') {
-                                pred = new Predicate(ruleColl.field, 'greaterthanorequal', this.getDate(value[j] as string, format));
+                                pred = new Predicate(ruleColl.field, gte, value[j] ? this.getDate(value[j] as string, format): null);
                             } else {
-                                pred = new Predicate(ruleColl.field, 'greaterthanorequal', value[j]);
+                                pred = new Predicate(ruleColl.field, gte, value[j]);
                             }
                             break;
                         case 'notbetween':
                             if (column.type === 'date') {
-                                pred = new Predicate(ruleColl.field, 'lessthan', this.getDate(value[j] as string, format));
+                                pred = new Predicate(ruleColl.field, lt, value[j] ? this.getDate(value[j] as string, format): null);
                             } else {
-                                pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                                pred = new Predicate(ruleColl.field, lt, value[j]);
                             }
                             break;
                         case 'in':
@@ -3345,19 +3350,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             break;
                     }
                 } else {
+                    let gt: string = 'greaterthan';
                     switch (ruleColl.operator) {
                         case 'between':
                         if (column.type === 'date') {
-                            let currDate: Date = this.getDate(value[j] as string, format);
-                            let nextDate: Date = new Date(currDate.setDate(currDate.getDate() + 1));
-                            pred = pred.and(ruleColl.field, 'lessthan', nextDate);
+                            if (value[j]) {
+                                let currDate: Date = this.getDate(value[j] as string, format);
+                                let nextDate: Date = new Date(currDate.setDate(currDate.getDate() + 1));
+                                pred = pred.and(ruleColl.field, 'lessthan', nextDate);
+                            } else {
+                                pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                            }
                         } else {
                             pred = pred.and(ruleColl.field, 'lessthanorequal', value[j]);
                         }
                             break;
                         case 'notbetween':
                             if (column.type === 'date') {
-                                pred = pred.or(ruleColl.field, 'greaterthan', this.getDate(value[j] as string, format));
+                                pred = pred.or(ruleColl.field, gt, value[j] ? this.getDate(value[j] as string, format): value[j]);
                             } else {
                                 pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
                             }

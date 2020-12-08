@@ -248,6 +248,11 @@
       color: $grid-row-selection-color;
     }
 
+    .e-columnselection {
+      background-color: $grid-row-selection-bg-color;
+      color: $grid-row-selection-color;
+    }
+
     td.e-cellselectionbackground {
       background: $grid-cell-selection-bg-color;
       color: $grid-cell-selection-color;

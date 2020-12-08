@@ -509,6 +509,20 @@ console.log('Select current word validation text element box without list');
         editor.selection.selectCurrentWord();
         expect(editor.selection.getText(true)).toBe('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
     });
+    it('Select current word inside field', () => {
+        console.log('Select current word inside field');
+        editor.openBlank();
+        var fieldCode = 'MERGEFIELD  ' + 'Hello' + "  \\* MERGEFORMAT ";
+        editor.editor.insertField(fieldCode, '«' + 'Hello' + '»');
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.selectCurrentWord();
+        expect(editor.selection.start.offset).toBeGreaterThan(0);
+        // Insert Text inside field
+        editor.editorModule.insertText('World');
+        expect(editor.selection.start.currentWidget.children.length).toBe(5)
+    });
 });
 
 describe('Cut and Copy operation without SfdtExport', () => {

@@ -42275,7 +42275,9 @@ var Diagram = /** @class */ (function (_super) {
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateDocks(actualObject, this);
             }
-            this.updateGroupOffset(actualObject);
+            if (!node.annotations || !actualObject.processId) {
+                this.updateGroupOffset(actualObject);
+            }
             // if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
             // EJ2-42005 - The parent of the actualObject is not measured and arranged when a node or connector is selected.
             // The condition restricts the measure and arrange of the actualObject whenever a node or connector is selected.

@@ -1,5 +1,5 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
-import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';
+import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append, select } from '@syncfusion/ej2-base';
 import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { addClass, removeClass, closest, prepend, detach, classList, isBlazor } from '@syncfusion/ej2-base';
@@ -1146,7 +1146,7 @@ export class DropDownList extends DropDownBase implements IInput {
     };
 
     protected checkSelector(id: string): string {
-        return '#' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1');
+        return '[id="' + id.replace(/(:|\.|\[|\]|,|=|@|\\|\/|#)/g, '\\$1') + '"]';
     }
     protected onDocumentClick(e: MouseEvent): void {
         let target: HTMLElement = <HTMLElement>e.target;
@@ -2341,7 +2341,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private destroyPopup(): void {
-        let popupHolderEle: HTMLElement = document.querySelector('#' + this.element.id + '_popup_holder');
+        let popupHolderEle: HTMLElement = select('#' + this.element.id + '_popup_holder', document);
         if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
             popupHolderEle.appendChild(this.serverPopupEle);
 			// tslint:disable-next-line
@@ -2490,7 +2490,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         let footercheck: boolean = this.dropdownCompiler(this.footerTemplate);
         if (footercheck) {
-            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.footerTemplate, document).innerHTML.trim());
         } else {
             compiledString = compile(this.footerTemplate);
         }
@@ -2515,7 +2515,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         let headercheck: boolean = this.dropdownCompiler(this.headerTemplate);
         if (headercheck) {
-            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.headerTemplate, document).innerHTML.trim());
         } else {
             compiledString = compile(this.headerTemplate);
         }
@@ -2770,7 +2770,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.isServerBlazor) {
             this.invokeRenderPopup();
         }
-        let popupHolderEle: Element | boolean = !this.isFiltering() || document.querySelector('#' + this.element.id + '_popup_holder');
+        let popupHolderEle: Element | boolean = !this.isFiltering() || select('#' + this.element.id + '_popup_holder', document);
         let isDropdownComp: boolean = this.getModuleName() === 'dropdownlist' || !this.isFiltering();
         if (this.isServerBlazor && popupHolderEle && !isNullOrUndefined(this.list) && isDropdownComp) {
             this.invokeRenderPopup();

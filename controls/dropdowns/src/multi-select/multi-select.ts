@@ -2301,7 +2301,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (multiselectTemplate) {
             let exception: Object;
             try {
-                checkTemplate = (document.querySelectorAll(multiselectTemplate).length) ? true : false;
+                checkTemplate = (select(multiselectTemplate, document).length) ? true : false;
             } catch (exception) {
                 checkTemplate = false;
             }
@@ -2326,7 +2326,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let valuecheck: boolean = this.multiCompiler(this.valueTemplate);
             if (valuecheck) {
-                compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+                compiledString = compile(select(this.valueTemplate, document).innerHTML.trim());
             } else {
                 compiledString = compile(this.valueTemplate);
             }
@@ -2516,7 +2516,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         addClass([this.header], HEADER);
         let headercheck: boolean = this.multiCompiler(this.headerTemplate);
         if (headercheck) {
-            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.headerTemplate, document).innerHTML.trim());
         } else {
             compiledString = compile(this.headerTemplate);
         }
@@ -2544,7 +2544,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         addClass([this.footer], FOOTER);
         let footercheck: boolean = this.multiCompiler(this.footerTemplate);
         if (footercheck) {
-            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+            compiledString = compile(select(this.footerTemplate, document).innerHTML.trim());
         } else {
             compiledString = compile(this.footerTemplate);
         }
@@ -3220,7 +3220,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private onDocumentClick(e: MouseEvent): void {
         if (this.mode !== 'CheckBox') {
             let target: HTMLElement = <HTMLElement>e.target;
-            if (!(!isNullOrUndefined(this.popupObj) && closest(target, '#' + this.popupObj.element.id)) &&
+            if (!(!isNullOrUndefined(this.popupObj) && closest(target, '[id="' + this.popupObj.element.id + '"]')) &&
                 !this.overAllWrapper.contains(e.target as Node)) {
                 this.scrollFocusStatus = false;
             } else {
@@ -3388,16 +3388,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                         }
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
-                        wrapperleng = this.viewWrapper.offsetWidth;
+                        wrapperleng = this.viewWrapper.offsetWidth +
+                            parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             let textArr: string[] = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            if (this.viewWrapper.innerHTML === '') {
-                                remaining++;
-                            }
-                            wrapperleng = this.viewWrapper.offsetWidth;
+                            remaining++;
+                            wrapperleng = this.viewWrapper.offsetWidth +
+                                parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         }
                         break;
                     } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {

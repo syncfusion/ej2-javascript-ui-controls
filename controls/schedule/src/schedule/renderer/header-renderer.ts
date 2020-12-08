@@ -422,6 +422,9 @@ export class HeaderRenderer {
                 this.parent.eventWindow.openEditor(<CellClickEventArgs>extend(data, { cancel: false, event: args.originalEvent }), 'Add');
                 break;
         }
+        if (isNullOrUndefined(this.toolbarObj)) {
+            return;
+        }
         let toolbarPopUp: HTMLElement = <HTMLElement>this.toolbarObj.element.querySelector('.e-toolbar-pop');
         if (toolbarPopUp && args.item.type !== 'Input') {
             ((toolbarPopUp as EJ2Instance).ej2_instances[0] as Popup).hide({ name: 'SlideUp', duration: 100 });

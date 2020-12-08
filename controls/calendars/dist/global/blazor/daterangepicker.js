@@ -3146,7 +3146,7 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
         var target = e.target;
         if (!this.inputWrapper.container.contains(target) ||
-            (!sf.base.isNullOrUndefined(this.popupObj) && !sf.base.closest(target, this.popupWrapper.id))) {
+            (!sf.base.isNullOrUndefined(this.popupObj) && !sf.base.closest(target, '[id="' + this.popupWrapper.id + '"]'))) {
             if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
                 this.closeEventArgs && !this.closeEventArgs.cancel)) {
                 e.preventDefault();
@@ -3154,7 +3154,7 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
         if ((sf.base.isNullOrUndefined(this.targetElement) ||
             (!sf.base.isNullOrUndefined(this.targetElement) && !(target === this.targetElement))) &&
-            !(sf.base.closest(target, '#' + this.popupObj.element.id))
+            !(sf.base.closest(target, '[id="' + this.popupWrapper.id + '"]'))
             && !(sf.base.closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
             && !(sf.base.closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day')))) {
             this.preventBlur = false;

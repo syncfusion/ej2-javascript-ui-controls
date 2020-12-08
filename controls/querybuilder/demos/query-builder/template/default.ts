@@ -31,7 +31,7 @@ let filter: ColumnsModel [] = [
             multiSelectObj.appendTo('#' + args.elements.id);
         }
     }},
-    { field: 'CustomerID', label: 'CustomerID', type: 'number', template: {
+    { field: 'CustomerID', label: 'CustomerID', type: 'string', template: {
         create: () => {
             elem = document.createElement('input');
             elem.setAttribute('type', 'text');
@@ -94,7 +94,7 @@ let importRules: RuleModel = {
         'field': 'CustomerID',
         'type': 'string',
         'operator': 'notequal',
-        'value': ['BERGS']
+        'value': 'BERGS'
     },
     {
         'condition': 'or',

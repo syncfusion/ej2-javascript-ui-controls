@@ -1145,6 +1145,9 @@ class HeaderRenderer {
                 this.parent.eventWindow.openEditor(extend(data, { cancel: false, event: args.originalEvent }), 'Add');
                 break;
         }
+        if (isNullOrUndefined(this.toolbarObj)) {
+            return;
+        }
         let toolbarPopUp = this.toolbarObj.element.querySelector('.e-toolbar-pop');
         if (toolbarPopUp && args.item.type !== 'Input') {
             toolbarPopUp.ej2_instances[0].hide({ name: 'SlideUp', duration: 100 });
@@ -8777,7 +8780,6 @@ class EventTooltip {
      * @private
      */
     destroy() {
-        this.parent.resetTemplates();
         this.tooltipObj.destroy();
         addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
@@ -12016,15 +12018,6 @@ class Render {
             }
             this.parent.eventsData = resultData.filter((data) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data) => data[this.parent.eventFields.isBlock]);
-            for (let datas of resultData) {
-                if (typeof datas[this.parent.eventFields.startTime] === 'string') {
-                    datas[this.parent.eventFields.startTime] = getDateFromString(datas[this.parent.eventFields.startTime]);
-                }
-                if (typeof datas[this.parent.eventFields.endTime] === 'string') {
-                    datas[this.parent.eventFields.endTime] = getDateFromString(datas[this.parent.eventFields.endTime]);
-                }
-                this.parent.eventBase.processTimezone(datas, true);
-            }
             let processed = this.parent.eventBase.processData(resultData);
             this.parent.notify(dataReady, { processedData: processed });
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {

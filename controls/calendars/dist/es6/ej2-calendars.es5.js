@@ -7927,7 +7927,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         var target = e.target;
         if (!this.inputWrapper.container.contains(target) ||
-            (!isNullOrUndefined(this.popupObj) && !closest(target, this.popupWrapper.id))) {
+            (!isNullOrUndefined(this.popupObj) && !closest(target, '[id="' + this.popupWrapper.id + '"]'))) {
             if (e.type !== 'touchstart' && ((e.type === 'mousedown') ||
                 this.closeEventArgs && !this.closeEventArgs.cancel)) {
                 e.preventDefault();
@@ -7935,7 +7935,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if ((isNullOrUndefined(this.targetElement) ||
             (!isNullOrUndefined(this.targetElement) && !(target === this.targetElement))) &&
-            !(closest(target, '#' + this.popupObj.element.id))
+            !(closest(target, '[id="' + this.popupWrapper.id + '"]'))
             && !(closest(target, '.' + INPUTCONTAINER$1) === this.inputWrapper.container)
             && !(closest(target, '.e-daterangepicker.e-popup') && (!target.classList.contains('e-day')))) {
             this.preventBlur = false;
@@ -11020,7 +11020,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
+        if (!(closest(target, '[id="' + this.popupObj.element.id + '"]')) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
             target !== (this.inputWrapper && this.inputWrapper.container)) {
@@ -12097,7 +12097,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
             (this.popupObject.element && this.popupObject.element.contains(target)))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        if (!(closest(target, '#' + (this.popupObject && this.popupObject.element.id))) && target !== this.inputElement
+        if (!(closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
             && target !== this.timeIcon && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
                 this.hide(event);

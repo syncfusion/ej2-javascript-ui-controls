@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.3.53 (2020-12-08)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `305508` - Resolved page unresponsive error while selecting field.
+- `302470` - Chart series color now applied properly.
+
 ## 18.3.52 (2020-12-01)
 
 ### Document Editor
@@ -9,6 +18,8 @@
 #### Bug Fixes
 
 - `302151` - Vertical alignment for cell now working properly in header and footer.
+- `304069` - Table cell spacing now exported properly.
+- `304048`, `294075` - Auto fit table is now layout properly if table has preferred width.
 
 ## 18.3.51 (2020-11-24)
 

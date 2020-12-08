@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 18.3.53 (2020-12-08)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#286035` - An issue with theme mapping has been fixed.
+- `#299009, #305259` - An issue with the `resourceHeaderTemplate` shows empty content when changing the properties of schedule if tooltip enabled has been fixed.
+- `#159749` - An issue with Scheduler is not refreshed properly while navigating has been fixed.
+- `#305387` - An issue with events not displayed on proper time has been fixed.
+
 ## 18.3.51 (2020-11-24)
 
 ### Schedule

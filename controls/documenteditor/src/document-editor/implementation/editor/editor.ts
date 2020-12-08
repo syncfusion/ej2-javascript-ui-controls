@@ -3326,6 +3326,9 @@ export class Editor {
                     this.documentHelper.fieldEndParagraph = inline.line.paragraph;
                 }
                 // inline.line.paragraph.addFieldCharacter(inline.fieldEnd);
+                if (inline.fieldEnd) {
+                    inline.fieldEnd.fieldBegin = undefined;
+                }
                 inline.fieldEnd = undefined;
             }
         }

@@ -56,6 +56,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public olapEngineModule: OlapEngine;
     /** @hidden */
+    public pageSettings: IPageSettings;
+    /** @hidden */
     public isDragging: boolean;
     /** @hidden */
     public fieldListSpinnerElement: Element;
@@ -626,7 +628,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
-        let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : this.pageSettings;
         let localeObj: L10n = this.pivotGridModule ? this.pivotGridModule.localeObj :
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         let isDrillThrough: boolean = this.pivotGridModule ?
@@ -1481,6 +1483,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             control.trigger(events.fieldListRefreshed, eventArgs);
             if (!this.isPopupView) {
                 this.staticPivotGridModule = control;
+                control.isStaticRefresh = true;
             }
             if (control.enableVirtualization && isBlazor()) {
                 control.renderPivotGrid();

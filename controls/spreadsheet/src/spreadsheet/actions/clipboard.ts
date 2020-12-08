@@ -166,11 +166,17 @@ export class Clipboard {
                 isExternal = false;
                 if (!this.copiedInfo) { return; }
             }
+            let cellLength: number = 0;
             if (isExternal && !(rows as RowModel[]).length) { // If image pasted
                 return;
             }
+            if (rows) {
+                for (let i: number = 0; i < (rows as RowModel[]).length; i++) {
+                    cellLength = rows[i].cells.length > cellLength ? rows[i].cells.length : cellLength;
+                }
+            }
             let rowIdx: number = selIdx[0]; let cIdx: number[] = isExternal
-                ? [0, 0, (rows as RowModel[]).length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                ? [0, 0, (rows as RowModel[]).length - 1, cellLength - 1] : getSwapRange(this.copiedShapeInfo ?
                     getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             let isRepeative: boolean = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
@@ -195,7 +201,7 @@ export class Clipboard {
             let prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0]; cIdx = isExternal
-                ? [0, 0, (rows as RowModel[]).length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedShapeInfo ?
+                ? [0, 0, (rows as RowModel[]).length - 1, cellLength - 1] : getSwapRange(this.copiedShapeInfo ?
                     getRangeIndexes(curSheet.selectedRange) : this.copiedInfo.range);
             isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
                 (cIdx[3] - cIdx[1] + 1) === 0;
@@ -274,7 +280,7 @@ export class Clipboard {
                                     let cellArgs: Object = {
                                         address: this.parent.sheets[sId].name + '!' + address,
                                         requestType: 'paste',
-                                        value : getCell(x + l, y + k, curSheet ).value,
+                                        value : getCell(x + l, y + k, curSheet ) ? getCell(x + l, y + k, curSheet ).value : '',
                                         oldValue:  prevCell.value,
                                         element: cellElem,
                                         displayText: this.parent.getDisplayText(cell)

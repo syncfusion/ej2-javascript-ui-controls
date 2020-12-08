@@ -532,6 +532,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public pageSettings: IPageSettings;
     /** @hidden */
+    public isStaticRefresh: boolean = false;
+    /** @hidden */
     public virtualDiv: HTMLElement;
     /** @hidden */
     public virtualHeaderDiv: HTMLElement;
@@ -4741,56 +4743,60 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public refreshData(): void {
         let pivot: PivotView = this;
-        if (isBlazor()) {
-            if (pivot.dataType === 'olap') {
-                if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                    pivot.allowServerDataBinding = false;
-                    pivot.setProperties({
-                        dataSourceSettings: {
-                            dataSource: undefined
-                        }
-                    }, true);
-                    pivot.allowServerDataBinding = true;
+        if (!pivot.isStaticRefresh) {
+            if (isBlazor()) {
+                if (pivot.dataType === 'olap') {
+                    if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
+                        pivot.allowServerDataBinding = false;
+                        pivot.setProperties({
+                            dataSourceSettings: {
+                                dataSource: undefined
+                            }
+                        }, true);
+                        pivot.allowServerDataBinding = true;
 
+                    }
                 }
             }
-        }
-        if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
-            if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                if (isBlazor() && pivot.enableVirtualization) {
-                    if (!pivot.element.querySelector('.e-spinner-pane')) {
-                        this.showWaitingPopup();
+            if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
+                if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
+                    if (isBlazor() && pivot.enableVirtualization) {
+                        if (!pivot.element.querySelector('.e-spinner-pane')) {
+                            this.showWaitingPopup();
+                        }
+                        pivot.initEngine();
+                    } else {
+                        if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
+                            if (!this.element.querySelector('.e-spinner-pane')) {
+                                this.showWaitingPopup();
+                            }
+                            this.engineModule.data = pivot.remoteData;
+                            this.initEngine();
+                        } else {
+                            setTimeout(pivot.getData.bind(pivot), 100);
+                        }
+                    }
+                } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
+                    (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0 || this.engineModule.data.length > 0)) {
+                    if (pivot.dataType === 'pivot') {
+                        this.hideWaitingPopup();
+                        pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                     }
                     pivot.initEngine();
                 } else {
-                    if (pivot.dataType === 'pivot' && pivot.remoteData.length > 0) {
-                        if (!this.element.querySelector('.e-spinner-pane')) {
-                            this.showWaitingPopup();
-                        }
-                        this.engineModule.data = pivot.remoteData;
-                        this.initEngine();
-                    } else {
-                        setTimeout(pivot.getData.bind(pivot), 100);
+                    if (this.dataSourceSettings.mode === 'Server') {
+                        this.getEngine("onRefresh");
                     }
-                }
-            } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0 || this.engineModule.data.length > 0)) {
-                if (pivot.dataType === 'pivot') {
                     this.hideWaitingPopup();
-                    pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                 }
-                pivot.initEngine();
+            } else if (isBlazor() && pivot.dataType === 'pivot' &&
+                this.engineModule.data && this.engineModule.data.length > 0) {
+                this.initEngine();
             } else {
-                if (this.dataSourceSettings.mode === 'Server') {
-                    this.getEngine("onRefresh");
-                }
                 this.hideWaitingPopup();
             }
-        } else if (isBlazor() && pivot.dataType === 'pivot' &&
-            this.engineModule.data && this.engineModule.data.length > 0) {
-            this.initEngine();
         } else {
-            this.hideWaitingPopup();
+            pivot.isStaticRefresh = false;
         }
     }
 

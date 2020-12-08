@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - Paste is not working when clicking on paste button in the ribbon tab.
+`#I296802` - Fixed column paste and formula issue.
 
 ## 18.3.51 (2020-11-24)
 

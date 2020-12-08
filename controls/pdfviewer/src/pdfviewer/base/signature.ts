@@ -114,7 +114,6 @@ export class Signature {
                         this.clearSignatureCanvas();
                         this.signatureDialog.destroy();
                         this.signatureDialog = null;
-                        this.pdfViewerBase.isToolbarSignClicked = false;
                         if (this.tabObj) {
                             this.tabObj.destroy();
                         }
@@ -123,6 +122,10 @@ export class Signature {
                         if (signatureWindow) {
                             signatureWindow.remove();
                         }
+                        if (!this.pdfViewerBase.isToolbarSignClicked) {
+                            this.pdfViewer.fireFocusOutFormField(this.pdfViewer.formFieldsModule.currentTarget.name, '');
+                        }
+                        this.pdfViewerBase.isToolbarSignClicked = false;
                     }
                 });
                 this.signatureDialog.buttons = [
@@ -204,7 +207,7 @@ export class Signature {
             } else {
                 checkbox = document.getElementById('checkbox');
             }
-            if (checkbox.checked) {
+            if (checkbox && checkbox.checked) {
                 this.addSignatureCollection();
             }
             this.hideSignaturePanel();
@@ -325,13 +328,16 @@ export class Signature {
         canvas.addEventListener('touchend', this.signaturePanelMouseUp.bind(this));
         appearanceDiv.appendChild(canvas);
         // tslint:disable-next-line
-        let input: any = document.createElement('input');
-        input.type = 'checkbox';
-        input.id = 'checkbox';
-        appearanceDiv.appendChild(input);
-        // tslint:disable-next-line
-        let checkBoxObj: any = new CheckBox({ label: 'Save signature', disabled: false, checked: false });
-        checkBoxObj.appendTo(input);
+        let checkBoxObj: any;
+        if (!this.pdfViewer.hideSaveSignature) {
+            // tslint:disable-next-line
+            let input: any = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = 'checkbox';
+            appearanceDiv.appendChild(input);
+            checkBoxObj = new CheckBox({ label: 'Save signature', disabled: false, checked: false });
+            checkBoxObj.appendTo(input);
+        }
         if (this.isSaveSignature) {
             checkBoxObj.checked = true;
         }
@@ -823,6 +829,7 @@ export class Signature {
         this.clearSignatureCanvas();
         if (!isBlazor()) {
             this.signatureDialog.hide();
+            this.pdfViewerBase.isToolbarSignClicked = false;
         }
     }
     /**

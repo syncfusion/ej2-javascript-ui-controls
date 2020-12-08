@@ -396,6 +396,14 @@ var cellDeselecting = 'cellDeselecting';
 /** @hidden */
 var cellDeselected = 'cellDeselected';
 /** @hidden */
+var columnSelecting = 'columnSelecting';
+/** @hidden */
+var columnSelected = 'columnSelected';
+/** @hidden */
+var columnDeselecting = 'columnDeselecting';
+/** @hidden */
+var columnDeselected = 'columnDeselected';
+/** @hidden */
 var columnDragStart = 'columnDragStart';
 /** @hidden */
 var columnDrag = 'columnDrag';
@@ -1742,6 +1750,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
         var _loop_1 = function (i, len) {
             var cell = row.cells[i];
             cell.isSelected = row.isSelected;
+            cell.isColumnSelected = cell.column.isSelected;
             var cellRenderer = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
             var attrs = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
@@ -4564,6 +4573,9 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                 node.querySelector('.e-frame').classList.add('e-check');
             }
         }
+        if (cell.isColumnSelected) {
+            classes.push.apply(classes, ['e-columnselection']);
+        }
         if (!isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
         }
@@ -7215,6 +7227,9 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
                 && (!cell.classList.contains('e-templatecell') || cell.classList.contains('e-editedbatchcell'))
                 && !cell.classList.contains('e-detailcell') : true;
     };
+    ContentFocus.prototype.getGridSeletion = function () {
+        return !isBlazor() && this.parent.allowSelection && this.parent.selectionSettings.mode === 'Column';
+    };
     return ContentFocus;
 }());
 /**
@@ -7267,7 +7282,7 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
     };
     HeaderFocus.prototype.jump = function (action, current) {
         var frozenSwap = this.parent.frozenColumns > 0 &&
-            (action === 'leftArrow' || action === 'shiftTab') && current[1] === 0;
+            (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') && current[1] === 0;
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
         var isLastCell;
         var lastRow;
@@ -7305,7 +7320,7 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
             current1[0] = this.matrix.matrix.length;
             current1[1] = previous[1];
         }
-        else if (action === 'rightArrow' || action === 'tab') {
+        else if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
             current1[0] = previous[0];
             current1[1] = -1;
         }
@@ -7386,9 +7401,11 @@ var FixedHeaderFocus = /** @__PURE__ @class */ (function (_super) {
         var hMatrix = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
         var isPresent = hMatrix && !isNullOrUndefined(hMatrix[current[0]]);
         return {
-            swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
-                || ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns && isPresent),
-            toHeader: (action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns,
+            swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1 || ((action === 'rightArrow' ||
+                (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') &&
+                current[1] === this.matrix.columns && isPresent),
+            toHeader: (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') &&
+                current[1] === this.matrix.columns,
             toFrozen: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
         };
     };
@@ -7398,7 +7415,7 @@ var FixedHeaderFocus = /** @__PURE__ @class */ (function (_super) {
     FixedHeaderFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
         if (previous === void 0) { previous = []; }
         var current3 = [];
-        if (action === 'leftArrow' || action === 'shiftTab') {
+        if (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') {
             current3[0] = previous[0];
             current3[1] = active.matrix.columns + 1;
         }
@@ -7557,6 +7574,10 @@ var Selection = /** @__PURE__ @class */ (function () {
          * @hidden
          */
         this.preventFocus = false;
+        /**
+         *  @hidden
+         */
+        this.selectedColumnsIndexes = [];
         this.checkBoxState = false;
         this.isMultiShiftRequest = false;
         this.isMultiCtrlRequest = false;
@@ -7568,6 +7589,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.chkAllCollec = [];
         this.isCheckedOnAdd = false;
         this.persistSelectedData = [];
+        this.needColumnSelection = false;
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
@@ -8200,6 +8222,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             this.clearRowSelection();
             this.clearCellSelection();
+            this.clearColumnSelection();
             this.prevRowIndex = undefined;
             this.enableSelectMultiTouch = false;
             this.isInteracted = false;
@@ -9653,6 +9676,10 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.clearRowSelection();
                 this.prevRowIndex = undefined;
             }
+            if (this.selectedColumnsIndexes.length > 1) {
+                this.clearColumnSelection();
+                this.prevColIndex = undefined;
+            }
             this.enableSelectMultiTouch = false;
             this.hidePopUp();
         }
@@ -9661,6 +9688,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.clearSelection();
             this.prevRowIndex = undefined;
             this.prevCIdxs = undefined;
+            this.prevColIndex = undefined;
         }
         this.isPersisted = true;
         this.checkBoxSelectionChanged();
@@ -10190,6 +10218,11 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.showPopup(e);
             }
         }
+        else if (e.target.classList.contains('e-headercell') &&
+            !e.target.classList.contains('e-stackedheadercell')) {
+            var uid = e.target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            this.headerSelectionHandler(this.parent.getColumnIndexByUid(uid));
+        }
         this.isMultiCtrlRequest = false;
         this.isMultiShiftRequest = false;
         if (isNullOrUndefined(closest(e.target, '.e-unboundcell'))) {
@@ -10283,7 +10316,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        var clear = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump) ||
+        var clear = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump &&
+            this.selectionSettings.mode !== 'Column') ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
             (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
@@ -10318,11 +10352,16 @@ var Selection = /** @__PURE__ @class */ (function () {
             prev.cellIndex = !isNullOrUndefined(prev.cellIndex) ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
             cellIndex = cIdx;
         }
-        if (headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 && e.keyArgs.action !== 'space' &&
-            rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) {
+        if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
+            e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&
+            this.selectionSettings.mode !== 'Column') {
             return;
         }
         this.preventFocus = true;
+        var columnIndex = this.getKeyColIndex(e);
+        if (this.needColumnSelection) {
+            cellIndex = columnIndex;
+        }
         switch (e.keyArgs.action) {
             case 'downArrow':
             case 'upArrow':
@@ -10367,9 +10406,33 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 break;
         }
+        this.needColumnSelection = false;
         this.preventFocus = false;
         this.positionBorders();
         this.updateAutoFillPosition();
+    };
+    Selection.prototype.getKeyColIndex = function (e) {
+        var uid;
+        var index = null;
+        var stackedHeader = e.element.querySelector('.e-stackedheadercelldiv');
+        if (this.selectionSettings.mode === 'Column' && parentsUntil(e.element, 'e-columnheader')) {
+            this.needColumnSelection = e.container.isHeader ? true : false;
+            if (stackedHeader) {
+                if (e.keyArgs.action === 'rightArrow' || e.keyArgs.action === 'leftArrow') {
+                    return index;
+                }
+                uid = stackedHeader.getAttribute('e-mappinguid');
+                var innerColumn = this.getstackedColumns(this.parent.getColumnByUid(uid).columns);
+                var lastIndex = this.parent.getColumnIndexByUid(innerColumn[innerColumn.length - 1].uid);
+                var firstIndex = this.parent.getColumnIndexByUid(innerColumn[0].uid);
+                index = this.prevColIndex >= lastIndex ? firstIndex : lastIndex;
+            }
+            else {
+                index = this.parent.getColumnIndexByUid(e.element
+                    .querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
+            }
+        }
+        return index;
     };
     /**
      * Apply ctrl + A key selection
@@ -10415,6 +10478,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.isCellType()) {
             this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
         }
+        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+            this.selectColumn(cellIndex);
+        }
     };
     Selection.prototype.applyUpDown = function (rowIndex) {
         if (rowIndex < 0) {
@@ -10441,7 +10507,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.applyRightLeftKey = function (rowIndex, cellIndex) {
         var gObj = this.parent;
-        if (this.isCellType()) {
+        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+            this.selectColumn(cellIndex);
+        }
+        else if (this.isCellType()) {
             this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
             this.addAttribute(this.target);
         }
@@ -10479,8 +10548,25 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.applyShiftLeftRightKey = function (rowIndex, cellIndex) {
         var gObj = this.parent;
         this.isMultiShiftRequest = true;
-        this.selectCellsByRange(this.prevCIdxs, { rowIndex: rowIndex, cellIndex: cellIndex });
+        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+            this.selectColumnsByRange(this.prevColIndex, cellIndex);
+        }
+        else {
+            this.selectCellsByRange(this.prevCIdxs, { rowIndex: rowIndex, cellIndex: cellIndex });
+        }
         this.isMultiShiftRequest = false;
+    };
+    Selection.prototype.getstackedColumns = function (column) {
+        var innerColumnIndexes = [];
+        for (var i = 0, len = column.length; i < len; i++) {
+            if (column[i].columns) {
+                this.getstackedColumns(column[i].columns);
+            }
+            else {
+                innerColumnIndexes.push(column[i]);
+            }
+        }
+        return innerColumnIndexes;
     };
     Selection.prototype.applyCtrlHomeEndKey = function (rowIndex, cellIndex) {
         if (this.isRowType()) {
@@ -10539,6 +10625,284 @@ var Selection = /** @__PURE__ @class */ (function () {
             selectedData = this.persistSelectedData;
         }
         return selectedData;
+    };
+    /**
+     * Select the column by passing start column index
+     * @param  {number} startIndex
+     */
+    Selection.prototype.selectColumn = function (index) {
+        var gObj = this.parent;
+        if (isNullOrUndefined(gObj.getColumns()[index])) {
+            return;
+        }
+        var selectedCol = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(index).uid);
+        var isColSelected = selectedCol.classList.contains('e-columnselection');
+        if ((gObj.selectionSettings.mode !== 'Column')) {
+            return;
+        }
+        this.clearColDependency();
+        if (!isColSelected || !this.selectionSettings.enableToggle) {
+            var args = {
+                columnIndex: index, headerCell: selectedCol,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+            };
+            this.onActionBegin(args, columnSelecting);
+            if (args.cancel) {
+                return;
+            }
+            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected)) {
+                this.updateColSelection(selectedCol, index);
+            }
+            var selectedArgs = {
+                columnIndex: index, headerCell: selectedCol,
+                target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
+            };
+            this.onActionComplete(selectedArgs, columnSelected);
+        }
+        this.updateColProps(index);
+    };
+    /**
+     * Select the columns by passing start and end column index
+     * @param  {number} startIndex
+     * @param  {number} endIndex
+     */
+    Selection.prototype.selectColumnsByRange = function (startIndex, endIndex) {
+        var gObj = this.parent;
+        if (isNullOrUndefined(gObj.getColumns()[startIndex])) {
+            return;
+        }
+        var indexes = [];
+        if (gObj.selectionSettings.type === 'Single' || isNullOrUndefined(endIndex)) {
+            indexes[0] = startIndex;
+        }
+        else {
+            var min = startIndex < endIndex;
+            for (var i = startIndex; min ? i <= endIndex : i >= endIndex; min ? i++ : i--) {
+                indexes.push(i);
+            }
+        }
+        this.selectColumns(indexes);
+    };
+    /**
+     * Select the columns by passing column indexes
+     * @param  {number[]} columnIndexes
+     */
+    Selection.prototype.selectColumns = function (columnIndexes) {
+        var gObj = this.parent;
+        var selectedCol = this.getselectedCols();
+        if (gObj.selectionSettings.type === 'Single') {
+            columnIndexes = [columnIndexes[0]];
+        }
+        if (gObj.selectionSettings.mode !== 'Column') {
+            return;
+        }
+        this.clearColDependency();
+        var selectingArgs = {
+            columnIndex: columnIndexes[0], headerCell: selectedCol,
+            columnIndexes: columnIndexes,
+            cancel: false, target: this.actualTarget,
+            isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
+            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+        };
+        this.onActionBegin(selectingArgs, columnSelecting);
+        if (selectingArgs.cancel) {
+            return;
+        }
+        for (var i = 0, len = columnIndexes.length; i < len; i++) {
+            this.updateColSelection(gObj.getColumnHeaderByUid(gObj.getColumnByIndex(columnIndexes[i]).uid), columnIndexes[i]);
+        }
+        selectedCol = this.getselectedCols();
+        var selectedArgs = {
+            columnIndex: columnIndexes[0], headerCell: selectedCol,
+            columnIndexes: columnIndexes,
+            target: this.actualTarget,
+            isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
+        };
+        this.onActionComplete(selectedArgs, columnSelected);
+        this.updateColProps(columnIndexes[0]);
+    };
+    /**
+     * Select the column with existing column by passing column index
+     * @param  {number} startIndex
+     */
+    Selection.prototype.selectColumnWithExisting = function (startIndex) {
+        var gObj = this.parent;
+        if (isNullOrUndefined(gObj.getColumns()[startIndex])) {
+            return;
+        }
+        var frzCols = gObj.getFrozenColumns();
+        var isFreeze = frzCols && startIndex >= frzCols;
+        var newCol = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(startIndex).uid);
+        var selectedCol = this.getselectedCols();
+        if (gObj.selectionSettings.type === 'Single') {
+            this.clearColDependency();
+        }
+        if (gObj.selectionSettings.mode !== 'Column') {
+            return;
+        }
+        var rows = !isFreeze ? gObj.getDataRows() : gObj.getMovableRows();
+        if (this.selectedColumnsIndexes.indexOf(startIndex) > -1) {
+            var deselectedArgs = {
+                columnIndex: startIndex, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted
+            };
+            var isCanceled = this.columnDeselect(deselectedArgs, columnDeselecting);
+            if (isCanceled) {
+                return;
+            }
+            this.selectedColumnsIndexes.splice(this.selectedColumnsIndexes.indexOf(startIndex), 1);
+            addRemoveActiveClasses([newCol], false, 'e-columnselection');
+            var index = isFreeze ? startIndex - frzCols : startIndex;
+            index = index + gObj.getIndentCount();
+            for (var j = 0, len = rows.length; j < len; j++) {
+                addRemoveActiveClasses([rows[j].childNodes[index]], false, 'e-columnselection');
+            }
+            this.columnDeselect(deselectedArgs, columnDeselected);
+            this.parent.getColumns()[startIndex].isSelected = false;
+        }
+        else {
+            var selectingArgs = {
+                columnIndex: startIndex, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+            };
+            this.onActionBegin(selectingArgs, columnSelecting);
+            if (selectingArgs.cancel) {
+                return;
+            }
+            this.updateColSelection(newCol, startIndex);
+            selectedCol = this.getselectedCols();
+            var selectedArgs = {
+                columnIndex: startIndex, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                target: this.actualTarget,
+                isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
+            };
+            this.onActionComplete(selectedArgs, columnSelected);
+        }
+        this.updateColProps(startIndex);
+    };
+    /**
+     * Clear the column selection
+     */
+    Selection.prototype.clearColumnSelection = function () {
+        if (this.isColumnSelected) {
+            var gObj = this.parent;
+            var frzCols = gObj.getFrozenColumns();
+            var index = this.selectedColumnsIndexes[this.selectedColumnsIndexes.length - 1];
+            var isFreeze = frzCols && index >= frzCols;
+            var selectedCol = !isFreeze ? gObj.getColumnHeaderByIndex(index) :
+                gObj.getHeaderContent().querySelectorAll('.e-headercell')[index];
+            var deselectedArgs = {
+                columnIndex: index, headerCell: selectedCol,
+                columnIndexes: this.selectedColumnsIndexes,
+                cancel: false, target: this.actualTarget,
+                isInteracted: this.isInteracted
+            };
+            var isCanceled = this.columnDeselect(deselectedArgs, columnDeselecting);
+            if (isCanceled) {
+                return;
+            }
+            var selectedHeader = gObj.getHeaderContent().querySelectorAll('.e-columnselection');
+            var selectedCells = this.getSelectedColumnCells();
+            for (var i = 0, len = selectedHeader.length; i < len; i++) {
+                addRemoveActiveClasses([selectedHeader[i]], false, 'e-columnselection');
+            }
+            for (var i = 0, len = selectedCells.length; i < len; i++) {
+                addRemoveActiveClasses([selectedCells[i]], false, 'e-columnselection');
+            }
+            this.columnDeselect(deselectedArgs, columnDeselected);
+            this.selectedColumnsIndexes = [];
+            this.isColumnSelected = false;
+            this.parent.getColumns().filter(function (col) { return col.isSelected = false; });
+        }
+    };
+    Selection.prototype.getselectedCols = function () {
+        var gObj = this.parent;
+        var selectedCol;
+        if (this.selectedColumnsIndexes.length > 1) {
+            selectedCol = [];
+            for (var i = 0; i < this.selectedColumnsIndexes.length; i++) {
+                (selectedCol).push(gObj.getColumnHeaderByUid(gObj.getColumnByIndex(this.selectedColumnsIndexes[i]).uid));
+            }
+        }
+        else {
+            selectedCol = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(this.selectedColumnsIndexes[0]).uid);
+        }
+        return selectedCol;
+    };
+    Selection.prototype.getSelectedColumnCells = function () {
+        var gObj = this.parent;
+        var isRowTemplate = !isNullOrUndefined(this.parent.rowTemplate);
+        var rows = isRowTemplate ? gObj.getRows() : gObj.getDataRows();
+        var movableRows;
+        if (gObj.getFrozenColumns() && gObj.getContent().querySelector('.e-movablecontent')) {
+            movableRows = isRowTemplate ? gObj.getMovableRows() : gObj.getMovableDataRows();
+            rows = gObj.addMovableRows(rows, movableRows);
+        }
+        var seletedcells = [];
+        for (var i = 0, len = rows.length; i < len; i++) {
+            seletedcells = seletedcells.concat([].slice.call(rows[i].querySelectorAll('.e-columnselection')));
+        }
+        return seletedcells;
+    };
+    Selection.prototype.columnDeselect = function (args, event) {
+        if (event === 'columnDeselected') {
+            delete args.cancel;
+        }
+        this.onActionComplete(args, event);
+        return args.cancel;
+    };
+    Selection.prototype.updateColProps = function (startIndex) {
+        this.prevColIndex = startIndex;
+        this.isColumnSelected = this.selectedColumnsIndexes.length && true;
+    };
+    Selection.prototype.clearColDependency = function () {
+        this.clearColumnSelection();
+        this.selectedColumnsIndexes = [];
+    };
+    Selection.prototype.updateColSelection = function (selectedCol, startIndex) {
+        if (isNullOrUndefined(this.parent.getColumns()[startIndex])) {
+            return;
+        }
+        var frzCols = this.parent.getFrozenColumns();
+        var isFreeze = frzCols && startIndex >= frzCols;
+        var isRowTemplate = !isNullOrUndefined(this.parent.rowTemplate);
+        var rows = !isFreeze ? !isRowTemplate ? this.parent.getDataRows() : this.parent.getRows() :
+            !isRowTemplate ? this.parent.getMovableRows() : this.parent.getMovableRows();
+        this.selectedColumnsIndexes.push(startIndex);
+        this.parent.getColumns()[startIndex].isSelected = true;
+        startIndex = isFreeze ? startIndex - frzCols : startIndex + this.parent.getIndentCount();
+        addRemoveActiveClasses([selectedCol], true, 'e-columnselection');
+        for (var j = 0, len = rows.length; j < len; j++) {
+            if (rows[j].classList.contains('e-row')) {
+                if ((rows[j].classList.contains('e-editedrow') || rows[j].classList.contains('e-addedrow')) &&
+                    this.parent.editSettings.mode === 'Normal' && !isNullOrUndefined(rows[j].querySelector('tr').childNodes[startIndex])) {
+                    addRemoveActiveClasses([rows[j].querySelector('tr').childNodes[startIndex]], true, 'e-columnselection');
+                }
+                else if (!isNullOrUndefined(rows[j].childNodes[startIndex])) {
+                    addRemoveActiveClasses([rows[j].childNodes[startIndex]], true, 'e-columnselection');
+                }
+            }
+        }
+    };
+    Selection.prototype.headerSelectionHandler = function (colIndex) {
+        if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
+            this.selectColumn(colIndex);
+        }
+        else if (this.isMultiShiftRequest) {
+            this.selectColumnsByRange(isUndefined(this.prevColIndex) ? colIndex : this.prevColIndex, colIndex);
+        }
+        else {
+            this.selectColumnWithExisting(colIndex);
+        }
     };
     Selection.prototype.addEventListener_checkbox = function () {
         var _this = this;
@@ -12126,7 +12490,7 @@ var Predicate$1 = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], Predicate$$1.prototype, "matchCase", void 0);
     __decorate$1([
-        Property()
+        Property(false)
     ], Predicate$$1.prototype, "ignoreAccent", void 0);
     __decorate$1([
         Property()
@@ -13148,7 +13512,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             this.updateDefaultCursor();
         }
         if (requireGridRefresh) {
-            if (freezeRefresh$$1 || this.frozenColumns || this.frozenRows) {
+            if (freezeRefresh$$1 || this.getFrozenColumns() || this.frozenRows) {
                 if (!(isBlazor() && this.isServerRendered)) {
                     this.freezeRefresh();
                 }
@@ -14138,6 +14502,19 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      */
     Grid.prototype.getSelectedRecords = function () {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
+    };
+    /**
+     * Gets the collection of selected columns uid.
+     * @return {string[]}
+     * @isGenericType true
+     */
+    Grid.prototype.getSelectedColumnsUid = function () {
+        var _this = this;
+        var uid = [];
+        if (this.selectionModule) {
+            this.selectionModule.selectedColumnsIndexes.filter(function (i) { return uid.push(_this.getColumns()[i].uid); });
+        }
+        return uid;
     };
     /**
      * Gets the data module.
@@ -16416,6 +16793,18 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], Grid.prototype, "cellDeselected", void 0);
+    __decorate$1([
+        Event()
+    ], Grid.prototype, "columnSelecting", void 0);
+    __decorate$1([
+        Event()
+    ], Grid.prototype, "columnSelected", void 0);
+    __decorate$1([
+        Event()
+    ], Grid.prototype, "columnDeselecting", void 0);
+    __decorate$1([
+        Event()
+    ], Grid.prototype, "columnDeselected", void 0);
     __decorate$1([
         Event()
     ], Grid.prototype, "columnDragStart", void 0);
@@ -18919,9 +19308,10 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         var ul = this.parent.createElement('ul');
         var icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
         if (this.parent.allowSorting) {
-            var hdrele = closest(eleOptions.target, '.e-headercell').getAttribute('aria-sort');
-            var isAsc = (hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
-            var isDesc = (hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            var hdrele = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
+            var colIsSort = this.parent.getColumnByField(eleOptions.field).allowSorting;
+            var isAsc = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            var isDesc = (!colIsSort || hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
             var ascName = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
                 this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
             var descName = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?
@@ -19962,8 +20352,11 @@ var Sort = /** @__PURE__ @class */ (function () {
             !e.target.classList.contains('e-rhandler') &&
             !e.target.classList.contains('e-columnmenu') &&
             !e.target.classList.contains('e-filtermenudiv') &&
-            !parentsUntil(e.target, 'e-stackedheadercell')) {
-            var colObj = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
+            !parentsUntil(e.target, 'e-stackedheadercell') &&
+            !(gObj.allowSelection && gObj.selectionSettings.mode === 'Column' &&
+                e.target.classList.contains('e-headercell'))) {
+            var gObj_1 = this.parent;
+            var colObj = gObj_1.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
             var direction = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
                 'Descending';
             if (colObj.type !== 'checkbox') {
@@ -22781,6 +23174,18 @@ var Filter = /** @__PURE__ @class */ (function () {
             new Date(filterValue) : parseFloat(filterValue);
         this.values[this.column.field] = this.setFormatForFlColumn(getFlvalue, this.column);
     };
+    // To skip the second time request to server while applying initial filtering - EJ2-44361
+    Filter.prototype.skipUid = function (col) {
+        var flag = true;
+        var colLen = Object.keys((col)).length;
+        for (var i = 0; i < colLen; i++) {
+            var key = Object.keys(col[i]);
+            if (key.length === 1 && key[0] === 'uid') {
+                flag = false;
+            }
+        }
+        return flag;
+    };
     Filter.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
             return;
@@ -22789,7 +23194,8 @@ var Filter = /** @__PURE__ @class */ (function () {
             var prop = _a[_i];
             switch (prop) {
                 case 'columns':
-                    if (this.contentRefresh) {
+                    var col = 'columns';
+                    if (this.contentRefresh && this.skipUid(e.properties[col])) {
                         this.parent.notify(modelChanged, {
                             currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
                                 this.column.field : undefined, action: 'filter',
@@ -24993,7 +25399,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
                     _this.dragTarget = null;
                     if (!gObj.rowDropSettings.targetID) {
                         remove(e.helper);
-                        gObj.refresh();
+                        _this.rowOrder(args);
                     }
                 }
                 _this.isRefresh = true;
@@ -25016,6 +25422,158 @@ var RowDD = /** @__PURE__ @class */ (function () {
         this.parent.addEventListener(dataBound, this.onDataBoundFn);
         this.parent.on(uiUpdate, this.enableAfterRender, this);
     }
+    RowDD.prototype.refreshRow = function (args, tbody, mtbody) {
+        var gObj = this.parent;
+        var target;
+        var mTarget;
+        var frzCols = this.parent.getFrozenColumns();
+        var tbodyMovableHeader;
+        var tbodyMovableContent;
+        var tbodyContent = gObj.getContentTable().querySelector('tbody');
+        var tbodyHeader = gObj.getHeaderContent().querySelector('tbody');
+        if (frzCols) {
+            tbodyMovableHeader = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+            tbodyMovableContent = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+        }
+        var targetIdx = parseInt(args.target.parentElement.getAttribute('aria-rowindex'), 10);
+        if (args.fromIndex < args.dropIndex || args.fromIndex === args.dropIndex) {
+            targetIdx = targetIdx + 1;
+        }
+        target = tbody.querySelectorAll('.e-row')[targetIdx];
+        if (frzCols) {
+            mTarget = mtbody.querySelectorAll('.e-row')[targetIdx];
+        }
+        for (var i = 0, len = args.rows.length; i < len; i++) {
+            if (frzCols) {
+                if (i % 2 === 0) {
+                    args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+                }
+                else {
+                    args.rows[i] = mtbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+                }
+            }
+            else {
+                args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+            }
+        }
+        for (var i = 0, len = args.rows.length; i < len; i++) {
+            if (frzCols) {
+                if (i % 2 === 0) {
+                    tbody.insertBefore(args.rows[i], target);
+                }
+                else {
+                    mtbody.insertBefore(args.rows[i], mTarget);
+                }
+            }
+            else {
+                tbody.insertBefore(args.rows[i], target);
+            }
+        }
+        var tr = [].slice.call(tbody.querySelectorAll('.e-row'));
+        var mtr;
+        if (frzCols) {
+            mtr = [].slice.call(mtbody.querySelectorAll('.e-row'));
+        }
+        this.refreshData(tr, mtr);
+        if (this.parent.frozenRows) {
+            for (var i = 0, len = tr.length; i < len; i++) {
+                if (i < this.parent.frozenRows) {
+                    tbodyHeader.appendChild(tr[i]);
+                    if (this.parent.getFrozenColumns()) {
+                        tbodyMovableHeader.appendChild(mtr[i]);
+                    }
+                }
+                else {
+                    tbodyContent.appendChild(tr[i]);
+                    if (this.parent.getFrozenColumns()) {
+                        tbodyMovableContent.appendChild(mtr[i]);
+                    }
+                }
+            }
+        }
+    };
+    RowDD.prototype.updateFrozenRowreOrder = function (args) {
+        var gObj = this.parent;
+        var tbodyMovH;
+        var tbodyMovC;
+        var frzCols = this.parent.getFrozenColumns();
+        var tbodyC = gObj.getContentTable().querySelector('tbody');
+        var tbodyH = gObj.getHeaderContent().querySelector('tbody');
+        if (frzCols) {
+            tbodyMovH = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+            tbodyMovC = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+        }
+        var tr = [].slice.call(tbodyH.querySelectorAll('.e-row')).concat([].slice.call(tbodyC.querySelectorAll('.e-row')));
+        var mtr;
+        if (frzCols) {
+            mtr = [].slice.call(tbodyMovH.querySelectorAll('.e-row')).concat([].slice.call(tbodyMovC.querySelectorAll('.e-row')));
+        }
+        var tbody = gObj.createElement('tbody');
+        var mtbody = gObj.createElement('tbody');
+        this.parent.clearSelection();
+        for (var i = 0, len = tr.length; i < len; i++) {
+            tbody.appendChild(tr[i]);
+            if (frzCols) {
+                mtbody.appendChild(mtr[i]);
+            }
+        }
+        this.refreshRow(args, tbody, mtbody);
+    };
+    RowDD.prototype.updateFrozenColumnreOrder = function (args) {
+        var gObj = this.parent;
+        var mtbody;
+        var frzCols = this.parent.getFrozenColumns();
+        var tbody = gObj.getContentTable().querySelector('tbody');
+        if (frzCols) {
+            mtbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+        }
+        this.parent.clearSelection();
+        this.refreshRow(args, tbody, mtbody);
+    };
+    RowDD.prototype.refreshData = function (tr, mtr) {
+        var rowObj = {};
+        var movobj = {};
+        var recordobj = {};
+        for (var i = 0, len = tr.length; i < len; i++) {
+            var index = parseInt(tr[i].getAttribute('aria-rowindex'), 10);
+            rowObj[i] = this.parent.getRowsObject()[index];
+            recordobj[i] = this.parent.getCurrentViewRecords()[index];
+            if (this.parent.frozenColumns) {
+                movobj[i] = this.parent.getMovableRowsObject()[index];
+            }
+        }
+        for (var i = 0, len = tr.length; i < len; i++) {
+            tr[i].setAttribute('aria-rowindex', i.toString());
+            tr[i].setAttribute('data-uid', 'grid-row' + i.toString());
+            this.parent.getRows()[i] = tr[i];
+            this.parent.getRowsObject()[i] = rowObj[i];
+            this.parent.getRowsObject()[i].uid = 'grid-row' + i.toString();
+            this.parent.getRowsObject()[i].index = i;
+            this.parent.getCurrentViewRecords()[i] = recordobj[i];
+            if (this.parent.frozenColumns) {
+                mtr[i].setAttribute('aria-rowindex', i.toString());
+                mtr[i].setAttribute('data-uid', 'grid-row' + (i + tr.length).toString());
+                this.parent.getMovableRows()[i] = mtr[i];
+                this.parent.getMovableRowsObject()[i] = movobj[i];
+                this.parent.getMovableRowsObject()[i].uid = 'grid-row' + (i + tr.length).toString();
+                this.parent.getMovableRowsObject()[i].index = i;
+            }
+        }
+    };
+    RowDD.prototype.rowOrder = function (args) {
+        if (args.target.classList.contains('e-rowcelldrag')) {
+            args.target = args.target.parentElement;
+        }
+        if (this.parent.frozenRows) {
+            this.updateFrozenRowreOrder(args);
+        }
+        else {
+            this.updateFrozenColumnreOrder(args);
+        }
+        if (this.selectedRowColls.length > 0) {
+            this.parent.selectRows(this.selectedRowColls);
+        }
+    };
     RowDD.prototype.currentViewData = function () {
         var selectedIndexes = this.parent.getSelectedRowIndexes();
         var currentVdata = [];
@@ -41654,5 +42212,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, beforeRefreshOnDataChange, immutableBatchCancel, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnSelecting, columnSelected, columnDeselecting, columnDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, beforeRefreshOnDataChange, immutableBatchCancel, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

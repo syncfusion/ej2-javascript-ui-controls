@@ -1,4 +1,4 @@
-import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate, closest } from '@syncfusion/ej2-base';
+import { EventHandler, remove, Browser, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -104,9 +104,10 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let ul: Element = this.parent.createElement('ul');
         let icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
         if (this.parent.allowSorting) {
-            let hdrele: string = closest(eleOptions.target, '.e-headercell').getAttribute('aria-sort');
-            let isAsc: string = (hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
-            let isDesc: string = (hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
+            let hdrele: string = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
+            let colIsSort: object = this.parent.getColumnByField(eleOptions.field).allowSorting;
+            let isAsc: string = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
+            let isDesc: string = (!colIsSort || hdrele === 'Descending') ? 'e-disabled e-excel-descending' : 'e-excel-descending';
             let ascName: string = (type === 'string') ? this.getLocalizedLabel('SortAtoZ') : (type === 'datetime' || type === 'date') ?
             this.getLocalizedLabel('SortByOldest') : this.getLocalizedLabel('SortSmallestToLargest');
             let descName: string = (type === 'string') ? this.getLocalizedLabel('SortZtoA') : (type === 'datetime' || type === 'date') ?

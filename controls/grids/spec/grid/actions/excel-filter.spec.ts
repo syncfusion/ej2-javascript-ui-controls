@@ -863,8 +863,6 @@ describe('Excel Filter =>', () => {
         });
         describe('EJ2-37174 => default match case is not working with Excel filter => ', () => {
             let gridObj: Grid;
-            let dataBound: (args: any) => void;
-            let actionComplete: () => void;
             beforeAll((done: Function) => {
                 gridObj = createGrid(
                     {
@@ -886,17 +884,12 @@ describe('Excel Filter =>', () => {
                     }, done);
             });
             // test initial filtering scenario
-            it('testing initial filter', (done: Function) => {
-                actionComplete = (args?: Object): void => {
+            it('testing initial filter', () => {
                 expect(gridObj.currentViewData.length).not.toBe(0);
-                done();
-                }
-                gridObj.actionComplete = actionComplete;
             });
 
             afterAll(() => {
                 destroy(gridObj);
-                gridObj = actionComplete = null;
             });
         });
     });

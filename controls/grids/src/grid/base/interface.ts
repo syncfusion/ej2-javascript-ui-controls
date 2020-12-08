@@ -635,6 +635,7 @@ export interface IGrid extends Component<HTMLElement> {
     isCollapseStateEnabled?(): boolean;
     mergePersistGridData?(setData?: Object): void;
     setForeignKeyData?(args: DataResult): void;
+    getSelectedColumnsUid?(): string[];
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
@@ -2497,4 +2498,33 @@ export interface CheckBoxBeforeRenderer {
     dataSource?: object[];
     field?: string;
     executeQuery?: boolean;
+}
+
+export interface ColumnDeselectEventArgs {
+    /** Defines the selected/deselected column index. */
+    columnIndex?: number;
+    /** Defines the selected/deselected column indexes. */
+    columnIndexes?: number[];
+    /** Defines the selected/deselected column. */
+    headerCell?: Element | Element[];
+    /** Defines the cancel option value. */
+    cancel?: boolean;
+    /** Defines the target element for column deselect. */
+    target?: Element;
+    /** Defines whether event is triggered by interaction or not. */
+    isInteracted?: boolean;
+}
+
+export interface ColumnSelectEventArgs extends ColumnDeselectEventArgs {
+    /** Defines the previously selected column index. */
+    previousColumnIndex?: number;
+    /** Defines the target element for column selection. */
+    target?: Element;
+}
+
+export interface ColumnSelectingEventArgs extends ColumnSelectEventArgs {
+    /** Defines whether CTRL key is pressed. */
+    isCtrlPressed?: boolean;
+    /** Defines whether SHIFT key is pressed. */
+    isShiftPressed?: boolean;
 }

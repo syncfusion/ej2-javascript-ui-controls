@@ -613,7 +613,7 @@ var Uploader = /** @class */ (function (_super) {
         var dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
         if (this.dropArea) {
             this.dropZoneElement = (typeof (this.dropArea) !== 'string') ? this.dropArea :
-                document.querySelector(this.dropArea);
+                sf.base.select(this.dropArea, document);
             var element = this.element;
             var enableDropText = false;
             while (element.parentNode) {
@@ -2298,8 +2298,8 @@ var Uploader = /** @class */ (function (_super) {
     Uploader.prototype.templateComplier = function (uploadTemplate) {
         if (uploadTemplate) {
             try {
-                if (document.querySelectorAll(uploadTemplate).length) {
-                    return sf.base.compile(document.querySelector(uploadTemplate).innerHTML.trim());
+                if (sf.base.selectAll(uploadTemplate, document).length) {
+                    return sf.base.compile(sf.base.select(uploadTemplate, document).innerHTML.trim());
                 }
             }
             catch (exception) {

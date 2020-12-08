@@ -347,7 +347,8 @@ export class DrillThroughDialog {
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: !this.parent.editSettings.allowEditing,
-            allowPaging: this.parent.editSettings.allowEditing
+            allowPaging: this.parent.editSettings.allowEditing,
+            pageSettings: { pageSize: 20 }
         });
         if (isBlazor()) {
             /* tslint:disable-next-line */

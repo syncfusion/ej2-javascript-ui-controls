@@ -100,6 +100,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         let cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
         for (let i: number = 0, len: number = row.cells.length; i < len; i++) {
             let cell: Cell<T> = row.cells[i]; cell.isSelected = row.isSelected;
+            cell.isColumnSelected = (<{ isSelected?: boolean }>cell.column).isSelected;
             let cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[i].cellType || CellType.Data);
             let attrs: {} = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {

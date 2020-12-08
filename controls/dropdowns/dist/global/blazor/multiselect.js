@@ -1916,7 +1916,7 @@ var MultiSelect = /** @class */ (function (_super) {
         var checkTemplate = false;
         if (multiselectTemplate) {
             try {
-                checkTemplate = (document.querySelectorAll(multiselectTemplate).length) ? true : false;
+                checkTemplate = (sf.base.select(multiselectTemplate, document).length) ? true : false;
             }
             catch (exception) {
                 checkTemplate = false;
@@ -1941,7 +1941,7 @@ var MultiSelect = /** @class */ (function (_super) {
         if (this.valueTemplate && !sf.base.isNullOrUndefined(itemData)) {
             var valuecheck = this.multiCompiler(this.valueTemplate);
             if (valuecheck) {
-                compiledString = sf.base.compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+                compiledString = sf.base.compile(sf.base.select(this.valueTemplate, document).innerHTML.trim());
             }
             else {
                 compiledString = sf.base.compile(this.valueTemplate);
@@ -2146,7 +2146,7 @@ var MultiSelect = /** @class */ (function (_super) {
         sf.base.addClass([this.header], HEADER);
         var headercheck = this.multiCompiler(this.headerTemplate);
         if (headercheck) {
-            compiledString = sf.base.compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+            compiledString = sf.base.compile(sf.base.select(this.headerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = sf.base.compile(this.headerTemplate);
@@ -2176,7 +2176,7 @@ var MultiSelect = /** @class */ (function (_super) {
         sf.base.addClass([this.footer], FOOTER);
         var footercheck = this.multiCompiler(this.footerTemplate);
         if (footercheck) {
-            compiledString = sf.base.compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+            compiledString = sf.base.compile(sf.base.select(this.footerTemplate, document).innerHTML.trim());
         }
         else {
             compiledString = sf.base.compile(this.footerTemplate);
@@ -2883,7 +2883,7 @@ var MultiSelect = /** @class */ (function (_super) {
     MultiSelect.prototype.onDocumentClick = function (e) {
         if (this.mode !== 'CheckBox') {
             var target = e.target;
-            if (!(!sf.base.isNullOrUndefined(this.popupObj) && sf.base.closest(target, '#' + this.popupObj.element.id)) &&
+            if (!(!sf.base.isNullOrUndefined(this.popupObj) && sf.base.closest(target, '[id="' + this.popupObj.element.id + '"]')) &&
                 !this.overAllWrapper.contains(e.target)) {
                 this.scrollFocusStatus = false;
             }
@@ -3055,16 +3055,16 @@ var MultiSelect = /** @class */ (function (_super) {
                         }
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
-                        wrapperleng = this.viewWrapper.offsetWidth;
+                        wrapperleng = this.viewWrapper.offsetWidth +
+                            parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             var textArr = this.viewWrapper.innerHTML.split(this.delimiterChar);
                             textArr.pop();
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
-                            if (this.viewWrapper.innerHTML === '') {
-                                remaining++;
-                            }
-                            wrapperleng = this.viewWrapper.offsetWidth;
+                            remaining++;
+                            wrapperleng = this.viewWrapper.offsetWidth +
+                                parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                         }
                         break;
                     }
@@ -4190,8 +4190,8 @@ var CheckBoxSelection = /** @class */ (function () {
                 sf.base.EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
             if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
-                !this.parent.isDynamicDataChange) || (this.parent.isDynamicDataChange &&
-                !sf.base.isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
+                !(this.parent.isDynamicDataChange && sf.base.isBlazor())) || (this.parent.isDynamicDataChange &&
+                !sf.base.isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1 && sf.base.isBlazor())) {
                 this.checkAllParent.style.display = 'none';
             }
             else {
@@ -4442,12 +4442,12 @@ var CheckBoxSelection = /** @class */ (function () {
     CheckBoxSelection.prototype.onDocumentClick = function (e) {
         if (this.parent.getLocaleName() !== 'listbox') {
             var target = e.target;
-            if (!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '#' + this.parent.popupObj.element.id)) {
+            if (!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) {
                 if (!(this.filterInput && this.filterInput.value !== '')) {
                     e.preventDefault();
                 }
             }
-            if (!(!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '#' + this.parent.popupObj.element.id)) &&
+            if (!(!sf.base.isNullOrUndefined(this.parent.popupObj) && sf.base.closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) &&
                 !this.parent.overAllWrapper.contains(e.target)) {
                 if (this.parent.overAllWrapper.classList.contains(sf.dropdowns.dropDownBaseClasses.focus) || this.parent.isPopupOpen()) {
                     this.parent.inputFocus = false;

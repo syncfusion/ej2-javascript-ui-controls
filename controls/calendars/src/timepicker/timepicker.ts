@@ -2264,7 +2264,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             (this.popupObj.element && this.popupObj.element.contains(target)))) && event.type !== 'touchstart') {
                 event.preventDefault();
             }
-        if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
+        if (!(closest(target, '[id="' + this.popupObj.element.id + '"]')) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
             target !== (this.inputWrapper && this.inputWrapper.container)) {

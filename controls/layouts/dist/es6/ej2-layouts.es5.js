@@ -5000,7 +5000,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                         this.isRenderComplete = true;
                     }
                     else if (!(newProp.panels[0] && newProp.panels.length)) {
+                        this.isRenderComplete = false;
                         this.updatePanelsDynamically(this.panels);
+                        this.isRenderComplete = true;
                     }
                     else {
                         this.restrictDynamicUpdate = false;

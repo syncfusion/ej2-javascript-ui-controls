@@ -110,7 +110,7 @@ function findTextNode(element, pattern, isBlazor$$1) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
             }
             else {
-                element.innerHTML = element.innerHTML.replace(pattern, '<span class="e-highlight">$1</span>');
+                element.innerHTML = (element.innerHTML).trim().replace(pattern, '<span class="e-highlight">$1</span>');
             }
             break;
         }
@@ -336,7 +336,7 @@ var DropDownBase = /** @class */ (function (_super) {
         var checkTemplate = false;
         if (baseTemplate) {
             try {
-                checkTemplate = (document.querySelectorAll(baseTemplate).length) ? true : false;
+                checkTemplate = (sf.base.select(baseTemplate, document).length) ? true : false;
             }
             catch (exception) {
                 checkTemplate = false;
@@ -354,7 +354,7 @@ var DropDownBase = /** @class */ (function (_super) {
             ele.innerHTML = '';
             var tempaltecheck = this.templateCompiler(template);
             if (tempaltecheck) {
-                compiledString = sf.base.compile(document.querySelector(template).innerHTML.trim());
+                compiledString = sf.base.compile(sf.base.select(template, document).innerHTML.trim());
             }
             else {
                 compiledString = sf.base.compile(template);
@@ -756,7 +756,7 @@ var DropDownBase = /** @class */ (function (_super) {
             var headerItems = listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             var groupcheck = this.templateCompiler(this.groupTemplate);
             if (groupcheck) {
-                var groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
+                var groupValue = sf.base.select(this.groupTemplate, document).innerHTML.trim();
                 var tempHeaders = sf.lists.ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option, this);
             }
             else {
@@ -870,7 +870,7 @@ var DropDownBase = /** @class */ (function (_super) {
         option.isStringTemplate = this.isStringTemplate;
         var itemcheck = this.templateCompiler(this.itemTemplate);
         if (itemcheck) {
-            var itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
+            var itemValue = sf.base.select(this.itemTemplate, document).innerHTML.trim();
             return sf.lists.ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option, this);
         }
         else {

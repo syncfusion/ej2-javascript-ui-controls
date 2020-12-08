@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.3.52 (2020-12-01)
+## 18.3.53 (2020-12-08)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I303968` - The issue with "Script error occur in DashboardLayout, when updating its parent props using setState method in React platform" has been fixed.
+
+## 18.3.48 (2020-11-11)
 
 ### Dashboard Layout
 

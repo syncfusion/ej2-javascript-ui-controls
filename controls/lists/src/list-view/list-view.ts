@@ -2368,6 +2368,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 2]) || null;
         let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption, null, null, this);
         this.setAttributes(li);
+        // tslint:disable-next-line
+        if (this.template && (this as any).isReact) {
+            this.renderReactTemplates();
+        }
         ulElement.insertBefore(li[0], target);
     }
 

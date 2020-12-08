@@ -886,4 +886,85 @@ describe('BPMN subprocess save and load issue ', () => {
         });
         
     });
+
+
+
+
+    describe('BPMN subprocess annotation moving issue ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+             
+            let nodes: NodeModel[] = [
+                {
+                    id: 'subProcess', width: 520, height: 250, offsetX: 355, offsetY: 180,
+                    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                    shape: {
+                        shape: 'Activity', type: 'Bpmn',
+                        activity: {
+                            activity: 'SubProcess', subProcess: {
+                                type: 'Transaction', collapsed: false,
+                                processes: [   'processesTask',
+                                    ]
+                            }
+                        }
+                    }
+                }  ,
+                {
+                    id: 'processesTask', style: { fill: '#F6B53F' }, width: 95, height: 70,
+                    shape: {
+                        type: 'Bpmn', shape: 'Activity', activity: {
+                            activity: 'Task', task: {
+                                type: 'Service',
+                            },
+                        },
+                    }, annotations: [{
+                            id: 'serviceLabel2', content: 'Charge credit card', offset: { x: 0.50, y: 0.60 },
+                            style: { color: 'white' }
+                        }], margin: { left: 290, top: 20 },
+                }
+                      ];
+               diagram = new Diagram({
+                width: '74%', height: '600px',// connectors: connector6,
+         nodes: nodes,
+             });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('BPMN subprocess annotation moving issue', (done: Function) => { 
+              debugger
+            diagram.drag(diagram.nodes[1],-140,0);
+            diagram.drag(diagram.nodes[0],-40,150);
+            
+            diagram.select([diagram.nodes[1]]);
+            var node = diagram.selectedItems.nodes[0];
+            diagram.dataBind();
+            node.annotations[0].content =  "t"
+            diagram.dataBind();
+          
+            expect(node.wrapper.offsetX===252.5&&node.wrapper.offsetY===260).toBe(true);
+            done();
+        });
+        
+    });
 });
+
+
+
+
+
+

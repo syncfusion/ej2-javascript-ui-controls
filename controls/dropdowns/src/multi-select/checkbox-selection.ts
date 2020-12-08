@@ -158,8 +158,8 @@ export class CheckBoxSelection {
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
             if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
-                !this.parent.isDynamicDataChange) || (this.parent.isDynamicDataChange &&
-                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1)) {
+                !(this.parent.isDynamicDataChange && isBlazor())) || (this.parent.isDynamicDataChange &&
+                !isNullOrUndefined(this.parent.value) && this.parent.value.length <= 1 && isBlazor())) {
                 this.checkAllParent.style.display = 'none';
             } else {
                 this.checkAllParent.style.display = 'block';
@@ -414,12 +414,12 @@ export class CheckBoxSelection {
     protected onDocumentClick(e: MouseEvent): void {
         if (this.parent.getLocaleName() !== 'listbox') {
         let target: HTMLElement = <HTMLElement>e.target;
-        if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
+        if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) {
             if (!(this.filterInput && this.filterInput.value !== '')) {
                 e.preventDefault();
             }
         }
-        if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) &&
+        if (!(!isNullOrUndefined(this.parent.popupObj) && closest(target, '[id="' + this.parent.popupObj.element.id + '"]')) &&
             !this.parent.overAllWrapper.contains(e.target as Node)) {
             if (this.parent.overAllWrapper.classList.contains(dropDownBaseClasses.focus) || this.parent.isPopupOpen()) {
                 this.parent.inputFocus = false;

@@ -160,30 +160,23 @@ var SfToast = /** @class */ (function () {
             }
             return;
         }
-        else if (typeof element === STRING && element !== ALL) {
-            var ele = this.toastContainer.querySelector('#toast_' + element);
-            if (ele) {
-                this.destroyToast(ele);
-                this.dotNetRef.invokeMethodAsync(DESTROY_TIMER, parseInt(element, 10));
-            }
-        }
         if (sf.base.isNullOrUndefined(element)) {
             element = (this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
-            this.destroyToast(element);
         }
+        this.destroyToast(element);
         var id = parseInt(element.id.split('toast_')[1], 10);
         this.dotNetRef.invokeMethodAsync(DESTROY_TIMER, id);
     };
     SfToast.prototype.destroyToast = function (element) {
+        var _this = this;
         var proxy = this;
         var hideAnimate = this.hideAnimation;
         var animate = {
             duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
         };
         animate.end = function () {
-            var id = parseInt(element.id.split('toast_')[1], 10);
             sf.base.detach(element);
-            proxy.dotNetRef.invokeMethodAsync(CLOSE_EVENT, id);
+            proxy.dotNetRef.invokeMethodAsync(CLOSE_EVENT, proxy.getDomObject(ELEMENT, _this.toastContainer));
         };
         new sf.base.Animation({}).animate(element, animate);
     };

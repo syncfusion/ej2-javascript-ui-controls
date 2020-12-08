@@ -16,7 +16,7 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { QueryCellInfoEventArgs, RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs } from '../../../src/grid/base/interface';
-import { createGrid, destroy } from '../base/specutil.spec';
+import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
@@ -4683,6 +4683,103 @@ describe('rowdeselect checking with persist selection and ResetOnRowClick', () =
             gridObj = null;
         });
     });
-    
 });
+describe(' EJ242851 => Column Selection testing', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let selectionModule: Selection;
+    beforeAll((done: Function) => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowSorting: true,
+                columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }, { field: 'ShipCountry' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Column' },
+            }, done);
+    });
 
+    it('select Column method testing', () => {
+        selectionModule = gridObj.selectionModule;
+        selectionModule.selectColumn(1);
+        expect(gridObj.element.querySelector('e-selectionbackground')).toBeNull();
+        expect((gridObj.element.querySelector('.e-cellselectionbackground') as HTMLTableCellElement)).toBeNull();  
+        expect(gridObj.element.querySelector('.e-columnselection')).not.toBeNull();        
+    });
+
+    it('select Column by range method testing', () => {
+        gridObj.clearSelection();
+        selectionModule.selectColumnsByRange(1, 3);
+        expect(gridObj.getSelectedColumnsUid().length).toBe(3);
+        expect(gridObj.element.querySelector('.e-row').querySelectorAll('.e-columnselection').length).toBe(3);  
+        expect(gridObj.getHeaderContent().querySelectorAll('.e-columnselection').length).toBe(3);        
+    });
+
+    it('select Column by Collection method testing', () => {
+        gridObj.clearSelection();
+        selectionModule.selectColumns([2,5]);
+        expect(gridObj.getSelectedColumnsUid().length).toBe(2);
+        expect(gridObj.element.querySelector('.e-row').querySelectorAll('.e-columnselection').length).toBe(2);  
+        expect(gridObj.getHeaderContent().querySelectorAll('.e-columnselection').length).toBe(2);        
+    });
+
+    it('select Column with Existing method testing', () => {
+        selectionModule.selectColumnWithExisting(3);
+        expect(gridObj.getSelectedColumnsUid().length).toBe(3);
+        expect(gridObj.element.querySelector('.e-row').querySelectorAll('.e-columnselection').length).toBe(3);  
+        expect(gridObj.getHeaderContent().querySelectorAll('.e-columnselection').length).toBe(3);        
+    });
+
+    it('check select event', (done: Function) => {
+        let columnSelecting: EmitType<Object> = (args: Object) => {
+            expect(args['isInteracted']).toBeFalsy();
+            expect(args['columnIndex']).toEqual(0);
+            expect(args['headerCell']).toEqual(gridObj.getHeaderContent().querySelector('.e-headercell'));
+        };
+        let columnSelected: EmitType<Object> = (args: Object) => {
+            expect(args['isInteracted']).toBeFalsy();
+            expect(args['columnIndex']).toEqual(0);
+            expect(args['headerCell']).toEqual(gridObj.getHeaderContent().querySelector('.e-headercell'));
+            gridObj.columnSelected = null;
+            gridObj.columnSelecting = null;
+            done();
+        };
+        gridObj.columnSelecting = columnSelecting;
+        gridObj.columnSelected = columnSelected;
+        selectionModule.selectColumn(0);
+    });
+
+    it('check deselect event', (done: Function) => {
+        gridObj.columnDeselected = undefined;
+        gridObj.columnDeselecting = undefined;
+        let columnDeselecting: EmitType<Object> = (args: Object) => {
+            expect(args['isInteracted']).toBeFalsy();
+            expect(args['columnIndex']).toEqual(0);
+            expect(args['headerCell']).toEqual(gridObj.getHeaderContent().querySelector('.e-headercell'));
+        };
+        let columnDeselected: EmitType<Object> = (args: Object) => {
+            expect(args['isInteracted']).toBeFalsy();
+            expect(args['columnIndex']).toEqual(0);
+            expect(args['headerCell']).toEqual(gridObj.getHeaderContent().querySelector('.e-headercell'));
+            gridObj.columnDeselected = null;
+            gridObj.columnDeselecting = null;
+            done();
+        };
+        gridObj.columnDeselecting = columnDeselecting;
+        gridObj.columnDeselected = columnDeselected;
+        selectionModule.clearColumnSelection();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = preventDefault = selectionModule = null;
+    });
+});

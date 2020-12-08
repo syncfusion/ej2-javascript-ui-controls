@@ -300,11 +300,15 @@ export class SheetRender implements IRenderer {
             this.updateLeftColGroup(colGroupWidth);
         }
         if (sheet.showHeaders) {
-            detach(this.contentPanel.querySelector('.e-row-header tbody'));
-            this.getRowHeaderTable().appendChild(hFrag);
+            if (this.contentPanel.querySelector('.e-row-header tbody')) {
+                detach(this.contentPanel.querySelector('.e-row-header tbody'));
+                this.getRowHeaderTable().appendChild(hFrag);
+            }
         }
-        detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
-        this.getContentTable().appendChild(frag);
+        if (this.contentPanel.querySelector('.e-sheet-content tbody')) {
+            detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
+            this.getContentTable().appendChild(frag);
+        }
         this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
