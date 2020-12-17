@@ -86,6 +86,47 @@
         cursor: nwse-resize;
         right: $dialog-resize-handler-position;
       }
+
+      &.e-south-west {
+        bottom: $dialog-resize-handler-position;
+        cursor: nesw-resize;
+        left: $dialog-resize-handler-position;
+        transform: rotate(90deg);
+      }
+
+      &.e-north-east {
+        cursor: nesw-resize;
+        right: $dialog-resize-handler-position;
+        top: $dialog-resize-handler-position;
+        transform: rotate(-90deg);
+      }
+
+      &.e-north-west {
+        cursor: nwse-resize;
+        left: $dialog-resize-handler-position;
+        top: $dialog-resize-handler-position;
+        transform: rotate(180deg);
+      }
+    }
+
+    .e-south,
+    .e-north,
+    .e-east,
+    .e-west {
+      background-color: transparent;
+      background-repeat: repeat;
+      overflow: visible;
+      position: absolute;
+    }
+
+    .e-east,
+    .e-west {
+      cursor: ew-resize;
+    }
+
+    .e-south,
+    .e-north {
+      cursor: ns-resize;
     }
   }
 

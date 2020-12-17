@@ -424,6 +424,30 @@ export class WUniqueFormat {
         if (property === 'pageStartingNumber') {
             return 13;
         }
+        if (property === 'endnoteNumberFormat') {
+            return 14;
+        }
+        if (property === 'endnotePosition') {
+            return 15;
+        }
+        if (property === 'footNoteNumberFormat') {
+            return 16;
+        }
+        if (property === 'footnotePosition') {
+            return 17;
+        }
+        if (property === 'restartIndexForEndnotes') {
+            return 18;
+        }
+        if (property === 'restartIndexForFootnotes') {
+            return 19;
+        }
+        if (property === 'initialFootNoteNumber') {
+            return 20;
+        }
+        if (property === 'initialEndNoteNumber') {
+            return 21;
+        }
         return 0;
     }
     /**
@@ -765,6 +789,30 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('pageStartingNumber', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('endnoteNumberFormat', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('endnotePosition', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('footNoteNumberFormat', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('footnotePosition', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('restartIndexForEndnotes', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('restartIndexForFootnotes', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('initialFootNoteNumber', source, modifiedProperty, modifiedValue, 10)) {
+            return false;
+        }
+        if (this.isNotEqual('initialEndNoteNumber', source, modifiedProperty, modifiedValue, 10)) {
             return false;
         }
         return true;

@@ -1432,7 +1432,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            } else {
+                this.trigger('change', eventArgs);
+            }
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');

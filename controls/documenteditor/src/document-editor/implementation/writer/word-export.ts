@@ -30,8 +30,8 @@ export class WordExport {
     private footerPath: string = 'word/footer';
     //private commentsPath: string = 'word/comments.xml';
     private imagePath: string = 'word/media/image';
-    // private footnotesPath: string = 'word/footnotes.xml';
-    // private endnotesPath: string = 'word/endnotes.xml';
+    private footnotesPath: string = 'word/footnotes.xml';
+    private endnotesPath: string = 'word/endnotes.xml';
     private appPath: string = 'docProps/app.xml';
     private corePath: string = 'docProps/core.xml';
     // private CustomPath: string = 'docProps/custom.xml';
@@ -60,8 +60,8 @@ export class WordExport {
     private excelRelationPath: string = 'xl/_rels/workbook.xml.rels';
     // private FontRelationPath: string = 'word/_rels/fontTable.xml.rels';
     // private CommentsRelationPath: string = 'word/_rels/comments.xml.rels';
-    // private FootnotesRelationPath: string = 'word/_rels/footnotes.xml.rels';
-    // private EndnotesRelationPath: string = 'word/_rels/endnotes.xml.rels';
+    private footnotesRelationPath: string = 'word/_rels/footnotes.xml.rels';
+    private endnotesRelationPath: string = 'word/_rels/endnotes.xml.rels';
     // private NumberingRelationPath: string = 'word/_rels/numbering.xml.rels';
     private headerRelationPath: string = 'word/_rels/header';
     private footerRelationPath: string = 'word/_rels/footer';
@@ -77,10 +77,10 @@ export class WordExport {
     private settingsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml';
     private commentsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
     private commentsExContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml';
-    // private EndnoteContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml';
+    private endnoteContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml';
     // private FontTableContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml';
     private footerContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml';
-    // private FootnoteContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml';
+    private footnoteContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml';
     // private GlossaryDocumentContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml';
     private headerContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml';
     private numberingContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml';
@@ -114,10 +114,10 @@ export class WordExport {
     private commentsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments';
     private commentsExRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/commentsExtended';
     private settingsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings';
-    // private EndnoteRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes';
+    private endnoteRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes';
     // private FontTableRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable';
     private footerRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer';
-    // private FootnoteRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes';
+    private footnoteRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes';
     private headerRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/header';
     private documentRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument';
     private numberingRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering';
@@ -277,6 +277,7 @@ export class WordExport {
     private table: any;
     private row: any;
     private headerFooter: any;
+    private endNoteFootnote: any;
     private document: any;
     private mSections: any;
     private mLists: any;
@@ -289,6 +290,7 @@ export class WordExport {
     private mRelationShipID: number = 0;
     private cRelationShipId: number = 0;
     private eRelationShipId: number = 0;
+    private efRelationShipId: number = 0;
     private mDocPrID: number = 0;
     private chartCount: number = 0;
     private seriesCount: number = 0;
@@ -296,6 +298,7 @@ export class WordExport {
     private chart: any;
     private mDifferentFirstPage: boolean = false;
     private mHeaderFooterColl: Dictionary<any, Dictionary<string, any>>;
+    private mFootEndnotesColl: Dictionary<any, Dictionary<string, any>>;
     private mVerticalMerge: Dictionary<number, number>;
     private mGridSpans: Dictionary<number, number>;
     private mDocumentImages: Dictionary<string, any>;
@@ -369,6 +372,13 @@ export class WordExport {
             this.mHeaderFooterColl = new Dictionary<any, Dictionary<string, any>>();
         }
         return this.mHeaderFooterColl;
+    }
+    /// Gets the Endnote and Footnote Collection
+    private get EndnotesFootnotes(): Dictionary<any, Dictionary<string, any>> {
+        if (this.mFootEndnotesColl === undefined) {
+            this.mFootEndnotesColl = new Dictionary<any, Dictionary<string, any>>();
+        }
+        return this.mFootEndnotesColl;
     }
     /**
      * @private
@@ -477,7 +487,6 @@ export class WordExport {
         this.commentId = {};
         this.mVerticalMerge = new Dictionary<number, number>();
         this.mGridSpans = new Dictionary<number, number>();
-
         let contenttype: string;
         //document.xml
         this.serializeDocument();
@@ -514,9 +523,11 @@ export class WordExport {
         //     SerializeNumberingsRelation();
         // }
         this.serializeHeaderFooters();
+        this.serializeFootnotes();
+        this.serializeEndnotes();
         //document relations
         this.serializeDocumentRelations();
-        // // Add controls to archieve.
+        // Add controls to archieve.
         // if (ControlsPathNames.length > 0) {
         //     AddControlsToZip(m_document.DocxPackage);
         // }
@@ -577,6 +588,7 @@ export class WordExport {
         this.mRelationShipID = 0;
         this.eRelationShipId = 0;
         this.cRelationShipId = 0;
+        this.efRelationShipId = 0;
         this.mDocPrID = 0;
         this.chartCount = 0;
         this.mDifferentFirstPage = false;
@@ -607,6 +619,10 @@ export class WordExport {
         if (this.mDocumentCharts) {
             this.mDocumentCharts.destroy();
             this.mDocumentCharts = undefined;
+        }
+        if (this.mFootEndnotesColl) {
+            this.mFootEndnotesColl.destroy();
+            this.mFootEndnotesColl = undefined;
         }
     }
     // Serializes the document elements (document.xml)
@@ -795,6 +811,8 @@ export class WordExport {
         this.serializeSectionType(writer, 'nextPage');
         this.serializePageSetup(writer, section.sectionFormat);
         this.serializeColumns(writer, section);
+        this.serializeFootNotesPr(writer, section.sectionFormat);
+        this.serializeEndNotesPr(writer, section.sectionFormat);
         // this.serializeSectionProtection(section);
 
         // if (section.PageSetup.VerticalAlignment !== PageAlignment.Top) {
@@ -835,6 +853,97 @@ export class WordExport {
         writer.writeEndElement(); //end of sectPr tag
 
     }
+    private serializeFootNotesPr(writer: XmlWriter, section: any): void {
+        if (section.footNoteNumberFormat || section.restartIndexForFootnotes) {
+            writer.writeStartElement(undefined, 'footnotePr', this.wNamespace);
+
+            writer.writeStartElement(undefined, 'pos', this.wNamespace);
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, 'pageBottom');
+            writer.writeEndElement();
+
+            if (section.footNoteNumberFormat !== undefined) {
+                writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberFormat(section.footNoteNumberFormat));
+                writer.writeEndElement();
+            }
+            if (section.restartIndexForFootnotes !== undefined) {
+                writer.writeStartElement(undefined, 'numRestart', this.wNamespace);
+                // tslint:disable-next-line:max-line-length
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section.restartIndexForFootnotes));
+                writer.writeEndElement();
+            }
+            if (section.initialFootNoteNumber !== undefined) {
+                writer.writeStartElement(undefined, 'numStart', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, (section.initialFootNoteNumber).toString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
+    private getFootNoteNumberFormat(numberFormat: string): string {
+        let patternType: string;
+        switch (numberFormat) {
+            case 'UpperCaseRoman':
+                patternType = 'upperRoman';
+                break;
+            case 'LowerCaseRoman':
+                patternType = 'lowerRoman';
+                break;
+            case 'UpperCaseLetter':
+                patternType = 'upperLetter';
+                break;
+            case 'LowerCaseLetter':
+                patternType = 'lowerLetter';
+                break;
+            default:
+                patternType = 'decimal';
+                break;
+        }
+        return patternType;
+    }
+
+
+    private getFootNoteNumberRestart(numberRestart: string): string {
+        switch (numberRestart) {
+            case 'RestartForEachSection ':
+                return 'eachSect';
+            case 'RestartForEachPage':
+                return 'eachPage';
+            default:
+                return 'continuous';
+        }
+    }
+
+    // Serialize the Footnote Properties
+    private serializeEndNotesPr(writer: XmlWriter, section: any): void {
+        if (section.endnoteNumberFormat || section.restartIndexForEndnotes) {
+            writer.writeStartElement(undefined, 'endnotePr', this.wNamespace);
+
+            writer.writeStartElement(undefined, 'pos', this.wNamespace);
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, 'docEnd');
+            writer.writeEndElement();
+
+            if (section.endnoteNumberFormat !== undefined) {
+                writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberFormat(section.endnoteNumberFormat));
+                writer.writeEndElement();
+            }
+            if (section.restartIndexForEndnotes !== undefined) {
+                writer.writeStartElement(undefined, 'numRestart', this.wNamespace);
+                // tslint:disable-next-line:max-line-length
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getFootNoteNumberRestart(section.restartIndexForEndnotes));
+                writer.writeEndElement();
+            }
+            if (section.initialEndNoteNumber !== undefined) {
+                writer.writeStartElement(undefined, 'numStart', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, (section.initialEndNoteNumber).toString());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
     // Serialize the column properties of section.
     private serializeColumns(writer: XmlWriter, section: any): void {
         writer.writeStartElement(undefined, 'cols', this.wNamespace);
@@ -1397,6 +1506,8 @@ export class WordExport {
                 this.serializeChartStructure();
             } else if (item.hasOwnProperty('commentCharacterType')) {
                 this.serializeComment(writer, item);
+            } else if (item.hasOwnProperty('footnoteType')) {
+                this.serializeEFReference(writer, item);
             } else {
                 this.serializeTextRange(writer, item, previousNode);
             }
@@ -1411,6 +1522,190 @@ export class WordExport {
         }
         if (isContinueOverride) {
             writer.writeEndElement();
+        }
+    }
+    private serializeEFReference(writer: XmlWriter, item: any): void {
+        let efId: string = '';
+        let ef: any = item.blocks;
+        if (item.footnoteType === 'Footnote') {
+            writer.writeStartElement(undefined, 'r', this.wNamespace);
+            this.serializeCharacterFormat(writer, item.characterFormat);
+            writer.writeStartElement(undefined, 'footnoteReference', this.wNamespace);
+            efId = this.getEFNextRelationShipID();
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, efId);
+            this.addFootnotesEndnotes(ef, 'footnote', efId);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        } else {
+            writer.writeStartElement(undefined, 'r', this.wNamespace);
+            this.serializeCharacterFormat(writer, item.characterFormat);
+            writer.writeStartElement(undefined, 'endnoteReference', this.wNamespace);
+            efId = this.getEFNextRelationShipID();
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, efId);
+            this.addFootnotesEndnotes(ef, 'endnote', efId);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+    }
+    private addFootnotesEndnotes(ef: any, efType: any, id: string): void {
+        let efColl: Dictionary<string, any> = new Dictionary<string, any>();
+        this.EndnotesFootnotes.add(efType, efColl);
+        this.EndnotesFootnotes.get(efType).add(id, ef);
+    }
+    private serializeEndnotesFootnote(writer: XmlWriter, efType: any): void {
+        if (this.EndnotesFootnotes.length === 0) {
+            return;
+        }
+        let endnoteFootnotePath: string;
+        let endnoteFootnoteRelsPath: string;
+        if (!this.EndnotesFootnotes.containsKey(efType)) {
+            return;
+        }
+        let efColl: Dictionary<string, any> = this.EndnotesFootnotes.get(efType);
+        let ef: any = undefined;
+        for (let i: number = 0; i < efColl.keys.length; i++) {
+            let id: string = efColl.keys[i];
+            ef = efColl.get(id);
+            if (efType === 'endnote') {
+                endnoteFootnotePath = this.endnotesPath;
+                endnoteFootnoteRelsPath = this.endnotesRelationPath;
+                this.serializeInlineEndnotes(writer, ef, id);
+            } else {
+                endnoteFootnotePath = this.footnotesPath;
+                endnoteFootnoteRelsPath = this.footnotesRelationPath;
+                this.serializeInlineFootnotes(writer, ef, id);
+            }
+        }
+    }
+    private serializeInlineEndnotes(writer: XmlWriter, endNote: any, id: string): void {
+        this.endNoteFootnote = endNote;
+        let owner: any = this.blockOwner;
+        this.blockOwner = endNote;
+        writer.writeStartElement('w', 'endnote', this.wNamespace);
+        writer.writeAttributeString(undefined, 'id', this.wNamespace, id);
+        this.serializeBodyItems(writer, endNote, true);
+        writer.writeEndElement();
+        this.blockOwner = owner;
+        this.endNoteFootnote = undefined;
+    }
+
+    private serializeInlineFootnotes(writer: XmlWriter, footNote: any, id: string): void {
+        this.endNoteFootnote = footNote;
+        let owner: any = this.blockOwner;
+        this.blockOwner = footNote;
+        writer.writeStartElement('w', 'footnote', this.wNamespace);
+        writer.writeAttributeString(undefined, 'id', this.wNamespace, id);
+        this.serializeBodyItems(writer, footNote, true);
+        writer.writeEndElement();
+        this.blockOwner = owner;
+        this.endNoteFootnote = undefined;
+    }
+    // private footnoteXMLItem(fileIndex: number): any {
+    //     let writer = new XmlWriter;
+    //     writer.writeStartElement(undefined, 'Sources', this.wNamespace)
+    //     writer.writeAttributeString('xmlns', 'b', undefined, 'http://schemas.openxmlformats.org/officeDocument/2006/bibliography')
+    //     writer.writeAttributeString(undefined,'xmlns',  undefined, 'http://schemas.openxmlformats.org/officeDocument/2006/bibliography')
+    //     writer.writeAttributeString(undefined,'SelectedStyle', undefined,"\APASixthEditionOfficeOnline.xsl")
+    //     writer.writeAttributeString(undefined,'StyleName',  undefined,"APA")
+    //     writer.writeAttributeString(undefined,'Version',  undefined,"6")
+    //     writer.writeEndElement();
+    //     let itemPath: string = this.customXMLItemsPath + fileIndex + '.xml';
+    //     let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, itemPath);
+    //     this.mArchive.addItem(zipArchiveItem);
+    //     return itemPath;
+    // } 
+    // private footnoteXMLItemProps(itemID: string, fileIndex: number): any {
+    //     let writer: XmlWriter = new XmlWriter();
+    //     let customitemPropsPath: string = this.customXMLItemsPropspath + fileIndex + '.xml';
+    //     let itemPropsPath: string = this.itemPropsPath + fileIndex + '.xml';
+    //     writer.writeStartElement('ds', 'datastoreItem', this.wNamespace);
+    //     writer.writeAttributeString('ds', 'itemID', undefined, itemID);
+    //     writer.writeAttributeString('xmlns', 'ds', undefined, this.dsNamespace);
+    //     writer.writeStartElement('ds','schemaRefs', this.wNamespace);
+    //     writer.writeStartElement('ds', 'schemaRef', this.wNamespace);
+    //     writer.writeAttributeString('ds','uri', undefined,'http://schemas.openxmlformats.org/officeDocument/2006/bibliography' )
+    //     writer.writeEndElement();
+    //     writer.writeEndElement();
+    //     writer.writeEndElement();
+    //     this.customXMLProps.push(customitemPropsPath);
+    //     let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, customitemPropsPath);
+    //     this.mArchive.addItem(zipArchiveItem);
+    //     return itemPropsPath;
+    // }
+
+    //Serialize the Footnote Endnotes Common Atributes 
+    private writeEFCommonAttributes(writer: XmlWriter): void {
+        writer.writeAttributeString('xmlns', 'wpc', undefined, this.wpCanvasNamespace);
+        writer.writeAttributeString('xmlns', 'cx', undefined, this.cxNamespace);
+        writer.writeAttributeString('xmlns', 'aink', undefined, 'http://schemas.microsoft.com/office/drawing/2016/ink');
+        writer.writeAttributeString('xmlns', 'am3d', undefined, 'http://schemas.microsoft.com/office/drawing/2017/,odel3d');
+        this.writeCustom(writer);
+        writer.writeAttributeString('xmlns', 'wp14', undefined, this.wpDrawingNamespace);
+        writer.writeAttributeString('xmlns', 'wp', undefined, this.wpNamespace);
+        writer.writeAttributeString('xmlns', 'w', undefined, this.wNamespace);
+        this.writeDup(writer);
+        writer.writeAttributeString('xmlns', 'wne', undefined, this.wneNamespace);
+        writer.writeAttributeString('xmlns', 'wps', undefined, this.wpShapeNamespace);
+        writer.writeAttributeString('mc', 'Ignorable', undefined, 'w14 w15');
+    }
+    private serializeFootnotes(): any {
+        if (isNullOrUndefined(this.document.footnotes)) {
+            return;
+        } else {
+            let writer: XmlWriter = new XmlWriter();
+            writer.writeStartElement('w', 'footnotes', this.wNamespace);
+            this.writeEFCommonAttributes(writer);
+            writer.writeStartElement('w', 'footnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'separator');
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '-1');
+            this.serializeBodyItems(writer, this.document.footnotes.separator, true);
+            writer.writeEndElement();
+            writer.writeStartElement('w', 'footnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationSeparator');
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '0');
+            this.serializeBodyItems(writer, this.document.footnotes.continuationSeparator, true);
+            writer.writeEndElement();
+            if (this.document.footnotes.continuationNotice) {
+                writer.writeStartElement('w', 'endnote', this.wNamespace);
+                writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationNotice');
+                writer.writeAttributeString(undefined, 'id', this.wNamespace, '1');
+                this.serializeBodyItems(writer, this.document.footnotes.continuationNotice, true);
+                writer.writeEndElement();
+            }
+            this.serializeEndnotesFootnote(writer, 'footnote');
+            writer.writeEndElement();
+            let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.footnotesPath);
+            this.mArchive.addItem(zipArchiveItem);
+        }
+    }
+    private serializeEndnotes(): any {
+        if (isNullOrUndefined(this.document.footnotes)) {
+            return;
+        } else {
+            let writer: XmlWriter = new XmlWriter();
+            writer.writeStartElement('w', 'endnotes', this.wNamespace);
+            this.writeEFCommonAttributes(writer);
+            writer.writeStartElement('w', 'endnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'separator');
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '-1');
+            this.serializeBodyItems(writer, this.document.endnotes.separator, true);
+            writer.writeEndElement();
+            writer.writeStartElement('w', 'endnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationSeparator');
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '0');
+            this.serializeBodyItems(writer, this.document.endnotes.continuationSeparator, true);
+            writer.writeEndElement();
+            if (this.document.endnotes.continuationNotice) {
+                writer.writeStartElement('w', 'endnote', this.wNamespace);
+                writer.writeAttributeString(undefined, 'type', this.wNamespace, 'continuationNotice');
+                writer.writeAttributeString(undefined, 'id', this.wNamespace, '1');
+                this.serializeBodyItems(writer, this.document.endnotes.continuationNotice, true);
+                writer.writeEndElement();
+            }
+            this.serializeEndnotesFootnote(writer, 'endnote');
+            writer.writeEndElement();
+            let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.endnotesPath);
+            this.mArchive.addItem(zipArchiveItem);
         }
     }
     //Serialize Revision end
@@ -4288,7 +4583,7 @@ export class WordExport {
         }
     }
     // Serialize the text range.
-    private serializeTextRange(writer: XmlWriter, span: any, previousNode: any): void {
+    private serializeTextRange(writer: XmlWriter, span: any, previousNode: any, efType?: string): void {
         writer.writeStartElement('w', 'r', this.wNamespace);
         if (!isNullOrUndefined(span.characterFormat)) {
             this.serializeCharacterFormat(writer, span.characterFormat);
@@ -4300,6 +4595,18 @@ export class WordExport {
         } else if (span.text === '\f') {
             writer.writeStartElement(undefined, 'br', this.wNamespace);
             writer.writeAttributeString('w', 'type', this.wNamespace, 'page');
+            writer.writeEndElement();
+        } else if (encodeURI(span.text) === '%02') {
+            writer.writeStartElement(undefined, 'footnoteRef', this.wNamespace);
+            writer.writeEndElement();
+        } else if (encodeURI(span.text) === '%02' && efType === 'endnote') {
+            writer.writeStartElement(undefined, 'endnoteRef', this.wNamespace);
+            writer.writeEndElement();
+        } else if (encodeURI(span.text) === '%03') {
+            writer.writeStartElement(undefined, 'separator', this.wNamespace);
+            writer.writeEndElement();
+        } else if (encodeURI(span.text) === '%04') {
+            writer.writeStartElement(undefined, 'continuationSeparator', this.wNamespace);
             writer.writeEndElement();
         } else {
             let isDeleteText: boolean = this.retrieveDeleteRevision(span);
@@ -5326,7 +5633,28 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', this.wNamespace, '15');
         writer.writeEndElement();
         writer.writeEndElement();
-
+        if (this.document.footnotes) {
+            //this.serializeFootNotesPr(writer, this.document.section.sectionFormat);
+            writer.writeStartElement(undefined, 'footnotePr', this.wNamespace);
+            writer.writeStartElement(undefined, 'footnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '-1');
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'footnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '0');
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+        if (this.document.endnotes) {
+            // this.serializeEndNotesPr(writer, this.document.section.sectionFormat);
+            writer.writeStartElement(undefined, 'endnotePr', this.wNamespace);
+            writer.writeStartElement(undefined, 'endnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '-1');
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'endnote', this.wNamespace);
+            writer.writeAttributeString(undefined, 'id', this.wNamespace, '0');
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
         let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.settingsPath);
         this.mArchive.addItem(zipArchiveItem);
@@ -5473,6 +5801,10 @@ export class WordExport {
         writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
+        if (this.document.endnotes) {
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.footnoteRelType, 'footnotes.xml');
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.endnoteRelType, 'endnotes.xml');
+        }
         if (this.mComments.length > 0) {
             if (!(this.mComments.length === 1 && this.mComments[0].text === '')) {
                 this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
@@ -5486,8 +5818,10 @@ export class WordExport {
         }
 
 
-
+        //this.serializeFootnoteEndnoteRelations(writer);
         this.serializeHeaderFooterRelations(writer);
+
+        //this.serializeFootnoteXMLMapping(writer);
 
         // if (HasFontTable) {
         //     SerializeRelationShip(docRelstream, GetNextRelationShipID(), this.FontTableRelType, 'fontTable.xml');
@@ -5712,6 +6046,9 @@ export class WordExport {
     private getNextRelationShipID(): string {
         return 'rId' + (++this.mRelationShipID);
     }
+    private getEFNextRelationShipID(): string {
+        return (++this.efRelationShipId).toString();
+    }
     private serializeGeneralRelations(): void {
 
         let writer: XmlWriter = new XmlWriter();
@@ -5822,6 +6159,7 @@ export class WordExport {
         //                 SerializeChartContentType(contentStream);
         // #endif
         this.serializeHFContentTypes(writer);
+        this.SerializeEFContentTypes(writer);
         // WriteXmlItemsContentTypes(contentStream);
 
         //End of Types tag
@@ -5865,6 +6203,20 @@ export class WordExport {
             }
             this.serializeOverrideContentType(writer, partName, contentType);
         }
+    }
+    private SerializeEFContentTypes(writer: XmlWriter): void {
+        this.serializeEFContentType(writer);
+    }
+    // Serializes the HeaderFooter content types.
+    private serializeEFContentType(writer: XmlWriter): void {
+        let contentType: string;
+        let partName: string;
+        partName = this.endnotesPath;
+        contentType = this.endnoteContentType;
+        this.serializeOverrideContentType(writer, partName, contentType);
+        partName = this.footnotesPath;
+        contentType = this.footnoteContentType;
+        this.serializeOverrideContentType(writer, partName, contentType);
     }
     // Serializes the Override content type.
     private serializeOverrideContentType(writer: XmlWriter, partName: string, contentType: string): void {

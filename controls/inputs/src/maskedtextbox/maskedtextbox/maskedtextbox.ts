@@ -53,6 +53,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private formElement: HTMLElement;
     private initInputValue: string = '';
     private maskOptions: MaskedTextBoxModel;
+    private isAngular: boolean = false;
+    private preventChange: boolean = false;
 
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the

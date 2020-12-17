@@ -169,6 +169,39 @@ describe('TreeGrid Reordering', () => {
     });
   });
 
+describe('Template column check after Re-Ordering', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowReordering: true,
+          columns: [
+            {field: 'taskID', template: '<span>test</span>'},
+            {field: 'taskName'},
+            {field: 'duration'}
+         ],
+        },
+        done
+      );
+    });
+    it('Check the template', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        if (args['requestType'] == 'reorder'){
+           expect(gridObj.getRows()[0].cells[1].classList.contains('e-templatecell')).toBe(true);
+        }
+       done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.reorderColumns('taskName', 'taskID')
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   describe('SetModel', () => {
     let TreeGridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -292,6 +325,7 @@ describe('Stacked data Reorder', () => {
       expect(columns[6].field).toBe('unitPrice');
       expect(columns[7].field).toBe('price');
       expect(TreeGridObj.getRows()[0].getElementsByClassName('e-rowcell')[3].querySelector(".e-icons"));
+     
         };
    TreeGridObj.actionComplete = actionComplete;
    TreeGridObj.reorderColumns( "orderName","orderID");

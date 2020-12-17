@@ -28,6 +28,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-filemanager/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-excel-export/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },

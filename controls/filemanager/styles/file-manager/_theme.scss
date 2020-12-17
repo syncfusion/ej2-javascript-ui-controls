@@ -306,7 +306,8 @@
   .e-fe-popup {
 
     &.e-dropdown-popup ul .e-item,
-    &.e-contextmenu-wrapper ul .e-menu-item {
+    &.e-contextmenu-wrapper ul .e-menu-item,
+    &.e-contextmenu-container ul .e-menu-item {
       @include active-icon;
 
       &.e-separator {

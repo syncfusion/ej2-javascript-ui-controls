@@ -12,17 +12,18 @@ import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsMod
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
+import { WorkbookChart } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';
 import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
-import { setLinkModel, setImage } from '../common/event';
-import { beginAction, completeAction } from '../../spreadsheet/common/event';
+import { setLinkModel, setImage, setChart } from '../common/event';
+import { beginAction, completeAction, deleteChart } from '../../spreadsheet/common/event';
 import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 
@@ -227,6 +228,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public allowImage: boolean;
 
     /**
+     * It allows you to insert the chart in spreadsheet.
+     * @default true
+     */
+    @Property(true)
+    public allowChart: boolean;
+
+    /**
      * It allows you to apply conditional formatting to the sheet. 
      * @default true
      */
@@ -402,6 +410,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     public isOpen: boolean = false;
+
+    /**
+     * @hidden
+     */
+    public chartColl: ChartModel[] = [];
+
+    /**
+     * @hidden
+     */
+    public chartCount: number = 1;
     /**
      * Constructor for initializing the library.
      * @param options - Configures Workbook model.
@@ -411,7 +429,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
-            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
+            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -594,7 +612,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             setColumn(sheet, i, { hidden: hide });
         }
     }
-
     /**
      * Sets the border to specified range of cells.
      * @param {CellStyleModel} style? - Specifies the style property which contains border value.
@@ -1022,6 +1039,24 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public insertImage(images: ImageModel[], range?: string): void {
         this.notify(setImage, { options: images, range: range ? range : this.getActiveSheet().selectedRange });
+    }
+
+    /**
+     * Used to set the chart in spreadsheet.
+     * @param {ChartModel} chart - Specifies the options to insert chart in spreadsheet.
+     * @returns void
+     */
+    public insertChart(chart?: ChartModel[]): void {
+        this.notify(setChart, { chart: chart });
+    }
+
+    /**
+     * Used to delete the chart from spreadsheet.
+     * @param {string} id - Specifies the chart element id.
+     * @returns void
+     */
+    public deleteChart(id?: string): void {
+        this.notify(deleteChart, { id: id });
     }
 
     /**

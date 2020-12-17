@@ -106,7 +106,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
             return this.drawHelper(arg1, arg2.x, arg2.y);
         } else if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
             return this.drawHelper(arg1, arg2, arg3, null);
-        } else if (arg2 instanceof RectangleF && typeof (arg2 as RectangleF).width !== 'undefined' && typeof arg3 === 'undefined') {
+        } else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'undefined') {
             return this.drawHelper(arg1, arg2, null);
         } else if (arg2 instanceof PointF && typeof (arg2 as RectangleF).width === 'undefined' && arg3 instanceof PdfLayoutFormat) {
             return this.drawHelper(arg1, arg2.x, arg2.y, arg3);
@@ -114,7 +114,7 @@ export class PdfTreeGrid extends PdfLayoutElement {
             let width: number = (arg1.graphics.clientSize.width - arg2);
             let layoutRectangle: RectangleF = new RectangleF(arg2, arg3, width, 0);
             return this.drawHelper(arg1, layoutRectangle, arg4);
-        } else if (arg2 instanceof RectangleF && typeof (arg2 as RectangleF).width !== 'undefined' && typeof arg3 === 'boolean') {
+        } else if (arg2 instanceof RectangleF && typeof arg2.width !== 'undefined' && typeof arg3 === 'boolean') {
             return this.drawHelper(arg1, arg2, null);
         } else {
             return this.drawHelper(arg1, (arg2 as RectangleF), arg3 as PdfLayoutFormat);

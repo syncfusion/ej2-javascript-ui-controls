@@ -73,6 +73,8 @@ var DatePicker = /** @class */ (function (_super) {
         _this.isBlazorServer = false;
         _this.invalidValueString = null;
         _this.checkPreviousValue = null;
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.datepickerOptions = options;
         return _this;
     }
@@ -998,7 +1000,12 @@ var DatePicker = /** @class */ (function (_super) {
                 this.changedArgs.event = event || null;
                 this.changedArgs.element = this.element;
                 this.changedArgs.isInteracted = !sf.base.isNullOrUndefined(event);
-                this.trigger('change', this.changedArgs);
+                if (this.isAngular && this.preventChange) {
+                    this.preventChange = false;
+                }
+                else {
+                    this.trigger('change', this.changedArgs);
+                }
                 this.previousElementValue = this.inputElement.value;
                 this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
                 this.isInteracted = true;

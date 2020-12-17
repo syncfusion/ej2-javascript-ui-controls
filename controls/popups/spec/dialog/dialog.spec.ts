@@ -2396,6 +2396,93 @@ describe('Testing resizing option with RTL mode', () => {
     });
 });
 
+describe('Testing resizing with resizeHandle property with all edges', () => {
+    let dialog: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({header:'Demo',
+            visible: false,
+            content:'First demo content',
+            enableResize: true,
+            resizeHandles: ['SouthWest', 'SouthEast', 'NorthWest', 'NorthEast']
+        });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        destroyDialog(dialog);
+    });
+    it('Resize in all edges', () => {
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-south-west'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-north-east'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-north-west'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-south'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-north'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-east'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-west'))).toBe(true);
+    });
+});
+
+describe('Testing resizing with resizeHandle property with all borders', () => {
+    let dialog: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({header:'Demo',
+            visible: false,
+            content:'First demo content',
+            enableResize: true,
+            resizeHandles: ['South', 'East', 'North', 'West']
+        });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        destroyDialog(dialog);
+    });
+    it('Resize in all border', () => {
+        expect(!isNullOrUndefined(document.querySelector('.e-south'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-north'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-east'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-west'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-south-west'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-north-east'))).toBe(true);
+        expect(isNullOrUndefined(document.querySelector('.e-north-west'))).toBe(true);
+    });
+});
+
+describe('Testing resizing with resizeHandle property with All resize directions', () => {
+    let dialog: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({header:'Demo',
+            visible: false,
+            content:'First demo content',
+            enableResize: true,
+            resizeHandles: ['All']
+        });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        destroyDialog(dialog);
+    });
+    it('Resize in all directions', () => {
+        expect(!isNullOrUndefined(document.querySelector('.e-south'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-north'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-east'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-west'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-south-west'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-north-east'))).toBe(true);
+        expect(!isNullOrUndefined(document.querySelector('.e-north-west'))).toBe(true);
+    });
+});
+
 describe('Testing args.cancel', () => {
     let dialog: any;
     let resizeTarget: any;

@@ -10,7 +10,7 @@ export interface SortSettingsModel {
      * * DataSourceOrder
      * * Index
      * * Custom
-     * @default 'DataSourceOrder'
+     * @default 'Index'
      */
     sortBy?: SortOrderBy;
 

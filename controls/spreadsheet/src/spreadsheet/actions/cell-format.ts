@@ -129,33 +129,42 @@ export class CellFormat {
     private setLeftBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string): void {
         if (first && first.includes('Column')) { return; }
-        let prevCell: HTMLElement = this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
-        if (prevCell) {
-            if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
-                this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+        for (let j: number = 0; j < (cell as CellModel).rowSpan; j++) {
+            let prevCell: HTMLElement = this.parent.getCell(rowIdx + j, colIdx - 1, <HTMLTableRowElement>row);
+            let i: number = 1;
+            while (prevCell && prevCell.style.display === 'none') {
+                prevCell = this.parent.getCell(rowIdx + j, colIdx - 1 - i, <HTMLTableRowElement>row);
+                i++;
             }
-            prevCell.style.borderRight = border;
-        } else {
-            cell.style.borderLeft = border;
+            if (prevCell) {
+                if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
+                    this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+                }
+                prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
+            } else {
+                cell.style.borderLeft = border;
+            }
         }
     }
     private setTopBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, pRow: HTMLElement, pHRow: HTMLElement, actionUpdate: boolean,
         first: string, lastCell: boolean, manualUpdate: boolean): void {
         if (first && first.includes('Row')) { return; }
-        let prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx, <HTMLTableRowElement>pRow);
-        if (prevCell) {
-            if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
-                let index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
-                if ((this.parent.getCellStyleValue(['bottomPriority'], index) as CellStyleExtendedModel).bottomPriority) { return; }
+        for (let j: number = 0; j < (cell as CellModel).colSpan; j++) {
+            let prevCell: HTMLElement = this.parent.getCell(rowIdx - 1, colIdx + j, <HTMLTableRowElement>pRow);
+            if (prevCell) {
+                if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
+                    let index: number[] = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
+                    if ((this.parent.getCellStyleValue(['bottomPriority'], index) as CellStyleExtendedModel).bottomPriority) { return; }
+                }
+                if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes(`${rowIdx + 1}`)) {
+                    this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+                }
+                this.setThickBorderHeight(border, rowIdx - 1, colIdx + j, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+                prevCell.style.borderBottom = (border === 'none') ? prevCell.style.borderBottom : border;
+            } else {
+                cell.style.borderTop = border;
             }
-            if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes(`${rowIdx + 1}`)) {
-                this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
-            }
-            this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
-            prevCell.style.borderBottom = border;
-        } else {
-            cell.style.borderTop = border;
         }
     }
     private setThickBorderHeight(

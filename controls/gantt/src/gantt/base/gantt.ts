@@ -61,6 +61,7 @@ import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs
 import { PdfExport } from '../actions/pdf-export';
 import { WorkUnit, TaskType } from './enum';
 import { FocusModule } from '../actions/keyboard';
+import { VirtualScroll } from '../actions/virtual-scroll';
 /**
  *
  * Represents the Gantt chart component.
@@ -119,6 +120,8 @@ export class Gantt extends Component<HTMLElement>
     public flatData: IGanttData[];
     /** @hidden */
     public currentViewData: IGanttData[];
+    /** @hidden */
+    public updatedRecords: IGanttData[];
     /** @hidden */
     public ids: string[];
     /** resource-task Ids */
@@ -218,6 +221,10 @@ export class Gantt extends Component<HTMLElement>
      */
     public selectionModule: Selection;
     /**
+     * The `virtualScrollModule` is used to handle virtual scroll in Gantt.
+     */
+    public virtualScrollModule: VirtualScroll;
+    /**
      * The `excelExportModule` is used to exporting Gantt data in excel format.
      */
     public excelExportModule: ExcelExport;
@@ -260,6 +267,8 @@ export class Gantt extends Component<HTMLElement>
     public showActiveElement: boolean = true;
     /** @hidden */
     public enableHeaderFocus: boolean = true;
+    /** @hidden */
+    public enableValidation: boolean = true;
     /**
      * Enables or disables the key board interaction of Gantt.
      * 
@@ -440,6 +449,14 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property('auto')
     public width: number | string;
+
+  /**
+   * If `enableVirtualization` set to true, then the Gantt will render only the rows visible within the view-port
+   * and load subsequent rows on vertical scrolling. This helps to load large dataset in Gantt.
+   * @default false
+   */
+   @Property(false)
+   public enableVirtualization: boolean;
 
     /**    
      * `toolbar` defines the toolbar items of the Gantt. 
@@ -1209,7 +1226,7 @@ export class Gantt extends Component<HTMLElement>
     public contextMenuClick: EmitType<CMenuClickEventArgs>;
 
     constructor(options?: GanttModel, element?: string | HTMLElement) {
-        super(options, <HTMLElement | string>element);
+        super(options, element);
     }
 
     /** 
@@ -1492,25 +1509,36 @@ export class Gantt extends Component<HTMLElement>
     /**
      * @private
      */
-    public renderGantt(isChange?: boolean): void {
+    public processTimeline(): void {
         this.timelineModule.processTimelineUnit();
         this.timelineModule.calculateZoomingLevelsPerDayWidth(); // To calculate the perDaywidth
+    }
+    /**
+     * @private
+     */
+    public renderGantt(isChange?: boolean): void {
         // predecessor calculation
         if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
-            if (this.isInPredecessorValidation) {
+            if (this.isInPredecessorValidation && this.enableValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
         }
-        this.dataOperation.calculateProjectDates();
-        this.timelineModule.validateTimelineProp();
+        if (this.enableValidation) {
+            this.dataOperation.calculateProjectDates();
+            this.timelineModule.validateTimelineProp();
+        }
         if (isChange) {
             this.updateProjectDates(
                 this.cloneProjectStartDate, this.cloneProjectEndDate, this.isTimelineRoundOff);
-            this.dataOperation.updateGanttData();
+            if (this.enableValidation) {
+                this.dataOperation.updateGanttData();
+            }
             this.treeGrid.dataSource = this.flatData;
         } else {
-            this.dataOperation.updateGanttData();
+            if (this.enableValidation) {
+                this.dataOperation.updateGanttData();
+            }
             this.treeGridPane.classList.remove('e-temp-content');
             remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
             this.notify('dataReady', {});
@@ -1545,6 +1573,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public windowResize(): void {
         if (!isNullOrUndefined(this.element)) {
+            this.updateContentHeight();
             this.ganttChartModule.updateWidthAndHeight(); // Updating chart scroll conatiner height for row mismatch
             this.treeGridModule.ensureScrollBar();
             if (this.predecessorModule && this.taskFields.dependency) {
@@ -1611,15 +1640,20 @@ export class Gantt extends Component<HTMLElement>
     /**
      * @private
      */
-    public updateContentHeight(): void {
-        let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
-        let height: number;
-        if (!isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
-            height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+    public updateContentHeight(args?: object): void {
+        if (this.virtualScrollModule && this.enableVirtualization && !isNullOrUndefined(args)) {
+            let length: number = getValue('count', args);
+            this.contentHeight = length * this.rowHeight;
         } else {
-            height = this.rowHeight;
+            let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
+            let height: number;
+            if (!isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
+                height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            } else {
+                height = this.rowHeight;
+            }
+            this.contentHeight = expandedRecords.length * height;
         }
-        this.contentHeight = expandedRecords.length * height;
     }
     /**
      * To get expand status.
@@ -1859,32 +1893,52 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public treeDataBound(args: object): void {
-        this.updateCurrentViewData();
-        this.updateContentHeight();
-        if (!this.isTreeGridRendered) {
-            this.isTreeGridRendered = true;
-            this.isLoad = false;
-            let toolbarHeight: number = 0;
-            if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
-                toolbarHeight = this.toolbarModule.element.offsetHeight;
+        if (this.isLoad) {
+            this.updateCurrentViewData();
+            if (!this.enableVirtualization) {
+                this.updateContentHeight();
             }
-            if (this.timelineModule.isSingleTier) {
-                addClass(this.treeGrid.element.querySelectorAll('.e-headercell'), cls.timelineSingleHeaderOuterDiv);
-                addClass(this.treeGrid.element.querySelectorAll('.e-columnheader'), cls.timelineSingleHeaderOuterDiv);
-            } else {
-                removeClass(this.treeGrid.element.querySelectorAll('.e-headercell'), cls.timelineSingleHeaderOuterDiv);
-                removeClass(this.treeGrid.element.querySelectorAll('.e-columnheader'), cls.timelineSingleHeaderOuterDiv);
+            if (!this.isTreeGridRendered) {
+                this.isTreeGridRendered = true;
+                let toolbarHeight: number = 0;
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
+                    toolbarHeight = this.toolbarModule.element.offsetHeight;
+                }
+                if (this.timelineModule.isSingleTier) {
+                    addClass(this.treeGrid.element.querySelectorAll('.e-headercell'), cls.timelineSingleHeaderOuterDiv);
+                    addClass(this.treeGrid.element.querySelectorAll('.e-columnheader'), cls.timelineSingleHeaderOuterDiv);
+                } else {
+                    removeClass(this.treeGrid.element.querySelectorAll('.e-headercell'), cls.timelineSingleHeaderOuterDiv);
+                    removeClass(this.treeGrid.element.querySelectorAll('.e-columnheader'), cls.timelineSingleHeaderOuterDiv);
+                }
+                this.treeGrid.height = this.ganttHeight - toolbarHeight -
+                    (this.treeGrid.grid.getHeaderContent() as HTMLElement).offsetHeight;
+                this.notify('tree-grid-created', {});
+                this.createGanttPopUpElement();
+                this.hideSpinner();
+                setValue('isGanttCreated', true, args);
+                this.renderComplete();
             }
-            this.treeGrid.height = this.ganttHeight - toolbarHeight -
-                (this.treeGrid.grid.getHeaderContent() as HTMLElement).offsetHeight;
-            this.notify('tree-grid-created', {});
-            this.createGanttPopUpElement();
-            this.hideSpinner();
-            setValue('isGanttCreated', true, args);
-            this.renderComplete();
+        } else {
+            this.getCurrentRecords(args);
         }
         this.notify('recordsUpdated', {});
+        this.isLoad = false;
         this.trigger('dataBound', args);
+    }
+    /**
+     * @private
+     */
+    private getCurrentRecords(args: object): void {
+        if (this.predecessorModule && this.taskFields.dependency) {
+            this.connectorLineModule.removePreviousConnectorLines(this.currentViewData);
+        }
+        this.updateCurrentViewData();
+        this.chartRowsModule.refreshGanttRows();
+        if (this.virtualScrollModule && this.enableVirtualization) {
+            this.ganttChartModule.virtualRender.adjustTable();
+            this.ganttChartModule.scrollObject.updateTopPosition();
+        }
     }
 
     /**
@@ -1900,15 +1954,12 @@ export class Gantt extends Component<HTMLElement>
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'allowSelection':
-                    this.treeGrid.allowSelection = this.allowSelection;
-                    this.treeGrid.dataBind();
-                    break;
                 case 'allowRowDragAndDrop':
-                    this.treeGrid.allowRowDragAndDrop = this.allowRowDragAndDrop;
-                    this.treeGrid.dataBind();
-                    break;
                 case 'allowFiltering':
-                    this.treeGrid.allowFiltering = this.allowFiltering;
+                case 'showColumnMenu':
+                case 'allowResizing':
+                case 'allowReordering':
+                    this.treeGrid[prop] = this[prop];
                     this.treeGrid.dataBind();
                     break;
                 case 'workWeek':
@@ -1925,16 +1976,10 @@ export class Gantt extends Component<HTMLElement>
                 case 'toolbar':
                     this.notify('ui-toolbarupdate', { module: 'toolbar', properties: newProp });
                     break;
-                case 'showColumnMenu':
-                    this.treeGrid.showColumnMenu = this.showColumnMenu;
-                    this.treeGrid.dataBind();
-                    break;
                 case 'columnMenuItems':
                     this.treeGrid.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
                     break;
                 case 'eventMarkers':
-                    this.notify('ui-update', { module: 'day-markers', properties: newProp });
-                    break;
                 case 'highlightWeekends':
                     this.notify('ui-update', { module: 'day-markers', properties: newProp });
                     break;
@@ -1957,14 +2002,6 @@ export class Gantt extends Component<HTMLElement>
                     break;
                 case 'filterSettings':
                     this.treeGrid.filterSettings = getActualProperties(this.filterSettings) as TreeGridFilterSettingModel;
-                    this.treeGrid.dataBind();
-                    break;
-                case 'allowResizing':
-                    this.treeGrid.allowResizing = this.allowResizing;
-                    this.treeGrid.dataBind();
-                    break;
-                case 'allowReordering':
-                    this.treeGrid.allowReordering = this.allowReordering;
                     this.treeGrid.dataBind();
                     break;
                 case 'gridLines':
@@ -2086,22 +2123,15 @@ export class Gantt extends Component<HTMLElement>
                 case 'currencyCode':
                 case 'locale':
                 case 'enableRtl':
+                case 'readOnly':
+                case 'viewType':
                     isRefresh = true;
                     break;
                 case 'validateManualTasksOnLinking':
                     this.validateManualTasksOnLinking = newProp.validateManualTasksOnLinking;
                     break;
-                case 'readOnly':
-                    this.readOnly = this.readOnly;
-                    this.refresh();
-                    break;
                 case 'showOverAllocation':
                     this.updateOverAllocationCotainer();
-                    break;
-                case 'viewType':
-                    if (newProp.viewType === 'ProjectView' || newProp.viewType === 'ResourceView') {
-                        this.refresh();
-                    }
                     break;
             }
         }
@@ -2261,6 +2291,12 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
+        if (this.enableVirtualization) {
+            modules.push({
+                member: 'virtualScroll',
+                args: [this]
+            });
+        }
         return modules;
     }
     /** 
@@ -2348,8 +2384,19 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateGridLineContainerHeight(): void {
         if (this.chartVerticalLineContainer) {
-            this.chartVerticalLineContainer.style.height = formatUnit(this.contentHeight);
+            this.chartVerticalLineContainer.style.height = formatUnit(this.getContentHeight());
         }
+    }
+
+    /**  
+     * To get actual height of grid lines, holidays, weekend and event markers.
+     * @private
+     */
+    public getContentHeight(): number {
+        let scrollHeight: number = this.ganttChartModule.scrollElement.offsetHeight - 16; //16 is horizontal scrollbar height
+        let contentHeight: number = this.ganttChartModule.chartBodyContent.offsetHeight;
+        let height: number = contentHeight < scrollHeight ? contentHeight : scrollHeight;
+        return height;
     }
 
     /**  
@@ -2383,7 +2430,11 @@ export class Gantt extends Component<HTMLElement>
                 id: this.element.id + 'line-container',
                 styles: 'position:absolute;height:100%;z-index:1'
             });
-            this.element.getElementsByClassName('e-chart-rows-container')[0].appendChild(this.chartVerticalLineContainer);
+            if (this.virtualScrollModule && this.enableVirtualization) {
+                this.ganttChartModule.virtualRender.appendChildElements(this.chartVerticalLineContainer);
+            } else {
+                this.ganttChartModule.chartBodyContent.appendChild(this.chartVerticalLineContainer);
+            }
         }
         this.chartVerticalLineContainer.innerHTML = '';
         let headerTable: Element = this.element.getElementsByClassName('e-timeline-header-table-container')[1];
@@ -3121,8 +3172,8 @@ export class Gantt extends Component<HTMLElement>
         if (this.editModule && this.editSettings.allowEditing) {
             let record: IGanttData;
             let tasks: TaskFieldsModel = this.taskFields;
-            record = this.currentViewData.length > 0 ?
-                !isNullOrUndefined(this.currentViewData[index]) ? this.currentViewData[index] : null : null;
+            record = this.updatedRecords.length > 0 ?
+                !isNullOrUndefined(this.updatedRecords[index]) ? this.updatedRecords[index] : null : null;
             if (!isNullOrUndefined(record)) {
                 data[tasks.id] = record[tasks.id];
                 this.editModule.updateRecordByID(data);
@@ -3211,8 +3262,7 @@ export class Gantt extends Component<HTMLElement>
             record = this.currentViewData[rowIndex];
         }
         let gridRow: Node = this.treeGrid.getRows()[rowIndex];
-        let args: object;
-        return args = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
+        return { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
     }
 
     /**
@@ -3239,7 +3289,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public getRowByID(id: string | number): HTMLElement {
         let record: IGanttData = this.getRecordByID(id.toString());
-        let index: number = this.currentViewData.indexOf(record);
+        let index: number = this.updatedRecords.indexOf(record);
         if (index !== -1) {
             return this.getRowByIndex(index);
         } else {

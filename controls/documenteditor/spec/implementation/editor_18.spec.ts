@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods, ContentControlWidgetType, ContentControlType, IWidget, TableRowWidget } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods, ContentControlWidgetType, ContentControlType, IWidget, TableRowWidget, DocumentHelper } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { ImageResizer } from '../../src/document-editor/implementation/editor/image-resizer';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
@@ -1035,4 +1035,74 @@ console.log('Table Content control Validation');
     editor.editorModule.handleBackKey();
     expect((paraCollec[0] as TableWidget)).toBeDefined;
   });
+});
+describe('Footnote api validation', () => {
+  let container: DocumentEditor;
+  let imageResizer: ImageResizer;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
+    container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableImageResizer: true });
+    (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    container.appendTo('#container');
+    imageResizer = container.imageResizerModule;
+  });
+  afterAll((done): void => {
+    container.destroy();
+    imageResizer.destroy();
+    imageResizer = undefined;
+    document.body.removeChild(document.getElementById('container'));
+    container = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('Footnote validation', function () {
+console.log('Footnote validation');
+    container.editor.insertFootnote();
+    container.editor.insertText('Hello World');
+    expect(container.editor.documentHelper.footnoteCollection.length).toBe(1);
+  });
+  
+});
+describe('endnote api validation', () => {
+  let container: DocumentEditor;
+  let imageResizer: ImageResizer;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection, EditorHistory, ImageResizer);
+    container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableImageResizer: true });
+    (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    container.appendTo('#container');
+    imageResizer = container.imageResizerModule;
+  });
+  afterAll((done): void => {
+    container.destroy();
+    imageResizer.destroy();
+    imageResizer = undefined;
+    document.body.removeChild(document.getElementById('container'));
+    container = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('endnote validation', function () {
+console.log('endtnote validation');
+    container.editor.insertEndnote();
+    container.editor.insertText('World');
+    expect(container.editor.documentHelper.endnoteCollection.length).toBe(1);
+  });
+  
 });

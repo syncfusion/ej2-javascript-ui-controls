@@ -452,3 +452,38 @@ console.log('Show context menu with hyperlink dialog as false');
         expect((document.getElementById(editor.element.id + '_contextmenu_font_dialog').previousSibling as HTMLElement).style.display).toBe('none');
     });
 });
+describe('Context menu notes options', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    let menu: ContextMenu;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(ContextMenu, Editor, EditorHistory, Selection, SfdtExport);
+        editor = new DocumentEditor({ enableContextMenu: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        menu = editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        menu.destroy();
+        editor = undefined;
+        menu = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Validating notes options', () => {
+        console.log('Validating notes options');
+        editor.openBlank()
+        editor.editor.insertEndnote();
+        menu.handleContextMenuItem('container_contextmenu_note_options');
+    });
+});

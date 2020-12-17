@@ -24018,6 +24018,8 @@ var ToolBase = /** @class */ (function () {
         this.isTooltipVisible = true;
         this.startAction(args.source);
         this.checkProperty = true;
+        // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+        this.mouseDownElement = args.source;
     };
     ToolBase.prototype.checkPropertyValue = function () {
         if (this.checkProperty) {
@@ -24047,6 +24049,8 @@ var ToolBase = /** @class */ (function () {
             this.commandHandler.getBlazorOldValues(args, this instanceof LabelDragTool);
         }
         this.endAction();
+        // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+        this.mouseDownElement = null;
     };
     ToolBase.prototype.endAction = function () {
         if (!this.isTooltipVisible) {
@@ -24214,8 +24218,14 @@ var SelectTool = /** @class */ (function (_super) {
         //draw selected region
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             var rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
-            this.commandHandler.clearSelectedItems();
-            this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
+            // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+            if (this.mouseDownElement && !canMove(this.mouseDownElement)) {
+                this.commandHandler.clearObjectSelection(this.mouseDownElement);
+            }
+            else {
+                this.commandHandler.clearSelectedItems();
+                this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
+            }
         }
         return !this.blocked;
     };
@@ -26943,7 +26953,9 @@ var DiagramEventHandler = /** @class */ (function () {
         if ((this.diagram.selectedItems.nodes.length === 1 || this.diagram.selectedItems.connectors.length === 1)) {
             var list = [];
             list = list.concat(this.diagram.selectedItems.nodes, this.diagram.selectedItems.connectors);
-            this.blocked = (this.isMouseDown && list.length === 1 && this.tool instanceof SelectTool && !canMove(list[0]));
+            // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+            this.blocked = (this.eventArgs && this.eventArgs.source && !canMove(this.eventArgs.source)) ? false :
+                (this.isMouseDown && list.length === 1 && this.tool instanceof SelectTool && !canMove(list[0]));
         }
     };
     DiagramEventHandler.prototype.isForeignObject = function (target, isTextBox) {
@@ -31741,6 +31753,17 @@ var CommandHandler = /** @class */ (function () {
             change = this.deepDiffer.changeSegments(change, currentObject[i]);
             change.sfIndex = getIndex(this.diagram, currentObject[i].id);
             changedNodes.push(change);
+        }
+    };
+    /** @private */
+    // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+    CommandHandler.prototype.clearObjectSelection = function (mouseDownElement) {
+        var selectedItems = this.diagram.selectedItems;
+        var list = [];
+        list = list.concat(selectedItems.nodes, selectedItems.connectors);
+        if (list.indexOf(mouseDownElement) === -1) {
+            this.clearSelection((list.length > 0) ? true : false);
+            this.selectObjects([mouseDownElement], true);
         }
     };
     /** @private */

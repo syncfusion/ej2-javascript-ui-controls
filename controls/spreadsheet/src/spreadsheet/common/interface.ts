@@ -1,9 +1,9 @@
 import { CellModel, BeforeSortEventArgs, SheetModel, InsertDeleteEventArgs, ImageModel } from './../../workbook/index';
-import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom } from './../../workbook/index';
+import { ValidationType, ValidationOperator, MergeArgs, HyperlinkModel, TopBottom, chartType } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell } from './../../workbook/index';
+import { DataBar, ColorScale, IconSet, CellInfoEventArgs, CFColor, HighlightCell, chartTheme } from './../../workbook/index';
 
 
 /**
@@ -76,7 +76,12 @@ export interface ReplaceAllEventArgs {
     replaceValue: string;
     addressCollection: string[];
 }
-
+/**
+ * @hidden
+ */
+export interface FormulaBarEdit {
+    isEdit: boolean;
+}
 /**
  * @hidden
  */
@@ -436,5 +441,20 @@ export interface CFormattingEventArgs {
     type?: HighlightCell | TopBottom | DataBar | ColorScale | IconSet;
     cFColor?: CFColor;
     value?: string;
+    cancel: boolean;
+}
+
+/**
+ * BeforeChartEventArgs
+ * @hidden
+ */
+export interface BeforeChartEventArgs {
+    type?: chartType;
+    theme?: chartTheme;
+    isSeriesInRows?: boolean;
+    range?: string;
+    id: string;
+    posRange: string;
+    isInitCell: boolean;
     cancel: boolean;
 }

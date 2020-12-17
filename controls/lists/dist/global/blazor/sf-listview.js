@@ -85,8 +85,10 @@ var SfListView = /** @class */ (function () {
                 window.addEventListener('scroll', this.scrollHandler.bind(this));
             }
         }
-        sf.base.EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
-        sf.base.EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
+        else {
+            sf.base.EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
+            sf.base.EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
+        }
     };
     SfListView.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyActionHandler);
@@ -98,8 +100,10 @@ var SfListView = /** @class */ (function () {
                 window.removeEventListener('scroll', this.scrollHandler.bind(this));
             }
         }
-        sf.base.EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
-        sf.base.EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
+        else {
+            sf.base.EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
+            sf.base.EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
+        }
         this.touchModule.destroy();
     };
     SfListView.prototype.swipeActionHandler = function (e) {
@@ -505,7 +509,7 @@ var SfListView = /** @class */ (function () {
             for (var i = 0; i < liElementCount; i++) {
                 var checkIcon = liCollection[i].querySelector('.' + CHECKBOXICON);
                 if (checkIcon) {
-                    if (isChecked) {
+                    if (isChecked && !checkIcon.classList.contains(CHECKED)) {
                         this.checkItem(liCollection[i]);
                     }
                     else if (checkIcon.classList.contains(CHECKED)) {
@@ -513,7 +517,6 @@ var SfListView = /** @class */ (function () {
                     }
                 }
             }
-            this.removeFocus();
         }
     };
     SfListView.prototype.checkItem = function (item) {
@@ -522,7 +525,6 @@ var SfListView = /** @class */ (function () {
     SfListView.prototype.getCheckData = function (item, isCheck) {
         var liItem = this.curUlElement.querySelector('[data-uid=\'' + item.id + '\']');
         isCheck ? this.checkItem(liItem) : this.uncheckItem(liItem);
-        liItem.classList.remove(FOCUSED);
     };
     SfListView.prototype.spaceKeyHandler = function (e) {
         if (this.enable && this.showCheckBox && this.curUlElement) {
@@ -556,8 +558,10 @@ var SfListView = /** @class */ (function () {
             if (!sf.base.isNullOrUndefined(liElement)) {
                 var checkboxIconElement = liElement.querySelector('.' + CHECKBOXICON);
                 this.addAriaAttribute(isChecked, liElement);
-                isChecked ? checkboxIconElement.classList.add(CHECKED) : checkboxIconElement.classList.remove(CHECKED);
-                checkboxIconElement.parentElement.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+                if (!sf.base.isNullOrUndefined(checkboxIconElement)) {
+                    isChecked ? checkboxIconElement.classList.add(CHECKED) : checkboxIconElement.classList.remove(CHECKED);
+                    checkboxIconElement.parentElement.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+                }
             }
         }
     };
@@ -685,13 +689,17 @@ var SfListView = /** @class */ (function () {
     };
     SfListView.prototype.setSelectedItems = function (selectedElementIdInfo) {
         var headerElement = this.element.querySelector('.' + HEADER);
-        this.selectedItems = { defaultData_Key: selectedElementIdInfo };
+        if (!sf.base.isNullOrUndefined(selectedElementIdInfo)) {
+            this.selectedItems = { defaultData_Key: selectedElementIdInfo };
+        }
         this.dataSourceLevel = [DATASOURCEKEY];
         this.curDSKey = DATASOURCEKEY;
         this.curUlElement = this.element.querySelector('ul');
         this.curUlElement.style.removeProperty('display');
         this.addCheckClass();
-        this.removeFocus();
+        if (this.showCheckBox) {
+            this.removeFocus();
+        }
         this.headerTitleInfo = this.headerTitleInfo.splice(0, 1);
         if (this.headerElement) {
             this.headerElement.innerText = this.headerTitleInfo[this.headerTitleInfo.length - 1];

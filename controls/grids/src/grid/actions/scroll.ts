@@ -6,7 +6,7 @@ import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
 import {
     scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler, closeFilterDialog
 } from '../base/constant';
-import { lazyLoadScrollHandler } from '../base/constant';
+import { lazyLoadScrollHandler, checkScrollReset } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
 
@@ -41,6 +41,7 @@ export class Scroll implements IAction {
     protected getModuleName(): string {
         return 'scroll';
     }
+
     /**
      * @hidden
      */
@@ -60,12 +61,21 @@ export class Scroll implements IAction {
     public setHeight(): void {
         let mHdrHeight: number = 0;
         let content: HTMLElement = (<HTMLElement>this.parent.getContent().querySelector('.e-content'));
+        let height: string | number = this.parent.height as string;
+        if (this.parent.isFrozenGrid() && this.parent.height !== 'auto' && this.parent.height.toString().indexOf('%') < 0) {
+            height = parseInt(height, 10) - Scroll.getScrollBarWidth();
+        }
         if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
             let tbody: HTMLElement = (this.parent.getHeaderContent().querySelector('tbody') as HTMLElement);
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
-            content.style.height = formatUnit((this.parent.height as number) - mHdrHeight);
+            if (tbody && mHdrHeight) {
+                let add: number = tbody.querySelectorAll('.e-addedrow').length;
+                let height: number = add * this.parent.getRowHeight();
+                mHdrHeight -= height;
+            }
+            content.style.height = formatUnit((height as number) - mHdrHeight);
         } else {
-            content.style.height = formatUnit(this.parent.height);
+            content.style.height = formatUnit(height);
         }
         this.ensureOverflow(content);
     }
@@ -76,7 +86,8 @@ export class Scroll implements IAction {
         let content: HTMLElement = <HTMLElement>this.parent.getHeaderContent();
         let scrollWidth: number = Scroll.getScrollBarWidth() - this.getThreshold();
         let cssProps: ScrollCss = this.getCssProperties();
-        (<HTMLElement>content.querySelector('.e-headercontent')).style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
+        let padding: string = this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === 'Left-Right' ? '0.5px' : '1px';
+        (<HTMLElement>content.querySelector('.e-headercontent')).style[cssProps.border] = scrollWidth > 0 ? padding : '0px';
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     }
     /**
@@ -143,11 +154,23 @@ export class Scroll implements IAction {
     }
 
     private setScrollLeft(): void {
-        if (this.parent.frozenColumns) {
+        if (this.parent.isFrozenGrid()) {
             (<HTMLElement>(<Grid>this.parent).headerModule.getMovableHeader()).scrollLeft = this.previousValues.left;
         } else {
             (<HTMLElement>(<Grid>this.parent).getHeaderContent().querySelector('.e-headercontent')).scrollLeft = this.previousValues.left;
         }
+    }
+
+    private onFrozenContentScroll(): Function {
+        return (e: Event) => {
+            if (this.content.querySelector('tbody') === null || this.parent.isPreventScrollEvent) {
+                return;
+            }
+            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
+                this.parent.notify(infiniteScrollHandler, e);
+            }
+            this.previousValues.top = (<HTMLElement>e.target).scrollTop;
+        };
     }
 
     private onContentScroll(scrollTarget: HTMLElement): Function {
@@ -184,37 +207,23 @@ export class Scroll implements IAction {
         };
     }
 
-    private onFreezeContentScroll(scrollTarget: HTMLElement): Function {
-        let element: HTMLElement = scrollTarget;
+    private onCustomScrollbarScroll(mCont: HTMLElement, mHdr: HTMLElement): Function {
+        let content: HTMLElement = mCont;
+        let header: HTMLElement = mHdr;
         return (e: Event) => {
             if (this.content.querySelector('tbody') === null) {
                 return;
             }
             let target: HTMLElement = <HTMLElement>e.target;
-            let top: number = target.scrollTop;
-            if (this.previousValues.top === top) {
+            let left: number = target.scrollLeft;
+            if (this.previousValues.left === left) {
                 return;
             }
-            element.scrollTop = top;
-            this.previousValues.top = top;
+            content.scrollLeft = left;
+            header.scrollLeft = left;
+            this.previousValues.left = left;
+            this.parent.notify(scroll, { left: left });
             if (this.parent.isDestroyed) { return; }
-        };
-    }
-
-    private onWheelScroll(scrollTarget: HTMLElement): Function {
-        let element: HTMLElement = scrollTarget;
-        return (e: WheelEvent) => {
-            if (this.content.querySelector('tbody') === null) {
-                return;
-            }
-            let top: number = element.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
-            if (this.previousValues.top === top) {
-                return;
-            }
-            e.preventDefault();
-            this.parent.getContent().querySelector('.e-frozencontent').scrollTop = top;
-            element.scrollTop = top;
-            this.previousValues.top = top;
         };
     }
 
@@ -224,35 +233,27 @@ export class Scroll implements IAction {
             if ((e as PointerEvent).pointerType === 'mouse') {
                 return;
             }
-            let cont: Element;
-            let mHdr: Element;
+            let isFrozen: boolean = this.parent.isFrozenGrid();
             let pageXY: { x: number, y: number } = this.getPointXY(e);
-            let top: number = element.scrollTop + (this.pageXY.y - pageXY.y);
             let left: number = element.scrollLeft + (this.pageXY.x - pageXY.x);
-            if (this.parent.getHeaderContent().contains(e.target as Element)) {
-                mHdr = this.parent.getFrozenColumns() ?
-                    this.parent.getHeaderContent().querySelector('.e-movableheader') :
-                    this.parent.getHeaderContent().querySelector('.e-headercontent') as Element;
-                if (this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
-                    return;
-                }
-                e.preventDefault();
-                mHdr.scrollLeft = left;
-                element.scrollLeft = left;
-                this.pageXY.x = pageXY.x;
-                this.previousValues.left = left;
-            } else {
-                cont = this.parent.getContent().querySelector('.e-frozencontent');
-                if (this.previousValues.top === top && (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)
-                    || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
-                    return;
-                }
-                e.preventDefault();
-                cont.scrollTop = top;
-                element.scrollTop = top;
-                this.pageXY.y = pageXY.y;
-                this.previousValues.top = top;
+            let mHdr: Element = isFrozen ?
+                this.parent.getHeaderContent().querySelector('.e-movableheader') :
+                this.parent.getHeaderContent().querySelector('.e-headercontent') as Element;
+            let mCont: Element = isFrozen ?
+                this.parent.getContent().querySelector('.e-movablecontent') :
+                this.parent.getContent().querySelector('.e-content') as Element;
+            if (this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
+                return;
             }
+            e.preventDefault();
+            mHdr.scrollLeft = left;
+            mCont.scrollLeft = left;
+            if (isFrozen) {
+                let scrollBar: HTMLElement = this.parent.getContent().querySelector('.e-movablescrollbar');
+                scrollBar.scrollLeft = left;
+            }
+            this.pageXY.x = pageXY.x;
+            this.previousValues.left = left;
         };
     }
 
@@ -279,26 +280,28 @@ export class Scroll implements IAction {
 
     private wireEvents(): void {
         if (this.oneTimeReady) {
-            let frzCols: number = this.parent.getFrozenColumns();
+            let frzCols: boolean = this.parent.isFrozenGrid();
             this.content = <HTMLDivElement>this.parent.getContent().querySelector('.e-content');
             this.header = <HTMLDivElement>this.parent.getHeaderContent().querySelector('.e-headercontent');
             let mCont: HTMLElement = this.content.querySelector('.e-movablecontent') as HTMLElement;
             let fCont: HTMLElement = this.content.querySelector('.e-frozencontent') as HTMLElement;
             let mHdr: HTMLElement = this.header.querySelector('.e-movableheader') as HTMLElement;
+            let mScrollBar: HTMLElement = this.parent.getContent().querySelector('.e-movablescrollbar');
             if (this.parent.frozenRows) {
                 EventHandler.add(frzCols ? mHdr : this.header, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(
                     frzCols ? mHdr : this.header, 'touchmove pointermove',
                     this.onTouchScroll(frzCols ? mCont : this.content), this);
             }
-            if (frzCols) {
-                EventHandler.add(mCont, 'scroll', this.onContentScroll(mHdr), this);
-                EventHandler.add(mCont, 'scroll', this.onFreezeContentScroll(fCont), this);
-                EventHandler.add(fCont, 'scroll', this.onFreezeContentScroll(mCont), this);
-                EventHandler.add(mHdr, 'scroll', this.onContentScroll(mCont), this);
-                EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont), this);
-                EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mCont), this);
+            if (this.parent.isFrozenGrid()) {
+                EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
+                EventHandler.add(mCont, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mHdr), this);
+                EventHandler.add(mHdr, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mCont), this);
+                EventHandler.add(this.content, 'scroll', this.onFrozenContentScroll(), this);
+                EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mCont), this);
+                EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr), this);
             } else {
                 EventHandler.add(this.content, 'scroll', this.onContentScroll(this.header), this);
                 EventHandler.add(this.header, 'scroll', this.onContentScroll(this.content), this);
@@ -321,28 +324,32 @@ export class Scroll implements IAction {
                 clientHeight = this.parent.getContent().clientHeight;
             },
             () => {
-                if (!this.parent.enableVirtualization) {
+                let args: NotifyArgs = { cancel: false };
+                this.parent.notify(checkScrollReset, args);
+                if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
                     if (sHeight < clientHeight) {
                         addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
-                        if (this.parent.getFrozenColumns()) {
+                        if (this.parent.isFrozenGrid()) {
                             addClass(
                                 this.parent.getContent().querySelector('.e-movablecontent').querySelectorAll('tr:last-child td'),
                                 'e-lastrowcell'
                             );
                         }
                     }
-                    if ((this.parent.frozenRows > 0 || this.parent.frozenColumns > 0) && this.header.querySelector('.e-movableheader')) {
-                        this.header.querySelector('.e-movableheader').scrollLeft = this.previousValues.left;
-                    } else {
-                        this.header.scrollLeft = this.previousValues.left;
+                    if (!args.cancel) {
+                        if ((this.parent.frozenRows > 0 || this.parent.isFrozenGrid()) && this.header.querySelector('.e-movableheader')) {
+                            this.header.querySelector('.e-movableheader').scrollLeft = this.previousValues.left;
+                        } else {
+                            this.header.scrollLeft = this.previousValues.left;
+                        }
+                        this.content.scrollLeft = this.previousValues.left;
+                        this.content.scrollTop = this.previousValues.top;
                     }
-                    this.content.scrollLeft = this.previousValues.left;
-                    this.content.scrollTop = this.previousValues.top;
                 }
                 if (!this.parent.enableColumnVirtualization) {
                     this.content.scrollLeft = sLeft;
                 }
-                if (this.parent.frozenColumns && this.header.querySelector('.e-movableheader')) {
+                if (this.parent.isFrozenGrid() && this.header.querySelector('.e-movableheader')) {
                     (this.header.querySelector('.e-movableheader') as HTMLElement).scrollLeft =
                         (this.content.querySelector('.e-movablecontent') as HTMLElement).scrollLeft;
                 }
@@ -363,14 +370,7 @@ export class Scroll implements IAction {
     }
 
     private ensureOverflow(content: HTMLElement): void {
-        if (this.parent.getFrozenColumns()) {
-            (content.querySelector('.e-movablecontent') as HTMLElement).style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
-            if ((content.querySelector('.e-movablecontent') as HTMLElement).style.overflowY === 'scroll') {
-                this.setPadding();
-            }
-        } else {
-            content.style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
-        }
+        content.style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
     }
 
     private onPropertyChanged(e: NotifyArgs): void {

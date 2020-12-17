@@ -249,6 +249,8 @@ L10n.load({
             'Create New Style': 'إنشاء نمط جديد',
             'Modify Style': 'تعديل النمط',
             'New': 'الجديد',
+            'Insert Footnote': 'إدراج',
+            'Insert Endnote': 'أدخل حاشية',
             'Bullets': 'الرصاص',
             'Use bookmarks': 'استخدام الإشارات المرجعية',
             'Table of Contents': 'جدول المحتويات',
@@ -456,7 +458,9 @@ L10n.load({
             'Password': 'كلمه المرور',
             'Protections': 'الحمايه',
             'Single': 'واحد',
-            'Double': 'انقر نقرا مزدوجا'
+            'Double': 'انقر نقرا مزدوجا',
+            'Insert Footnote': 'إدراج',
+            'Insert Endnote': 'أدخل حاشية'
         },
         'colorpicker': {
             'Apply': 'تطبيق',

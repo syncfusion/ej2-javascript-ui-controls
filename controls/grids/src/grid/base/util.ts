@@ -11,11 +11,12 @@ import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
-import { AggregateType, HierarchyGridPrintMode } from './enum';
+import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
+import { Cell } from '../models/cell';
 
 //https://typescript.codeplex.com/discussions/401501
 /**
@@ -489,6 +490,21 @@ export function getRowHeight(element?: HTMLElement): number {
 }
 
 /** @hidden */
+let actualRowHeight: number;
+/** @hidden */
+export function getActualRowHeight(element?: HTMLElement): number {
+    if (actualRowHeight !== undefined) {
+        return rowHeight;
+    }
+    let table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
+    table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
+    element.appendChild(table);
+    let rect: ClientRect = table.querySelector('tr').getBoundingClientRect();
+    element.removeChild(table);
+    return rect.height;
+}
+
+/** @hidden */
 export function isComplexField(field: string): boolean {
     return field.split('.').length > 1;
 }
@@ -863,9 +879,10 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
     if (!gObj) {
         return printGridModel;
     }
+    let isFrozen: boolean = gObj.isFrozenGrid() && !gObj.getFrozenColumns();
     for (let key of Print.printGridProp) {
         if (key === 'columns') {
-            printGridModel[key] = getActualPropFromColl(gObj[key]);
+            printGridModel[key] = getActualPropFromColl(isFrozen ? gObj.getColumns() : gObj[key]);
         } else if (key === 'allowPaging') {
             printGridModel[key] = gObj.printMode === 'CurrentPage';
         } else {
@@ -1103,13 +1120,201 @@ export function compareChanges(gObj: IGrid, changes: Object, type: string, keyFi
 
 /** @hidden */
 export function setRowElements(gObj: IGrid): void {
-    if (gObj.getFrozenColumns()) {
+    if (gObj.isFrozenGrid()) {
         (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
             [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
+        let cls: string = gObj.getFrozenMode() === 'Left-Right' ? '.e-frozen-left-header .e-row, .e-frozen-left-content .e-row'
+            : '.e-frozenheader .e-row, .e-frozencontent .e-row';
         (<{ freezeRowElements?: Element[] }>(gObj).contentModule).freezeRowElements =
-            [].slice.call(gObj.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
+            [].slice.call(gObj.element.querySelectorAll(cls));
+        if (gObj.getFrozenMode() === 'Left-Right') {
+            (<{ frozenRightRowElements?: Element[] }>gObj.contentModule).frozenRightRowElements =
+                [].slice.call(gObj.element.querySelectorAll('.e-frozen-right-header .e-row, .e-frozen-right-content .e-row'));
+        }
     } else {
         (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
             [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
     }
+}
+
+/** @hidden */
+export function getCurrentTableIndex(gObj: IGrid): number {
+    if (gObj.tableIndex === gObj.getTablesCount()) {
+        gObj.tableIndex = 0;
+    }
+    return ++gObj.tableIndex;
+}
+
+/** @hidden */
+export function getFrozenTableName(gObj: IGrid, index?: number): freezeTable {
+    let frozenCols: number = gObj.getFrozenColumns();
+    let frozenLeft: number = gObj.getFrozenLeftColumnsCount();
+    let frozenRight: number = gObj.getFrozenRightColumnsCount();
+    let tableName: freezeTable;
+    if (frozenCols && !frozenLeft && !frozenRight) {
+        tableName = getFreezeTableName(gObj, index);
+    } else if (!frozenCols && (frozenLeft || frozenRight)) {
+        tableName = getColumnLevelFreezeTableName(gObj, index);
+    }
+    return tableName;
+}
+
+/** @hidden */
+export function getFreezeTableName(gObj: IGrid, index?: number): freezeTable {
+    let tableIndex: number = isNullOrUndefined(index) ? getCurrentTableIndex(gObj) : index;
+    let tableName: freezeTable;
+    if (tableIndex === 1) {
+        tableName = 'frozen-left';
+    } else if (tableIndex === 2) {
+        tableName = 'movable';
+    }
+    return tableName;
+}
+
+/** @hidden */
+export function getColumnLevelFreezeTableName(gObj: IGrid, index?: number): freezeTable {
+    let frozenLeft: number = gObj.getFrozenLeftColumnsCount();
+    let frozenRight: number = gObj.getFrozenRightColumnsCount();
+    let tableIndex: number = isNullOrUndefined(index) ? getCurrentTableIndex(gObj) : index;
+    let tableName: freezeTable;
+    if (frozenLeft && !frozenRight) {
+        if (tableIndex === 1) {
+            tableName = 'frozen-left';
+        } else if (tableIndex === 2) {
+            tableName = 'movable';
+        }
+    } else if (frozenRight && !frozenLeft) {
+        if (tableIndex === 1) {
+            tableName = 'frozen-right';
+        } else if (tableIndex === 2) {
+            tableName = 'movable';
+        }
+    } else {
+        if (tableIndex === 1) {
+            tableName = 'frozen-left';
+        } else if (tableIndex === 2) {
+            tableName = 'movable';
+        } else if (tableIndex === 3) {
+            tableName = 'frozen-right';
+        }
+    }
+    return tableName;
+}
+
+/** @hidden */
+export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], tableName: freezeTable): Cell<Column>[] {
+    let left: number = gObj.getFrozenLeftCount();
+    let movable: number = gObj.getMovableColumnsCount();
+    let right: number = gObj.getFrozenRightColumnsCount();
+    let frozenMode: freezeMode = gObj.getFrozenMode();
+    let drag: number = gObj.isRowDragable() ? 1 : 0;
+    let rightIndex: number = frozenMode === 'Right' ? left + movable : left + movable + drag;
+    let mvblIndex: number = frozenMode === 'Right' ? left : left + drag;
+    let mvblEndIdx: number = frozenMode === 'Right' ? cells.length - right - drag
+        : right ? cells.length - right : cells.length;
+    if (tableName === 'frozen-left') {
+        cells = cells.slice(0, left ? left + drag : cells.length);
+    } else if (tableName === 'frozen-right') {
+        cells = cells.slice(rightIndex, cells.length);
+    } else if (tableName === 'movable') {
+        cells = cells.slice(mvblIndex, mvblEndIdx);
+    }
+    return cells;
+}
+
+/** @hidden */
+export function gridActionHandler(gObj: IGrid, callBack: Function, rows: Row<Column>[][] | Element[][], force?: boolean): void {
+    if (rows[0].length || force) {
+        callBack('frozen-left', rows[0]);
+    }
+    if (gObj.isFrozenGrid() && (rows[1].length || force)) {
+        callBack('movable', rows[1]);
+    }
+    if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
+        callBack('frozen-right', rows[2]);
+    }
+}
+
+/** @hidden */
+export function getGridRowObjects(gObj: IGrid): Row<Column>[][] {
+    return [gObj.getFrozenMode() !== 'Right' ? gObj.getRowsObject() : [], gObj.getMovableRowsObject(), gObj.getFrozenRightRowsObject()];
+}
+
+/** @hidden */
+export function getGridRowElements(gObj: IGrid): Element[][] {
+    return [
+        gObj.getFrozenMode() !== 'Right' ? gObj.getAllDataRows(true) : [],
+        gObj.getAllMovableDataRows(true), gObj.getAllFrozenRightDataRows(true)
+    ];
+}
+
+/** @hidden */
+export function sliceElements(row: Element, start: number, end: number): void {
+    let cells: HTMLCollection = row.children;
+    let len: number = cells.length;
+    let k: number = 0;
+    for (let i: number = 0; i < len; i++, k++) {
+        if (i >= start && i < end) {
+            continue;
+        }
+        row.removeChild(row.children[k]);
+        k--;
+    }
+}
+
+/** @hidden */
+export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number): Element[] {
+    if (col.getFreezeTableName() === 'movable') {
+        return [].slice.call(gObj.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+    } else if (col.getFreezeTableName() === 'frozen-right') {
+        return [].slice.call(gObj.getFrozenRightDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+    } else {
+        return [].slice.call(gObj.getDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+    }
+}
+
+/** @hidden */
+export function getCellByColAndRowIndex(gObj: IGrid, col: Column, rowIndex: number, index: number): Element {
+    let left: number = gObj.getFrozenLeftCount();
+    let movable: number = gObj.getMovableColumnsCount();
+    index = col.getFreezeTableName() === 'movable' ? index - left : col.getFreezeTableName() === 'frozen-right'
+        ? index - (left + movable) : index;
+    return getCellsByTableName(gObj, col, rowIndex)[index];
+}
+
+/** @hidden */
+export function setValidationRuels(col: Column, index: number, rules: Object, mRules: Object, frRules: Object, len: number): void {
+    if (col.getFreezeTableName() === 'frozen-left' || (!index && col.getFreezeTableName() === 'frozen-right') || len === 1) {
+        rules[getComplexFieldID(col.field)] = col.validationRules;
+    } else if (col.getFreezeTableName() === 'movable' || !col.getFreezeTableName()) {
+        mRules[getComplexFieldID(col.field)] = col.validationRules;
+    } else if (col.getFreezeTableName() === 'frozen-right') {
+        frRules[getComplexFieldID(col.field)] = col.validationRules;
+    }
+}
+
+/** @hidden */
+export function getMovableTbody(gObj: IGrid): Element {
+    let tbody: Element;
+    if (gObj.isFrozenGrid()) {
+        tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getMovableHeaderTbody()
+            : gObj.getMovableContentTbody();
+    }
+    return tbody;
+}
+
+/** @hidden */
+export function getFrozenRightTbody(gObj: IGrid): Element {
+    let tbody: Element;
+    if (gObj.getFrozenMode() === 'Left-Right') {
+        tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getFrozenRightHeaderTbody()
+            : gObj.getFrozenRightContentTbody();
+    }
+    return tbody;
+}
+
+/** @hidden */
+// tslint:disable-next-line:no-any
+export function reorderArrayValues(arr: any[], from: number, to: number): void {
+    arr.splice(to, 0, arr.splice(from, 1)[0]);
 }

@@ -1329,9 +1329,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
                         this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
-                        this.validateDate(selectedDate);
+                        this.validateDate(navigationArgs.currentDate);
                         if (this.headerModule) {
-                            this.headerModule.setCalendarDate(selectedDate);
+                            this.headerModule.setCalendarDate(navigationArgs.currentDate);
                         }
                         this.initializeView(this.currentView);
                         this.onServerDataBind();

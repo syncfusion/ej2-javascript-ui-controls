@@ -70,12 +70,12 @@ export class Toolbar {
             } else {
                 (this.predefinedItems as { Search: ItemModel }).Search = {
                     id: this.id + '_search',
-                    template: '<div class="e-input-group e-search" role="search">\
-                <input id="' + this.id + '_searchbar" class="e-input" name="input" type="search" \
-                placeholder= \"' + searchLocalText + '\"/>\
-                <span id="' + this.id + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
-                tabindex="-1" title="' + searchLocalText + '" aria-label= "search"></span> \
-                </div>',
+                    template: '<div class="e-input-group e-search" role="search">' +
+                '<input id="' + this.id + '_searchbar" class="e-input" name="input" type="search"' +
+                'placeholder= \"' + searchLocalText + '\"/>' +
+                '<span id="' + this.id + '_searchbutton" class="e-input-group-icon e-search-icon e-icons"' +
+                'tabindex="-1" title="' + searchLocalText + '" aria-label= "search"></span>' +
+                '</div>',
                     tooltipText: searchLocalText,
                     align: 'Right', cssClass: 'e-search-wrapper'
                 };
@@ -202,12 +202,10 @@ export class Toolbar {
             toolbarItems.push(searchItem[0]);
         }
         for (let item of toolbarItems) {
-            switch (typeof item) {
-                case 'string':
-                    items.push(this.getItemObject(item as string));
-                    break;
-                default:
-                    items.push(this.getItem(item as ItemModel));
+            if (typeof item === 'string') {
+                items.push(this.getItemObject(item));
+            } else {
+                items.push(this.getItem(item));
             }
         }
         return items;
@@ -221,11 +219,11 @@ export class Toolbar {
     private getItemObject(itemName: string): ItemModel {
         return this.predefinedItems[itemName] || { text: itemName, id: this.id + '_' + itemName };
     }
-    private toolbarClickHandler(args: ClickEventArgs): void {
+    private toolbarClickHandler(arg: ClickEventArgs): void {
         let gObj: Gantt = this.parent;
         let gID: string = this.id;
-        extend(args, { cancel: false });
-        gObj.trigger(events.toolbarClick, args, (args: ClickEventArgs) => {
+        extend(arg, { cancel: false });
+        gObj.trigger(events.toolbarClick, arg, (args: ClickEventArgs) => {
             if (args.cancel) {
                 return;
             } else {
@@ -358,12 +356,12 @@ export class Toolbar {
         let toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
         gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
-        let isResouceParent: boolean = ((this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
-            || this.parent.viewType === 'ProjectView'));
+        let isResouceParent: boolean = (this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
+            || this.parent.viewType === 'ProjectView');
         if (!isNullOrUndefined(this.parent.editModule)) {
             let touchEdit: boolean = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
-            let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
+            let hasData: number = gObj.flatData && gObj.flatData.length;
             edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
             edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
@@ -371,12 +369,12 @@ export class Toolbar {
                 disableItems.push(gID + '_indent');
                 disableItems.push(gID + '_outdent');
             } else {
-                if (gObj.currentViewData[ind].level === 0 && hasData && !touchEdit) {
+                if (gObj.updatedRecords[ind].level === 0 && hasData && !touchEdit) {
                     enableItems.push(gID + '_indent');
                     disableItems.push(gID + '_outdent');
                 } else {
-                    previousGanttRecord = gObj.currentViewData[ind - 1];
-                    if ((gObj.currentViewData[ind].level - previousGanttRecord.level === 1) && ind !== -1) {
+                    previousGanttRecord = gObj.updatedRecords[ind - 1];
+                    if ((gObj.updatedRecords[ind].level - previousGanttRecord.level === 1) && ind !== -1) {
                         disableItems.push(gID + '_indent');
                         enableItems.push(gID + '_outdent');
                     } else if (ind !== -1) {
@@ -451,7 +449,7 @@ export class Toolbar {
      */
     public enableItems(items: string[], isEnable: boolean): void {
         for (let item of items) {
-            let element: HTMLElement = <HTMLElement>this.element.querySelector('#' + item);
+            let element: HTMLElement = this.element.querySelector('#' + item);
             if (element) {
                 this.toolbar.enableItems(element.parentElement, isEnable);
             }

@@ -2524,13 +2524,32 @@ let DashboardLayout = class DashboardLayout extends Component {
     renderTemplate(content, appendElement, type, isStringTemplate, prop) {
         let templateFn = this.templateParser(content);
         let templateElements = [];
-        // tslint:disable-next-line
-        let compilerFn = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
-        if (compilerFn) {
-            for (let item of compilerFn) {
-                templateElements.push(item);
+        if ((content[0] === '.' || content[0] === '#') &&
+            document.querySelector(content).tagName !== 'SCRIPT') {
+            let eleVal = document.querySelector(content);
+            if (!isNullOrUndefined(eleVal)) {
+                if (eleVal.style.display === 'none') {
+                    eleVal.style.removeProperty('display');
+                }
+                if (eleVal.getAttribute('style') === '') {
+                    eleVal.removeAttribute('style');
+                }
+                appendElement.appendChild(eleVal);
+                return;
             }
-            append([].slice.call(templateElements), appendElement);
+            else {
+                content = content.trim();
+            }
+        }
+        else {
+            // tslint:disable-next-line
+            let compilerFn = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+            if (compilerFn) {
+                for (let item of compilerFn) {
+                    templateElements.push(item);
+                }
+                append([].slice.call(templateElements), appendElement);
+            }
         }
     }
     renderPanels(cellElement, panelModel, panelId, isStringTemplate) {

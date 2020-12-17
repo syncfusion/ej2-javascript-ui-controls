@@ -355,10 +355,12 @@ export namespace Input {
             let parentElement: HTMLElement = <HTMLElement> getParentNode(element);
             if (!isNullOrUndefined(parentElement)) {
                 let button: HTMLElement = <HTMLElement> parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-                if (element.value && parentElement.classList.contains('e-input-focus')) {
-                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
-                } else {
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                if (!isNullOrUndefined(button)) {
+                    if (element.value && parentElement.classList.contains('e-input-focus')) {
+                        removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                    } else {
+                        addClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
                 }
             }
         }

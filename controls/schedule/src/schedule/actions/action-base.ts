@@ -5,6 +5,7 @@ import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
 import { MonthEvent } from '../event-renderer/month';
 import { VerticalEvent } from '../event-renderer/vertical-view';
+import { YearEvent } from '../event-renderer/year';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 
@@ -20,6 +21,7 @@ export class ActionBase {
     public scrollEdges: ResizeEdges;
     public monthEvent: MonthEvent;
     public verticalEvent: VerticalEvent;
+    public yearEvent: YearEvent;
     public daysVariation: number = 0;
 
     constructor(parent: Schedule) {
@@ -217,7 +219,7 @@ export class ActionBase {
 
     public removeCloneElementClasses(): void {
         let elements: HTMLElement[] = this.actionObj.originalElement;
-        if (this.parent.currentView === 'Month') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_ACTION_CLASS));
         }
         removeClass(elements, cls.EVENT_ACTION_CLASS);
@@ -318,6 +320,73 @@ export class ActionBase {
         event[this.parent.eventFields.startTime] = startTime;
         event[this.parent.eventFields.endTime] = endTime;
         return event;
+    }
+
+    public dynamicYearlyEventsRendering(event: { [key: string]: Object }, isResize: boolean = false): void {
+        let appWidth: number = this.actionObj.cellWidth - 7;
+        if (isResize && (this.resizeEdges.left || this.resizeEdges.right)) {
+            appWidth = this.actionObj.cellWidth * (event.count as number);
+        }
+        if (!isResize && (
+            this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length === 0)) {
+            let month: number = (event[this.parent.eventFields.startTime] as Date).getMonth();
+            let eventObj: { [key: string]: Object } = this.yearEvent.isSpannedEvent(event as { [key: string]: Object }, month);
+            if ((eventObj[this.parent.eventFields.startTime] as Date).getTime() ===
+                (eventObj[this.parent.eventFields.endTime] as Date).getTime()) {
+                (<{ [key: string]: number }>eventObj.isSpanned).count = 1;
+            }
+            appWidth = (<{ [key: string]: number }>eventObj.isSpanned).count * this.actionObj.cellWidth;
+        }
+        let appointmentElement: HTMLElement = this.createAppointmentElement(this.actionObj.groupIndex);
+        appointmentElement.setAttribute('drag', 'true');
+        addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
+        setStyleAttribute(appointmentElement, {
+            'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none',
+            'position': 'absolute', 'overflow': 'hidden', 'padding': '3px'
+        });
+        if (this.actionObj.clone.style.backgroundColor !== '') {
+            setStyleAttribute(appointmentElement, { 'backgroundColor': this.actionObj.clone.style.backgroundColor });
+        }
+        let date: number = util.addLocalOffset(util.resetTime(event[this.parent.eventFields.startTime] as Date)).getTime();
+        let query: string = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + date + '"]';
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            query = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + date + '"][data-group-index="' + this.actionObj.groupIndex + '"]';
+        }
+        let cellTd: Element = this.parent.element.querySelector(query);
+        if (isResize) {
+            let dateHeader: HTMLElement = cellTd.querySelector('.' + cls.DATE_HEADER_CLASS) as HTMLElement;
+            let appHeight: number = this.actionObj.cellHeight * (event.count as number) -
+                (dateHeader ? dateHeader.offsetHeight : 0) - 7;
+            if (this.resizeEdges.right || this.resizeEdges.left) {
+                appHeight = parseInt(this.actionObj.clone.style.height, 10);
+            }
+            setStyleAttribute(appointmentElement, { 'height': appHeight + 'px' });
+        }
+        this.renderDynamicElement(cellTd, appointmentElement, true);
+        this.actionObj.cloneElement.push(appointmentElement);
+    }
+
+    public renderDynamicElement(cellTd: HTMLElement | Element, element: HTMLElement, isAppointment: boolean = false): void {
+        if (cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS)) {
+            cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS).appendChild(element);
+        } else {
+            let wrapper: HTMLElement = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+            wrapper.appendChild(element);
+            cellTd.appendChild(wrapper);
+        }
+    }
+
+    public createAppointmentElement(resIndex: number): HTMLElement {
+        let appDetails: HTMLElement = this.actionObj.clone.querySelector('.e-appointment-details') ?
+            this.actionObj.clone.querySelector('.e-appointment-details') : this.actionObj.clone.querySelector('.e-subject');
+        let appointmentWrapper: HTMLElement = createElement('div', {
+            className: cls.APPOINTMENT_CLASS,
+            innerHTML: appDetails.innerText
+        });
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            appointmentWrapper.setAttribute('data-group-index', resIndex.toString());
+        }
+        return appointmentWrapper;
     }
 
     public dynamicEventsRendering(event: { [key: string]: Object }): void {

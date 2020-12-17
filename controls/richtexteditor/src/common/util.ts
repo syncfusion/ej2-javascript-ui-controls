@@ -64,7 +64,21 @@ export function updateTextNode(value: string): string {
             }
             let tdElm: NodeListOf<HTMLElement> = tableElm[i].querySelectorAll('td');
             for (let j: number = 0; j < tdElm.length; j++) {
-                tdElm[j].style.removeProperty('border');
+                if (tdElm[j].style.borderLeft === 'none') {
+                    tdElm[j].style.removeProperty('border-left');
+                }
+                if (tdElm[j].style.borderRight === 'none') {
+                    tdElm[j].style.removeProperty('border-right');
+                }
+                if (tdElm[j].style.borderBottom === 'none') {
+                    tdElm[j].style.removeProperty('border-bottom');
+                }
+                if (tdElm[j].style.borderTop === 'none') {
+                    tdElm[j].style.removeProperty('border-top');
+                }
+                if (tdElm[j].style.border === 'none') {
+                    tdElm[j].style.removeProperty('border');
+                }
             }
             if (!tableElm[i].classList.contains(classes.CLS_TABLE)) {
                 tableElm[i].classList.add(classes.CLS_TABLE);

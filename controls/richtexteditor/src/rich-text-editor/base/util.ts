@@ -203,6 +203,9 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
                 } else if (items[i] === 'InsertCode' && toolbarItems[j].subCommand === 'Pre') {
                     itemsIndex.push(j);
                     break;
+                } else if (items[i] === 'FileManager' && toolbarItems[j].subCommand === 'File') {
+                    itemsIndex.push(j);
+                    break;
                 } else if (items[i] === toolbarItems[j].subCommand) {
                     itemsIndex.push(j);
                     break;

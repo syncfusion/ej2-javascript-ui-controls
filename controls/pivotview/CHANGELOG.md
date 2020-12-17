@@ -2,26 +2,13 @@
 
 ## [Unreleased]
 
-## 18.3.48 (2020-11-11)
+## 18.4.30 (2020-12-17)
 
 ### Pivot Table
 
 #### Bug Fixes
 
-- `#298311` - Issues in member editor in the dark theme have been resolved.
-
-#### New Features
-
-- `#294553`,`#295251`,`#F158139` - The palette feature in the accumulation chart types is now supported.
-- `#293085` - The width of the component can now be adjusted on the basis of its columns.
-
-## 18.3.40 (2020-10-13)
-
-### Pivot Table
-
-#### New Features
-
-- `#F156978` - Provided additional cell information for cell template event.
+- `#300162` - The pivot chart now works properly with height as a percentage..
 
 ## 18.2.56 (2020-09-01)
 

@@ -1,5 +1,5 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';import { BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { createResize, removeResize, setMinHeight, setMaxWidth, setMaxHeight } from '../common/resize';
-import {ButtonType,DialogEffect,BeforeSanitizeHtmlArgs,BeforeOpenEventArgs,OpenEventArgs,BeforeCloseEventArgs,CloseEventArgs} from "./dialog";
+import { Component, Property, Event, Collection, L10n, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';import { BlazorDragEventArgs, SanitizeHtmlHelper, Browser } from '@syncfusion/ej2-base';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { createResize, removeResize, setMinHeight, setMaxWidth, setMaxHeight } from '../common/resize';
+import {ButtonType,DialogEffect,ResizeDirections,BeforeSanitizeHtmlArgs,BeforeOpenEventArgs,OpenEventArgs,BeforeCloseEventArgs,CloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -132,6 +132,12 @@ export interface DialogModel extends ComponentModel{
      * @default false 
      */
     enableResize?: boolean;
+
+    /**
+     * Specifies the resize handles direction in the dialog component that can be resized by the end-user.
+     * @default ['South-East'] 
+     */
+    resizeHandles?: ResizeDirections[];
 
     /**
      * Specifies the height of the dialog component.

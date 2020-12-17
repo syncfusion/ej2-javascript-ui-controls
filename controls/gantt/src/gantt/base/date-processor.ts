@@ -39,10 +39,7 @@ export class DateProcessor {
             ganttProp.isMilestone : false : validateAsMilestone;
         if (hour < this.parent.defaultStartTime) {
             this.setTime(this.parent.defaultStartTime, cloneStartDate);
-        } else if (hour === this.parent.defaultEndTime && (!ganttProp || !validateAsMilestone)) {
-            cloneStartDate.setDate(cloneStartDate.getDate() + 1);
-            this.setTime(this.parent.defaultStartTime, cloneStartDate);
-        } else if (hour > this.parent.defaultEndTime) {
+        } else if ((hour === this.parent.defaultEndTime && (!ganttProp || !validateAsMilestone)) || hour > this.parent.defaultEndTime) {
             cloneStartDate.setDate(cloneStartDate.getDate() + 1);
             this.setTime(this.parent.defaultStartTime, cloneStartDate);
         } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
@@ -51,9 +48,7 @@ export class DateProcessor {
                 if (hour >= value.to && (this.parent.workingTimeRanges[index + 1] &&
                     hour < this.parent.workingTimeRanges[index + 1].from)) {
                     // milestone can fall at end any interval time
-                    if (hour === value.to && (!ganttProp || !validateAsMilestone)) {
-                        this.setTime(this.parent.workingTimeRanges[index + 1].from, cloneStartDate);
-                    } else if (hour !== value.to) {
+                    if ((hour === value.to && (!ganttProp || !validateAsMilestone)) || hour !== value.to) {
                         this.setTime(this.parent.workingTimeRanges[index + 1].from, cloneStartDate);
                     }
                     break;
@@ -298,7 +293,6 @@ export class DateProcessor {
      */
     private getNonworkingTime(sDate: Date, eDate: Date, isAutoSchedule: boolean, isCheckTimeZone: boolean): number {
         isCheckTimeZone = isNullOrUndefined(isCheckTimeZone) ? true : isCheckTimeZone;
-        let timeDiff: number = this.getTimeDifference(sDate, eDate, isCheckTimeZone) / 1000; // To convert milliseconds to seconds
         let weekendCount: number = !this.parent.includeWeekend && isAutoSchedule ? this.getWeekendCount(sDate, eDate) : 0;
         let totalHours: number = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
         let holidaysCount: number = isAutoSchedule ? this.getHolidaysCount(sDate, eDate) : 0;
@@ -502,7 +496,7 @@ export class DateProcessor {
     public getSecondsPerDay(): number {
         let dayWorkingTime: DayWorkingTimeModel[] = this.parent.dayWorkingTime;
         let length: number = dayWorkingTime.length;
-        let totalSeconds: number = 0; let startDate: Date = new Date('10/11/2018'); let endDate: Date = new Date('10/12/2018');
+        let totalSeconds: number = 0; let startDate: Date = new Date('10/11/2018');
         this.parent.nonWorkingHours = [];
         let nonWorkingHours: number[] = this.parent.nonWorkingHours;
         this.parent.workingTimeRanges = [];
@@ -662,9 +656,8 @@ export class DateProcessor {
             for (let i: number = 0; i < holidays.length; i++) {
                 let currentHoliday: Date = this.getDateFromFormat(new Date(holidays[i]));
                 if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() > currentHoliday.getTime()) {
-                    if (!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) {
-                        holidaysCount += 1;
-                    } else if (this.parent.includeWeekend) {
+                    if ((!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) ||
+                    this.parent.includeWeekend) {
                         holidaysCount += 1;
                     }
                 }
@@ -1012,11 +1005,40 @@ export class DateProcessor {
      * @param editArgs 
      * @private
      */
+    public calculateProjectDatesForValidatedTasks(editArgs?: Object): void {
+        let projectStartDate: Date = typeof this.parent.projectStartDate === 'string' ?
+            new Date(this.parent.projectStartDate) : this.parent.projectStartDate;
+        let projectEndDate: Date = typeof this.parent.projectEndDate === 'string' ?
+            new Date(this.parent.projectEndDate) : this.parent.projectEndDate;
+        let minStartDate: Date | string = null; let maxEndDate: Date| string = null;
+        let flatData: object[] = (getValue('dataOperation.dataArray', this.parent));
+        if ((!projectStartDate || !projectEndDate) && (flatData && flatData.length === 0)) {
+            minStartDate = this.getDateFromFormat(new Date());
+            maxEndDate = this.getDateFromFormat(new Date(minStartDate.getTime()));
+        } else if (flatData.length > 0) {
+                let sortedStartDate: object[] = flatData.slice().sort((a: ITaskData, b: ITaskData) =>
+                    ((new Date(a[this.parent.taskFields.startDate])).getTime() -
+                     (new Date(b[this.parent.taskFields.startDate])).getTime()));
+                let sortedEndDate: object[] = flatData.slice().sort((a: ITaskData, b: ITaskData) =>
+                    ((new Date(b[this.parent.taskFields.endDate])).getTime() - (new Date(a[this.parent.taskFields.endDate])).getTime()));
+                minStartDate = sortedStartDate[0][this.parent.taskFields.startDate];
+                maxEndDate = sortedEndDate[sortedEndDate.length - 1][this.parent.taskFields.endDate];
+        }
+        this.parent.cloneProjectStartDate = projectStartDate ? new Date(projectStartDate.getTime()) :
+         typeof minStartDate === 'string' ? new Date(minStartDate) : minStartDate;
+        this.parent.cloneProjectEndDate = projectEndDate ? new Date(projectEndDate.getTime()) :
+         typeof maxEndDate === 'string' ? new Date(maxEndDate) : maxEndDate;
+    }
+    /**
+     * 
+     * @param editArgs 
+     * @private
+     */
     public calculateProjectDates(editArgs?: Object): void {
         let sDate: Date = typeof this.parent.projectStartDate === 'string' ?
-            new Date(this.parent.projectStartDate as string) : this.parent.projectStartDate;
+         new Date(this.parent.projectStartDate) : this.parent.projectStartDate;
         let eDate: Date = typeof this.parent.projectEndDate === 'string' ?
-            new Date(this.parent.projectEndDate as string) : this.parent.projectEndDate;
+         new Date(this.parent.projectEndDate) : this.parent.projectEndDate;
         let projectStartDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectStartDate
             ? this.getDateFromFormat(this.parent.cloneProjectStartDate) : this.getDateFromFormat(sDate);
         let projectEndDate: Date = this.parent.timelineModule.isZooming && this.parent.cloneProjectEndDate
@@ -1062,7 +1084,7 @@ export class DateProcessor {
                     addDateToList(task.baselineEndDate);
                 }
                 if (task.indicators && task.indicators.length > 0 && !this.parent.timelineModule.isZoomToFit) {
-                    task.indicators.forEach((item: IIndicator, index: number) => {
+                    task.indicators.forEach((item: IIndicator) => {
                         addDateToList(this.getDateFromFormat(item.date));
                     });
                 }

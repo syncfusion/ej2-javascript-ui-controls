@@ -445,7 +445,12 @@ var SfToolbar = /** @class */ (function () {
         }
         for (var i = 0; i < items.length; i++) {
             var itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
-            innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
+            if (this.options.overflowMode === 'MultiRow') {
+                innerItem = itemEleDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
+            }
+            else {
+                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
+            }
             if (!innerItem) {
                 continue;
             }
@@ -461,6 +466,9 @@ var SfToolbar = /** @class */ (function () {
             }
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
+            }
+            if (this.options.overflowMode === 'MultiRow') {
+                continue;
             }
             if (!this.tbarAlign) {
                 this.tbarItemAlign(items[i], itemEleDom, i);
@@ -480,8 +488,8 @@ var SfToolbar = /** @class */ (function () {
     SfToolbar.prototype.serverItemsRefresh = function () {
         var ele = this.element;
         var wrapBlaEleDom = ele.querySelector('.' + BZ_ITEMS);
-        if (wrapBlaEleDom.children.length > 0) {
-            var itemEleDom = ele.querySelector('.' + CLS_ITEMS);
+        var itemEleDom = ele.querySelector('.' + CLS_ITEMS);
+        if ((itemEleDom && itemEleDom.children.length > 0) || wrapBlaEleDom.children.length > 0) {
             if (!itemEleDom && ele && ele.classList.contains(CLS_TOOLBAR) && ele.firstElementChild) {
                 itemEleDom = sf.base.createElement('div', { className: CLS_ITEMS });
                 ele.insertBefore(itemEleDom, ele.firstElementChild);
@@ -492,6 +500,9 @@ var SfToolbar = /** @class */ (function () {
         }
     };
     SfToolbar.prototype.resetServerItems = function () {
+        if (this.options.overflowMode === 'MultiRow') {
+            return;
+        }
         var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
         var itemEles = [].slice.call(sf.base.selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
         sf.base.append(itemEles, wrapBlaEleDom);
@@ -1028,7 +1039,7 @@ var SfToolbar = /** @class */ (function () {
         var isVer = this.options.isVertical;
         var popNav = ele.querySelector('.' + CLS_TBARNAV);
         var innerEle = ele.querySelector('.' + CLS_ITEMS);
-        if (sf.base.isNullOrUndefined(popNav)) {
+        if (sf.base.isNullOrUndefined(popNav) || sf.base.isNullOrUndefined(innerEle)) {
             return;
         }
         innerEle.removeAttribute('style');

@@ -810,6 +810,9 @@ export class Parser {
         if (formula.length > 0 && formula[0] === this.parent.getFormulaCharacter()) {
             formula = formula.substring(1);
         }
+        if (formula.indexOf('#REF!') > -1) {
+            return this.parent.getErrorStrings()[CommonErrors.ref];
+        }
         if (formula.length > 0 && formula[0] === '+') {
             formula = formula.substring(1);
         }

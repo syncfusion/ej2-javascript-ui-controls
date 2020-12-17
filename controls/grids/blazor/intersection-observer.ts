@@ -1,4 +1,4 @@
-import { EventHandler, Browser } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { SentinelInfo, SentinelType } from './virtual-scroll';
 import { InterSection } from './interfaces';
@@ -14,6 +14,7 @@ export class InterSectionObserver {
     private touchMove: boolean = false;
         /** @hidden */
     public options: InterSection = {};
+    public blazorActiveKey : string;
     public sentinelInfo: SentinelInfo = {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
@@ -80,18 +81,20 @@ export class InterSectionObserver {
             }
 
             let check: boolean = this.check(direction);
-            if (current.entered) {
+            let isMaskRow: boolean = this.options.container.querySelectorAll('.e-masked-row').length && current.axis != 'X';
+            if (current.entered || ((isNullOrUndefined(this.blazorActiveKey) || this.blazorActiveKey == '') && !this.fromWheel && isMaskRow)) {
                 onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
 
-            if (check) {
+            if (check || isMaskRow) {
                 let fn: Function = debounced100;
                 //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
                 if (current.axis === 'X') { fn = debounced50; }
                 fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
                     focusElement: document.activeElement});
             }
-            this.fromWheel = false;
+            if (!isMaskRow)
+                this.fromWheel = false;
         };
     }
 

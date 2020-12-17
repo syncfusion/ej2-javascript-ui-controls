@@ -64,8 +64,12 @@ export class Data implements IDataProcessor {
         let gObj: IGrid = this.parent;
         this.dataManager = gObj.dataSource instanceof DataManager ? <DataManager>gObj.dataSource :
             (isNullOrUndefined(gObj.dataSource) ? new DataManager() : new DataManager(gObj.dataSource));
-        this.isQueryInvokedFromData = true;
-        gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
+        if ((<{ isAngular?: boolean }>gObj).isAngular && !(gObj.query instanceof Query)) {
+            gObj.setProperties({ query: new Query() }, true);
+        } else {
+            this.isQueryInvokedFromData = true;
+            gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
+        }
     }
 
     /**

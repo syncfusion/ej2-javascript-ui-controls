@@ -66,9 +66,9 @@ export class Aggregate {
                     for (let summaryRowIndex: number = 1, len: number = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
                         let item: Object; item = {};
                         for (let columnIndex: number = 0, len: number = columnLength; columnIndex < len; columnIndex++) {
-                        let field: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
-                        this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
-                        item[field] = null;
+                            let field: string = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
+                            this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                            item[field] = null;
                         }
                         item = this.createSummaryItem(item,  this.parent.aggregates[summaryRowIndex - 1]);
                         if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {

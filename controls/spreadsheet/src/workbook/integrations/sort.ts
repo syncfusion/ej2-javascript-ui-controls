@@ -106,7 +106,7 @@ export class WorkbookSort {
                 let cell: CellModel = {};
                 let rowKey: string = '__rowIndex';
                 Array.prototype.forEach.call(e.result, (data: { [key: string]: CellModel }, index: number) => {
-                    if (!data) { return; }
+                    if (!data || !jsonData[index]) { return; }
                     sCIdx = range[1];
                     eCIdx = range[3];
                     sRIdx = parseInt(jsonData[index][rowKey] as string, 10) - 1;

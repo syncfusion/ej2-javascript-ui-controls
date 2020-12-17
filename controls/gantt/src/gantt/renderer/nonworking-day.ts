@@ -24,7 +24,11 @@ export class NonWorkingDay {
             this.nonworkingContainer = createElement('div', {
                 className: cls.nonworkingContainer
             });
-            this.parent.ganttChartModule.chartBodyContent.appendChild(this.nonworkingContainer);
+            if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                this.parent.ganttChartModule.virtualRender.appendChildElements(this.nonworkingContainer);
+            } else {
+                this.parent.ganttChartModule.chartBodyContent.appendChild(this.nonworkingContainer);
+            }
         }
     }
     /**
@@ -57,7 +61,7 @@ export class NonWorkingDay {
         let container: HTMLElement = createElement('div');
         let height: number = this.parent.contentHeight;
         let scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
-        let viewportHeight: number = parseInt((scrollElement as HTMLElement).style.height, 10);
+        let viewportHeight: number = parseInt(scrollElement.style.height, 10);
         for (let i: number = 0; i < this.parent.holidays.length; i++) {
             if (this.parent.holidays[i].from && this.parent.holidays[i].to) {
                 fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i].from);
@@ -147,7 +151,7 @@ export class NonWorkingDay {
     private updateHolidayLabelHeight(): void {
         let height: number = this.parent.contentHeight;
         let scrollElement: HTMLElement = this.parent.ganttChartModule.scrollElement;
-        let viewportHeight: number = parseInt((scrollElement as HTMLElement).style.height, 10);
+        let viewportHeight: number = parseInt(scrollElement.style.height, 10);
         let top: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
         let labels: NodeList = this.holidayContainer.querySelectorAll('.' + cls.holidayLabel);
         for (let i: number = 0; i < labels.length; i++) {
@@ -159,12 +163,13 @@ export class NonWorkingDay {
      * @private
      */
     public updateContainerHeight(): void {
+        let height: number = this.parent.getContentHeight();
         if (this.holidayContainer) {
-            this.holidayContainer.style.height = formatUnit(this.parent.contentHeight);
+            this.holidayContainer.style.height = formatUnit(height);
             this.updateHolidayLabelHeight();
         }
         if (this.weekendContainer) {
-            this.weekendContainer.style.height = formatUnit(this.parent.contentHeight);
+            this.weekendContainer.style.height = formatUnit(height);
         }
     }
     /**

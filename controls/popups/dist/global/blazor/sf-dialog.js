@@ -335,7 +335,7 @@ var SfDialog = /** @class */ (function () {
         }
         var headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         var footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        sf.popups.setMinHeight(headerHeight + 30 + footerHeight);
+        sf.popups.setMinHeight(headerHeight + 30 + (isNaN(footerHeight) ? 0 : footerHeight));
         return (headerHeight + 30 + footerHeight);
     };
     SfDialog.prototype.changePosition = function (dlgObj) {

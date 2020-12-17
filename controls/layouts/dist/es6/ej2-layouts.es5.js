@@ -2573,14 +2573,33 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     DashboardLayout.prototype.renderTemplate = function (content, appendElement, type, isStringTemplate, prop) {
         var templateFn = this.templateParser(content);
         var templateElements = [];
-        // tslint:disable-next-line
-        var compilerFn = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
-        if (compilerFn) {
-            for (var _i = 0, compilerFn_1 = compilerFn; _i < compilerFn_1.length; _i++) {
-                var item = compilerFn_1[_i];
-                templateElements.push(item);
+        if ((content[0] === '.' || content[0] === '#') &&
+            document.querySelector(content).tagName !== 'SCRIPT') {
+            var eleVal = document.querySelector(content);
+            if (!isNullOrUndefined(eleVal)) {
+                if (eleVal.style.display === 'none') {
+                    eleVal.style.removeProperty('display');
+                }
+                if (eleVal.getAttribute('style') === '') {
+                    eleVal.removeAttribute('style');
+                }
+                appendElement.appendChild(eleVal);
+                return;
             }
-            append([].slice.call(templateElements), appendElement);
+            else {
+                content = content.trim();
+            }
+        }
+        else {
+            // tslint:disable-next-line
+            var compilerFn = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+            if (compilerFn) {
+                for (var _i = 0, compilerFn_1 = compilerFn; _i < compilerFn_1.length; _i++) {
+                    var item = compilerFn_1[_i];
+                    templateElements.push(item);
+                }
+                append([].slice.call(templateElements), appendElement);
+            }
         }
     };
     DashboardLayout.prototype.renderPanels = function (cellElement, panelModel, panelId, isStringTemplate) {

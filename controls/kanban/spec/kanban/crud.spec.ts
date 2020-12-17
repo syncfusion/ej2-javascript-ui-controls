@@ -591,7 +591,7 @@ describe('CRUD actions module', () => {
 
         it('Dragged clone behavior testing', () => {
             dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="1"]') as NodeListOf<Element>).item(0) as HTMLElement;
-            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
+            expect(dragElement.classList.contains('e-draggable')).toBe(true);
             util.triggerMouseEvent(dragElement, 'mousedown');
             util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
         });

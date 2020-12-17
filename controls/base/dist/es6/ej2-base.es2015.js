@@ -5479,8 +5479,8 @@ class Base {
         }
         newChanges = newChanges ? newChanges : {};
         extend(this.bulkChanges, {}, newChanges, true);
-        if (this.allowServerDataBinding) {
-            let sfBlazor = 'sfBlazor';
+        let sfBlazor = 'sfBlazor';
+        if (this.allowServerDataBinding && window[sfBlazor].updateModel) {
             window[sfBlazor].updateModel(this);
             this.bulkChanges = {};
         }
@@ -6853,6 +6853,19 @@ let Component = class Component extends Base {
         }
         else {
             return this.element;
+        }
+    }
+    /**
+     * Returns the persistence data for component
+     */
+    //tslint:disable:no-any
+    getLocalData() {
+        let eleId = this.getModuleName() + this.element.id;
+        if (versionBasedStatePersistence) {
+            return window.localStorage.getItem(eleId + this.ej2StatePersistenceVersion);
+        }
+        else {
+            return window.localStorage.getItem(eleId);
         }
     }
     /**

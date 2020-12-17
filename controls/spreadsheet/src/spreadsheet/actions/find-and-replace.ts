@@ -328,7 +328,9 @@ export class FindAndReplace {
             className: 'e-replace-alert-span',
             innerHTML: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
         });
-        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
+        if (this.parent.element.querySelector('.e-find-dlg')) {
+            (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
+        }
     }
 
     private findKeyUp(e: KeyboardEvent): void {

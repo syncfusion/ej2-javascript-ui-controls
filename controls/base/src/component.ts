@@ -116,6 +116,18 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         }
     }
     /**
+     * Returns the persistence data for component
+     */
+    //tslint:disable:no-any
+    public getLocalData(): any {
+        let eleId: string = this.getModuleName() + this.element.id;
+        if (versionBasedStatePersistence) {
+            return window.localStorage.getItem(eleId + this.ej2StatePersistenceVersion);
+        } else {
+            return window.localStorage.getItem(eleId);
+        }
+    }
+    /**
      * Appends the control within the given HTML element
      * @param {string | HTMLElement} selector - Target element where control needs to be appended
      */

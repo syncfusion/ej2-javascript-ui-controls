@@ -799,3 +799,122 @@ describe('Checking Node Constraints - multiple selecion', () => {
     })
 
 });
+describe('Dragging wih constraints', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram3' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let nodes: NodeModel[] = [
+            {
+                id: "node1",
+                height: 100,
+                width: 100,
+          
+                annotations: [{ content: "Start"  }],
+                constraints:
+                  (NodeConstraints.Default & ~NodeConstraints.Drag) |
+                  NodeConstraints.ReadOnly
+              },
+              {
+                id: "node2",
+                height: 100,
+                width: 100,
+                annotations: [{ content: "Left" }],
+                constraints:
+                  (NodeConstraints.Default & ~NodeConstraints.Drag) |
+                  NodeConstraints.ReadOnly
+              },
+              {
+                id: "node3",
+                height: 100,
+                width: 100,
+                annotations: [{ content: "Right" }],
+                constraints:
+                  (NodeConstraints.Default & ~NodeConstraints.Drag) |
+                  NodeConstraints.ReadOnly
+              },
+              {
+                id: "node4",
+                height: 100,
+                width: 100,
+                annotations: [{ content: "End" }],
+                constraints:
+                  (NodeConstraints.Default & ~NodeConstraints.Drag) |
+                  NodeConstraints.ReadOnly
+              }
+        ]
+        let connectors: ConnectorModel[] = [
+            {
+              id: "connector1",
+              sourceID: "node1",
+              targetID: "node2",
+              type: "Orthogonal"
+            },
+            {
+              id: "connector2",
+              sourceID: "node1",
+              targetID: "node3",
+              type: "Orthogonal"
+            },
+            {
+              id: "connector3",
+              sourceID: "node2",
+              targetID: "node4",
+              type: "Orthogonal"
+            },
+            {
+              id: "connector4",
+              sourceID: "node3",
+              targetID: "node4",
+              type: "Orthogonal"
+            }
+          ];
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: nodes, connectors: connectors, 
+            layout: { type: "ComplexHierarchicalTree",
+            orientation: "TopToBottom",
+            horizontalAlignment: "Center",
+            verticalAlignment: "Top",
+            verticalSpacing: 40 }
+        });
+
+        diagram.appendTo('#diagram3');
+        selArray.push(diagram.nodes[0]);
+        diagram.select(selArray);
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking selected  dragging with constraint', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 500, 100);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 500, 100, 580, 130);
+        expect (diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.nodes[0].offsetX === 500 &&
+        diagram.selectedItems.nodes[0].offsetY === 100).toBe(true);
+        done();
+    });
+
+    it('Checking selection of another node with dragging constraint', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 565, 240);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 565, 240, 580, 260);
+        expect (diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.nodes[0].offsetX === 565 &&
+        diagram.selectedItems.nodes[0].offsetY === 240).toBe(true);
+        done();
+    });
+
+})

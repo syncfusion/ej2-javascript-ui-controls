@@ -87,7 +87,8 @@ export class TimelineEvent extends MonthEvent {
                 appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
                 let appLeft: number = 0;
                 let appRight: number = 0;
-                let position: number = this.getPosition(startTime, endTime, isAllDay, this.day);
+                let position: number =
+                    this.getPosition(startTime, endTime, !ele.classList.contains('e-more-indicator') ? isAllDay : false, this.day);
                 appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
                 let resIndex: number = this.getGroupIndex(ele);
                 let top: number = this.getRowTop(resIndex);

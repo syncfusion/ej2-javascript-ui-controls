@@ -468,7 +468,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
     public parentID: string;
 
     /**
-     * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query/)
      * that will execute along with data processing.
      * @default null
      */
@@ -788,7 +788,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property
      * is set, the template content overrides the displayed node text. The property accepts template string
-     * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)
+     * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/)
      * or HTML element ID holding the content. For more information on template concept, refer to
      * [Template](../../treeview/template/).
      * @default null

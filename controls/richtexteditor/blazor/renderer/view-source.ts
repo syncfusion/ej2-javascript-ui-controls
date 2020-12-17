@@ -189,10 +189,12 @@ export class ViewSource {
         });
     }
     private getTextAreaValue(element: HTMLElement): string {
+        let currentValue: string;
+        currentValue = this.parent.enableXhtml ? this.parent.getXhtmlString(this.parent.value) : this.parent.value;
         return (element.innerHTML === '<p><br></p>') ||
             (element.childNodes.length === 1 &&
                 (element.childNodes[0] as HTMLElement).tagName === 'P' &&
-                element.innerHTML.length === 7) ? '' : this.parent.value;
+                element.innerHTML.length === 7) ? '' : currentValue;
     }
     public getPanel(): HTMLTextAreaElement | Element {
         return this.parent.element.querySelector('.e-rte-srctextarea');

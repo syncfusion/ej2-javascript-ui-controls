@@ -465,10 +465,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     @Event()
     public created: EmitType<Object>;
     /** 
-     * Triggers when Dashboard Layout is destroyed.
-     * @event 
+     * Triggers when Dashboard Layout is destroyed.
+     * @event 
      * @blazorproperty 'Destroyed'
-     */
+     */
     @Event()
     public destroyed: EmitType<Object>;
 
@@ -704,13 +704,31 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected renderTemplate(content: string, appendElement: HTMLElement, type: string, isStringTemplate: boolean, prop: string): void {
         let templateFn: Function = this.templateParser(content);
         let templateElements: HTMLElement[] = [];
-        // tslint:disable-next-line
-        let compilerFn: any = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
-        if (compilerFn) {
-        for (let item of compilerFn) {
-            templateElements.push(item);
-        }
-        append([].slice.call(templateElements), appendElement);
+        if (((<String>content)[0] === '.' || (<String>content)[0] === '#') &&
+            document.querySelector(<string>content).tagName !== 'SCRIPT') {
+            let eleVal: HTMLElement = <HTMLElement>document.querySelector(<string>content);
+            if (!isNullOrUndefined(eleVal)) {
+                if (eleVal.style.display === 'none') {
+                    eleVal.style.removeProperty('display');
+                }
+                if (eleVal.getAttribute('style') === '') {
+                    eleVal.removeAttribute('style');
+                }
+                appendElement.appendChild(eleVal);
+                return;
+            } else {
+                content = (content as string).trim();
+            }
+        } else {
+            // tslint:disable-next-line
+            let compilerFn: any = templateFn({}, this, prop, type, isStringTemplate, null, appendElement);
+            if (compilerFn) {
+                for (let item of compilerFn) {
+                    templateElements.push(item);
+                }
+                append([].slice.call(templateElements), appendElement);
+            }
+
         }
     }
 

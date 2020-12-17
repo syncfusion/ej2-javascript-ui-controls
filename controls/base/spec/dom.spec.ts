@@ -77,6 +77,7 @@ describe('Dom', () => {
             expect((eleAr[6].attributes as any).className).toBe('class1');
             eleAr.pop();
         });
+
     });
 
     describe('removeClass', () => {
@@ -117,7 +118,7 @@ describe('Dom', () => {
         it('get single element context based', () => {
             expect(Dom.select('#ele-level-3', elem1)).toBe(elem3);
         });
-        
+
         it('get id starts with number element', () => {
             expect(Dom.select('#1-element', elem4));
         });

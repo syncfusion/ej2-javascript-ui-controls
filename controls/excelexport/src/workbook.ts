@@ -198,6 +198,10 @@ export class Workbook {
             } else {
                 sheet.name = 'Sheet' + (i + 1).toString();
             }
+
+            if (jsonSheet.enableRtl !== null && jsonSheet.enableRtl !== undefined) {
+               sheet.enableRtl = jsonSheet.enableRtl;
+            }
             sheet.index = (i + 1);
 
             //Columns
@@ -1476,6 +1480,10 @@ export class Workbook {
     }
     private saveSheetView(sheet: Worksheet): string {
         let paneString: string = '<sheetViews><sheetView workbookViewId="0" ';
+        if(sheet.enableRtl === true)
+        {
+            paneString += 'rightToLeft="1"';
+        }
         if (sheet.showGridLines === false) {
             paneString += 'showGridLines="0" >';
         } else {

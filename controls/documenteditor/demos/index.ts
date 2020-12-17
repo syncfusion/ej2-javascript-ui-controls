@@ -396,6 +396,12 @@ let toolBar: Toolbar = new Toolbar({
             type: 'Separator'
         },
         {
+            prefixIcon: 'e-de-tab-blank-document', tooltipText: 'InsertFootnote', id: 'InsertFootnote'
+        },
+        {
+            prefixIcon: 'e-de-tab-blank-document', tooltipText: 'InsertEndnote', id: 'InsertEndnote'
+        },
+        {
             prefixIcon: 'e-de-icon-cut tb-icons', tooltipText: 'Cut', id: 'cut'
         },
         {

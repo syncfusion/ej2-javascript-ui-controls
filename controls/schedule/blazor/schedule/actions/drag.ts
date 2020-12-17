@@ -197,7 +197,7 @@ export class DragAndDrop extends ActionBase {
                     this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
                 }
             }
-            if (this.parent.options.currentView === 'Month' ||
+            if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear' ||
                 (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.updateOriginalElement(this.actionObj.clone);
                 this.cloneEventDetail = (this.actionObj.clone as HTMLElement).querySelector('.e-appointment-details');
@@ -351,14 +351,14 @@ export class DragAndDrop extends ActionBase {
         if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
             this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
             this.morePopupEventDragging(e);
-        } else if (this.parent.isTimelineView()) {
+        } else if (this.parent.isTimelineView() && this.parent.options.currentView !== 'TimelineYear') {
             this.timelineEventModule.dateRender = this.parent.activeView.renderDates;
             this.timelineEventModule.cellWidth = this.actionObj.cellWidth;
             this.timelineEventModule.getSlotDates();
             this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth : this.actionObj.cellWidth;
             this.calculateTimelineTime(e);
         } else {
-            if (this.parent.options.currentView === 'Month' ||
+            if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear' ||
                 (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.calculateVerticalDate(e);
             } else {
@@ -658,7 +658,11 @@ export class DragAndDrop extends ActionBase {
             }
         }
         let event: { [key: string]: Object } = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
-        this.dynamicEventsRendering(event);
+        if (this.parent.options.currentView === 'TimelineYear') {
+            this.dynamicYearlyEventsRendering(event);
+        } else {
+            this.dynamicEventsRendering(event);
+        }
     }
 
     private calculateTimelineTime(e: MouseEvent & TouchEvent): void {
@@ -689,7 +693,7 @@ export class DragAndDrop extends ActionBase {
         let index: number = this.getCursorCurrentIndex(colIndex, cloneIndex, tr);
         index = index < 0 ? 0 : index;
         let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[index].getTime()) :
-            this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
+        this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
         if (this.isStepDragging) {
             let widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {

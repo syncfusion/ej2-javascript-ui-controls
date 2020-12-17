@@ -4,7 +4,7 @@ import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, Ag
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula } from '../common/index';
+import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula} from '../common/index';
 import { workbookEditOperation, getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference } from '../common/index';
 
 
@@ -461,19 +461,21 @@ export class WorkbookFormula {
             let refersTo: string = this.parseSheetRef(definedname.refersTo);
             let range: string = getRangeFromAddress(refersTo);
             let cellRef: boolean = false;
-            if (refersTo.indexOf('http:') < 0) {
-                range = range.split('$').join('');
-                range = range.split('=').join('');
-                if (range.indexOf(':') > -1) {
-                    let rangeSplit: string[] = range.split(':');
-                    if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
-                        cellRef = true;
-                    }
-                } else if (range.indexOf(':') < 0) {
-                    if (isCellReference(range)) {
-                        cellRef = true;
-                    }
+            let isLink: boolean = refersTo.indexOf('http:') > -1 ? true : (refersTo.indexOf('https:') > -1 ? true : false);
+            range = range.split('$').join('');
+            range = range.split('=').join('');
+            if (range.indexOf(':') > -1) {
+                let rangeSplit: string[] = range.split(':');
+                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                    cellRef = true;
                 }
+            } else if (range.indexOf(':') < 0) {
+                if (isCellReference(range)) {
+                    cellRef = true;
+                }
+            }
+            if (isLink) {
+                cellRef = false;
             }
             if (cellRef) {
                 this.addDefinedName(definedname, true);
@@ -643,8 +645,7 @@ export class WorkbookFormula {
         if (checkIsFormula(val)) {
             if (status === 'delete') {
                 for (i = 1; i <= count; i++) {
-                    deleteIdxs.push(startIdx + i);
-                }
+                    deleteIdxs.push(startIdx + i); }
             }
             splitFormula = this.parseFormula(val);
             for (i = 0; i < splitFormula.length; i++) {

@@ -203,6 +203,8 @@ $de-hyper-link-height: 175px !default;
 $de-hyper-link-width: 230px !default;
 $de-insert-table-height: 131px !default;
 $de-insert-table-width: 230px !default;
+$de-insert-footnote-height: 139px !default;
+$de-insert-footnote-width: 247px !default;
 $de-insert-spellchecker-height: 350px !default;
 $de-insert-spellchecker-width: 513px !default;
 $de-spellcheck-listview-height: 122px !default;
@@ -565,6 +567,8 @@ $de-font-dlg-width: 360px !default;
 $de-hyper-link-height: 168px !default;
 $de-hyper-link-width: 230px !default;
 $de-insert-table-height: 130px !default;
+$de-insert-footnote-height: 139px !default;
+$de-insert-footnote-width: 247px !default;
 $de-insert-table-width: 230px !default;
 $de-insert-table-title-bottom-margin: 8px !default;
 $de-insert-table-title-top-margin: 8px !default;
@@ -1764,6 +1768,14 @@ $de-pane-color-border:   #3f51b5 !default;
     margin-bottom: $de-insert-table-dlg-input-bottom;
   }
 
+  .e-de-insert-footnote-dlg-sub-header {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: $de-insert-table-title-bottom-margin;
+    margin-top: $de-insert-table-title-top-margin;
+  }
+
   .e-de-list-ddl-subheader,
   .e-de-list-ddl-subheaderbottom {
     font-size: 12px;
@@ -2165,6 +2177,11 @@ $de-pane-color-border:   #3f51b5 !default;
   .e-de-insert-table {
     height: $de-insert-table-height;
     width: $de-insert-table-width;
+  }
+
+  .e-de-insert-table {
+    height: $de-insert-footnote-height;
+    width: $de-insert-footnote-width;
   }
 
   .e-de-list-dlg {

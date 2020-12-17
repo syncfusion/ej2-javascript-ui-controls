@@ -317,7 +317,7 @@ class SfDialog {
         if (!isNOU(footerEle)) { computedFooterHeight = getComputedStyle(footerEle).height; }
         let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        setMinHeight(headerHeight + 30 + footerHeight);
+        setMinHeight(headerHeight + 30 + (isNaN(footerHeight) ? 0 : footerHeight));
         return (headerHeight + 30 + footerHeight);
     }
     public changePosition(dlgObj: { [key: string]: Object }): void {

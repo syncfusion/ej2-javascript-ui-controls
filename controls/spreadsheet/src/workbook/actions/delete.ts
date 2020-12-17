@@ -18,6 +18,10 @@ export class WorkbookDelete {
     }
     // tslint:disable-next-line
     private deleteModel(args: InsertDeleteModelArgs): void {
+        let sheetLength: number = this.parent.sheets.length;
+        if (args.modelType === 'Sheet' && sheetLength === 1) {
+            return;
+        }
         let modelName: string = `${args.modelType.toLowerCase()}s`;
         args.start = <number>args.start;
         if (args.start > args.end) {

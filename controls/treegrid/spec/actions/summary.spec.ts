@@ -541,7 +541,7 @@ describe('Summary with Sorting', () => {
     });
   });
   
-        describe(' Summary row format', () => {
+          describe(' Summary row format', () => {
     let TreegridObj: TreeGrid;
     beforeAll((done: Function) => {
       TreegridObj = createGrid(

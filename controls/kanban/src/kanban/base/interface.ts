@@ -75,6 +75,8 @@ export interface DragEventArgs extends BaseEventArgs {
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
+    /** Defines the dropped card position. */
+    dropIndex?: number;
 }
 
 /**

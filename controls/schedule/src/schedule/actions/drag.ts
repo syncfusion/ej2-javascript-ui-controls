@@ -4,6 +4,7 @@ import { DragEventArgs, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
+import { YearEvent } from '../event-renderer/year';
 import { HeaderRowsModel } from '../models/header-rows-model';
 import { VerticalEvent } from '../event-renderer/vertical-view';
 import * as cls from '../base/css-constant';
@@ -181,7 +182,7 @@ export class DragAndDrop extends ActionBase {
             this.minDiff = 0;
             this.isMorePopupOpened = false;
             this.daysVariation = -1;
-            if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable)) {
+            if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable) && this.parent.currentView !== 'TimelineYear') {
                 if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
                     this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
                     this.isMorePopupOpened = true;
@@ -197,6 +198,9 @@ export class DragAndDrop extends ActionBase {
                 } else {
                     this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
                 }
+            }
+            if (this.parent.currentView === 'TimelineYear') {
+                this.yearEvent = new YearEvent(this.parent);
             }
             if (this.parent.currentView === 'Month') {
                 this.updateOriginalElement(this.actionObj.clone);
@@ -349,14 +353,14 @@ export class DragAndDrop extends ActionBase {
         if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
             this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
             this.morePopupEventDragging(e);
-        } else if (this.parent.activeView.isTimelineView()) {
+        } else if (this.parent.activeView.isTimelineView() && this.parent.currentView !== 'TimelineYear') {
             this.timelineEventModule.dateRender = this.parent.activeView.renderDates;
             this.timelineEventModule.cellWidth = this.actionObj.cellWidth;
             this.timelineEventModule.getSlotDates();
             this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth : this.actionObj.cellWidth;
             this.calculateTimelineTime(e);
         } else {
-            if (this.parent.currentView === 'Month') {
+            if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
                 this.calculateVerticalDate(e);
             } else {
                 this.calculateVerticalTime(e);
@@ -438,6 +442,9 @@ export class DragAndDrop extends ActionBase {
         let eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
         let td: HTMLElement = closest((<HTMLTableCellElement>e.target), 'td') as HTMLElement;
+        if (this.parent.currentView === 'TimelineYear' && !td.classList.contains('e-work-cells')) {
+            return;
+        }
         let dragStart: Date = this.parent.getDateFromElement(td);
         let dragEnd: Date = new Date(dragStart.getTime());
         dragEnd.setMilliseconds(eventDuration);
@@ -661,7 +668,11 @@ export class DragAndDrop extends ActionBase {
             }
         }
         let event: { [key: string]: Object } = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
-        this.dynamicEventsRendering(event);
+        if (this.parent.currentView === 'TimelineYear') {
+            this.dynamicYearlyEventsRendering(event);
+        } else {
+            this.dynamicEventsRendering(event);
+        }
     }
 
     private calculateTimelineTime(e: MouseEvent & TouchEvent): void {
@@ -678,8 +689,10 @@ export class DragAndDrop extends ActionBase {
         }
         offsetLeft = this.getOffsetValue(offsetLeft, rightOffset);
         let colIndex: number = this.getColumnIndex(offsetLeft);
+        let dragArea: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        let leftVal: number = (this.parent.eventDragArea) ? dragArea.scrollLeft - dragArea.offsetLeft : 0;
         let cloneIndex: number =
-            Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left) / this.actionObj.cellWidth);
+            Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left + leftVal) / this.actionObj.cellWidth);
         if (this.parent.enableRtl) {
             cloneIndex = Math.abs(Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().right) /
                 this.actionObj.cellWidth)) - 1;

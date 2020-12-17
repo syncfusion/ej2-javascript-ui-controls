@@ -341,6 +341,7 @@ export class ExcelExport {
 
     private processGridExport(gObj: IGrid, exportProperties: ExcelExportProperties, r: ReturnType | Object[]): ExcelRow[] {
         let excelRows: ExcelRow[] = [];
+        let isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
             this.theme = exportProperties.theme;
         }
@@ -350,7 +351,7 @@ export class ExcelExport {
         let helper: ExportHelper = new ExportHelper(gObj);
         let gColumns: Column[] = isExportColumns(exportProperties) ?
             prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
-            helper.getGridExportColumns(gObj.columns as Column[]);
+            helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);
         let headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
         let groupIndent: number = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);

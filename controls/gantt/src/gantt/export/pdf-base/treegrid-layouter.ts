@@ -6,7 +6,7 @@ import {
     ElementLayouter, PdfLayoutResult, PdfLayoutFormat, SizeF, PdfPage, PointF, PdfGraphics,
     RectangleF, PdfLayoutParams, RowLayoutResult, PdfLayoutType, PdfLayoutBreakType
 } from '@syncfusion/ej2-pdf-export';
-import { PdfDocument, PdfSection, PdfStringLayoutResult, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfSection, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
 
 /**
  * 
@@ -135,7 +135,6 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                         if (this.treegrid.enableHeader) {
                             this.drawHeader();
                         }
-                        originalHeight = this.currentBounds.y;
                         this.checkBounds(format);
                         rowResult = this.drawRow(row);
                     } else if (!this.treegrid.allowRowBreakAcrossPages && i < length) {
@@ -198,7 +197,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         let pages: PdfPage[] = [];
         let keys: PdfPage[] = layoutPages.keys();
         for (let i: number = 0; i < keys.length; i++) {
-            let page: PdfPage = keys[i] as PdfPage;
+            let page: PdfPage = keys[i];
             page.section = null;
             pages.push(page);
             document.pages.remove(page);
@@ -252,7 +251,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         //.....If the row conains spans which  falls through more than one page, then draw the row to next page.
         if (isNullOrUndefined(layoutResult)) {
             let result: RowLayoutResult = new RowLayoutResult();
-            let height: number = row.rowBreakHeight > 0 ? row.rowBreakHeight : row.height;
+            height = row.rowBreakHeight > 0 ? row.rowBreakHeight : row.height;
             if (height > this.currentPageBounds.height) {
                 if (this.treegrid.allowRowBreakAcrossPages) {
                     result.isFinish = true;
@@ -302,7 +301,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                     cell.style.format = column.format;
                 }
                 /* tslint:disable-next-line */
-                let stringResult: PdfStringLayoutResult = cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+                cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
                 /* tslint:disable-next-line */
                 if (row.treegrid.style.allowHorizontalOverflow && (cell.columnSpan > this.cellEndIndex || i + cell.columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
                     row.rowOverflowIndex = this.cellEndIndex;
@@ -351,8 +350,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
             if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
                 cell.style.format = column.format;
             }
-            /* tslint:disable-next-line */
-            let stringResult: PdfStringLayoutResult = cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+            cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
             result.isFinish = (!result.isFinish) ? result.isFinish : cell.finishedDrawingCell;
             location.x += column.width;
             leftAdjustment = 0;

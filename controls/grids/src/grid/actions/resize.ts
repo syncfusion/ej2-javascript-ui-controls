@@ -3,7 +3,8 @@ import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
 import * as events from '../base/constant';
-import { getScrollBarWidth, parentsUntil } from '../base/util';
+import { freezeTable } from '../base/enum';
+import { getScrollBarWidth, parentsUntil, gridActionHandler } from '../base/util';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -99,12 +100,14 @@ export class Resize implements IAction {
         let contentTextClone: NodeListOf<Element>;
         let footerTextClone: NodeListOf<Element>;
         let columnIndexByField: number = this.parent.getColumnIndexByField(fName);
-        let frzCols: number = gObj.getFrozenColumns();
+        let left: number = gObj.getFrozenColumns() || gObj.getFrozenLeftColumnsCount();
+        let movable: number = gObj.getMovableColumnsCount();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
         }
-        if (frzCols) {
-            if (index < frzCols) {
+        if (gObj.isFrozenGrid()) {
+            let col: Column = gObj.getColumnByField(fName);
+            if (col.getFreezeTableName() === 'frozen-left') {
                 headerTable = gObj.getHeaderTable();
                 contentTable = gObj.getContentTable();
                 headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
@@ -112,14 +115,23 @@ export class Resize implements IAction {
                 if (footerTable) {
                     footerTextClone = footerTable.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
                 }
-            } else {
+            } else if (col.getFreezeTableName() === 'movable') {
                 headerTable = gObj.getHeaderContent().querySelector('.e-movableheader').children[0];
                 contentTable = gObj.getContent().querySelector('.e-movablecontent').children[0];
                 headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
-                contentTextClone = contentTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
+                contentTextClone = contentTable.querySelectorAll(`td:nth-child(${(columnIndex - left) + 1})`);
                 if (footerTable) {
                     footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
-                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
+                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${(columnIndex - left) + 1})`);
+                }
+            } else if (col.getFreezeTableName() === 'frozen-right') {
+                headerTable = gObj.getHeaderContent().querySelector('.e-frozen-right-header').children[0];
+                contentTable = gObj.getContent().querySelector('.e-frozen-right-content').children[0];
+                headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
+                contentTextClone = contentTable.querySelectorAll(`td:nth-child(${(columnIndex - (left + movable)) + 1})`);
+                if (footerTable) {
+                    footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
+                    footerTextClone = footerTable.querySelectorAll(`td:nth-child(${(columnIndex - (left + movable)) + 1})`);
                 }
             }
         } else {
@@ -177,7 +189,7 @@ export class Resize implements IAction {
             }
         }
         let calcTableWidth: string | number = tWidth + indentWidth;
-        if (tWidth > 0 && !gObj.getFrozenColumns()) {
+        if (tWidth > 0 && !gObj.isFrozenGrid()) {
             if (this.parent.detailTemplate || this.parent.childGrid) {
                 this.widthService.setColumnWidth(new Column({ width: '30px' }));
             }
@@ -314,7 +326,7 @@ export class Resize implements IAction {
     }
 
     private getResizeHandlers(): HTMLElement[] {
-        return this.parent.getFrozenColumns() ?
+        return this.parent.isFrozenGrid() ?
             [].slice.call(this.parent.getHeaderContent().querySelectorAll('.' + resizeClassList.root))
             : [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.root));
     }
@@ -355,25 +367,42 @@ export class Resize implements IAction {
                 this.refreshStackedColumnWidth();
                 this.element = e.target as HTMLElement;
                 if (this.parent.getVisibleFrozenColumns()) {
-                    let mtbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-                    let ftbody: Element = this.parent.getContent().querySelector('.e-frozencontent').querySelector('tbody');
-                    let mtr: NodeListOf<HTMLElement> = mtbody.querySelectorAll('tr');
-                    let ftr: NodeListOf<HTMLElement> = ftbody.querySelectorAll('tr');
+                    let mtbody: Element = this.parent.getMovableContentTbody();
+                    let ftbody: Element = this.parent.getFrozenLeftContentTbody();
+                    let frtbody: Element = this.parent.getFrozenRightContentTbody();
+                    let mtr: Element[] = [].slice.call(mtbody.querySelectorAll('tr'));
+                    let ftr: Element[] = [].slice.call(ftbody.querySelectorAll('tr'));
+                    let frTr: HTMLElement[] = [];
+                    if (this.parent.getFrozenMode() === 'Left-Right' && frtbody) {
+                        frTr = [].slice.call(frtbody.querySelectorAll('tr'));
+                    }
                     for (let i: number = 0; i < mtr.length; i++) {
-                        if (this.parent.rowHeight) {
-                            mtr[i].style.height = this.parent.rowHeight + 'px';
-                            ftr[i].style.height = this.parent.rowHeight + 'px';
-                        } else {
-                            mtr[i].style.removeProperty('height');
-                            ftr[i].style.removeProperty('height');
-                        }
+                        gridActionHandler(
+                            this.parent,
+                            (tableName: freezeTable, row: Element) => {
+                                if (this.parent.rowHeight) {
+                                    row[i].style.height = this.parent.rowHeight + 'px';
+                                } else {
+                                    row[i].style.removeProperty('height');
+                                }
+                            },
+                            [ftr, mtr, frTr]
+                        );
                     }
                 }
                 this.parentElementWidth = this.parent.element.getBoundingClientRect().width;
                 this.appendHelper();
                 this.column = this.getTargetColumn(e);
                 this.pageX = this.getPointX(e);
-                if (this.parent.enableRtl) {
+                if (this.column.getFreezeTableName() === 'frozen-right') {
+                    if (this.parent.enableRtl) {
+                        this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
+                            - parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString());
+                    } else {
+                        this.minMove = parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString())
+                            - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
+                    }
+                } else if (this.parent.enableRtl) {
                     this.minMove = parseFloat(this.column.width.toString())
                         - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
                 } else {
@@ -461,13 +490,25 @@ export class Resize implements IAction {
         }
         let pageX: number = this.getPointX(e);
         let mousemove: number = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
+        if (this.column.getFreezeTableName() === 'frozen-right') {
+            mousemove = this.parent.enableRtl ? (pageX - this.pageX) : (this.pageX - pageX);
+        }
         let colData: { [key: string]: number } = this.getColData(this.column, mousemove);
         if (!colData.width) {
             colData.width = (closest(this.element, 'th') as HTMLElement).offsetWidth;
         }
         let width: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         this.parent.log('resize_min_max', { column: this.column, width });
-        if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
+        if (this.column.getFreezeTableName() === 'frozen-right') {
+            if ((this.parent.enableRtl && this.minMove >= pageX) || (!this.parent.enableRtl && this.minMove <= pageX)) {
+                width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
+                this.pageX = pageX = this.minMove;
+            }
+        }
+        if ((this.column.getFreezeTableName() !== 'frozen-right'
+            && ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)))
+            || (this.column.getFreezeTableName() === 'frozen-right' && ((this.parent.enableRtl && this.minMove >= pageX)
+                || (!this.parent.enableRtl && this.minMove <= pageX)))) {
             width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
             this.pageX = pageX = this.minMove;
         }
@@ -557,7 +598,7 @@ export class Resize implements IAction {
         } else {
             this.isFrozenColResized = false;
         }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             this.parent.notify(events.freezeRender, { case: 'textwrap' });
         }
         if (this.parent.allowTextWrap) {
@@ -641,28 +682,35 @@ export class Resize implements IAction {
     }
 
     private setHelperHeight(): void {
-        let height: number = (<HTMLElement>this.parent.getContent()).offsetHeight - this.getScrollBarWidth();
+        let isFrozen: boolean = this.parent.isFrozenGrid();
+        let height: number = isFrozen ? (<HTMLElement>this.parent.getContent().querySelector('.e-content')).offsetHeight
+            : (<HTMLElement>this.parent.getContent()).offsetHeight - this.getScrollBarWidth();
         let rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
         let tr: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('tr'));
-        let frzCols: number = this.parent.getFrozenColumns();
-        if (frzCols) {
-            if (rect.parentElement.children.length !== frzCols) {
-                tr.splice(0, tr.length / 2);
+        let right: number = this.parent.getFrozenRightColumnsCount();
+        if (isFrozen) {
+            if (parentsUntil(rect, 'e-movableheader')) {
+                tr = [].slice.call(this.parent.getHeaderContent().querySelector('.e-movableheader').querySelectorAll('tr'));
+            } else if (right && parentsUntil(rect, 'e-frozen-right-header')) {
+                tr = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelectorAll('tr'));
             } else {
-                tr.splice(tr.length / 2, tr.length / 2);
+                tr = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-left-header').querySelectorAll('tr'));
             }
         }
         for (let i: number = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
             height += tr[i].offsetHeight;
         }
         let pos: OffsetPosition = this.calcPos(rect);
-        pos.left += (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2);
+        if (parentsUntil(rect, 'e-frozen-right-header')) {
+            pos.left += (this.parent.enableRtl ? rect.offsetWidth - 2 : 0 - 1);
+        } else {
+            pos.left += (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2);
+        }
         this.helper.style.cssText = 'height: ' + height + 'px; top: ' + pos.top + 'px; left:' + Math.floor(pos.left) + 'px;';
     }
 
     private getScrollBarWidth(height?: boolean): number {
-        let ele: HTMLElement = this.parent.getFrozenColumns() ? this.parent.getContent().querySelector('.e-movablecontent') as HTMLElement
-            : this.parent.getContent().firstChild as HTMLElement;
+        let ele: HTMLElement = this.parent.getContent().firstChild as HTMLElement;
         return (ele.scrollHeight > ele.clientHeight && height) ||
             ele.scrollWidth > ele.clientWidth ? getScrollBarWidth() : 0;
     }
@@ -679,12 +727,17 @@ export class Resize implements IAction {
 
     private updateHelper(): void {
         let rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
-        let left: number = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2));
+        let left: number;
+        if (parentsUntil(rect, 'e-frozen-right-header')) {
+            left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? rect.offsetWidth - 2 : 0 - 1));
+        } else {
+            left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2));
+        }
         let borderWidth: number = 2; // to maintain the helper inside of grid element.
         if (left > this.parentElementWidth) {
             left = this.parentElementWidth - borderWidth;
         }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             let table: HTMLElement = closest(rect, '.e-table') as HTMLElement;
             let fLeft: number = table.offsetLeft;
             if (left < fLeft) {

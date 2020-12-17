@@ -1,4 +1,4 @@
-import { CellModel, SheetModel } from './index';import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';import { Cell } from './cell';
+import { CellModel, SheetModel } from './index';import { ChildProperty, Collection, Property, Complex } from '@syncfusion/ej2-base';import { Cell } from './cell';import { FormatModel, Format } from '../common/index';
 
 /**
  * Interface for a class Row
@@ -36,5 +36,11 @@ export interface RowModel {
      * @default false
      */
     hidden?: boolean;
+
+    /**
+     * Specifies format of the row.
+     * @default {}
+     */
+    format?: FormatModel;
 
 }

@@ -421,9 +421,7 @@ export class Dependency {
                 childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                 tempStartDate =
                     this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
-                if (maxStartDate == null) {
-                    maxStartDate = tempStartDate;
-                } else if (this.dateValidateModule.compareDates(tempStartDate, maxStartDate) === 1) {
+                if (maxStartDate == null || this.dateValidateModule.compareDates(tempStartDate, maxStartDate) === 1) {
                     maxStartDate = tempStartDate;
                 }
             }
@@ -515,7 +513,8 @@ export class Dependency {
         let recordLength: number = ganttRecords.length;
         let count: number; let ganttRecord: IGanttData;
         let predecessorsCollection: object[];
-        this.parent.connectorLineModule.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+         this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
         for (count = 0; count < recordLength; count++) {
             ganttRecord = ganttRecords[count];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
@@ -541,8 +540,9 @@ export class Dependency {
                 let from: string = 'from'; let to: string = 'to';
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
                 childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
-                if (this.parent.currentViewData && this.parent.currentViewData.indexOf(parentGanttRecord) !== -1 &&
-                    this.parent.currentViewData.indexOf(childGanttRecord) !== -1) {
+                if (this.parent.connectorLineModule.expandedRecords &&
+                     this.parent.connectorLineModule.expandedRecords.indexOf(parentGanttRecord) !== -1 &&
+                    this.parent.connectorLineModule.expandedRecords.indexOf(childGanttRecord) !== -1) {
                     this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
                 }
             }
@@ -564,10 +564,8 @@ export class Dependency {
         connectorObj = this.parent.connectorLineModule.createConnectorLineObject(
             parentGanttRecord, childGanttRecord, predecessor);
         if (connectorObj) {
-            if (this.parent.connectorLineIds.length > 0 && this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) === -1) {
-                this.parent.updatedConnectorLineCollection.push(connectorObj);
-                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
-            } else if (this.parent.connectorLineIds.length === 0) {
+            if ((this.parent.connectorLineIds.length > 0 && this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) === -1) ||
+            this.parent.connectorLineIds.length === 0) {
                 this.parent.updatedConnectorLineCollection.push(connectorObj);
                 this.parent.connectorLineIds.push(connectorObj.connectorLineId);
             } else if (this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) !== -1) {

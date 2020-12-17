@@ -188,6 +188,12 @@ class SfToast {
             this.destroyToast(this.toastContainer.children[i] as HTMLElement);
           }
           return;
+        } else if (typeof element === STRING && element !== ALL) {
+          let ele : HTMLElement = this.toastContainer.querySelector('#toast_' + element);
+          if (ele) {
+            this.destroyToast(ele as HTMLElement);
+            this.dotNetRef.invokeMethodAsync(DESTROY_TIMER, parseInt(element as string, 10));
+          }
         }
         if (isNullOrUndefined(element)) {
           element = <HTMLElement>(this.newestOnTop ? this.toastContainer.lastElementChild : this.toastContainer.firstElementChild);
@@ -204,8 +210,9 @@ class SfToast {
          duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
        };
        animate.end = () => {
-           detach(element);
-           proxy.dotNetRef.invokeMethodAsync(CLOSE_EVENT, proxy.getDomObject(ELEMENT, this.toastContainer));
+        let id : number = parseInt((element as HTMLElement).id.split('toast_')[1], 10);
+        detach(element);
+        proxy.dotNetRef.invokeMethodAsync(CLOSE_EVENT, id);
        };
        new Animation({}).animate(element, animate);
      }

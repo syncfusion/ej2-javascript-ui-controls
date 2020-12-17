@@ -3099,4 +3099,37 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
     });
+    describe('EJ2-44372 - BeforeDialogOpen eventArgs args.cancel is not working properly', () => {
+        let rteObj: RichTextEditor;
+        let count: number = 0;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image'],
+                },
+                beforeDialogOpen(e: any): void {
+                    e.cancel = true;
+                    count = count + 1;
+                },
+                dialogClose(e: any): void {
+                    count = count + 1;
+                }
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('dialogClose event trigger testing', (done) => {
+            expect(count).toBe(0);
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            setTimeout(() => {
+                expect(count).toBe(1);
+                (rteObj.element.querySelector('.e-content') as HTMLElement).click();
+                expect(count).toBe(1);
+                done();
+            }, 100);
+        });
+    });
 });

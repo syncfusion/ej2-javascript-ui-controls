@@ -454,9 +454,9 @@ export class SheetRender implements IRenderer {
             this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         }
         if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
-        let editCellVal: string = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent;
-        if (checkIsFormula(editCellVal) || editCellVal.indexOf('=') === 0) {
-        this.parent.notify(forRefSelRender, null);
+            let editCellVal: string = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent;
+            if (checkIsFormula(editCellVal) || editCellVal.indexOf('=') === 0) {
+            this.parent.notify(forRefSelRender, null);
         }
     }
         if (!this.parent.isOpen) {

@@ -152,7 +152,7 @@ export class DataBind {
                             }
                             requestedRange[k] = true;
                             if (requestedRange.indexOf(false) === -1) {
-                                if (eRange + sRowIdx < args.sheet.usedRange.rowIndex) {
+                                if (eRange + sRowIdx < sRowIdx + range.info.count) {
                                     if (!args.rangeSettingCount) { args.rangeSettingCount = []; }
                                     args.rangeSettingCount.push(k);
                                     //if (remoteUrl) {

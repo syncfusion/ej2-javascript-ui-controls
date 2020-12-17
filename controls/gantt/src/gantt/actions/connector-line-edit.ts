@@ -1,5 +1,5 @@
 import { isNullOrUndefined, isUndefined, remove, addClass} from '@syncfusion/ej2-base';
-import { removeClass, isObject, getValue, createElement, extend } from '@syncfusion/ej2-base';
+import { removeClass, getValue, createElement, extend } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { parentsUntil, formatString, isScheduledTask, getIndex } from '../base/utils';
@@ -123,7 +123,7 @@ export class ConnectorLineEdit {
                 for (let predecessorCount: number = 0; predecessorCount < predecessorsCollection.length; predecessorCount++) {
                     predecessor = predecessorsCollection[predecessorCount];
                     let from: string = 'from'; let to: string = 'to';
-                    this.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
+                    this.parent.connectorLineModule.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
                     parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from]);
                     childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to]);
                     if ((parentGanttRecord && parentGanttRecord.expanded === true) ||
@@ -153,51 +153,13 @@ export class ConnectorLineEdit {
      * @private
      */
     public refreshEditedRecordConnectorLine(editedRecord: IGanttData[]): void {
-        this.removePreviousConnectorLines(this.parent.previousRecords);
-        this.parent.connectorLineModule.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.previousRecords);
+        this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+         this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
         let editedConnectorLineString: string;
         editedConnectorLineString = this.getEditedConnectorLineString(editedRecord);
         this.parent.connectorLineModule.dependencyViewContainer.innerHTML =
             this.parent.connectorLineModule.dependencyViewContainer.innerHTML + editedConnectorLineString;
-    }
-    /**
-     * Method to remove connector line from DOM
-     * @param records 
-     * @private
-     */
-    public removePreviousConnectorLines(records: IGanttData[] | object): void {
-        let isObjectType: boolean;
-        if (isObject(records) === true) {
-            isObjectType = true;
-        } else {
-            isObjectType = false;
-        }
-        let length: number = isObjectType ? Object.keys(records).length : (records as IGanttData[]).length;
-        let keys: string[] = Object.keys(records);
-        for (let i: number = 0; i < length; i++) {
-            let data: IGanttData;
-            let predecessors: IPredecessor[];
-            if (isObjectType) {
-                let uniqueId: string = keys[i];
-                data = records[uniqueId] as IGanttData;
-            } else {
-                data = records[i];
-            }
-
-            predecessors = data.ganttProperties && data.ganttProperties.predecessor;
-            if (predecessors && predecessors.length > 0) {
-                for (let pre: number = 0; pre < predecessors.length; pre++) {
-                    let lineId: string = 'parent' + predecessors[pre].from + 'child' + predecessors[pre].to;
-                    this.removeConnectorLineById(lineId);
-                }
-            }
-        }
-    }
-    private removeConnectorLineById(id: string): void {
-        let element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
-        if (!isNullOrUndefined(element)) {
-            remove(element);
-        }
     }
 
     private idFromPredecessor(pre: string): string[] {

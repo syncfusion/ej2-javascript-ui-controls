@@ -2,64 +2,29 @@
 
 ## [Unreleased]
 
-## 18.3.52 (2020-12-01)
+## 18.4.30 (2020-12-17)
 
 ### TreeGrid
-
-#### Bug Fixes
-
-- `#300136` - Dynamic changing of allowEditing property works fine in Cell Edit mode.
-- `#F159697` -  Order of child records are displayed correctly after editing in remote data binding.
-
-## 18.3.48 (2020-11-11)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#F158886` - Cell editing with frozen columns works fine.
-- `#299761` - Treegrid column width renders fine in Internet Explorer when Virtualization is enabled.
 
 #### New Features
 
-- `#293514` - Provided the Cell Editing support for Remote Data Binding.
-
-## 18.3.47 (2020-11-05)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#F159016` - Expand / Collapse works properly, when we use template column as treecolumn
-- `#299693` - Template in tree column works fine.
-
-## 18.3.44 (2020-10-27)
-
-### TreeGrid
+- `#294082` - Provided Immutable Support to refresh specific rows while perform Tree Grid actions.
+- `#283491` - Provided error handling support to easily rectify errors in sample side.
+- `#298682`, `#299561` - Added getVisibleRecords API to get the visible records based on collapsed rows state.
 
 #### Bug Fixes
 
 - `#F157882`- After editing the row using `updateRow` method, `getCurrentViewRecords` method updated properly.
-- `#297986` - Row Drag and drop within treegrid works fine with checkbox enabled.
-
-## 18.3.42 (2020-10-20)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - `#F157882`- When editing with a double click, it works fine when we only have one record.
 - `#289600` - Records get expanded properly after collapsing all records using `collapseAtLevel` method in observable binding.
-- `#296233` - Row Drag and Drop within treegrid works fine.
 - `#F157099` - Virtualization with Aggregates works fine with large number of records.
-
-## 18.3.40 (2020-10-13)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#292453` - Treegrid refresh method works fine after updating the data.
+- `#296233` - Row Drag and Drop within treegrid works fine.
+- `#297986` - Row Drag and drop within treegrid works fine with checkbox enabled.
+- `#F158886` - Cell editing with frozen columns works fine.
+- `#299761` - Treegrid column width renders fine in Internet Explorer when Virtualization is enabled.
+- `#301861` - Tree Grid dataSource updated properly while using setCellValue method.
+- `#F159697` -  Order of child records are displayed correctly after editing in remote data binding.
+- `292453` - Treegrid refresh method works fine after updating the data.
 
 ## 18.3.35 (2020-10-01)
 
@@ -76,11 +41,6 @@
 - `#284987`- Records rendered properly while using remote save adaptor in created event.
 - `#285434`- Column SortComparer function works fine with null values in datasource.
 - `#F155077`- Records rendered properly while using remote data with jQuery unobtrusive library.
-
-#### New Features
-
-- `#270014` - Provided support for `AutoFill` feature with Frozen Columns.
-- `#289630`, `#F154497` - Provided Virtualization support for custom data binding.
 
 ## 18.2.44 (2020-07-07)
 

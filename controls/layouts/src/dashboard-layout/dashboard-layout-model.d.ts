@@ -276,10 +276,10 @@ export interface DashboardLayoutModel extends ComponentModel{
     created?: EmitType<Object>;
 
     /**
-     * Triggers when Dashboard Layout is destroyed.
-     * @event 
+     * Triggers when Dashboard Layout is destroyed.
+     * @event 
      * @blazorproperty 'Destroyed'
-     */
+     */
     destroyed?: EmitType<Object>;
 
 }

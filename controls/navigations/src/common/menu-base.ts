@@ -735,10 +735,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     // tslint:disable-next-line:max-func-body-length
     protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null, isIterated?: boolean): void {
         if (this.isMenuVisible()) {
-            let sli: Element; let ul: HTMLElement; let item: MenuItemModel; let items: MenuItemModel[];
-            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs; let wrapper: Element = this.getWrapper();
-            let popups: Element[] = this.getPopups(); let isClose: boolean = false;
-            let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
+            let sli: Element; let ul: HTMLElement; let item: MenuItemModel; let wrapper: Element = this.getWrapper();
+            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs; let items: MenuItemModel[]; let popups: Element[] = this.getPopups();
+            let isClose: boolean = false; let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
             ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
                 : selectAll('.e-menu-parent', wrapper)[cnt - 1] as HTMLElement;
             if (this.isMenu && ul.classList.contains('e-menu')) {
@@ -752,7 +751,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 let liElem: Element = e && e.target && this.getLI(e.target as Element);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null; items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, ulIndex) : item,
-                    items: items, event: e, cancel: false };
+                    items: items, event: e, cancel: false, liElement: liElem };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
                     let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs; let popupId: string = '';
                     let popupObj: Popup; let isOpen: boolean = !observedCloseArgs.cancel;
@@ -818,7 +817,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             let cul: Element = this.getUlByNavIdx(); let sli: Element = this.getLIByClass(cul, SELECTED);
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false'); sli.classList.remove(SELECTED);
-                                if (liElem) {
+                                if (observedCloseArgs.liElement) {
                                     sli.classList.add(FOCUSED); (sli as HTMLElement).focus();
                                 }
                             }
@@ -2238,6 +2237,7 @@ export interface BeforeOpenCloseMenuEventArgs extends BaseEventArgs {
     cancel: boolean;
     top?: number;
     left?: number;
+    liElement?: Element;
 }
 
 /**

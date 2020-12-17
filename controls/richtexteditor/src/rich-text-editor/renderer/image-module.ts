@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor, Ajax } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
@@ -346,17 +346,6 @@ export class Image {
             }
         }
     }
-    private getMaxWidth(): string | number {
-        let maxWidth: string | number = this.parent.insertImageSettings.maxWidth;
-        let imgPadding: number = 12;
-        let imgResizeBorder: number = 2;
-        let editEle: HTMLElement = this.parent.contentModule.getEditPanel() as HTMLElement;
-        let eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
-        let editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +
-            parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
-            parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
-        return isNOU(maxWidth) ? editEleMaxWidth : maxWidth;
-    }
     private pixToPerc(expected: number, parentEle: Element): number {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
@@ -367,7 +356,7 @@ export class Image {
                 this.cancelResizeAction();
             } else {
                 if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
-                    parseInt(this.getMaxWidth() as string, 10) <= parseInt(width, 10))) {
+                    parseInt(this.parent.getInsertImgMaxWidth() as string, 10) <= parseInt(width, 10))) {
                     return;
                 }
                 if (!this.parent.insertImageSettings.resizeByPercent &&
@@ -384,7 +373,7 @@ export class Image {
         });
     }
     private resizing(e: PointerEvent | TouchEvent): void {
-        if (this.imgEle.offsetWidth >= this.getMaxWidth()) {
+        if (this.imgEle.offsetWidth >= this.parent.getInsertImgMaxWidth()) {
             this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
         }
         let pageX: number = this.getPointX(e);
@@ -433,7 +422,9 @@ export class Image {
         let item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
         switch (item.subCommand) {
             case 'Replace':
-                this.parent.notify(events.insertImage, args);
+                if (this.parent.fileManagerSettings.enable) {
+                    this.parent.notify(events.renderFileManager, args);
+                } else { this.parent.notify(events.insertImage, args); }
                 break;
             case 'Caption':
                 this.parent.notify(events.imageCaption, args);
@@ -501,8 +492,7 @@ export class Image {
     }
     private onKeyDown(event: NotifyArgs): void {
         let originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
-        let range: Range;
-        let save: NodeSelection;
+        let range: Range; let save: NodeSelection;
         let selectNodeEle: Node[]; let selectParentEle: Node[]; this.deletedImg = []; let isCursor: boolean;
         let keyCodeValues: number[] = [27, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,
             44, 45, 9, 16, 17, 18, 19, 20, 33, 34, 35, 36, 37, 38, 39, 40, 91, 92, 93, 144, 145, 182, 183];
@@ -513,9 +503,7 @@ export class Image {
         if (!isCursor && this.parent.editorMode === 'HTML' && keyCodeValues.indexOf(originalEvent.which) < 0) {
             let nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             for (let i: number = 0; i < nodes.length; i++) {
-                if (nodes[i].nodeName === 'IMG') {
-                    this.deletedImg.push(nodes[i]);
-                }
+                if (nodes[i].nodeName === 'IMG') { this.deletedImg.push(nodes[i]); }
             }
         }
         if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
@@ -524,22 +512,18 @@ export class Image {
             if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
                 this.checkImageBack(range);
             } else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
-                this.checkImageDel(range);
-            }
+                this.checkImageDel(range); }
         }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
             originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-            save = this.parent.formatter.editorManager.nodeSelection.save(
-                range, this.parent.contentModule.getDocument());
+            save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
             selectParentEle = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             if (!originalEvent.ctrlKey && originalEvent.key && (originalEvent.key.length === 1 || originalEvent.action === 'enter') &&
                 ((selectParentEle[0] as HTMLElement).tagName === 'IMG') && (selectParentEle[0] as HTMLElement).parentElement) {
                 let prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement).childNodes[0];
-                if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
-                    this.remvoeResizEle();
-                }
+                if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) { this.removeResizeEle(); }
                 this.parent.formatter.editorManager.nodeSelection.setSelectionText(
                     this.contentModule.getDocument(), prev, prev, prev.textContent.length, prev.textContent.length);
                 removeClass([selectParentEle[0] as HTMLElement], 'e-img-focus');
@@ -562,13 +546,20 @@ export class Image {
                 this.deleteImg(event, originalEvent.keyCode);
             }
             if (this.parent.contentModule.getEditPanel().querySelector('.e-img-resize')) {
-                this.remvoeResizEle();
+                this.removeResizeEle();
             }
         }
+        if (originalEvent.code === 'Backspace') { originalEvent.action = 'backspace'; }
         switch (originalEvent.action) {
             case 'escape':
-                if (!isNullOrUndefined(this.dialogObj)) {
-                    this.dialogObj.close();
+                if (!isNullOrUndefined(this.dialogObj)) { this.dialogObj.close(); }
+                break;
+            case 'backspace':
+            case 'delete':
+                for (let i: number = 0; i < this.deletedImg.length; i++) {
+                    let src: string = (this.deletedImg[i] as HTMLImageElement).src;
+                    this.imageRemovePost(src as string);
+                    this.parent.trigger(events.afterImageDelete, { element: this.deletedImg[i], src: src });
                 }
                 break;
             case 'insert-image':
@@ -946,7 +937,7 @@ export class Image {
         }
         e.selection.restore();
         if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
-            this.remvoeResizEle();
+            this.removeResizeEle();
         }
         this.parent.formatter.process(
             this.parent, e.args, e.args,
@@ -955,6 +946,7 @@ export class Image {
                 captionClass: classes.CLS_CAPTION,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
+        this.imageRemovePost(args.src as string);
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
         }
@@ -962,6 +954,12 @@ export class Image {
         if (isNullOrUndefined(keyCode)) {
             this.parent.trigger(events.afterImageDelete, args);
         }
+    }
+    private imageRemovePost(src: string): void {
+        let ajax: Ajax = new Ajax(this.parent.insertImageSettings.removeUrl, 'POST', true, null);
+        let formData: FormData = new FormData();
+        formData.append(name, src as string);
+        ajax.send(formData);
     }
     private caption(e: IImageNotifyArgs): void {
         let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
@@ -1176,8 +1174,8 @@ export class Image {
             !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
             !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node) &&
-                !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
-                !target.querySelector('#' + this.parent.getID() + '_toolbar_Image')))
+            !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
+            !target.querySelector('#' + this.parent.getID() + '_toolbar_Image')))
         ) {
             this.dialogObj.hide({ returnValue: true } as Event);
             this.parent.isBlur = true;
@@ -1189,12 +1187,12 @@ export class Image {
             this.cancelResizeAction();
         }
         if (target.tagName !== 'IMG' && this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
-            this.remvoeResizEle();
+            this.removeResizeEle();
             this.contentModule.getEditPanel().querySelector('img').style.outline = '';
         }
     }
 
-    private remvoeResizEle(): void {
+    private removeResizeEle(): void {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         detach(this.contentModule.getEditPanel().querySelector('.e-img-resize'));
@@ -1228,7 +1226,7 @@ export class Image {
             proxy.uploadUrl.url = '';
             if (proxy.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                 (proxy.imgEle as HTMLElement).style.outline = '';
-                proxy.remvoeResizEle();
+                proxy.removeResizeEle();
             }
         } else if (url !== '') {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
@@ -1247,7 +1245,7 @@ export class Image {
                 url: url, selection: (this as IImageNotifyArgs).selection, altText: matchUrl,
                 selectParent: (this as IImageNotifyArgs).selectParent, width: {
                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                    maxWidth: proxy.getMaxWidth()
+                    maxWidth: proxy.parent.getInsertImgMaxWidth()
                 },
                 height: {
                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
@@ -1281,7 +1279,7 @@ export class Image {
         imgSizeWrap.appendChild(contentElem);
         let widthNum: NumericTextBox = new NumericTextBox({
             format: '###.### px', min: this.parent.insertImageSettings.minWidth as number,
-            max: this.getMaxWidth() as number,
+            max: this.parent.getInsertImgMaxWidth() as number,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         widthNum.isStringTemplate = true;
@@ -1322,8 +1320,8 @@ export class Image {
         if (!isNullOrUndefined(this.dialogObj)) {
             this.dialogObj.element.style.maxHeight = 'inherit';
             let dialogContent: HTMLElement = this.dialogObj.element.querySelector('.e-img-content');
-            if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
-                || this.parent.editorMode === 'HTML') {
+            if (((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
+                || this.parent.editorMode === 'HTML')) {
                 (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();
             } else {
                 (dialogContent.querySelector('.e-img-url') as HTMLElement).focus();
@@ -1370,7 +1368,7 @@ export class Image {
         let filesData: FileInfo[];
         let beforeUploadArgs: ImageUploadingEventArgs;
         this.uploadObj = new Uploader({
-            asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, },
+            asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, removeUrl: this.parent.insertImageSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
@@ -1395,7 +1393,7 @@ export class Image {
                                 selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.getMaxWidth()
+                                    maxWidth: proxy.parent.getInsertImgMaxWidth()
                                 }, height: {
                                     height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                     maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -1445,7 +1443,7 @@ export class Image {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                maxWidth: proxy.getMaxWidth()
+                                maxWidth: proxy.parent.getInsertImgMaxWidth()
                             }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
@@ -1705,6 +1703,7 @@ export class Image {
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
+                removeUrl: this.parent.insertImageSettings.removeUrl
             },
             cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
             dropArea: this.parent.element,
@@ -1846,7 +1845,7 @@ export class Image {
                         reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                        maxWidth: proxy.getMaxWidth()
+                        maxWidth: proxy.parent.getInsertImgMaxWidth()
                     },
                     height: {
                         height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,

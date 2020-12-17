@@ -203,7 +203,11 @@ var DropDownBase = /** @class */ (function (_super) {
      * * Constructor for DropDownBase class
      */
     function DropDownBase(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.preventChange = false;
+        _this.isAngular = false;
+        _this.isPreventChange = false;
+        return _this;
     }
     
     DropDownBase.prototype.getPropObject = function (prop, newProp, oldProp) {
@@ -588,6 +592,7 @@ var DropDownBase = /** @class */ (function (_super) {
         var ulElement;
         this.isActive = true;
         var eventArgs = { cancel: false, data: dataSource, query: query };
+        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
         this.trigger('actionBegin', eventArgs, function (eventArgs) {
             if (!eventArgs.cancel) {
                 _this.showSpinner();
@@ -598,6 +603,7 @@ var DropDownBase = /** @class */ (function (_super) {
                         return;
                     }
                     eventArgs.data.executeQuery(_this.getQuery(eventArgs.query)).then(function (e) {
+                        _this.isPreventChange = _this.isAngular && _this.preventChange ? true : _this.isPreventChange;
                         _this.trigger('actionComplete', e, function (e) {
                             if (!e.cancel) {
                                 var listItems = e.result;
@@ -623,6 +629,7 @@ var DropDownBase = /** @class */ (function (_super) {
                     var dataManager = new sf.data.DataManager(eventArgs.data);
                     var listItems = (_this.getQuery(eventArgs.query)).executeLocal(dataManager);
                     var localDataArgs = { cancel: false, result: listItems };
+                    _this.isPreventChange = _this.isAngular && _this.preventChange ? true : _this.isPreventChange;
                     _this.trigger('actionComplete', localDataArgs, function (localDataArgs) {
                         if (!localDataArgs.cancel) {
                             ulElement = _this.renderItems(localDataArgs.result, fields);

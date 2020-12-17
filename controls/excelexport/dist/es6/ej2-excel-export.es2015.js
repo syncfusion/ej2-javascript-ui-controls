@@ -184,6 +184,7 @@ class Worksheet {
     constructor() {
         this.isSummaryRowBelow = true;
         this.showGridLines = true;
+        this.enableRtl = false;
     }
 }
 /**
@@ -668,6 +669,9 @@ class Workbook {
             }
             else {
                 sheet.name = 'Sheet' + (i + 1).toString();
+            }
+            if (jsonSheet.enableRtl !== null && jsonSheet.enableRtl !== undefined) {
+                sheet.enableRtl = jsonSheet.enableRtl;
             }
             sheet.index = (i + 1);
             //Columns
@@ -1914,6 +1918,9 @@ class Workbook {
     }
     saveSheetView(sheet) {
         let paneString = '<sheetViews><sheetView workbookViewId="0" ';
+        if (sheet.enableRtl === true) {
+            paneString += 'rightToLeft="1"';
+        }
         if (sheet.showGridLines === false) {
             paneString += 'showGridLines="0" >';
         }

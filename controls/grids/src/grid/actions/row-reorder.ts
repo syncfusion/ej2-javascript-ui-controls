@@ -2,11 +2,13 @@ import { MouseEventArgs, Draggable, isBlazor, isNullOrUndefined } from '@syncfus
 import { removeClass } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs  } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
-import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
+import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent, getGridRowElements } from '../base/util';
+import { gridActionHandler } from '../base/util';
 import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
 import { Query } from '@syncfusion/ej2-data';
+import { freezeTable } from '../base/enum';
 
 /**
  * 
@@ -55,12 +57,18 @@ export class RowDD {
             gObj.selectRow(parseInt((this.draggable.currentStateTarget as Element).parentElement.getAttribute('aria-rowindex'), 10));
         }
         this.startedRow = closestElement(target as Element, 'tr').cloneNode(true) as HTMLTableRowElement;
-        let frzCols: number = this.parent.getFrozenColumns();
+        let frzCols: boolean = this.parent.isFrozenGrid();
         if (frzCols) {
             let rowIndex: number = parseInt(closestElement(target, 'tr').getAttribute('aria-rowindex'), 10);
-            this.startedRow.innerHTML = this.parent.getRows()[rowIndex].innerHTML +
-                this.parent.getMovableRows()[rowIndex].innerHTML;
-
+            let rows: Element[][] = getGridRowElements(this.parent);
+            this.startedRow.innerHTML = '';
+            gridActionHandler(
+                this.parent,
+                (freezeTable: freezeTable, rows: Element[]) => {
+                    this.startedRow.innerHTML += rows[rowIndex].innerHTML;
+                },
+                rows
+            );
         }
         this.processArgs(target);
         let args: Object = {
@@ -425,6 +433,7 @@ export class RowDD {
         }
         if (this.selectedRowColls.length > 0) {
             this.parent.selectRows(this.selectedRowColls);
+            this.selectedRowColls = [];
         }
     }
 
@@ -549,12 +558,10 @@ export class RowDD {
     }
 
     private updateScrollPostion(e: MouseEvent | TouchEvent, target: Element): void {
-        let frzCols: number = this.parent.getFrozenColumns();
         let y: number = getPosition(e).y;
         let cliRect: ClientRect = this.parent.getContent().getBoundingClientRect();
         let rowHeight: number = this.parent.getRowHeight() - 15;
-        let scrollElem: Element = frzCols ? this.parent.getContent().querySelector('.e-movablecontent')
-            : this.parent.getContent().firstElementChild;
+        let scrollElem: Element = this.parent.getContent().firstElementChild;
         if (cliRect.top + rowHeight >= y) {
             let scrollPixel: number = -(this.parent.getRowHeight());
             this.isOverflowBorder = false;
@@ -607,12 +614,18 @@ export class RowDD {
                 element = this.parent.getRowByIndex(targetRowIndex - 1);
                 rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             } else { rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')); }
-            let frzCols: number = this.parent.getFrozenColumns();
+            let frzCols: boolean = this.parent.isFrozenGrid();
             if (targetRow && targetRowIndex !== 0 && frzCols) {
                 let rowIndex: number = parseInt(element.getAttribute('aria-rowindex'), 10);
                 let selector: string = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
-                rowElement = [].slice.call(this.parent.getRows()[rowIndex].querySelectorAll(selector)).
-                    concat([].slice.call(this.parent.getMovableRows()[rowIndex].querySelectorAll(selector)));
+                rowElement = [];
+                gridActionHandler(
+                    this.parent,
+                    (tableName: freezeTable, rows: Element[]) => {
+                        rowElement = rowElement.concat([].slice.call(rows[rowIndex].querySelectorAll(selector)));
+                    },
+                    getGridRowElements(this.parent)
+                );
             }
             if (rowElement.length > 0) {
                 addRemoveActiveClasses(rowElement, true, 'e-dragborder');
@@ -648,10 +661,16 @@ export class RowDD {
             row.querySelector('td.e-dragborder'))[0];
         if (element) {
             let rowElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-dragborder'));
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 let rowIndex: number = parseInt(element.getAttribute('aria-rowindex'), 10);
-                rowElement = [].slice.call(this.parent.getRows()[rowIndex].querySelectorAll('.e-dragborder')).
-                    concat([].slice.call(this.parent.getMovableRows()[rowIndex].querySelectorAll('.e-dragborder')));
+                rowElement = [];
+                gridActionHandler(
+                    this.parent,
+                    (tableName: freezeTable, rows: Element[]) => {
+                        rowElement = rowElement.concat([].slice.call(rows[rowIndex].querySelectorAll('.e-dragborder')));
+                    },
+                    getGridRowElements(this.parent)
+                );
             }
             addRemoveActiveClasses(rowElement, false, 'e-dragborder');
         }

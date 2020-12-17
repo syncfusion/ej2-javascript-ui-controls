@@ -84,7 +84,10 @@ export class Filter implements IAction {
      * @hidden
      */
     public render(e?: NotifyArgs): void {
-        if (DataUtil.getObject('args.isFrozen', e)) { return; }
+        if (DataUtil.getObject('args.isFrozen', e) || (this.parent.getFrozenMode() === 'Left-Right' &&
+            DataUtil.getObject('args.renderFrozenRightContent', e))) {
+            return;
+        }
         let gObj: IGrid = this.parent;
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         this.getLocalizedCustomOperators();
@@ -102,7 +105,12 @@ export class Filter implements IAction {
                 rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar' });
                 row = this.generateRow();
                 row.data = this.values;
-                this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                if (gObj.getFrozenMode() === 'Right') {
+                    let thead: Element = gObj.getFrozenRightHeader().querySelector('thead');
+                    thead.appendChild(rowRenderer.element);
+                } else {
+                    this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                }
                 let rowdrag: Element = this.parent.element.querySelector('.e-rowdragheader');
                 this.element = rowRenderer.render(row, <Column[]>gObj.getColumns(), null, null, rowRenderer.element);
                 let detail: Element = this.element.querySelector('.e-detailheadercell');
@@ -149,7 +157,7 @@ export class Filter implements IAction {
         if (this.element) {
             remove(this.element);
             let filterBarElement: Element = this.parent.getHeaderContent().querySelector('.e-filterbar');
-            if (this.parent.getFrozenColumns() && filterBarElement) {
+            if (this.parent.isFrozenGrid() && filterBarElement) {
                 remove(filterBarElement);
             }
         }
@@ -829,7 +837,7 @@ export class Filter implements IAction {
     private onTimerTick(): void {
         let selector: string = '[id=\'' + this.column.field + '_filterBarcell\']';
         let filterElement: HTMLInputElement = (this.element.querySelector(selector) as HTMLInputElement);
-        if (!filterElement && this.parent.getFrozenColumns()) {
+        if (!filterElement && this.parent.isFrozenGrid()) {
             filterElement = (this.parent.getHeaderContent().querySelector(selector) as HTMLInputElement);
         }
         let filterValue: string;
@@ -1060,7 +1068,7 @@ export class Filter implements IAction {
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
-            if (target.classList.contains('e-excel-ascending') || target.classList.contains('e-excel-descending')) {
+            if (parentsUntil(target, 'e-excel-ascending') || parentsUntil(target , 'e-excel-descending')) {
                 this.filterModule.closeDialog(target);
             }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {

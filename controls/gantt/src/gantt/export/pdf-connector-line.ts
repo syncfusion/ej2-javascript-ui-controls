@@ -305,15 +305,7 @@ export class PdfGanttPredecessor {
         let pageIndex: number = -1;
         startPoint = new PointF(startPoint.x, startPoint.y);
         endPoint = new PointF(endPoint.x, endPoint.y);
-        if (!startPointCheck && !endPointCheck) {
-            pageIndex = this.findPageIndex(startPoint);
-            if (pageIndex > -1) {
-                pageData = this.pdfGantt.pdfPageDetail[pageIndex];
-                newStartPoint = startPoint;
-                newEndPoint = endPoint;
-                this.drawLine(pdfPages[pageIndex + this.pdfGantt.chartPageIndex], newStartPoint, newEndPoint);
-            }
-        } else if (endPointCheck && !startPointCheck) {
+        if (!startPointCheck && !endPointCheck || endPointCheck && !startPointCheck) {
             pageIndex = this.findPageIndex(startPoint);
             if (pageIndex > -1) {
                 pageData = this.pdfGantt.pdfPageDetail[pageIndex];

@@ -157,12 +157,15 @@ export class ActionBase {
             document.querySelector(this.parent.options.eventDragArea).appendChild(cloneElement);
         }
         setStyleAttribute(cloneElement, { border: '0px' });
+        if (element.style.backgroundColor !== '') {
+            setStyleAttribute(cloneElement, { backgroundColor: element.style.backgroundColor });
+        }
         return cloneElement;
     }
 
     public removeCloneElementClasses(): void {
         let elements: HTMLElement[] = this.actionObj.originalElement;
-        if (this.parent.options.currentView === 'Month' ||
+        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear' ||
             (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_ACTION_CLASS));
         }
@@ -266,6 +269,39 @@ export class ActionBase {
         return event;
     }
 
+    public dynamicYearlyEventsRendering(event: { [key: string]: Object }, isResize: boolean = false): void {
+        let appWidth: number = this.actionObj.cellWidth - 7;
+        if (isResize && (this.resizeEdges.left || this.resizeEdges.right)) {
+            appWidth = this.actionObj.cellWidth * (event.count as number);
+        }
+        let appointmentElement: HTMLElement = this.createAppointmentElement(event, this.actionObj.groupIndex, true);
+        appointmentElement.setAttribute('drag', 'true');
+        addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
+        setStyleAttribute(appointmentElement, {
+            'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none',
+            'position': 'absolute', 'overflow': 'hidden', 'padding': '3px'
+        });
+        if (this.actionObj.clone.style.backgroundColor !== '') {
+            setStyleAttribute(appointmentElement, { 'backgroundColor': this.actionObj.clone.style.backgroundColor });
+        }
+        let date: number = util.addLocalOffset(util.resetTime(event.startTime as Date)).getTime();
+        let query: string = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + date + '"]';
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            query = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + date + '"][data-group-index="' + this.actionObj.groupIndex + '"]';
+        }
+        let cellTd: Element = this.parent.element.querySelector(query);
+        if (isResize) {
+            let appHeight: number = this.actionObj.cellHeight * (event.count as number) -
+                ((cellTd.querySelector('.' + cls.DATE_HEADER_CLASS) as HTMLElement).offsetHeight) - 7;
+            if (this.resizeEdges.right || this.resizeEdges.left) {
+                appHeight = parseInt(this.actionObj.clone.style.height, 10);
+            }
+            setStyleAttribute(appointmentElement, { 'height': appHeight + 'px' });
+        }
+        this.renderElement(cellTd, appointmentElement, true);
+        this.actionObj.cloneElement.push(cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS));
+    }
+
     public dynamicEventsRendering(event: { [key: string]: Object }): void {
         let dateRender: Date[] = this.parent.activeView.renderDates;
         let workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
@@ -299,7 +335,12 @@ export class ActionBase {
             appointmentElement.setAttribute('drag', 'true');
             addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
             //this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
-            setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
+            setStyleAttribute(appointmentElement, {
+                'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none'
+            });
+            if (this.actionObj.clone.style.backgroundColor !== '') {
+                setStyleAttribute(appointmentElement, { 'backgroundColor': this.actionObj.clone.style.backgroundColor });
+            }
             let cellTd: Element = workCells[day];
             this.renderElement(cellTd, appointmentElement, true);
             this.actionObj.cloneElement.push(appointmentElement);

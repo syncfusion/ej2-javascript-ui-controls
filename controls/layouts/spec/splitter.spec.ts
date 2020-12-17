@@ -1483,6 +1483,7 @@ describe('Splitter Control', () => {
                 expect(splitterObj.element.classList.contains('e-control')).toEqual(false);
             });
         });
+
         describe('CssClass Api    ', () => {
             let splitterObj: any;
             beforeAll((): void => {

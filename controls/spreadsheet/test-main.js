@@ -88,6 +88,16 @@ require.config({
             main: 'ej2-grids.umd.min.js'
         },
         {
+            name: '@syncfusion/ej2-charts',
+            location: 'node_modules/@syncfusion/ej2-charts/dist',
+            main: 'ej2-charts.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-svg-base',
+            location: 'node_modules/@syncfusion/ej2-svg-base/dist',
+            main: 'ej2-svg-base.umd.min.js'
+        },
+        {
             name: '@syncfusion/ej2-calendars',
             location: 'node_modules/@syncfusion/ej2-calendars/dist',
             main: 'ej2-calendars.umd.min.js'

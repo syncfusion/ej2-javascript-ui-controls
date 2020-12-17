@@ -69,8 +69,21 @@
     background-color: $dialog-closeicon-btn-active-color;
   }
 
-  .e-south-east,
-  .e-south-west {
+  .e-south-east {
     color: $dialog-icon-color;
+  }
+
+  .e-rtl .e-south-east {
+    color: transparent;
+  }
+
+  .e-rtl .e-south-west {
+    color: $dialog-icon-color;
+  }
+
+  .e-south-west,
+  .e-north-east,
+  .e-north-west {
+    color: transparent;
   }
 }

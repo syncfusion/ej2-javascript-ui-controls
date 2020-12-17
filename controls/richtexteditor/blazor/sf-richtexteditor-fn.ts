@@ -214,6 +214,9 @@ export class SfRichTextEditor {
         }
         this.setPanelValue(this.value);
         this.observer.notify(events.initialEnd, {});
+        if (this.enableXhtml) {
+            this.value = this.getXhtml();
+        }
         this.wireEvents();
         if (this.createdEnabled) { this.dotNetRef.invokeMethodAsync('CreatedEvent'); }
     }
@@ -240,6 +243,9 @@ export class SfRichTextEditor {
         }
         this.updatePanelValue();
         if (this.value !== this.cloneValue) {
+            if (this.enableXhtml) {
+                this.valueContainer.value = this.getXhtmlString(this.valueContainer.value);
+            }
             dispatchEvent(this.valueContainer, 'change');
             if (!this.isInitial) {
                 this.dotNetRef.invokeMethodAsync('UpdateValue', this.value);
@@ -356,6 +362,13 @@ export class SfRichTextEditor {
         }
         return currentValue;
     }
+    public getXhtmlString(value: string): string {
+        let currentValue: string = value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
+    }
     public getPanel(): Element {
         return this.contentPanel;
     }
@@ -388,6 +401,9 @@ export class SfRichTextEditor {
         return this.formatter.editorManager.nodeSelection.getRange(this.getDocument());
     }
     private updateValueContainer(val: string): void {
+        if (this.enableXhtml) {
+            val = this.getXhtmlString(val);
+        }
         this.valueContainer.value = val;
         dispatchEvent(this.valueContainer, 'change');
     }
@@ -771,6 +787,9 @@ export class SfRichTextEditor {
         this.invokeChangeEvent();
     }
     public invokeChangeEvent(): void {
+        if (this.enableXhtml) {
+            this.value = this.getXhtml();
+        }
         if (this.value !== this.cloneValue) {
             if (this.enablePersistence) {
                 window.localStorage.setItem(this.id, this.value);
@@ -1303,6 +1322,9 @@ export class SfRichTextEditor {
             this.invokeChangeEvent();
             this.isFocusOut = true;
             this.isBlur = false;
+            if (this.enableXhtml) {
+                this.valueContainer.value = this.getXhtmlString(this.valueContainer.value);
+            }
             dispatchEvent(this.valueContainer, 'focusout');
             this.defaultResize(e, true);
             let args: FocusBlurEventArgs = { isInteracted: Object.keys(e).length === 0 ? false : true };
@@ -1541,6 +1563,9 @@ export class SfRichTextEditor {
                 case 'enableHtmlSanitizer':
                 case 'value':
                     this.setPanelValue(this.value);
+                    if (this.enableXhtml) {
+                        this.value = this.getXhtml();
+                    }
                     break;
                 case 'height':
                     this.setHeight(this.height);

@@ -90,8 +90,8 @@ export class Render {
         if (!isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;
         } else { index = data.index; }
-        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
-         && (args.requestType === 'add' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
+        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex  && (args.requestType === 'add' || args.requestType
+            === 'rowDragAndDrop' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
             let container: Element = createElement('div', { className: 'e-treecolumn-container' });
             let emptyExpandIcon: HTMLElement = createElement('span', {
                 className: 'e-icons e-none',
@@ -197,7 +197,7 @@ export class Render {
         } else if (args.cell.classList.contains('e-templatecell')) {
             let len: number = args.cell.children.length;
             let tempID: string = this.parent.element.id + args.column.uid;
-            if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
+            if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template) && !isBlazor()) {
                 let portals: string = 'portals';
                 let renderReactTemplates: string = 'renderReactTemplates';
                 if ((<{ isReact?: boolean }>this.parent).isReact) {

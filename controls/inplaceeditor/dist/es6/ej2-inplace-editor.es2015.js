@@ -5,7 +5,7 @@ import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfu
 import { Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, Table, Toolbar } from '@syncfusion/ej2-richtexteditor';
+import { FileManager, HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, Table, Toolbar } from '@syncfusion/ej2-richtexteditor';
 
 /**
  * Exports util methods used by In-place editor.
@@ -939,9 +939,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let args;
         if (this.validationRules) {
             let rules = Object.keys(this.validationRules);
-            let templateCount = Object.keys(this.validationRules).length;
-            let templateIndex = 0;
-            let status = true;
             let validationLength = Object.keys(this.validationRules[rules[0]]).length;
             validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
             let count = 0;
@@ -955,7 +952,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                     };
                     this.trigger('validating', args, (validateArgs) => {
                         if (e.status === 'failure') {
-                            status = false;
                             e.errorElement.innerText = validateArgs.errorMessage;
                             this.toggleErrorClass(true);
                         }
@@ -963,11 +959,8 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                             this.toggleErrorClass(false);
                         }
                         if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
-                            templateIndex = templateIndex + 1;
-                            if (templateIndex === templateCount && status) {
-                                fromSubmit = false;
-                                this.afterValidation(isValidate);
-                            }
+                            fromSubmit = false;
+                            this.afterValidation(isValidate);
                             count = 0;
                         }
                     });
@@ -1830,7 +1823,7 @@ class MultiSelect$1 {
 class Rte {
     constructor(parent) {
         this.compObj = undefined;
-        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
+        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table, FileManager);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

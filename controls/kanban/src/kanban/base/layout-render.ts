@@ -1,7 +1,6 @@
 import {
-    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined
+    append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined, removeClass, closest
 } from '@syncfusion/ej2-base';
-import { removeClass, closest } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs, ScrollOffset } from '../base/interface';
 import { ColumnsModel, StackedHeadersModel } from '../models/index';
@@ -181,8 +180,10 @@ export class LayoutRender extends MobileLayout {
                 if (this.isColumnVisible(column)) {
                     let index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField);
                     let className: string = index === -1 ? cls.CONTENT_CELLS_CLASS : cls.CONTENT_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS;
+                    let dragClass: string = (column.allowDrag ? ' ' + cls.DRAG_CLASS : '') + (column.allowDrop ? ' ' + cls.DROP_CLASS
+                        + ' ' + cls.DROPPABLE_CLASS : '');
                     let td: HTMLElement = createElement('td', {
-                        className: className,
+                        className: className + dragClass,
                         attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true', 'tabindex': '0' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
@@ -286,20 +287,24 @@ export class LayoutRender extends MobileLayout {
                     let columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     let cardWrapper: HTMLElement = createElement('div', { className: cls.CARD_WRAPPER_CLASS });
                     columnWrapper.appendChild(cardWrapper);
-                    for (let data of columnData as { [key: string]: string }[]) {
-                        let cardText: string = data[this.parent.cardSettings.headerField] as string;
-                        let cardIndex: number = this.parent.actionModule.selectionArray.indexOf(cardText);
-                        let cardElement: HTMLElement = this.renderCard(data);
-                        if (cardIndex !== -1) {
-                            cardElement.setAttribute('aria-selected', 'true');
-                            addClass([cardElement], cls.CARD_SELECTION_CLASS);
-                        }
-                        let args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
-                        this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
-                            if (!cardArgs.cancel) {
-                                cardWrapper.appendChild(cardElement);
+                    if (columnData.length > 0) {
+                        for (let data of columnData as { [key: string]: string }[]) {
+                            let cardText: string = data[this.parent.cardSettings.headerField] as string;
+                            let cardIndex: number = this.parent.actionModule.selectionArray.indexOf(cardText);
+                            let cardElement: HTMLElement = this.renderCard(data);
+                            if (cardIndex !== -1) {
+                                cardElement.setAttribute('aria-selected', 'true');
+                                addClass([cardElement], cls.CARD_SELECTION_CLASS);
                             }
-                        });
+                            let args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
+                            this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
+                                if (!cardArgs.cancel) {
+                                    cardWrapper.appendChild(cardElement);
+                                }
+                            });
+                        }
+                    } else {
+                        cardWrapper.appendChild(this.renderEmptyCard());
                     }
                 }
             }
@@ -375,6 +380,14 @@ export class LayoutRender extends MobileLayout {
         return cardElement;
     }
 
+    private renderEmptyCard(): HTMLElement {
+        let emptyCard: HTMLElement = createElement('span', {
+            className: cls.EMPTY_CARD_CLASS,
+            innerHTML: this.parent.localeObj.getConstant('noCard')
+        });
+        return emptyCard;
+    }
+
     private renderColGroup(table: HTMLElement): void {
         let colGroup: HTMLElement = createElement('colgroup');
         this.parent.columns.forEach((column: ColumnsModel) => {
@@ -417,14 +430,7 @@ export class LayoutRender extends MobileLayout {
             });
             kanbanRows = kanbanRows.filter((item: HeaderArgs, index: number, arr: Object[]) =>
                 index === arr.map((item: HeaderArgs) => item.keyField).indexOf(item.keyField));
-            kanbanRows.sort((firstRow: HeaderArgs, secondRow: HeaderArgs): number => {
-                let first: string = firstRow.textField.toLowerCase();
-                let second: string = secondRow.textField.toLowerCase();
-                return (first > second) ? 1 : (second > first) ? -1 : 0;
-            });
-            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
-                kanbanRows.reverse();
-            }
+            kanbanRows = this.swimlaneSorting(kanbanRows);
             kanbanRows.forEach((row: HeaderArgs) => {
                 row.count = this.parent.kanbanData.filter((obj: { [key: string]: Object }) =>
                     this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
@@ -437,6 +443,18 @@ export class LayoutRender extends MobileLayout {
             kanbanRows.push({ keyField: '', textField: '' });
         }
         return kanbanRows;
+    }
+
+    private swimlaneSorting(rows: HeaderArgs[]): HeaderArgs[] {
+        if (this.parent.swimlaneSettings.sortComparer) {
+            rows = this.parent.swimlaneSettings.sortComparer.call(this.parent, rows);
+        } else {
+            rows.sort((a: HeaderArgs, b: HeaderArgs) => a.textField.localeCompare(b.textField, undefined, { numeric: true }));
+            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
+                rows.reverse();
+            }
+        }
+        return rows;
     }
 
     private createStackedRow(rows: StackedHeadersModel[]): HTMLElement {
@@ -788,9 +806,14 @@ export class LayoutRender extends MobileLayout {
             let td: HTMLElement = [].slice.call(cardRow.children).filter((e: Element) =>
                 e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.replace(/\s/g, '')) !== -1)[0];
             let cardWrapper: Element = td.querySelector('.' + cls.CARD_WRAPPER_CLASS);
+            let emptyCard: Element = cardWrapper.querySelector('.' + cls.EMPTY_CARD_CLASS);
+            if (emptyCard) {
+                remove(emptyCard);
+            }
             let cardElement: HTMLElement = this.renderCard(data as { [key: string]: string });
-            if (this.parent.allowDragAndDrop) {
-                addClass([cardElement], cls.DRAGGABLE_CLASS);
+            if (this.parent.allowDragAndDrop && td.classList.contains(cls.DRAG_CLASS)) {
+                this.parent.dragAndDropModule.wireDragEvents(cardElement);
+                addClass([cardElement], cls.DROPPABLE_CLASS);
             }
             let args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
             this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
@@ -808,8 +831,12 @@ export class LayoutRender extends MobileLayout {
     public removeCard(data: { [key: string]: Object }): void {
         let cardKey: string = data[this.parent.cardSettings.headerField] as string;
         let cardElement: Element = this.parent.element.querySelector(`.${cls.CARD_CLASS}[data-id="${cardKey}"]`);
+        let cardContainer: HTMLElement = cardElement.parentElement;
         if (cardElement) {
             remove(cardElement);
+        }
+        if (cardContainer.childElementCount === 0) {
+            cardContainer.appendChild(this.renderEmptyCard());
         }
     }
 
@@ -853,13 +880,18 @@ export class LayoutRender extends MobileLayout {
 
     public wireDragEvent(): void {
         if (this.parent.allowDragAndDrop) {
-            addClass(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS), cls.DRAGGABLE_CLASS);
-            this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + cls.CONTENT_CLASS));
+            let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS
+                + '.' + cls.DRAG_CLASS + ' .' + cls.CARD_CLASS));
+            addClass(cards, cls.DROPPABLE_CLASS);
+            cards.forEach((card: HTMLElement) => this.parent.dragAndDropModule.wireDragEvents(card));
         }
     }
 
     public unWireDragEvent(): void {
-        this.parent.dragAndDropModule.unWireDragEvents(this.parent.element.querySelector('.' + cls.CONTENT_CLASS));
+        let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS
+            + '.' + cls.DRAG_CLASS + ' .' + cls.CARD_CLASS));
+        removeClass(cards, cls.DROPPABLE_CLASS);
+        cards.forEach((card: HTMLElement) => this.parent.dragAndDropModule.unWireDragEvents(card));
     }
 
     public destroy(): void {

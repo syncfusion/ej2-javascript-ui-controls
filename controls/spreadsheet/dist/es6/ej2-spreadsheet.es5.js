@@ -6,8 +6,9 @@ import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { AutoComplete, ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ListView } from '@syncfusion/ej2-lists';
 import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
-import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
+import { Dialog, Tooltip, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { CheckBoxFilterBase, ExcelFilterBase, beforeCustomFilterOpen, beforeFltrcMenuOpen, filterCboxValue, parentsUntil } from '@syncfusion/ej2-grids';
+import { AccumulationChart, AccumulationDataLabel, AccumulationLegend, AccumulationTooltip, AreaSeries, BarSeries, Category, Chart, ColumnSeries, Legend, LineSeries, PieSeries, ScatterSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StackingLineSeries } from '@syncfusion/ej2-charts';
 
 /**
  * To get range indexes.
@@ -286,16 +287,11 @@ function intToDate(val) {
  */
 /* tslint:disable no-any */
 function dateToInt(val, isTime) {
-    var timeZoneOffset = new Date().getTimezoneOffset();
-    var startDateUTC = new Date('01/01/1900').toUTCString().replace(' GMT', '');
-    var startDate = new Date(startDateUTC);
+    var startDate = new Date('01/01/1900');
     var date = isDateTime(val) ? val : new Date(val);
-    var dateDiff = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
-    var timeDiff = dateDiff;
-    if (!isTime) {
-        timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
-    }
-    var diffDays = (timeDiff / (1000 * 3600 * 24));
+    var startDateUTC = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(), startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
+    var dateUTC = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+    var diffDays = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 /**
@@ -313,47 +309,56 @@ function isNumber(val) {
 /**
  * @hidden
  */
-function toDate(text, intl) {
+function toDate(text, intl, format) {
     var defaultDateFormats = getDefaultDateObject();
     var availabelDateTimeFormat = defaultDateFormats.dateTimeFormats.availableFormats;
     var dObj = { dateObj: null, isCustom: false, type: '' };
     if (typeof text === 'string') {
         text = text.toUpperCase();
     }
-    for (var _i = 0, _a = Object.keys(defaultDateFormats.dateFormats); _i < _a.length; _i++) {
-        var key = _a[_i];
-        dObj.dateObj = intl.parseDate(text, { format: defaultDateFormats.dateFormats[key], skeleton: key });
+    if (format) {
+        dObj.dateObj = intl.parseDate(text, { format: format });
         if (dObj.dateObj) {
-            dObj.type = 'date';
-            dObj.isCustom = false;
-            break;
+            dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+            dObj.isCustom = true;
         }
     }
     if (isNullOrUndefined(dObj.dateObj)) {
-        for (var _b = 0, _c = Object.keys(availabelDateTimeFormat); _b < _c.length; _b++) {
-            var key = _c[_b];
-            dObj.dateObj = intl.parseDate(text, { format: availabelDateTimeFormat[key], skeleton: key });
+        for (var _i = 0, _a = Object.keys(defaultDateFormats.dateFormats); _i < _a.length; _i++) {
+            var key = _a[_i];
+            dObj.dateObj = intl.parseDate(text, { format: defaultDateFormats.dateFormats[key], skeleton: key });
             if (dObj.dateObj) {
-                dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
-                if (dObj.type === 'time') {
-                    var time = dObj.dateObj.toLocaleTimeString();
-                    dObj.dateObj = new Date('01/01/1900 ' + time);
-                }
-                dObj.isCustom = true;
+                dObj.type = 'date';
+                dObj.isCustom = false;
                 break;
             }
         }
-    }
-    if (isNullOrUndefined(dObj.dateObj)) {
-        for (var _d = 0, _e = Object.keys(defaultDateFormats.timeFormats); _d < _e.length; _d++) {
-            var key = _e[_d];
-            dObj.dateObj = intl.parseDate(text, { format: defaultDateFormats.timeFormats[key], skeleton: key });
-            if (dObj.dateObj) {
-                var time = dObj.dateObj.toLocaleTimeString();
-                dObj.dateObj = new Date('01/01/1900 ' + time);
-                dObj.type = 'time';
-                dObj.isCustom = false;
-                break;
+        if (isNullOrUndefined(dObj.dateObj)) {
+            for (var _b = 0, _c = Object.keys(availabelDateTimeFormat); _b < _c.length; _b++) {
+                var key = _c[_b];
+                dObj.dateObj = intl.parseDate(text, { format: availabelDateTimeFormat[key], skeleton: key });
+                if (dObj.dateObj) {
+                    dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+                    if (dObj.type === 'time') {
+                        var time = dObj.dateObj.toLocaleTimeString();
+                        dObj.dateObj = new Date('01/01/1900 ' + time);
+                    }
+                    dObj.isCustom = true;
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(dObj.dateObj)) {
+            for (var _d = 0, _e = Object.keys(defaultDateFormats.timeFormats); _d < _e.length; _d++) {
+                var key = _e[_d];
+                dObj.dateObj = intl.parseDate(text, { format: defaultDateFormats.timeFormats[key], skeleton: key });
+                if (dObj.dateObj) {
+                    var time = dObj.dateObj.toLocaleTimeString();
+                    dObj.dateObj = new Date('01/01/1900 ' + time);
+                    dObj.type = 'time';
+                    dObj.isCustom = false;
+                    break;
+                }
             }
         }
     }
@@ -545,7 +550,23 @@ var clearCells = 'clearCells';
 /** @hidden */
 var setImage = 'setImage';
 /** @hidden */
+var setChart = 'setChart';
+/** @hidden */
+var initiateChart = 'initiateChart';
+/** @hidden */
 var refreshRibbonIcons = 'refreshRibbonIcons';
+/** @hidden */
+var refreshChart = 'refreshChart';
+/** @hidden */
+var refreshChartSize = 'refreshChartSize';
+/** @hidden */
+var updateChart = 'updateChart';
+/** @hidden */
+var deleteChartColl = 'deleteChartColl';
+/** @hidden */
+var initiateChartModel = 'initiateChartModel';
+/** @hidden */
+var focusChartBorder = 'focusChartBorder';
 
 /**
  * Specifies number format.
@@ -904,7 +925,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
             value = checkedDate;
             if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl);
+                dateObj = toDate(value, intl, cell && cell.format);
                 if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                     cell = cell ? cell : {};
                     value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
@@ -953,7 +974,8 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         var type = getTypeFromFormat(args.cell ? args.cell.format : '');
         var intl = new Internationalization();
         var beforeText = args.value;
-        var date = getFormatFromType('ShortDate');
+        var date = (type === 'ShortDate' && args.cell && args.cell.format) ?
+            args.cell.format : getFormatFromType('ShortDate');
         var time = getFormatFromType('Time');
         switch (type) {
             case 'ShortDate':
@@ -1071,6 +1093,8 @@ function getTypeFromFormat(format) {
         case 'dd-mm-yyyy':
         case 'dd-mm-yy':
         case 'mm-dd-yy':
+        case 'dd/MM/yyyy':
+        case 'yyyy-MM-dd':
             code = 'ShortDate';
             break;
         case 'dddd, mmmm dd, yyyy':
@@ -1275,7 +1299,7 @@ var DataBind = /** @__PURE__ @class */ (function () {
                         }
                         requestedRange[k] = true;
                         if (requestedRange.indexOf(false) === -1) {
-                            if (eRange + sRowIdx < args.sheet.usedRange.rowIndex) {
+                            if (eRange + sRowIdx < sRowIdx + range.info.count) {
                                 if (!args.rangeSettingCount) {
                                     args.rangeSettingCount = [];
                                 }
@@ -1887,9 +1911,19 @@ var createImageElement = 'createImageElement';
 /** @hidden */
 var deleteImage = 'deleteImage';
 /** @hidden */
+var deleteChart = 'deleteChart';
+/** @hidden */
+var refreshChartCellObj = 'refreshChartCellObj';
+/** @hidden */
 var refreshImagePosition = 'refreshImagePosition';
 /** @hidden */
 var updateTableWidth = 'updateTableWidth';
+/** @hidden */
+var focusBorder = 'focusBorder';
+/** @hidden */
+var clearChartBorder = 'clearChartBorder';
+/** @hidden */
+var insertChart = 'insertChart';
 
 /**
  * Open properties.
@@ -2385,6 +2419,86 @@ var CalculateCommon = /** @__PURE__ @class */ (function () {
 function isUndefined$1(value) {
     return ('undefined' === typeof value);
 }
+/** @hidden */
+function getSkeletonVal(value) {
+    switch (value) {
+        case 'dd-MMM-yyyy':
+        case 'dd MMM yyyy':
+            value = 'medium';
+            break;
+        case 'MMM-yyyy':
+        case 'MMM yyyy':
+            value = 'yMMM';
+            break;
+        case 'MM-dd-yyyy': //short
+        case 'dd-MM-yyyy':
+        case 'dd-MM-yy':
+        case 'MM/dd/yyyy':
+        case 'dd/MM/yyyy':
+        case 'dd/MM/yy':
+            value = 'short';
+            break;
+        case 'dddd MMMM dd yyyy': //long
+        case 'dd MMMM yyyy':
+            value = 'long';
+            break;
+        case 'd MMMM yyyy':
+            value = 'yMMMd';
+            break;
+        case 'yyyy':
+            value = 'y';
+            break;
+        case 'h:mm':
+            value = 'Hm';
+            break;
+        case 'h:mm tt':
+            value = 'hm';
+            break;
+        case 'h':
+            value = 'H';
+            break;
+        case 'h tt':
+            value = 'h';
+            break;
+        case 'dddd':
+            value = 'E';
+            break;
+        case 'h:mm:ss tt':
+            value = 'hms';
+            break;
+        case 'h:mm:ss':
+            value = 'Hms';
+            break;
+        case 'd':
+            value = 'd';
+            break;
+        case 'd dddd':
+            value = 'Ed';
+            break;
+        case 'M':
+            value = 'M';
+            break;
+        case 'Md':
+            value = 'Md';
+            break;
+        case 'MMM':
+            value = 'MMM';
+            break;
+        case 'ddd MMM d':
+            value = 'MMMEd';
+            break;
+        case 'MMM d':
+            value = 'MMMd';
+            break;
+        case 'M/yyyy':
+            value = 'yM';
+            break;
+        default:
+            value = '';
+            break;
+    }
+    return value;
+}
 
 /**
  * Represents the getModules function.
@@ -2637,6 +2751,10 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
                 formulaName: 'SUMIFS', category: 'Math & Trig',
                 description: 'Sums the cells specified by a given set of conditionsor criteria.'
             },
+            {
+                formulaName: 'SUMPRODUCT', category: 'Math & Trig',
+                description: 'Returns sum of the product of given ranges of arrays.'
+            },
             { formulaName: 'ABS', category: 'Math & Trig', description: 'Returns the absolute value of a number.' },
             { formulaName: 'RAND', category: 'Math & Trig', description: 'Return a random number between 0 and 1.' },
             { formulaName: 'FLOOR', category: 'Math & Trig', description: 'Returns the round a number down to the nearest integer.' },
@@ -2685,6 +2803,7 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
             { formulaName: 'MAX', category: 'Statistical', description: 'Returns the largest number in set of arguments.' },
             { formulaName: 'DATE', category: 'Date', description: 'Returns the date, given the year, month and day of the month.' },
             { formulaName: 'DAY', category: 'Date', description: 'Returns the day of a given date.' },
+            { formulaName: 'TODAY', category: 'Date', description: 'Returns the current date as date value.' },
             { formulaName: 'DAYS', category: 'Date', description: 'Returns the number of days between two dates.' },
             {
                 formulaName: 'IF', category: 'Logical',
@@ -2735,6 +2854,12 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
                 description: 'Calculates the point of the Y-intercept line via linear regression.'
             },
             {
+                formulaName: 'ROUNDUP', category: 'Math & Trig', description: 'Rounds a number away from zero.'
+            },
+            {
+                formulaName: 'INT', category: 'Math & Trig', description: 'Returns a number to the nearest integer.'
+            },
+            {
                 formulaName: 'LN', category: 'Math & Trig', description: 'Returns the natural logarithm of a number.'
             },
             {
@@ -2760,6 +2885,7 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
                 formulaName: 'GEOMEAN', category: 'Statistical',
                 description: 'Returns the geometric mean of an array or range of positive data.'
             },
+            { formulaName: 'TEXT', category: 'Lookup & Reference', description: 'Returns the value in required format.' }
         ];
         this.isConcat = false;
         this.parent = parent;
@@ -2829,6 +2955,202 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
         }
         return sum;
     };
+    /** @hidden */
+    BasicFormulas.prototype.ComputeINT = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var str;
+        var num;
+        var index;
+        if (!isNullOrUndefined(args) && args.length !== 1 || args[0] === '') {
+            str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        if (args[0] !== '' && args.length === 1) {
+            str = args[0];
+            index = str.indexOf('"');
+            str = str.indexOf('"') > -1 ? str.replace('"', '') : str;
+            str = str.indexOf('"') > -1 ? str.replace('"', '') : str;
+            str = this.parent.getValueFromArg(str);
+            str = str.toUpperCase() === 'TRUE' ? '1' : (str === 'FALSE' ? '0' : str);
+            num = this.parent.parseFloat(str);
+            num = Math.floor(num);
+        }
+        if (isNaN(num)) {
+            str = index > -1 ? this.parent.getErrorStrings()[CommonErrors.value] : this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        return num ? num : str;
+    };
+    
+    /** @hidden */
+    BasicFormulas.prototype.ComputeTODAY = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var str;
+        if (args && args[0] !== '') {
+            str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        else {
+            var dt = new Date(Date.now());
+            str = dt.getFullYear() + '/' + this.parent.calculateDate((dt.getMonth() + 1).toString()) + '/'
+                + this.parent.calculateDate(dt.getDate().toString());
+        }
+        return str;
+    };
+    /** @hidden */
+    BasicFormulas.prototype.ComputeSUMPRODUCT = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var sum = 0;
+        var count = 0;
+        var index;
+        var mulValues = null;
+        var ranges = args;
+        for (var k = 0; k < ranges.length; ++k) {
+            var range = ranges[k];
+            if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
+                var i = range.indexOf(':');
+                var startRow = this.parent.rowIndex(range.substr(0, i));
+                var endRow = this.parent.rowIndex(range.substr(i + 1));
+                if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
+                    return this.parent.getErrorStrings()[CommonErrors.name];
+                }
+                var col1 = this.parent.colIndex(range.substr(0, i));
+                var col2 = this.parent.colIndex(range.substr(i + 1));
+                if (mulValues === null) {
+                    count = (endRow - startRow + 1) * (col2 - col1 + 1);
+                    mulValues = [];
+                    for (i = 0; i < count; ++i) {
+                        mulValues[i] = 1; //To create required index.
+                    }
+                }
+                i = 0;
+                for (var row = startRow; row <= endRow; ++row) {
+                    for (var col = col1; col <= col2; ++col) {
+                        var cellRef = '' + this.parent.convertAlpha(col) + (row);
+                        var result = this.parent.getValueFromArg(cellRef);
+                        if (!isNaN(parseFloat(result))) {
+                            //To return #VALUE! error when array dimensions are mismatched.
+                            if (isNaN(mulValues[i])) {
+                                return this.parent.getErrorStrings()[CommonErrors.name];
+                            }
+                            mulValues[i] = mulValues[i] * parseFloat(result);
+                        }
+                        else {
+                            mulValues[i] = 0;
+                        }
+                        i++;
+                    }
+                }
+            }
+            else {
+                var s1 = this.parent.getValueFromArg(range);
+                index = s1.indexOf('"');
+                if (this.parent.getErrorStrings().indexOf(s1) > -1) {
+                    return s1;
+                }
+                else if (index > -1) {
+                    return 0;
+                }
+                else {
+                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+                }
+            }
+        }
+        for (var i = 0; i < count; ++i) {
+            sum += mulValues[i];
+        }
+        return sum;
+    };
+    
+    /** @hidden */
+    BasicFormulas.prototype.ComputeROUNDUP = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var str;
+        var num;
+        var arg1;
+        var arg2;
+        var index;
+        var len = args.length;
+        if (!isNullOrUndefined(args) && len > 2) {
+            str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        if (len === 1 && args[0] !== '') {
+            index = args[0].indexOf('"');
+            arg1 = args[0].indexOf('"') > -1 ? args[0].replace('"', '') : args[0];
+            arg1 = arg1.indexOf('"') > -1 ? arg1.replace('"', '') : arg1;
+            arg1 = arg1.toUpperCase() === 'TRUE' ? '1' : (arg1 === 'FALSE' ? '0' : arg1);
+            arg1 = this.parent.getValueFromArg(arg1);
+            num = this.parent.parseFloat(arg1);
+            if (num > 0) {
+                num += .4999999999; // To round the number, we using this value.
+            }
+            else if (num < 0) {
+                num -= .4999999999;
+            }
+            num = this.parent.parseFloat(num.toFixed(0));
+            str = num.toString();
+        }
+        else if (len === 2 && args[0] !== '' && args[1] !== '') {
+            index = args[0].indexOf('"') > -1 ? args[0].indexOf('"') : (args[1].indexOf('"') > -1 ? args[1].indexOf('"') : -1);
+            arg1 = args[0].indexOf('"') > -1 ? args[0].replace('"', '') : args[0];
+            arg1 = arg1.indexOf('"') > -1 ? arg1.replace('"', '') : arg1;
+            arg2 = args[1].indexOf('"') > -1 ? args[1].replace('"', '') : args[1];
+            arg2 = arg2.indexOf('"') > -1 ? arg2.replace('"', '') : arg2;
+            arg1 = arg1.toUpperCase() === 'TRUE' ? '1' : (arg1 === 'FALSE' ? '0' : arg1);
+            arg2 = arg2.toUpperCase() === 'TRUE' ? '1' : (arg2 === 'FALSE' ? '0' : arg2);
+            arg1 = this.parent.getValueFromArg(arg1);
+            arg2 = this.parent.getValueFromArg(arg2);
+            var digits = Math.ceil(this.parent.parseFloat(arg2));
+            num = this.parent.parseFloat(arg1);
+            if (digits > 0) {
+                if (num > 0) {
+                    num += .4999999999 / Math.pow(10, digits);
+                }
+                else if (num < 0) {
+                    num -= .4999999999 / Math.pow(10, digits);
+                }
+                num = this.parent.parseFloat(num.toFixed(digits));
+                str = num.toFixed(digits);
+                if (isNaN(num)) {
+                    if (digits.toString().indexOf('"') > -1) {
+                        str = this.parent.getErrorStrings()[CommonErrors.value];
+                    }
+                    else {
+                        str = this.parent.getErrorStrings()[CommonErrors.name];
+                    }
+                }
+            }
+            else {
+                if (num > 0) {
+                    num = (num / Math.pow(10, -digits)) + .49999;
+                }
+                else if (num < 0) {
+                    num = (num / Math.pow(10, -digits)) - .49999;
+                }
+                num = this.parent.parseFloat(num.toFixed(0)) * Math.pow(10, -digits);
+                str = num.toString();
+                if (isNaN(num)) {
+                    str = (digits.toString().indexOf('"') > -1) ? this.parent.getErrorStrings()[CommonErrors.value] :
+                        str = this.parent.getErrorStrings()[CommonErrors.name];
+                }
+            }
+        }
+        else {
+            str = index > -1 ? this.parent.getErrorStrings()[CommonErrors.value] :
+                this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        return str;
+    };
+    
     /** @hidden */
     BasicFormulas.prototype.ComputeCOUNT = function () {
         var args = [];
@@ -3728,6 +4050,118 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
         return sum;
     };
     /** @hidden */
+    BasicFormulas.prototype.ComputeTEXT = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var checkArgs;
+        var argsLength = args.length;
+        for (var i = 0; i < argsLength; i++) {
+            if (isNullOrUndefined(checkArgs)) {
+                checkArgs = args[i];
+            }
+            else {
+                checkArgs = checkArgs + ',' + args[i];
+            }
+        }
+        var splitIndex = checkArgs.indexOf(',');
+        var frtArg = checkArgs.slice(0, splitIndex);
+        var scndArg = checkArgs.slice(checkArgs.indexOf('"') + 1, checkArgs.length);
+        var checkScndArg = scndArg.indexOf('"');
+        if (splitIndex > -1 && checkScndArg !== scndArg.length - 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        var s1 = frtArg;
+        var s2 = scndArg.slice(0, scndArg.length - 1);
+        var dTime = new Date(1900, 0, 1, 0, 0, 0);
+        var checkString = s1 + ',' + s2;
+        var intl = new Internationalization();
+        if (this.parent.getErrorStrings().indexOf(checkString) > -1) {
+            return checkString;
+        }
+        s1 = this.parent.getValueFromArg(s1);
+        s2 = s2.split(this.parent.tic).join('');
+        if (s2 === '') {
+            return '';
+        }
+        if (s1 === '' && (s2.length > 0 && (s2.toUpperCase().indexOf('M') > -1 || s2.toUpperCase().indexOf('D') > -1
+            || s2.toUpperCase().indexOf('Y') > -1 || s2.toUpperCase().indexOf('S') > -1 || s2.toUpperCase().indexOf('T') > -1)
+            || s2.toUpperCase().indexOf('H') > -1)) {
+            s1 = dTime.toString();
+        }
+        var d = this.parseDouble(s1);
+        if (isNaN(d) && this.parent.isDate(new Date(s1)) !== null) {
+            d = this.parent.toOADate(new Date(s1));
+        }
+        dTime = Date.parse(s1.split(this.parent.tic).join(''));
+        if (!isNaN(d) || !isNaN(dTime)) {
+            if (s2[0] === '[') {
+                return this.parent.tic + s1 + this.parent.tic;
+            }
+            if (s2.length > 0 && (s2.toUpperCase().indexOf('M') > -1 || s2.toUpperCase().indexOf('D') > -1
+                || s2.toUpperCase().indexOf('Y') > -1 || s2.toUpperCase().indexOf('S') > -1 || s2.toUpperCase().indexOf('T') > -1)
+                || s2.toUpperCase().indexOf('H') > -1) {
+                s2 = s2.split('Y').join('y').split('D').join('d').split('H').join('h');
+                s2 = s2.split('S').join('s').split('m').join('M').split('AM/PM').join('tt');
+                var formatChar = s2.split('');
+                var isH = false;
+                var isMFound = false;
+                var i = 0;
+                var lastCharIndex = 0;
+                var totalCharforM = 0;
+                for (i = 0; i < formatChar.length;) {
+                    var c = formatChar[i];
+                    if (c === 's' && formatChar[lastCharIndex] === 'M') {
+                        formatChar[lastCharIndex] = 'm';
+                        if (formatChar[lastCharIndex - 1] === 'M') {
+                            formatChar[lastCharIndex - 1] = 'm';
+                        }
+                    }
+                    if (this.parent.isChar(c)) {
+                        lastCharIndex = i;
+                        if (c === 'M') {
+                            totalCharforM++;
+                        }
+                    }
+                    else if (totalCharforM > 1) {
+                        totalCharforM++;
+                    }
+                    if (c === 'M' && isH) {
+                        formatChar[i] = 'm';
+                        isMFound = true;
+                        
+                    }
+                    if (c === 'h') {
+                        isH = true;
+                    }
+                    else if (this.parent.isChar(c) && c !== 'M' && c !== 'h' && !isMFound) {
+                        isH = false;
+                        isMFound = false;
+                    }
+                    i++;
+                }
+                s2 = String(formatChar);
+                s2 = s2.split(',').join('').split('\n').join(' ');
+                var dt = this.parent.fromOADate(d);
+                if (d === 0) {
+                    dt = dTime;
+                }
+                var getSkeleton = getSkeletonVal(s2);
+                if (getSkeleton === '') {
+                    return this.parent.getErrorStrings()[CommonErrors.name];
+                }
+                var dFormatter = intl.getDateFormat({ skeleton: getSkeleton, type: 'date' });
+                var formattedString = dFormatter(new Date(dt.toString()));
+                s1 = formattedString;
+            }
+            else {
+                s1 = intl.formatNumber(d, { format: s2 });
+            }
+        }
+        return s1;
+    };
+    /** @hidden */
     BasicFormulas.prototype.ComputeCOUNTIFS = function () {
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -4407,6 +4841,12 @@ var BasicFormulas = /** @__PURE__ @class */ (function () {
         }
         return cellsData;
     };
+    /** @hidden */
+    BasicFormulas.prototype.parseDouble = function (value) {
+        var val = this.parent.parseFloat(value.toString());
+        return !isNaN(val) ? val : NaN;
+    };
+    
     BasicFormulas.prototype.getModuleName = function () {
         return 'basic-formulas';
     };
@@ -5252,6 +5692,9 @@ var Parser = /** @__PURE__ @class */ (function () {
     Parser.prototype.parseFormula = function (formula, fKey) {
         if (formula.length > 0 && formula[0] === this.parent.getFormulaCharacter()) {
             formula = formula.substring(1);
+        }
+        if (formula.indexOf('#REF!') > -1) {
+            return this.parent.getErrorStrings()[CommonErrors.ref];
         }
         if (formula.length > 0 && formula[0] === '+') {
             formula = formula.substring(1);
@@ -6921,11 +7364,13 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                     var s = this.emptyString;
                     var textName = '';
                     while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
-                        s = s + pFormula[i];
+                        var char = pFormula[i];
+                        s = s + char;
                         i = i + 1;
                     }
                     while (i < pFormula.length && this.isDigit(pFormula[i])) {
-                        s = s + pFormula[i];
+                        var digit = pFormula[i];
+                        s = s + digit;
                         i = i + 1;
                     }
                     if (i < pFormula.length && pFormula[i] === ':') {
@@ -6943,7 +7388,7 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                             s = s + pFormula[i];
                             i = i + 1;
                         }
-                        while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
+                        while (i < pFormula.length && this.isDigit(pFormula[i])) {
                             s = s + pFormula[i];
                             i = i + 1;
                         }
@@ -8848,20 +9293,22 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             var refersTo = this.parseSheetRef(definedname.refersTo);
             var range = getRangeFromAddress(refersTo);
             var cellRef = false;
-            if (refersTo.indexOf('http:') < 0) {
-                range = range.split('$').join('');
-                range = range.split('=').join('');
-                if (range.indexOf(':') > -1) {
-                    var rangeSplit = range.split(':');
-                    if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
-                        cellRef = true;
-                    }
+            var isLink = refersTo.indexOf('http:') > -1 ? true : (refersTo.indexOf('https:') > -1 ? true : false);
+            range = range.split('$').join('');
+            range = range.split('=').join('');
+            if (range.indexOf(':') > -1) {
+                var rangeSplit = range.split(':');
+                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                    cellRef = true;
                 }
-                else if (range.indexOf(':') < 0) {
-                    if (isCellReference(range)) {
-                        cellRef = true;
-                    }
+            }
+            else if (range.indexOf(':') < 0) {
+                if (isCellReference(range)) {
+                    cellRef = true;
                 }
+            }
+            if (isLink) {
+                cellRef = false;
             }
             if (cellRef) {
                 this.addDefinedName(definedname, true);
@@ -9401,7 +9848,7 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
                 var cell = {};
                 var rowKey = '__rowIndex';
                 Array.prototype.forEach.call(e.result, function (data, index) {
-                    if (!data) {
+                    if (!data || !jsonData[index]) {
                         return;
                     }
                     sCIdx = range[1];
@@ -9613,6 +10060,166 @@ var WorkbookImage = /** @__PURE__ @class */ (function () {
         return 'workbookImage';
     };
     return WorkbookImage;
+}());
+
+/**
+ * The `WorkbookChart` module is used to handle chart action in Spreadsheet.
+ */
+var WorkbookChart = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for WorkbookChart module.
+     */
+    function WorkbookChart(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    WorkbookChart.prototype.addEventListener = function () {
+        this.parent.on(setChart, this.setChartHandler, this);
+        this.parent.on(refreshChart, this.refreshChartData, this);
+        this.parent.on(deleteChartColl, this.deleteChartColl, this);
+        this.parent.on(refreshChartSize, this.refreshChartSize, this);
+        this.parent.on(focusChartBorder, this.focusChartBorder, this);
+    };
+    WorkbookChart.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(setChart, this.setChartHandler);
+            this.parent.off(refreshChart, this.refreshChartData);
+            this.parent.off(deleteChartColl, this.deleteChartColl);
+            this.parent.off(refreshChartSize, this.refreshChartSize);
+            this.parent.off(focusChartBorder, this.focusChartBorder);
+        }
+    };
+    WorkbookChart.prototype.setChartHandler = function (args) {
+        var i = 0;
+        args.isInitCell = isNullOrUndefined(args.isInitCell) ? false : args.isInitCell;
+        args.isUndoRedo = isNullOrUndefined(args.isUndoRedo) ? true : args.isUndoRedo;
+        args.isPaste = isNullOrUndefined(args.isPaste) ? false : args.isPaste;
+        var chart = args.chart;
+        if (chart.length > 0) {
+            while (i < chart.length) {
+                if (args.isCut === false) {
+                    if (document.getElementById(args.chart[i].id)) {
+                        chart[i] = {
+                            range: chart[i].range, id: 'e_spreadsheet_chart_' + this.parent.chartCount,
+                            isSeriesInRows: chart[i].isSeriesInRows, theme: chart[i].theme, type: chart[i].type
+                        };
+                        chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
+                        args.isIdAvailabe = false;
+                    }
+                }
+                if (document.getElementById(args.chart[i].id)) {
+                    return;
+                }
+                var idAvailable = isNullOrUndefined(args.isIdAvailabe) ? true : args.isIdAvailabe;
+                chart[i].theme = chart[i].theme || 'Material';
+                chart[i].type = chart[i].type || 'Line';
+                chart[i].isSeriesInRows = chart[i].isSeriesInRows || false;
+                chart[i].range = chart[i].range || this.parent.getActiveSheet().selectedRange;
+                if (isNullOrUndefined(chart[i].id)) {
+                    chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
+                    idAvailable = false;
+                }
+                this.parent.notify(initiateChart, {
+                    option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, isUndoRedo: args.isUndoRedo,
+                    dataSheetIdx: args.dataSheetIdx, range: args.range
+                });
+                this.parent.chartColl.push(chart[i]);
+                if (!idAvailable) {
+                    this.parent.chartCount++;
+                }
+                if (!args.isInitCell || args.isPaste) {
+                    var sheetIdx = (chart[i].range && chart[i].range.indexOf('!') > 0) ?
+                        getSheetIndex(this.parent, chart[i].range.split('!')[0]) : this.parent.activeSheetIndex;
+                    var indexes = args.isPaste ? getRangeIndexes(args.range) : getRangeIndexes(chart[i].range);
+                    var sheet = sheetIdx ? this.parent.sheets[sheetIdx] : this.parent.getActiveSheet();
+                    var cell = getCell(indexes[0], indexes[1], sheet);
+                    if (cell && cell.chart) {
+                        cell.chart.push(chart[i]);
+                    }
+                    else {
+                        setCell(indexes[0], indexes[1], sheet, { chart: [chart[i]] }, true);
+                    }
+                }
+                i++;
+            }
+        }
+    };
+    WorkbookChart.prototype.refreshChartData = function (args) {
+        var i;
+        var j = 1;
+        var cnt = this.parent.sheets.length + 1;
+        while (j < cnt) {
+            var charts = this.parent.chartColl;
+            i = charts ? charts.length : 0;
+            if (i) {
+                while (i--) {
+                    var chart = this.parent.chartColl[i];
+                    var isInRange = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx)
+                        && (chart.range.indexOf('!') > -1 ?
+                            getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) !== this.parent.activeSheetIndex : true);
+                    if (isInRange) {
+                        this.parent.notify(updateChart, { chart: chart });
+                    }
+                }
+            }
+            j++;
+        }
+    };
+    WorkbookChart.prototype.refreshChartSize = function (args) {
+        var chartCnt;
+        var j = 1;
+        var sheetCnt = this.parent.sheets.length + 1;
+        while (j < sheetCnt) {
+            var charts = this.parent.chartColl;
+            chartCnt = charts ? charts.length : 0;
+            if (chartCnt) {
+                while (chartCnt--) {
+                    var chart = this.parent.chartColl[chartCnt];
+                    if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
+                        var chartObj = this.parent.element.querySelector('.' + chart.id);
+                        var excelFilter = getComponent(chartObj, 'chart');
+                        excelFilter.height = args.height;
+                        excelFilter.width = args.width;
+                    }
+                }
+            }
+            j++;
+        }
+    };
+    WorkbookChart.prototype.focusChartBorder = function (args) {
+        for (var idx = 0; idx < this.parent.chartColl.length; idx++) {
+            var overlayEle = document.getElementById(args.id);
+            var chartEle = document.getElementById(this.parent.chartColl[idx].id);
+            if (overlayEle && chartEle && closest(chartEle, '.' + overlayEle.classList[1]) === overlayEle) {
+                this.parent.notify(initiateChart, {
+                    option: this.parent.chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
+                });
+            }
+        }
+    };
+    WorkbookChart.prototype.deleteChartColl = function (args) {
+        for (var idx = 0; idx < this.parent.chartColl.length; idx++) {
+            var chartElement = document.getElementById(this.parent.chartColl[idx].id);
+            var overlayElement = document.getElementById(args.id);
+            if (overlayElement && chartElement && closest(chartElement, '.' + overlayElement.classList[1]) === overlayElement) {
+                this.parent.chartColl.splice(idx, 1);
+            }
+        }
+    };
+    /**
+     * To Remove the event listeners.
+     */
+    WorkbookChart.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    /**
+     * Get the workbook chart module name.
+     */
+    WorkbookChart.prototype.getModuleName = function () {
+        return 'workbookChart';
+    };
+    return WorkbookChart;
 }());
 
 /**
@@ -10175,12 +10782,15 @@ var WorkbookEdit = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            if (value.toString().indexOf(this.decimalSep) > -1) {
+            if (value && value.toString().indexOf(this.decimalSep) > -1) {
                 value = this.checkDecimalPoint(value);
             }
             cell.value = value;
         }
         this.parent.setUsedRange(range[0], range[1]);
+        if (this.parent.allowChart) {
+            this.parent.notify(refreshChart, { cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
+        }
     };
     return WorkbookEdit;
 }());
@@ -10358,7 +10968,7 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
                 args.columnCellsModel = [];
             }
             for (var i = 0; i < model.length; i++) {
-                cellModel.push({});
+                cellModel.push(null);
             }
             mergeCollection = [];
             for (var i = 0; i <= args.model.usedRange.rowIndex; i++) {
@@ -10472,6 +11082,10 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line
     WorkbookDelete.prototype.deleteModel = function (args) {
         var _this = this;
+        var sheetLength = this.parent.sheets.length;
+        if (args.modelType === 'Sheet' && sheetLength === 1) {
+            return;
+        }
         var modelName = args.modelType.toLowerCase() + "s";
         args.start = args.start;
         if (args.start > args.end) {
@@ -11432,8 +12046,8 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     WorkbookFindAndReplace.prototype.prevCommon = function (findPrevArgs) {
         var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         if (sheet.rows[findPrevArgs.rowIndex]) {
-            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex] &&
-                sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value) {
+            var rowCol = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+            if (rowCol && rowCol.value) {
                 var cellType = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
                 if (cellType) {
                     var cellvalue = void 0;
@@ -12056,6 +12670,21 @@ var WorkbookMerge = /** @__PURE__ @class */ (function () {
         var value;
         var sheet = this.parent.getActiveSheet();
         var curCell;
+        var startCell = getCell(args.range[0], args.range[1], sheet);
+        var border = startCell ? (startCell.style ? startCell.style.borderLeft : null) : null;
+        if (border === 'none') {
+            border = startCell.style.borderRight !== 'none' ? startCell.style.borderRight :
+                (startCell.style.borderTop ? startCell.style.borderTop : null);
+        }
+        if (border === 'none') {
+            border = startCell.style.borderBottom !== 'none' ? startCell.style.borderBottom : null;
+        }
+        if (!isNullOrUndefined(startCell) && !isNullOrUndefined(border)) {
+            startCell.style.borderBottom = '';
+            startCell.style.borderLeft = '';
+            startCell.style.borderTop = '';
+            startCell.style.borderRight = '';
+        }
         for (var i = args.range[0]; i <= args.range[2]; i++) {
             colSpan = 0;
             if (args.isAction) {
@@ -12118,6 +12747,9 @@ var WorkbookMerge = /** @__PURE__ @class */ (function () {
             if (!args.preventRefresh) {
                 this.parent.notify(applyMerge, { rowIdx: args.range[0], colIdx: args.range[1] });
             }
+        }
+        if (!isNullOrUndefined(border)) {
+            this.parent.notify(setCellFormat, { style: { border: border }, range: args.range, onActionUpdate: true });
         }
     };
     WorkbookMerge.prototype.mergeHorizontally = function (args) {
@@ -13290,7 +13922,7 @@ var WorkbookBasicModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function WorkbookBasicModule() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart);
     }
     /**
      * For internal use only - Get the module name.
@@ -13319,7 +13951,7 @@ var WorkbookAllModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function WorkbookAllModule() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart);
     }
     /**
      * For internal use only - Get the module name.
@@ -13418,6 +14050,9 @@ function getWorkbookRequiredModules(context, modules) {
     }
     if (context.allowImage) {
         modules.push({ member: 'workbookImage', args: [context] });
+    }
+    if (context.allowChart) {
+        modules.push({ member: 'workbookChart', args: [context] });
     }
     return modules;
 }
@@ -13596,8 +14231,14 @@ var Format = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$3([
+        Property('General')
+    ], Format.prototype, "format", void 0);
+    __decorate$3([
         Complex({}, CellStyle)
     ], Format.prototype, "style", void 0);
+    __decorate$3([
+        Property(true)
+    ], Format.prototype, "isLocked", void 0);
     return Format;
 }(ChildProperty));
 /**
@@ -13624,6 +14265,31 @@ var ConditionalFormat = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], ConditionalFormat.prototype, "range", void 0);
     return ConditionalFormat;
+}(ChildProperty));
+/**
+ * Represents the Chart.
+ */
+var Chart$1 = /** @__PURE__ @class */ (function (_super) {
+    __extends$4(Chart$$1, _super);
+    function Chart$$1() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('Line')
+    ], Chart$$1.prototype, "type", void 0);
+    __decorate$3([
+        Property('Material')
+    ], Chart$$1.prototype, "theme", void 0);
+    __decorate$3([
+        Property(false)
+    ], Chart$$1.prototype, "isSeriesInRows", void 0);
+    __decorate$3([
+        Property('')
+    ], Chart$$1.prototype, "range", void 0);
+    __decorate$3([
+        Property('')
+    ], Chart$$1.prototype, "id", void 0);
+    return Chart$$1;
 }(ChildProperty));
 /**
  * Represents the Image.
@@ -13715,6 +14381,9 @@ function isChar(value) {
     }
     return false;
 }
+function inRange(range, rowIdx, colIdx) {
+    return range && (rowIdx >= range[0] && rowIdx <= range[2] && colIdx >= range[1] && colIdx <= range[3]);
+}
 /**
  * Check whether the cell is locked or not
  * @hidden
@@ -13782,6 +14451,9 @@ var Cell = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Collection([], Image)
     ], Cell.prototype, "image", void 0);
+    __decorate$4([
+        Collection([], Chart$1)
+    ], Cell.prototype, "chart", void 0);
     __decorate$4([
         Property('')
     ], Cell.prototype, "value", void 0);
@@ -13922,7 +14594,9 @@ function getData(context, address, columnWiseData, valueOnly) {
                             if (indexes[3] < i + 1) {
                                 cells[rowKey] = (sRow + 1).toString();
                             }
-                            data[index.toString()] = cells;
+                            if (cells[key]) {
+                                data[index.toString()] = cells;
+                            }
                         }
                         else {
                             var cellObj = {};
@@ -14538,7 +15212,15 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
          * @hidden
          */
         _this.isOpen = false;
-        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
+        /**
+         * @hidden
+         */
+        _this.chartColl = [];
+        /**
+         * @hidden
+         */
+        _this.chartCount = 1;
+        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage, WorkbookChart);
         _this.commonCellStyle = {};
         if (options && options.cellStyle) {
             _this.commonCellStyle = options.cellStyle;
@@ -15112,6 +15794,22 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         this.notify(setImage, { options: images, range: range ? range : this.getActiveSheet().selectedRange });
     };
     /**
+     * Used to set the chart in spreadsheet.
+     * @param {ChartModel} chart - Specifies the options to insert chart in spreadsheet.
+     * @returns void
+     */
+    Workbook.prototype.insertChart = function (chart) {
+        this.notify(setChart, { chart: chart });
+    };
+    /**
+     * Used to delete the chart from spreadsheet.
+     * @param {string} id - Specifies the chart element id.
+     * @returns void
+     */
+    Workbook.prototype.deleteChart = function (id) {
+        this.notify(deleteChart, { id: id });
+    };
+    /**
      * Filters the range of cells in the sheet.
      */
     Workbook.prototype.filter = function (filterOptions, range) {
@@ -15257,6 +15955,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     ], Workbook.prototype, "allowImage", void 0);
     __decorate([
         Property(true)
+    ], Workbook.prototype, "allowChart", void 0);
+    __decorate([
+        Property(true)
     ], Workbook.prototype, "allowConditionalFormat", void 0);
     __decorate([
         Complex({}, CellStyle)
@@ -15351,6 +16052,9 @@ var Row = /** @__PURE__ @class */ (function (_super) {
     __decorate$5([
         Property(false)
     ], Row.prototype, "hidden", void 0);
+    __decorate$5([
+        Complex({}, Format)
+    ], Row.prototype, "format", void 0);
     return Row;
 }(ChildProperty));
 /**
@@ -15454,6 +16158,9 @@ var Column = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property(false)
     ], Column.prototype, "hidden", void 0);
+    __decorate$6([
+        Complex({}, Format)
+    ], Column.prototype, "format", void 0);
     __decorate$6([
         Property(null)
     ], Column.prototype, "isLocked", void 0);
@@ -15684,6 +16391,9 @@ function pushBasicModules(context, modules) {
     }
     if (context.allowImage) {
         modules.push({ member: 'spreadsheetImage', args: [context] });
+    }
+    if (context.allowChart) {
+        modules.push({ member: 'spreadsheetChart', args: [context] });
     }
 }
 
@@ -16501,7 +17211,7 @@ function updateAction(options, spreadsheet, isRedo) {
             if (isRedo) {
                 spreadsheet.notify(createImageElement, {
                     options: {
-                        data: options.eventArgs.imageData,
+                        src: options.eventArgs.imageData,
                         height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
                     },
                     range: options.eventArgs.range, isPublic: false, isUndoRedo: true
@@ -16531,6 +17241,54 @@ function updateAction(options, spreadsheet, isRedo) {
             element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
             element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
             element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            break;
+        case 'insertChart':
+            if (isRedo) {
+                var chartOptions = [{
+                        type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                        range: eventArgs.range, id: eventArgs.id
+                    }];
+                spreadsheet.notify(setChart, {
+                    chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
+                });
+            }
+            else {
+                spreadsheet.notify(deleteChart, { id: eventArgs.id });
+            }
+            break;
+        case 'deleteChart':
+            if (isRedo) {
+                spreadsheet.notify(deleteChart, { id: eventArgs.id });
+            }
+            else {
+                var chartOpts = [{
+                        type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                        range: eventArgs.range, id: eventArgs.id
+                    }];
+                spreadsheet.notify(setChart, {
+                    chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
+                });
+            }
+            break;
+        case 'chartRefresh':
+            var chartElement = document.getElementById(options.eventArgs.id);
+            if (chartElement) {
+                chartElement.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
+                chartElement.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
+                chartElement.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
+                chartElement.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            }
+            if (isRedo) {
+                options.eventArgs.isUndoRedo = true;
+                spreadsheet.notify(refreshChartSize, {
+                    height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
+                });
+            }
+            else {
+                spreadsheet.notify(refreshChartSize, {
+                    height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
+                });
+            }
             break;
     }
 }
@@ -16691,6 +17449,7 @@ function skipHiddenIdx(sheet, index, increase, layout) {
  */
 var Clipboard = /** @__PURE__ @class */ (function () {
     function Clipboard(parent) {
+        this.externalMerge = false;
         this.parent = parent;
         this.init();
         this.addEventListener();
@@ -16789,24 +17548,24 @@ var Clipboard = /** @__PURE__ @class */ (function () {
     Clipboard.prototype.rowHeightChanged = function (args) {
         if (this.copiedInfo && this.copiedInfo.range[0] > args.rowIdx) {
             var ele = this.parent.element.getElementsByClassName('e-copy-indicator')[0];
-            ele.style.top = parseInt(ele.style.top, 10) + args.threshold + "px";
+            if (ele) {
+                ele.style.top = parseInt(ele.style.top, 10) + args.threshold + "px";
+            }
         }
     };
     Clipboard.prototype.cut = function (args) {
         this.setCopiedInfo(args, true);
     };
     Clipboard.prototype.copy = function (args) {
+        this.copiedSheet = this.parent.getActiveSheet();
         this.setCopiedInfo(args, false);
     };
     Clipboard.prototype.paste = function (args) {
-        if (this.parent.isEdit && this.copiedInfo) {
-            if (args && args.type) {
-                args.preventDefault();
-                document.getElementById(this.parent.element.id + '_edit').focus();
-                return;
-            }
+        if (this.parent.isEdit) {
+            return;
         }
         var rfshRange;
+        args.isAction = true;
         /* tslint:disable-next-line */
         var isExternal = ((args && args.clipboardData) || window['clipboardData']);
         var copiedIdx = this.getCopiedIdx();
@@ -16817,16 +17576,16 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             var curSheet = getSheet(this.parent, cSIdx);
             var selIdx = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             var rows = isExternal && this.getExternalCells(args);
-            if (!args.isInternal && rows.internal) {
+            if (!args.isInternal && rows && rows.internal) {
                 isExternal = false;
                 if (!this.copiedInfo) {
                     return;
                 }
             }
-            var cellLength = 0;
             if (isExternal && !rows.length) { // If image pasted
                 return;
             }
+            var cellLength = 0;
             if (rows) {
                 for (var i = 0; i < rows.length; i++) {
                     cellLength = rows[i].cells.length > cellLength ? rows[i].cells.length : cellLength;
@@ -16876,14 +17635,23 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             this.parent.notify(refreshRibbonIcons, copiedIndex);
             if (this.copiedShapeInfo && !this.copiedInfo) {
                 var pictureElem = this.copiedShapeInfo.pictureElem;
-                this.parent.notify(createImageElement, {
-                    options: {
-                        src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
-                        height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
-                        imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
-                    },
-                    range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
-                });
+                if (pictureElem.classList.contains('e-datavisualization-chart')) {
+                    this.parent.notify(setChart, {
+                        chart: [this.copiedShapeInfo.chartInfo], isInitCell: true, isUndoRedo: true, isPaste: true,
+                        dataSheetIdx: this.copiedShapeInfo.sheetIdx, isCut: this.copiedShapeInfo.isCut,
+                        range: args.range || curSheet.selectedRange, isIdAvailabe: false
+                    });
+                }
+                else {
+                    this.parent.notify(createImageElement, {
+                        options: {
+                            src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
+                            height: this.copiedShapeInfo.height, width: this.copiedShapeInfo.width,
+                            imageId: this.copiedShapeInfo.isCut ? pictureElem.id : ''
+                        },
+                        range: getRangeAddress([rowIdx, selIdx[1], rowIdx, selIdx[1]]), isPublic: false, isUndoRedo: true
+                    });
+                }
                 var pastedCell = getCell(rowIdx, selIdx[1], curSheet);
                 if (pastedCell && !isNullOrUndefined(pastedCell.image)) {
                     var imgLen = pastedCell.image ? pastedCell.image.length - 1 : 0;
@@ -16906,6 +17674,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 for (var i = cIdx[0], l = 0; i <= cIdx[2]; i++, l++) {
                     for (var j = cIdx[1], k = 0; j <= cIdx[3]; j++, k++) {
                         cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
+                        this.copiedCell = [i, j];
                         if (cell && args && args.type || pasteType) {
                             switch (pasteType) {
                                 case 'Formats':
@@ -16932,20 +17701,31 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                             for (var x = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
                                 for (var y = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
                                     prevCell = getCell(x + l, y + k, curSheet) || {};
-                                    if (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
+                                    if (!this.externalMerge && prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
                                         mergeArgs = { range: [x + l, y + k, x + l, y + k] };
                                         var merge$$1 = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
                                         mergeCollection.push(merge$$1);
                                         this.parent.notify(setMerge, merge$$1);
                                     }
-                                    this.setCell(x + l, y + k, curSheet, cell, isExtend);
+                                    var colInd = y + k;
+                                    if (this.externalMerge && this.externalMergeRow === x + l) {
+                                        colInd = colInd + 1;
+                                    }
+                                    else {
+                                        this.externalMerge = false;
+                                    }
+                                    var newFormula = this.isFormula([x + l, colInd]);
+                                    if (!isNullOrUndefined(newFormula)) {
+                                        cell.formula = newFormula;
+                                    }
+                                    this.setCell(x + l, colInd, curSheet, cell, isExtend);
                                     var sId = this.parent.activeSheetIndex;
-                                    var cellElem = this.parent.getCell(x + l, y + k);
-                                    var address = getCellAddress(x + l, y + k);
+                                    var cellElem = this.parent.getCell(x + l, colInd);
+                                    var address = getCellAddress(x + l, colInd);
                                     var cellArgs = {
                                         address: this.parent.sheets[sId].name + '!' + address,
                                         requestType: 'paste',
-                                        value: getCell(x + l, y + k, curSheet) ? getCell(x + l, y + k, curSheet).value : '',
+                                        value: getCell(x + l, colInd, curSheet) ? getCell(x + l, colInd, curSheet).value : '',
                                         oldValue: prevCell.value,
                                         element: cellElem,
                                         displayText: this.parent.getDisplayText(cell)
@@ -17010,6 +17790,73 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             this.getClipboardEle().select();
         }
     };
+    Clipboard.prototype.isFormula = function (selIdx) {
+        var cIdxValue;
+        var cell;
+        var sheet;
+        if (!isNullOrUndefined(this.copiedCell)) {
+            sheet = !isNullOrUndefined(this.copiedSheet) ? this.copiedSheet : this.parent.getActiveSheet();
+            cell = getCell(this.copiedCell[0], this.copiedCell[1], sheet);
+            if (!isNullOrUndefined(cell)) {
+                cIdxValue = cell.formula ? cell.formula.toUpperCase() : '';
+            }
+        }
+        if (cIdxValue !== '' && !isNullOrUndefined(cIdxValue)) {
+            if (cIdxValue.indexOf('=') === 0) {
+                cIdxValue = cIdxValue.slice(1);
+            }
+            var start = cIdxValue.indexOf('(');
+            var end = cIdxValue.indexOf(')');
+            if (start > -1 && end > -1) {
+                cIdxValue = cIdxValue.slice(start + 1, end);
+            }
+            var difIndex = [];
+            var formulaOperators = ['+', '-', '*', '/'];
+            var splitArray = void 0;
+            var value = cIdxValue;
+            for (var i = 0; i < formulaOperators.length; i++) {
+                splitArray = value.split(formulaOperators[i]);
+                value = splitArray.join(',');
+            }
+            splitArray = value.split(',');
+            for (var j = 0; j < splitArray.length; j++) {
+                if (isCellReference(splitArray[j])) {
+                    var range = getCellIndexes(splitArray[j]);
+                    var diff = [this.copiedCell[0] - range[0], this.copiedCell[1] - range[1]];
+                    difIndex.push(diff[0]);
+                    difIndex.push(diff[1]);
+                }
+            }
+            var newAddress = [];
+            for (var j = 0; j < difIndex.length; j++) {
+                var address = getCellAddress(selIdx[0] - difIndex[0 + j], selIdx[1] - difIndex[1 + j]);
+                newAddress.push(address);
+                j++;
+            }
+            for (var a = 0; a < newAddress.length; a++) {
+                if (isCellReference(newAddress[a])) {
+                    var range = getRangeIndexes(newAddress[a]);
+                    if (range[0] < 0 || range[1] < 0) {
+                        newAddress[a] = '#REF!';
+                    }
+                }
+                else {
+                    newAddress[a] = '#REF!';
+                }
+            }
+            cIdxValue = cell.formula.toUpperCase();
+            for (var i = 0; i < splitArray.length; i++) {
+                for (var j = 0; j < newAddress.length; j++) {
+                    cIdxValue = cIdxValue.replace(splitArray[i].toUpperCase(), newAddress[j].toUpperCase());
+                    i++;
+                }
+            }
+            return cIdxValue;
+        }
+        else {
+            return null;
+        }
+    };
     Clipboard.prototype.setCell = function (rIdx, cIdx, sheet, cell, isExtend, isCut) {
         setCell(rIdx, cIdx, sheet, isCut ? null : cell, isExtend);
         if (cell && cell.formula) {
@@ -17024,15 +17871,29 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     cIdx], value: cell.value
             });
         }
-        if (isCut && cell) {
+        if (cell) {
             if (cell.style) {
+                var style = {};
+                if (cell.style.properties) {
+                    style = skipDefaultValue(cell.style, true);
+                }
+                else {
+                    style = cell.style;
+                }
                 this.parent.notify(applyCellFormat, {
-                    style: extend({}, this.getEmptyStyle(cell.style), this.parent.commonCellStyle), rowIdx: rIdx, colIdx: cIdx, cell: null,
+                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rIdx, colIdx: cIdx, cell: null,
                     lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
                 });
             }
             if (cell.wrap) {
                 this.parent.notify(wrapEvent, { range: [rIdx, cIdx, rIdx, cIdx], wrap: false, sheet: sheet });
+            }
+            if (cell.colSpan > 1) {
+                setCell(rIdx, cIdx + cell.colSpan - 1, sheet, isCut ? null : { colSpan: -1 }, isExtend);
+                this.externalMerge = true;
+                this.externalMergeRow = rIdx;
+                this.parent.notify(setMerge, { merge: true, range: [rIdx, cIdx, rIdx, cIdx + cell.colSpan - 1],
+                    type: 'All', isAction: true, refreshRibbon: true });
             }
         }
     };
@@ -17085,15 +17946,21 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 };
                 _this.parent.notify(getColIdxFromClientX, imgColIdx);
                 _this.copiedShapeInfo = {
-                    sId: (args && args.sId) ? args.sId : sheet.id, isCut: isCut, pictureElem: pictureElements[0], copiedRange: getRangeAddress([imgRowIdx.clientY, imgColIdx.clientX,
+                    sId: (args && args.sId) ? args.sId : sheet.id, sheetIdx: sheet.index, isCut: isCut, pictureElem: pictureElements[0], copiedRange: getRangeAddress([imgRowIdx.clientY, imgColIdx.clientX,
                         imgRowIdx.clientY, imgColIdx.clientX]), height: pictureElements[0].offsetHeight,
-                    width: pictureElements[0].offsetWidth
+                    width: pictureElements[0].offsetWidth,
+                    chartInfo: _this.getChartElemInfo(pictureElements[0], isCut)
                 };
                 _this.hidePaste(true);
                 if (isCut) {
-                    _this.parent.notify(deleteImage, {
-                        id: _this.copiedShapeInfo.pictureElem.id, sheetIdx: _this.copiedShapeInfo.sId, range: _this.copiedShapeInfo.copiedRange
-                    });
+                    if (pictureElements[0].classList.contains('e-datavisualization-chart')) {
+                        _this.parent.deleteChart(_this.copiedShapeInfo.chartInfo.id);
+                    }
+                    else {
+                        _this.parent.notify(deleteImage, {
+                            id: _this.copiedShapeInfo.pictureElem.id, sheetIdx: _this.copiedShapeInfo.sId, range: _this.copiedShapeInfo.copiedRange
+                        });
+                    }
                 }
             }
             else if (!(args && args.clipboardData)) {
@@ -17122,6 +17989,19 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             this.setExternalCells(args);
             this.parent.element.focus();
         }
+    };
+    Clipboard.prototype.getChartElemInfo = function (overlayEle, isCut) {
+        var chartColl = this.parent.chartColl;
+        if (overlayEle.classList.contains('e-datavisualization-chart')) {
+            var chartId = overlayEle.getElementsByClassName('e-control')[0].id;
+            for (var idx = 0; idx < chartColl.length; idx++) {
+                if (chartColl[idx].id === chartId) {
+                    var chart = chartColl[idx];
+                    return chart;
+                }
+            }
+        }
+        return null;
     };
     Clipboard.prototype.clearCopiedInfo = function () {
         if (this.copiedInfo) {
@@ -17247,7 +18127,9 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 ele.querySelectorAll('tr').forEach(function (tr) {
                     tr.querySelectorAll('td').forEach(function (td, j) {
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
-                        cells[j] = { value: td.textContent, style: _this.getStyle(td, ele) };
+                        var cSpan = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
+                        var rSpan = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
+                        cells[j] = { value: td.textContent, style: _this.getStyle(td, ele), colSpan: cSpan, rowSpan: rSpan };
                     });
                     rows.push({ cells: cells });
                     cells = [];
@@ -17295,7 +18177,8 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 styles.split(';').forEach(function (style) {
                     var char = style.split(':')[0].trim();
                     if (['font-family', 'vertical-align', 'text-align', 'text-indent', 'color', 'background', 'font-weight', 'font-style',
-                        'font-size', 'text-decoration'].indexOf(char) > -1) {
+                        'font-size', 'text-decoration', 'border-bottom', 'border-top', 'border-right', 'border-left',
+                        'border'].indexOf(char) > -1) {
                         char = char === 'background' ? 'backgroundColor' : char;
                         var regex = char.match(/-[a-z]/);
                         cellStyle[regex ? char.replace(regex[0], regex[0].charAt(1).toUpperCase()) : char] = style.split(':')[1];
@@ -17572,7 +18455,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                                 });
                             }
                             else {
-                                this.startEdit();
+                                this.startEdit(null, null, true, true);
                             }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
@@ -17638,14 +18521,25 @@ var Edit = /** @__PURE__ @class */ (function () {
         //     this.editorElem.style.removeProperty('height');
         // }
     };
-    Edit.prototype.startEdit = function (address, value, refreshCurPos) {
+    Edit.prototype.startEdit = function (address, value, refreshCurPos, preventFormulaReference) {
         if (refreshCurPos === void 0) { refreshCurPos = true; }
+        this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
         var sheet = this.parent.getActiveSheet();
         var actCell = getCellIndexes(sheet.activeCell);
         var cell = getCell(actCell[0], actCell[1], sheet) || {};
-        var range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        var range = getRangeIndexes(sheet.activeCell);
         if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetIndex)) {
-            return;
+            var cellEle = this.parent.getCell(range[0], range[1]);
+            var isDelTemplate = false;
+            var value_1 = cellEle.innerHTML;
+            if (cellEle) {
+                if (value_1.indexOf('<') > -1 && value_1.indexOf('>') > -1 && value_1.indexOf('input') > -1) {
+                    isDelTemplate = true;
+                }
+            }
+            if (isDelTemplate) {
+                return;
+            }
         }
         this.updateEditCellDetail(address, value);
         this.initiateEditor(refreshCurPos);
@@ -17653,9 +18547,8 @@ var Edit = /** @__PURE__ @class */ (function () {
         this.parent.isEdit = this.isEdit = true;
         this.parent.notify(clearCopy, null);
         this.parent.notify(enableToolbarItems, [{ enable: false }]);
-        if (cell.formula) {
-            var sheetIdx = this.editCellData.sheetIndex;
-            this.parent.notify(initiateFormulaReference, { range: cell.formula, formulaSheetIdx: sheetIdx });
+        if (cell.formula && !preventFormulaReference) {
+            this.parent.notify(initiateFormulaReference, { range: cell.formula, formulaSheetIdx: this.editCellData.sheetIndex });
         }
     };
     Edit.prototype.setCursorPosition = function () {
@@ -17682,9 +18575,16 @@ var Edit = /** @__PURE__ @class */ (function () {
         switch (action) {
             case 'delete':
                 if (pictureLen > 0) {
-                    this.parent.notify(deleteImage, {
-                        id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                    });
+                    if (pictureElements[0].classList.contains('e-datavisualization-chart')) {
+                        this.parent.notify(deleteChart, {
+                            id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                        });
+                    }
+                    else {
+                        this.parent.notify(deleteImage, {
+                            id: pictureElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
+                        });
+                    }
                 }
                 else {
                     var address = this.parent.getActiveSheet().selectedRange;
@@ -17807,6 +18707,9 @@ var Edit = /** @__PURE__ @class */ (function () {
         var sheet = this.parent.getActiveSheet();
         var actCell = getCellIndexes(sheet.activeCell);
         var cell = getCell(actCell[0], actCell[1], sheet) || {};
+        if (closest(trgtElem, '.e-datavisualization-chart')) {
+            return;
+        }
         if (!sheet.isProtected || !isLocked(cell, getColumn(sheet, actCell[1]))) {
             if ((trgtElem.className.indexOf('e-ss-overlay') < 0) &&
                 (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
@@ -17912,7 +18815,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             });
         });
     };
-    Edit.prototype.positionEditor = function () {
+    Edit.prototype.positionEditor = function (isWrap) {
         var tdElem = this.editCellData.element;
         var isEdit = false;
         var cellEle;
@@ -17932,15 +18835,16 @@ var Edit = /** @__PURE__ @class */ (function () {
             var minWidth = this.editCellData.element.offsetWidth - 3;
             var mainContElement = this.parent.getMainContent();
             var editWidth = mainContElement.offsetWidth - left - 28;
+            var height = ((cell && cell.wrap) || (tdElem && isWrap)) ? 'height:auto' : (minHeight) + 'px;';
             // let editHeight: number = mainContElement.offsetHeight - top - 28;
             var inlineStyles = 'display:block;top:' + top_1 + 'px;' + (this.parent.enableRtl ? 'right:' : 'left:') + left + 'px;' +
-                'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + ((cell && cell.wrap) ? 'height:' + 'auto;' : '') +
+                'min-width:' + minWidth + 'px;max-width:' + editWidth + 'px;' + 'height:' + height +
                 ((cell && cell.wrap) ? ('width:' + minWidth + 'px;') : '') + 'min-height:' + minHeight + 'px;';
             inlineStyles += tdElem.style.cssText;
             this.editorElem.setAttribute('style', inlineStyles);
             this.parent.element.querySelector('.e-active-cell').style.height =
-                (this.editCellData.element.offsetHeight + 2) + 'px'; // we using edit div height as auto , while editing div enlarges and 
-            // hide active cell bottom border for that we increasing 2px height to active cell.
+                (this.editCellData.element.offsetHeight + 1) + 'px'; // we using edit div height as auto , while editing div enlarges and 
+            // hide active cell bottom border for that we increasing 1px height to active cell.
             if (tdElem.classList.contains('e-right-align')) {
                 this.editorElem.classList.add('e-right-align');
             }
@@ -18052,6 +18956,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         else if (event) {
             event.preventDefault();
         }
+        this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
     };
     Edit.prototype.cancelEdit = function (refreshFormulaBar, trigEvent, event) {
         if (refreshFormulaBar === void 0) { refreshFormulaBar = true; }
@@ -18091,6 +18996,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         return eventArgs.cancel;
     };
     Edit.prototype.altEnter = function () {
+        this.positionEditor(true);
         var text;
         var textBefore;
         var textAfter;
@@ -18285,6 +19191,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.parent.on(clearCellRef, this.clearBorder, this);
         this.parent.on(getRowIdxFromClientY, this.getRowIdxFromClientY, this);
         this.parent.on(getColIdxFromClientX, this.getColIdxFromClientX, this);
+        this.parent.on(focusBorder, this.chartBorderHandler, this);
     };
     Selection.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
@@ -18300,6 +19207,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.parent.off(clearCellRef, this.clearBorder);
             this.parent.off(getRowIdxFromClientY, this.getRowIdxFromClientY);
             this.parent.off(getColIdxFromClientX, this.getColIdxFromClientX);
+            this.parent.off(focusBorder, this.chartBorderHandler);
         }
     };
     Selection.prototype.rowHeightChanged = function (args) {
@@ -18380,11 +19288,19 @@ var Selection = /** @__PURE__ @class */ (function () {
             checkIsFormula(eventArgs.editedValue);
         if (!this.parent.isEdit || isFormulaEdit) {
             var overlayElem = document.getElementById(this.parent.element.id + '_overlay');
-            if (e.target.className.indexOf('e-ss-overlay') > -1) {
-                return;
+            if (typeof (e.target.className) === 'string') {
+                if (e.target.className.indexOf('e-ss-overlay') > -1) {
+                    return;
+                }
             }
             else if (overlayElem) {
                 overlayElem.classList.remove('e-ss-overlay-active');
+            }
+            if (closest(e.target, '.e-datavisualization-chart')) {
+                return;
+            }
+            else {
+                this.parent.notify(clearChartBorder, {});
             }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
@@ -18900,7 +19816,11 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.dEndCell = { rowIndex: indices[2], colIndex: indices[3] };
         this.focusBorder(this.dStartCell, this.dEndCell, formulaBorder[i % 6]);
     };
-    Selection.prototype.focusBorder = function (startcell, endcell, classes) {
+    Selection.prototype.chartBorderHandler = function (args) {
+        this.focusBorder(args.startcell, args.endcell, args.classes, true);
+    };
+    Selection.prototype.focusBorder = function (startcell, endcell, classes, isChart) {
+        isChart = isNullOrUndefined(isChart) ? false : isChart;
         var range = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
         var minr = range[0];
         var minc = range[1];
@@ -18910,27 +19830,35 @@ var Selection = /** @__PURE__ @class */ (function () {
             (this.getEleFromRange([minr - 1, minc, minr - 1, maxc])).forEach(function (td) {
                 if (td) {
                     td.classList.add(classes[1]);
-                    td.classList.add('e-formularef-selection');
+                    if (!isChart) {
+                        td.classList.add('e-formularef-selection');
+                    }
                 }
             }); // top                            
         }
         (this.getEleFromRange([minr, maxc, maxr, maxc])).forEach(function (td) {
             if (td) {
                 td.classList.add(classes[0]);
-                td.classList.add('e-formularef-selection');
+                if (!isChart) {
+                    td.classList.add('e-formularef-selection');
+                }
             }
         }); // right
         this.getEleFromRange([maxr, minc, maxr, maxc]).forEach(function (td) {
             if (td) {
                 td.classList.add(classes[1]);
-                td.classList.add('e-formularef-selection');
+                if (!isChart) {
+                    td.classList.add('e-formularef-selection');
+                }
             }
         }); // bottom
         if (minc) {
             (this.getEleFromRange([minr, minc - 1, maxr, minc - 1])).forEach(function (td) {
                 if (td) {
                     td.classList.add(classes[0]);
-                    td.classList.add('e-formularef-selection');
+                    if (!isChart) {
+                        td.classList.add('e-formularef-selection');
+                    }
                 }
             }); // left
         }
@@ -20330,37 +21258,46 @@ var CellFormat = /** @__PURE__ @class */ (function () {
         if (first && first.includes('Column')) {
             return;
         }
-        var prevCell = this.parent.getCell(rowIdx, colIdx - 1, row);
-        if (prevCell) {
-            if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
-                this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+        for (var j = 0; j < cell.rowSpan; j++) {
+            var prevCell = this.parent.getCell(rowIdx + j, colIdx - 1, row);
+            var i = 1;
+            while (prevCell && prevCell.style.display === 'none') {
+                prevCell = this.parent.getCell(rowIdx + j, colIdx - 1 - i, row);
+                i++;
             }
-            prevCell.style.borderRight = border;
-        }
-        else {
-            cell.style.borderLeft = border;
+            if (prevCell) {
+                if (actionUpdate && border !== '' && colIdx === this.parent.viewport.leftIndex) {
+                    this.parent.getMainContent().scrollLeft -= this.getBorderSize(border);
+                }
+                prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
+            }
+            else {
+                cell.style.borderLeft = border;
+            }
         }
     };
     CellFormat.prototype.setTopBorder = function (border, cell, rowIdx, colIdx, pRow, pHRow, actionUpdate, first, lastCell, manualUpdate) {
         if (first && first.includes('Row')) {
             return;
         }
-        var prevCell = this.parent.getCell(rowIdx - 1, colIdx, pRow);
-        if (prevCell) {
-            if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
-                var index = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
-                if (this.parent.getCellStyleValue(['bottomPriority'], index).bottomPriority) {
-                    return;
+        for (var j = 0; j < cell.colSpan; j++) {
+            var prevCell = this.parent.getCell(rowIdx - 1, colIdx + j, pRow);
+            if (prevCell) {
+                if (isHiddenRow(this.parent.getActiveSheet(), rowIdx - 1)) {
+                    var index = [Number(prevCell.parentElement.getAttribute('aria-rowindex')) - 1, colIdx];
+                    if (this.parent.getCellStyleValue(['bottomPriority'], index).bottomPriority) {
+                        return;
+                    }
                 }
+                if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes("" + (rowIdx + 1))) {
+                    this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+                }
+                this.setThickBorderHeight(border, rowIdx - 1, colIdx + j, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
+                prevCell.style.borderBottom = (border === 'none') ? prevCell.style.borderBottom : border;
             }
-            if (actionUpdate && border !== '' && this.parent.getActiveSheet().topLeftCell.includes("" + (rowIdx + 1))) {
-                this.parent.getMainContent().scrollTop -= this.getBorderSize(border);
+            else {
+                cell.style.borderTop = border;
             }
-            this.setThickBorderHeight(border, rowIdx - 1, colIdx, prevCell, pRow, pHRow, actionUpdate, lastCell, manualUpdate);
-            prevCell.style.borderBottom = border;
-        }
-        else {
-            cell.style.borderTop = border;
         }
     };
     CellFormat.prototype.setThickBorderHeight = function (border, rowIdx, colIdx, cell, row, hRow, actionUpdate, lastCell, manualUpdate) {
@@ -20741,10 +21678,8 @@ var Resize = /** @__PURE__ @class */ (function () {
                     if (getCell(rowIdx, idx, sheet).wrap) {
                         isWrap = true;
                     }
-                    var td = this.parent.createElement('td', {
-                        className: 'e-cell',
-                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
-                    });
+                    var td = this.parent.createElement('td', { className: 'e-cell' });
+                    td.textContent = this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx]);
                     if (sheet.rows[rowIdx].cells[idx].style) {
                         var style = sheet.rows[rowIdx].cells[idx].style;
                         if (style.fontFamily) {
@@ -20767,9 +21702,8 @@ var Resize = /** @__PURE__ @class */ (function () {
                         isWrap = true;
                     }
                     var style = sheet.rows[idx].cells[colIdx].style;
-                    var td = this.parent.createElement('td', {
-                        innerHTML: this.parent.getDisplayText(sheet.rows[idx].cells[colIdx])
-                    });
+                    var td = this.parent.createElement('td');
+                    td.textContent = this.parent.getDisplayText(sheet.rows[idx].cells[colIdx]);
                     if (sheet.rows[idx].cells[colIdx].style) {
                         var style_1 = sheet.rows[idx].cells[colIdx].style;
                         if (style_1.fontFamily) {
@@ -22519,6 +23453,9 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             case 'beforeInsertImage':
                 address = getRangeIndexes(eventArgs.range);
                 break;
+            case 'beforeInsertChart':
+                address = getRangeIndexes(eventArgs.range);
+                break;
         }
         cells = this.getCellDetails(address, sheet);
         this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
@@ -22578,6 +23515,13 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 case 'imageRefresh':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
+                case 'insertChart':
+                case 'deleteChart':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'chartRefresh':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -22597,7 +23541,8 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     };
     UndoRedo.prototype.updateUndoRedoCollection = function (options) {
         var actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh'];
+            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
+            'chartRefresh'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -22608,7 +23553,8 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         var eventArgs = options.args.eventArgs;
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
-            action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh') {
+            action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
+            action === 'chartRefresh') {
             var beforeActionDetails = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -22774,7 +23720,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
                     style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
                     wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
-                    hyperlink: cell && cell.hyperlink, image: cell && cell.image
+                    hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
                 });
             }
         }
@@ -22904,6 +23850,9 @@ var WrapText = /** @__PURE__ @class */ (function () {
                             ele.innerHTML
                                 = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
                         }
+                    }
+                    if (Browser.isIE) {
+                        ele.classList.add('e-ie-wrap');
                     }
                     if (!isCustomHgt) {
                         colwidth = getColumnWidth(args.sheet, j);
@@ -24368,10 +25317,11 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
             id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
             id + '_clear', id + '_conditionalformatting'];
         var enableFrmlaBtnId = [id + '_insert_function'];
-        var enableInsertBtnId = [id + '_hyperlink', id + '_'];
+        var enableInsertBtnId = [id + '_hyperlink', id + '_', id + '_chart'];
         var imageBtnId = [id + '_'];
         var findBtnId = [id + '_find'];
         var dataValidationBtnId = [id + '_datavalidation'];
+        var chartBtnId = [id + '_chart'];
         var sheetElement = document.getElementById(this.parent.element.id + '_sheet_panel');
         if (sheetElement) {
             if ((sheet.isProtected && sheet.protectSettings.selectCells)) {
@@ -24389,7 +25339,7 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
         this.parent.dataBind();
         this.parent.notify(protectCellFormat, { disableHomeBtnId: disableHomeBtnId,
             enableHomeBtnId: enableHomeBtnId, enableFrmlaBtnId: enableFrmlaBtnId, enableInsertBtnId: enableInsertBtnId,
-            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId, imageBtnId: imageBtnId });
+            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId, imageBtnId: imageBtnId, chartBtnId: chartBtnId });
         this.parent.notify(enableFormulaInput, null);
         this.parent.notify(updateToggleItem, { props: 'Protect' });
     };
@@ -24762,7 +25712,9 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
             className: 'e-replace-alert-span',
             innerHTML: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
         });
-        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
+        if (this.parent.element.querySelector('.e-find-dlg')) {
+            (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
+        }
     };
     FindAndReplace.prototype.findKeyUp = function (e) {
         {
@@ -25681,7 +26633,7 @@ var ConditionalFormatting = /** @__PURE__ @class */ (function () {
         var cFColors = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         var isActiveCF = false;
         if (cFRules[cFRuleIdx].cFColor) {
-            if (td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
+            if (td && td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
                 isActiveCF = true;
             }
         }
@@ -27321,6 +28273,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 ]
             }];
     };
+    // tslint:disable-next-line:max-func-body-length
     Ribbon$$1.prototype.getRibbonItems = function () {
         var _this = this;
         var id = this.parent.element.id;
@@ -27407,8 +28360,14 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         if (this.parent.allowConditionalFormat) {
             items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getCFDBB(id), tooltipText: l10n.getConstant('ConditionalFormatting'), id: id + '_conditionalformatting' });
         }
+        if (this.parent.allowChart) {
+            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Insert'); }).content.push({ type: 'Separator', id: id + '_separator_11' }, {
+                template: this.getChartDBB(id), text: this.getLocaleText('Chart'),
+                tooltipText: l10n.getConstant('Chart'), id: id + '_chart'
+            });
+        }
         if (this.parent.allowCellFormatting) {
-            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getClearDDB(id), tooltipText: l10n.getConstant('Clear'), id: id + '_clear' });
+            items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_12' }, { template: this.getClearDDB(id), tooltipText: l10n.getConstant('Clear'), id: id + '_clear' });
         }
         if (this.parent.allowSorting || this.parent.allowFiltering) {
             items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
@@ -27581,6 +28540,219 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.fontSizeDdb.createElement = this.parent.createElement;
         this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
         return this.fontSizeDdb.element;
+    };
+    // tslint:disable-next-line:max-func-body-length
+    Ribbon$$1.prototype.getChartDBB = function (id) {
+        var _this = this;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        this.chartMenu = new Menu({
+            cssClass: 'e-chart-menu',
+            items: [
+                {
+                    iconCss: 'e-icons e-column', text: l10n.getConstant('Column'),
+                    items: [{ id: 'column_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-bar', text: l10n.getConstant('Bar'),
+                    items: [{ id: 'bar_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-area', text: l10n.getConstant('Area'),
+                    items: [{ id: 'area_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-pie-doughnut', text: l10n.getConstant('PieAndDoughnut'),
+                    items: [{ id: 'pie_doughnut_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-line', text: l10n.getConstant('Line'),
+                    items: [{ id: 'line_chart' }]
+                },
+                // {
+                //     iconCss: 'e-icons e-radar', text: l10n.getConstant('Radar'),
+                //     items: [{ id: 'radar_chart' }]
+                // },
+                {
+                    iconCss: 'e-icons e-scatter', text: l10n.getConstant('Scatter'),
+                    items: [{ id: 'scatter_chart' }]
+                }
+            ],
+            orientation: 'Vertical',
+            beforeOpen: function (args) {
+                if (args.parentItem.text === l10n.getConstant('Column')) {
+                    args.element.firstChild.appendChild(column);
+                    args.element.parentElement.classList.add('e-column-chart');
+                }
+                else if (args.parentItem.text === l10n.getConstant('Bar')) {
+                    args.element.firstChild.appendChild(bar);
+                    args.element.parentElement.classList.add('e-bar-chart');
+                }
+                else if (args.parentItem.text === l10n.getConstant('Area')) {
+                    args.element.firstChild.appendChild(area);
+                    args.element.parentElement.classList.add('e-area-chart');
+                }
+                else if (args.parentItem.text === l10n.getConstant('Line')) {
+                    args.element.firstChild.appendChild(line);
+                    args.element.parentElement.classList.add('e-line-chart');
+                }
+                else if (args.parentItem.text === l10n.getConstant('PieAndDoughnut')) {
+                    args.element.firstChild.appendChild(pie);
+                    args.element.parentElement.classList.add('e-pie-doughnut-chart');
+                }
+                else if (args.parentItem.text === l10n.getConstant('Radar')) {
+                    args.element.firstChild.appendChild(radar);
+                    args.element.parentElement.classList.add('e-radar-chart');
+                }
+                else if (args.parentItem.text === l10n.getConstant('Scatter')) {
+                    args.element.firstChild.appendChild(scatter);
+                    args.element.parentElement.classList.add('e-scatter-chart');
+                }
+            },
+            select: this.chartSelected.bind(this)
+        });
+        this.chartMenu.createElement = this.parent.createElement;
+        var column = this.parent.createElement('div', { id: 'column_main', className: 'e-column-main' });
+        var column1Text = this.parent.createElement('div', { id: 'column1_text', className: 'e-column1-text', innerHTML: l10n.getConstant('Column') });
+        var column1Cont = this.parent.createElement('div', { id: 'column1_cont', className: 'e-column1-cont' });
+        var column2Text = this.parent.createElement('div', { id: 'column2_text', className: 'e-column2-text' });
+        var column2Cont = this.parent.createElement('div', { id: 'column2_cont', className: 'e-column2-cont' });
+        column.appendChild(column1Text);
+        column.appendChild(column1Cont);
+        //column.appendChild(column2Text);
+        //column.appendChild(column2Cont);
+        var clusteredColumn = this.parent.createElement('span', { id: 'clusteredColumn', className: 'e-clusteredcolumn e-column-icon e-menu-icon e-icons' });
+        var stackedColumn = this.parent.createElement('span', {
+            id: 'stackedColumn', className: 'e-stackedcolumn e-column-icon e-menu-icon e-icons'
+        });
+        var stackedColumn100 = this.parent.createElement('span', {
+            id: 'stackedColumn100', className: 'e-stackedcolumn100 e-column-icon e-menu-icon e-icons'
+        });
+        var clusteredColumn3D = this.parent.createElement('span', {
+            id: 'clusteredColumn3D', className: 'e-clusteredColumn3D e-column-icon'
+        });
+        var stackedColumn3D = this.parent.createElement('span', { id: 'stackedColumn3D', className: 'e-stackedColumn3D e-column-icon' });
+        var stackedColumn1003D = this.parent.createElement('span', { id: 'stackedColumn1003D', className: 'e-stackedColumn1003D e-column-icon' });
+        clusteredColumn.title = l10n.getConstant('ClusteredColumn');
+        stackedColumn.title = l10n.getConstant('StackedColumn');
+        stackedColumn100.title = l10n.getConstant('StackedColumn100');
+        stackedColumn1003D.title = l10n.getConstant('OrangeDataBar');
+        stackedColumn3D.title = l10n.getConstant('LightblueDataBar');
+        clusteredColumn3D.title = l10n.getConstant('PurpleDataBar');
+        column1Cont.appendChild(clusteredColumn);
+        column1Cont.appendChild(stackedColumn);
+        column1Cont.appendChild(stackedColumn100);
+        column2Cont.appendChild(clusteredColumn3D);
+        column2Cont.appendChild(stackedColumn3D);
+        column2Cont.appendChild(stackedColumn1003D);
+        var bar = this.parent.createElement('div', { id: 'bar_main', className: 'e-bar-main' });
+        var bar1Text = this.parent.createElement('div', { id: 'bar1_text', className: 'e-bar1-text', innerHTML: l10n.getConstant('Bar') });
+        var bar1Cont = this.parent.createElement('div', { id: 'bar1_cont', className: 'e-bar1-cont' });
+        var bar2Text = this.parent.createElement('div', { id: 'bar2_text', className: 'e-bar2-text' });
+        var bar2Cont = this.parent.createElement('div', { id: 'bar2_cont', className: 'e-bar2-cont' });
+        bar.appendChild(bar1Text);
+        bar.appendChild(bar1Cont);
+        //bar.appendChild(bar2Text);
+        //bar.appendChild(bar2Cont);
+        var clusteredBar = this.parent.createElement('span', { id: 'clusteredBar', className: 'e-clusteredbar e-bar-icon e-menu-icon e-icons' });
+        var stackedBar = this.parent.createElement('span', { id: 'stackedBar', className: 'e-stackedbar e-bar-icon e-menu-icon e-icons' });
+        var stackedBar100 = this.parent.createElement('span', { id: 'stackedBar100', className: 'e-stackedbar100 e-bar-icon e-menu-icon e-icons' });
+        var clusteredBar3D = this.parent.createElement('span', { id: 'clusteredBar3D', className: 'e-clusteredBar3D e-bar-icon' });
+        var stackedBar3D = this.parent.createElement('span', { id: 'stackedBar3D', className: 'e-stackedBar3D e-bar-icon' });
+        var stackedBar1003D = this.parent.createElement('span', { id: 'stackedBar1003D', className: 'e-stackedBar1003D e-bar-icon' });
+        clusteredBar.title = l10n.getConstant('ClusteredBar');
+        stackedBar.title = l10n.getConstant('StackedBar');
+        stackedBar100.title = l10n.getConstant('StackedBar100');
+        stackedBar1003D.title = l10n.getConstant('OrangeDataBar');
+        stackedBar3D.title = l10n.getConstant('LightblueDataBar');
+        clusteredBar3D.title = l10n.getConstant('PurpleDataBar');
+        bar1Cont.appendChild(clusteredBar);
+        bar1Cont.appendChild(stackedBar);
+        bar1Cont.appendChild(stackedBar100);
+        bar2Cont.appendChild(clusteredBar3D);
+        bar2Cont.appendChild(stackedBar3D);
+        bar2Cont.appendChild(stackedBar1003D);
+        var area = this.parent.createElement('div', { id: 'area_main', className: 'e-area-main' });
+        var areaText = this.parent.createElement('div', { id: 'area_text', className: 'e-area-text', innerHTML: l10n.getConstant('Area') });
+        var areaCont = this.parent.createElement('div', { id: 'area_cont', className: 'e-area-cont' });
+        area.appendChild(areaText);
+        area.appendChild(areaCont);
+        var defArea = this.parent.createElement('span', { id: 'area', className: 'e-area e-area-icon e-menu-icon e-icons' });
+        var stackedArea = this.parent.createElement('span', { id: 'stackedArea', className: 'e-stackedarea e-area-icon e-menu-icon e-icons' });
+        var stackedArea100 = this.parent.createElement('span', { id: 'stackedArea100', className: 'e-stackedarea100 e-area-icon e-menu-icon e-icons' });
+        defArea.title = l10n.getConstant('Area');
+        stackedArea.title = l10n.getConstant('StackedArea');
+        stackedArea100.title = l10n.getConstant('StackedArea100');
+        areaCont.appendChild(defArea);
+        areaCont.appendChild(stackedArea);
+        areaCont.appendChild(stackedArea100);
+        var line = this.parent.createElement('div', { id: 'line_main', className: 'e-line-main' });
+        var lineText = this.parent.createElement('div', { id: 'line_text', className: 'e-line-text', innerHTML: l10n.getConstant('Line') });
+        var lineCont = this.parent.createElement('div', { id: 'line_cont', className: 'e-line-cont' });
+        line.appendChild(lineText);
+        line.appendChild(lineCont);
+        var defLine = this.parent.createElement('span', { id: 'line', className: 'e-line e-line-icon e-menu-icon e-icons' });
+        var stackedLine = this.parent.createElement('span', { id: 'stackedLine', className: 'e-stackedline e-line-icon e-menu-icon e-icons' });
+        var stackedLine100 = this.parent.createElement('span', {
+            id: 'stackedline100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons'
+        });
+        defLine.title = l10n.getConstant('Line');
+        stackedLine.title = l10n.getConstant('StackedLine');
+        stackedLine100.title = l10n.getConstant('StackedLine100');
+        lineCont.appendChild(defLine);
+        lineCont.appendChild(stackedLine);
+        lineCont.appendChild(stackedLine100);
+        var pie = this.parent.createElement('div', { id: 'pie_main', className: 'e-pie-main' });
+        var pieText = this.parent.createElement('div', { id: 'pie_text', className: 'e-pie-text', innerHTML: l10n.getConstant('Pie') });
+        var pieCont = this.parent.createElement('div', { id: 'pie_cont', className: 'e-pie-cont' });
+        pie.appendChild(pieText);
+        pie.appendChild(pieCont);
+        var defPie = this.parent.createElement('span', { id: 'pie', className: 'e-pie e-pie-icon e-menu-icon e-icons' });
+        var doughnut = this.parent.createElement('span', { id: 'doughnut', className: 'e-doughnut e-pie-icon e-menu-icon e-icons' });
+        defPie.title = l10n.getConstant('Pie');
+        doughnut.title = l10n.getConstant('Doughnut');
+        pieCont.appendChild(defPie);
+        pieCont.appendChild(doughnut);
+        var radar = this.parent.createElement('div', { id: 'radar_main', className: 'e-radar-main' });
+        var radarText = this.parent.createElement('div', { id: 'radar_text', className: 'e-radar-text', innerHTML: 'Radar' });
+        var radarCont = this.parent.createElement('div', { id: 'radar_cont', className: 'e-radar-cont' });
+        radar.appendChild(radarText);
+        radar.appendChild(radarCont);
+        var defradar = this.parent.createElement('span', { id: 'radar', className: 'e-radar e-radar-icon e-menu-icon e-icons' });
+        var radarMarkers = this.parent.createElement('span', { id: 'radar_markers', className: 'e-radar-markers e-radar-icon e-menu-icon e-icons' });
+        defradar.title = l10n.getConstant('BlueDataBar');
+        radarMarkers.title = l10n.getConstant('GreenDataBar');
+        radarCont.appendChild(defradar);
+        radarCont.appendChild(radarMarkers);
+        var scatter = this.parent.createElement('div', { id: 'scatter_main', className: 'e-scatter-main' });
+        var scatterText = this.parent.createElement('div', { id: 'scatter_text', className: 'e-scatter-text', innerHTML: l10n.getConstant('Scatter') });
+        var scatterCont = this.parent.createElement('div', { id: 'scatter_cont', className: 'e-scatter-cont' });
+        scatter.appendChild(scatterText);
+        scatter.appendChild(scatterCont);
+        var defscatter = this.parent.createElement('span', { id: 'scatter', className: 'e-scatter e-scatter-icon e-menu-icon e-icons' });
+        defscatter.title = l10n.getConstant('Scatter');
+        scatterCont.appendChild(defscatter);
+        var ul = this.parent.element.appendChild(this.parent.createElement('ul', {
+            id: id + '_chart_menu', styles: 'display: none;'
+        }));
+        this.chartMenu.appendTo(ul);
+        ul.classList.add('e-ul');
+        this.chartDdb = new DropDownButton({
+            iconCss: 'e-icons e-chart-icon',
+            cssClass: 'e-chart-ddb',
+            target: this.chartMenu.element.parentElement,
+            created: function () { _this.chartMenu.element.style.display = ''; },
+            beforeClose: function (args) {
+                if (args.event && closest(args.event.target, '.e-chart-ddb')) {
+                    args.cancel = true;
+                }
+            },
+            close: function () { return _this.parent.element.focus(); }
+        });
+        this.chartDdb.createElement = this.parent.createElement;
+        var chartBtn = this.parent.createElement('button', { id: id + '_chart-btn' });
+        chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: 'Chart' }));
+        this.chartDdb.appendTo(chartBtn);
+        return this.chartDdb.element;
     };
     // tslint:disable-next-line:max-func-body-length
     Ribbon$$1.prototype.getCFDBB = function (id) {
@@ -27998,6 +29170,14 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
         return this.bordersDdb.element;
     };
+    Ribbon$$1.prototype.chartSelected = function (args) {
+        var eleId = args.element.id;
+        if (('column_chart' + 'bar_chart' + 'area_chart' + 'pie_doughnut_chart' +
+            'line_chart' + 'radar_chart' + 'scatter_chart').includes(eleId)) {
+            var id = args.event.target.id;
+            this.parent.notify(insertChart, { action: eleId, id: id });
+        }
+    };
     Ribbon$$1.prototype.cFSelected = function (args) {
         var eleId = args.element.id;
         if (('cf_greaterthan' + 'cf_lessthan' + 'cf_between' + 'cf_eqaulto' + 'cf_textthatcontains' +
@@ -28410,12 +29590,12 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 var value = element.value;
                 var nextElement = document.querySelector('.e-findRib-next');
                 var prevElement = document.querySelector('.e-findRib-prev');
-                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '1 of 0')) {
+                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0 of 0')) {
                     toolbarObj_1.enableItems(nextElement, false);
                     toolbarObj_1.enableItems(prevElement, false);
                     findSpan_1.textContent = '0 of 0';
                 }
-                else if (!isNullOrUndefined(value) || (countArgs.findCount !== '1 of 0')) {
+                else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0 of 0')) {
                     toolbarObj_1.enableItems(nextElement, true);
                     toolbarObj_1.enableItems(prevElement, true);
                 }
@@ -28442,12 +29622,16 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             toolbarObj_1 = new Toolbar({
                 clicked: function (args) {
                     if (args.item.cssClass === 'e-findRib-next') {
-                        var buttonArg = { findOption: 'next' };
-                        _this.parent.notify(findHandler, buttonArg);
+                        _this.parent.notify(findHandler, { findOption: 'next' });
+                        countArgs = { countOpt: 'count', findCount: '' };
+                        _this.parent.notify(findHandler, { countArgs: countArgs });
+                        findSpan_1.textContent = countArgs.findCount;
                     }
                     else if (args.item.cssClass === 'e-findRib-prev') {
-                        var buttonArg = { findOption: 'prev' };
-                        _this.parent.notify(findHandler, buttonArg);
+                        _this.parent.notify(findHandler, { findOption: 'prev' });
+                        countArgs = { countOpt: 'count', findCount: '' };
+                        _this.parent.notify(findHandler, { countArgs: countArgs });
+                        findSpan_1.textContent = countArgs.findCount;
                     }
                     else if (args.item.cssClass === 'e-findRib-more') {
                         _this.parent.notify(findDlg, null);
@@ -28502,7 +29686,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
     };
     Ribbon$$1.prototype.findOnKeyDown = function (e, count) {
         if (document.querySelector('.e-text-findNext-short').value) {
-            if (count !== '1 of 0') {
+            if (count !== '0 of 0') {
                 if (e.shiftKey) {
                     if (e.keyCode === 13) {
                         var buttonArgs = { findOption: 'prev' };
@@ -29343,11 +30527,13 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: false }]);
         }
         else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: true }]);
         }
     };
     Ribbon$$1.prototype.updateMergeItem = function (e) {
@@ -29410,6 +30596,10 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.bordersDdb = null;
         this.findDdb.destroy();
         this.findDdb = null;
+        this.chartDdb.destroy();
+        this.chartDdb = null;
+        this.chartMenu.destroy();
+        this.chartMenu = null;
         this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
         if (ribbonEle) {
@@ -30607,10 +31797,8 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
         var isFormulaEdit = checkIsFormula(eventArgs.editedValue) || eventArgs.editedValue.toString().indexOf('=') === 0;
-        if (!isFormulaEdit) {
-            this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
-            this.parent.element.focus();
-        }
+        this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
+        this.parent.element.focus();
     };
     SheetTabs.prototype.insertSheetTab = function (args) {
         this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
@@ -31085,7 +32273,7 @@ var Open = /** @__PURE__ @class */ (function () {
         var uploadID = this.parent.element.id + '_fileUpload';
         this.parent.element.appendChild(this.parent.createElement('input', {
             id: uploadID,
-            attrs: { type: 'file', accept: '.xls, .xlsx, .csv', name: 'fileUpload' }
+            attrs: { type: 'file', accept: '.xls, .xlsx, .csv, .xlsm', name: 'fileUpload' }
         }));
         var uploadBox = document.getElementById(uploadID);
         uploadBox.onchange = this.fileSelect.bind(this);
@@ -33023,7 +34211,7 @@ var SpreadsheetImage = /** @__PURE__ @class */ (function () {
         var prevImgObj;
         var currImgObj;
         var prevCellImgLen = (prevCellImg && prevCellImg.length) ? prevCellImg.length : 0;
-        if (prevCellObj && prevCellObj.image) {
+        if (prevCellObj && prevCellObj.image && prevCellImg.length > 0) {
             for (var i = 0; i < prevCellImgLen; i++) {
                 if (prevCellImg[i].id === args.id) {
                     prevImgObj = prevCellImg[i];
@@ -33108,6 +34296,748 @@ var SpreadsheetImage = /** @__PURE__ @class */ (function () {
     return SpreadsheetImage;
 }());
 
+Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
+Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip);
+AccumulationChart.Inject(PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationLegend);
+/**
+ * Represents Chart support for Spreadsheet.
+ */
+var SpreadsheetChart = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Spreadsheet Chart module.
+     */
+    function SpreadsheetChart(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * Adding event listener for success and failure
+     */
+    SpreadsheetChart.prototype.addEventListener = function () {
+        this.parent.on(initiateChart, this.initiateChartHandler, this);
+        this.parent.on(refreshChartCellObj, this.refreshChartCellObj, this);
+        this.parent.on(updateChart, this.updateChartHandler, this);
+        this.parent.on(deleteChart, this.deleteChart, this);
+        this.parent.on(clearChartBorder, this.clearBorder, this);
+        this.parent.on(insertChart, this.insertChartHandler, this);
+    };
+    SpreadsheetChart.prototype.insertChartHandler = function (args) {
+        var chartType = 'Column';
+        switch (args.id) {
+            case 'clusteredColumn':
+                chartType = 'Column';
+                break;
+            case 'stackedColumn':
+                chartType = 'StackingColumn';
+                break;
+            case 'stackedColumn100':
+                chartType = 'StackingColumn100';
+                break;
+            case 'clusteredBar':
+                chartType = 'Bar';
+                break;
+            case 'stackedBar':
+                chartType = 'StackingBar';
+                break;
+            case 'stackedBar100':
+                chartType = 'StackingBar100';
+                break;
+            case 'area':
+                chartType = 'Area';
+                break;
+            case 'stackedArea':
+                chartType = 'StackingArea';
+                break;
+            case 'stackedArea100':
+                chartType = 'StackingArea100';
+                break;
+            case 'line':
+                chartType = 'Line';
+                break;
+            case 'stackedLine':
+                chartType = 'StackingLine';
+                break;
+            case 'stackedLine100':
+                chartType = 'StackingLine100';
+                break;
+            case 'pie':
+                chartType = 'Pie';
+                break;
+            case 'doughnut':
+                chartType = 'Doughnut';
+                break;
+            //  case 'radar':
+            //     chartType = ;
+            //     break;
+            //  case 'radar_markers':
+            //     chartType = 'Column';
+            //     break;
+            case 'scatter':
+                chartType = 'Scatter';
+                break;
+        }
+        var chart = [{ type: chartType }];
+        this.parent.notify(setChart, { chart: chart });
+    };
+    SpreadsheetChart.prototype.getPropertyValue = function (rIdx, cIdx, sheetIndex) {
+        var sheets = this.parent.sheets;
+        if (sheets[sheetIndex] && sheets[sheetIndex].rows[rIdx] && sheets[sheetIndex].rows[rIdx].cells[cIdx]) {
+            var cell = getCell(rIdx, cIdx, this.parent.sheets[sheetIndex]);
+            var value = '';
+            if (cell.format) {
+                var formatObj = {
+                    type: getTypeFromFormat(cell.format),
+                    value: cell && cell.value, format: cell && cell.format ?
+                        cell.format : 'General', formattedText: cell && cell.value,
+                    onLoad: true, isRightAlign: false, cell: cell,
+                    rowIdx: rIdx.toString(), colIdx: cIdx.toString()
+                };
+                if (cell) {
+                    this.parent.notify(getFormattedCellObject, formatObj);
+                    if (typeof (formatObj.value) === 'number') {
+                        var escapeRegx = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
+                        formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
+                        value = parseInt(formatObj.formattedText.toString(), 10);
+                    }
+                    else {
+                        value = formatObj.formattedText.toString();
+                        
+                    }
+                }
+            }
+            else {
+                value = this.parent.sheets[sheetIndex].rows[rIdx].cells[cIdx].value;
+            }
+            return value;
+        }
+        else {
+            return '';
+        }
+    };
+    SpreadsheetChart.prototype.updateChartHandler = function (args) {
+        var series = this.initiateChartHandler({ option: args.chart, isRefresh: true });
+        var chartObj = this.parent.element.querySelector('.' + args.chart.id);
+        var excelFilter = getComponent(chartObj, 'chart');
+        excelFilter.series = series;
+    };
+    SpreadsheetChart.prototype.refreshChartCellObj = function (args) {
+        var currRowIdx = { clientY: args.currentTop, isImage: true };
+        this.parent.notify(getRowIdxFromClientY, currRowIdx);
+        var prevRowIdx = { clientY: args.prevTop, isImage: true };
+        this.parent.notify(getRowIdxFromClientY, prevRowIdx);
+        var currColIdx = { clientX: args.currentLeft, isImage: true };
+        this.parent.notify(getColIdxFromClientX, currColIdx);
+        var prevColIdx = { clientX: args.prevLeft, isImage: true };
+        this.parent.notify(getColIdxFromClientX, prevColIdx);
+        var sheet = this.parent.sheets[this.parent.activeSheetIndex];
+        var prevCellObj = getCell(prevRowIdx.clientY, prevColIdx.clientX, sheet);
+        var currCellObj = getCell(currRowIdx.clientY, currColIdx.clientX, sheet);
+        var prevCellChart = prevCellObj ? prevCellObj.chart : [];
+        var prevChartObj;
+        var currChartObj;
+        var prevCellImgLen = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
+        if (prevCellObj && prevCellObj.chart) {
+            for (var i = 0; i < prevCellImgLen; i++) {
+                var overlayEle = document.getElementById(args.id);
+                var chartEleClassName = document.getElementById(prevCellChart[i].id);
+                if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
+                    prevChartObj = prevCellChart[i];
+                    prevCellChart.splice(i, 1);
+                }
+            }
+            if (currCellObj && currCellObj.chart) {
+                currChartObj = currCellObj.chart;
+                if (prevChartObj) {
+                    currChartObj.push(prevChartObj);
+                }
+            }
+            (currChartObj) ? setCell(currRowIdx.clientY, currColIdx.clientX, sheet, { chart: currChartObj }, true) :
+                setCell(currRowIdx.clientY, currColIdx.clientX, sheet, { chart: [prevChartObj] }, true);
+            if (args.requestType === 'chartRefresh' && !args.isUndoRedo) {
+                var eventArgs = {
+                    requestType: 'chartRefresh', currentRowIdx: currRowIdx.clientY, currentColIdx: currColIdx.clientX,
+                    currentWidth: args.currentWidth, prevHeight: args.prevHeight, prevWidth: args.prevWidth,
+                    prevRowIdx: prevRowIdx.clientY, prevColIdx: prevColIdx.clientX, prevTop: args.prevTop, prevLeft: args.prevLeft,
+                    currentTop: args.currentTop, currentLeft: args.currentLeft, currentHeight: args.currentHeight,
+                    id: args.id, sheetIdx: this.parent.activeSheetIndex
+                };
+                this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'chartRefresh' });
+            }
+        }
+    };
+    SpreadsheetChart.prototype.processChartRange = function (range, dataSheetIdx, opt) {
+        var xRange;
+        var yRange;
+        var lRange;
+        var trVal;
+        var blVal;
+        var tlVal;
+        var minr = range[0];
+        var minc = range[1];
+        var isStringSeries = false;
+        var maxr = range[2];
+        var maxc = range[3];
+        var isSingleRow = minr === maxr;
+        var isSingleCol = minc === maxc;
+        trVal = this.getPropertyValue(minr, maxc, dataSheetIdx);
+        // trVal = this.getParseValue(trVal);
+        blVal = this.getPropertyValue(maxr, minc, dataSheetIdx);
+        // blVal = this.getParseValue(blVal);
+        tlVal = this.getPropertyValue(minr, minc, dataSheetIdx);
+        // tlVal = this.getParseValue(tlVal);
+        if (!isNumber(blVal) || !tlVal) {
+            isStringSeries = true;
+        }
+        if (isNullOrUndefined(tlVal) && !isSingleRow && !isSingleCol || (opt.type === 'Scatter' && range[3] - range[1] === 1)) {
+            xRange = [minr + 1, minc, maxr, minc];
+            yRange = [minr + 1, minc + 1, maxr, maxc];
+            lRange = [minr, minc + 1, minr, maxc];
+        }
+        else if ((!isNullOrUndefined(blVal) && isStringSeries && !isSingleRow && !isSingleCol)) {
+            if (!isNullOrUndefined(trVal) && (!isNumber(trVal) || !tlVal)) {
+                xRange = [minr + 1, minc, maxr, minc];
+                yRange = [minr + 1, minc + 1, maxr, maxc];
+                lRange = [minr, minc + 1, minr, maxc];
+            }
+            else {
+                xRange = [minr, minc, maxr, minc];
+                yRange = [minr, minc + 1, maxr, maxc];
+            }
+        }
+        else {
+            yRange = [minr, minc, maxr, maxc];
+            if ((!isNullOrUndefined(trVal) && !isNumber(trVal) && !isDateTime(trVal))) {
+                lRange = [minr, minc, minr, maxc];
+                yRange[0] = yRange[0] + 1;
+            }
+            else if (isNullOrUndefined(tlVal) && (isSingleRow || isSingleCol)) {
+                lRange = [minr, minc, minr, maxc];
+                if (isSingleRow) {
+                    yRange[1] = yRange[1] + 1;
+                    lRange[3] = lRange[1];
+                }
+                else {
+                    yRange[0] = yRange[0] + 1;
+                }
+            }
+        }
+        return { xRange: xRange, yRange: yRange, lRange: lRange };
+    };
+    SpreadsheetChart.prototype.toIntrnlRange = function (range, sheetIdx) {
+        if (!range) {
+            range = getRangeIndexes[this.parent.sheets[sheetIdx].selectedRange];
+        }
+        else if (typeof (range) === 'string') {
+            range = getRangeIndexes[range];
+        }
+        return range;
+    };
+    SpreadsheetChart.prototype.getRangeData = function (options) {
+        options.sheetIdx = isNullOrUndefined(options.sheetIdx) ? this.parent.getActiveSheet().index : options.sheetIdx;
+        var sheet = this.parent.sheets[options.sheetIdx];
+        options.range = this.toIntrnlRange(options.range, options.sheetIdx);
+        var minc;
+        var minr;
+        var maxr;
+        var maxc;
+        var skipVirtualHiddenRow;
+        var isRowHidden;
+        var rowIdx = [];
+        var arr = [];
+        skipVirtualHiddenRow = false;
+        minr = options.range[0];
+        maxr = options.range[2];
+        maxc = options.range[3];
+        isRowHidden = isHiddenRow(sheet, minr);
+        if (skipVirtualHiddenRow && isRowHidden) {
+            maxr++;
+        }
+        else if (!isRowHidden) {
+            minc = skipVirtualHiddenRow ? 0 : options.range[1];
+            this.pushRowData(options, minr, minc, maxr, maxc, arr, rowIdx, true, options.isYvalue);
+        }
+        return arr;
+    };
+    SpreadsheetChart.prototype.pushRowData = function (options, minr, minc, maxr, maxc, arr, rowIdx, isDataSrcEnsured, isYvalue) {
+        var minCol = minc;
+        while (minr <= maxr) {
+            minc = minCol;
+            while (minc <= maxc) {
+                var value = '';
+                var cell = getCell(minr, minc, this.parent.getActiveSheet());
+                if (cell && cell.format && !isYvalue) {
+                    var forArgs = {
+                        value: cell && cell.value, format: cell && cell.format ? cell.format : 'General',
+                        formattedText: cell && cell.value, onLoad: true,
+                        type: cell && getTypeFromFormat(cell.format),
+                        rowIdx: minr.toString(), colIdx: minc.toString(),
+                        isRightAlign: false, cell: cell,
+                    };
+                    this.parent.notify(getFormattedCellObject, forArgs);
+                    value = forArgs.formattedText.toString();
+                }
+                else {
+                    value = this.parent.getValueRowCol(options.sheetIdx, minr + 1, minc + 1);
+                }
+                // = this.parent.getValueRowCol(options.sheetIdx, minr + 1, minc + 1);
+                arr.push({ value: value });
+                minc++;
+            }
+            minr++;
+        }
+        rowIdx.push(minr);
+    };
+    SpreadsheetChart.prototype.toArrayData = function (args) {
+        var prop = 'value';
+        var obj;
+        var i = 0;
+        var temp = [];
+        var len = args.length;
+        while (i < len) {
+            obj = args[i];
+            if (Object.keys(obj).length) {
+                if (prop in obj) {
+                    temp.push(obj[prop]);
+                }
+            }
+            else {
+                temp.push('');
+            }
+            i++;
+        }
+        return temp;
+    };
+    SpreadsheetChart.prototype.getVirtualXValues = function (limit) {
+        var i = 1;
+        var arr = [];
+        while (i < limit) {
+            arr.push(i.toString());
+            i++;
+        }
+        return arr;
+    };
+    // tslint:disable-next-line:max-func-body-length
+    SpreadsheetChart.prototype.processChartSeries = function (options, sheetIndex, xRange, yRange, lRange) {
+        options = options || {};
+        var seriesName = '';
+        var val;
+        var len;
+        var xValue;
+        var yValue;
+        var lValue;
+        var diff;
+        var pArr;
+        var pObj = {};
+        var j;
+        var inc;
+        var i = 0;
+        var yInc = 0;
+        var sArr = [];
+        var dtVal;
+        yValue = this.getRangeData({ range: yRange, sheetIdx: sheetIndex, skipFormula: true, isYvalue: true });
+        var rDiff = (yRange[2] - yRange[0]) + 1;
+        var cDiff = (yRange[3] - yRange[1]) + 1;
+        if (options.isSeriesInRows) {
+            xValue = lRange ? this.toArrayData(this.getRangeData({ range: lRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false })) :
+                this.getVirtualXValues(cDiff + 1);
+            if (xRange) {
+                lValue = this.toArrayData(this.getRangeData({ range: xRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false }));
+            }
+            diff = rDiff;
+        }
+        else {
+            xValue = xRange ? this.toArrayData(this.getRangeData({ range: xRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false })) :
+                this.getVirtualXValues(rDiff + 1);
+            if (lRange) {
+                lValue = this.toArrayData(this.getRangeData({ range: lRange, sheetIdx: sheetIndex, skipFormula: false, isYvalue: false }));
+            }
+            diff = cDiff;
+        }
+        len = xValue.length;
+        inc = options.isSeriesInRows ? 1 : diff;
+        while (i < diff) {
+            j = 0;
+            pArr = [];
+            yInc = options.isSeriesInRows ? yInc : i;
+            while (j < len) {
+                if (yValue[yInc]) {
+                    val = yValue[yInc].value;
+                    if (isNumber(val)) {
+                        val = Number(val);
+                    }
+                    else {
+                        dtVal = dateToInt(val);
+                        val = isNaN(dtVal) ? 0 : dtVal;
+                    }
+                    pArr.push({ x: xValue[j], y: val });
+                }
+                yInc += inc;
+                j++;
+            }
+            if (lValue && lValue.length > 0) {
+                seriesName = lValue[i];
+            }
+            else {
+                seriesName = 'series' + i;
+            }
+            if (options.type) {
+                var type = options.type;
+                if (type === 'Line' || type === 'StackingLine' || type === 'StackingLine100') {
+                    pObj = {
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        }
+                    };
+                }
+                else if (type === 'Scatter') {
+                    pObj = {
+                        dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString(), marker: {
+                            visible: false,
+                            width: 12,
+                            height: 12,
+                            shape: 'Circle'
+                        }
+                    };
+                }
+                else if (type === 'Pie' || type === 'Doughnut') {
+                    var innerRadius = options.type === 'Pie' ? '0%' : '40%';
+                    pObj = {
+                        dataSource: pArr,
+                        dataLabel: {
+                            visible: true, position: 'Inside', name: 'text', font: { fontWeight: '600' }
+                        },
+                        radius: '100%', xName: 'x', yName: 'y', startAngle: 0, endAngle: 360, innerRadius: innerRadius, explode: true,
+                        explodeOffset: '10%', explodeIndex: 0, name: 'Browser'
+                    };
+                }
+                else {
+                    pObj = { dataSource: pArr, type: options.type, xName: 'x', yName: 'y', name: seriesName.toString() };
+                }
+            }
+            sArr.push(pObj);
+            i++;
+        }
+        var retVal;
+        if (options.type) {
+            var type = options.type;
+            retVal = {
+                series: sArr, xRange: options.isSeriesInRows ? lRange : xRange,
+                yRange: yRange, lRange: options.isSeriesInRows ? xRange : lRange
+            };
+        }
+        return retVal;
+    };
+    SpreadsheetChart.prototype.primaryYAxisFormat = function (yRange) {
+        if (isNullOrUndefined(yRange)) {
+            return '{value}';
+        }
+        var type;
+        var cell = getCell(yRange[0], yRange[1], this.parent.getActiveSheet());
+        if (cell && cell.format) {
+            type = getTypeFromFormat(cell.format);
+            if (type === 'Accounting') {
+                return '${value}';
+            }
+            else if (type === 'Currency') {
+                return '${value}';
+            }
+            else if (type === 'Percentage') {
+                return '{value}%';
+            }
+        }
+        return '{value}';
+    };
+    SpreadsheetChart.prototype.focusChartRange = function (xRange, yRange, lRange) {
+        var border = ['e-rcborderright', 'e-rcborderbottom', 'e-vcborderright', 'e-vcborderbottom', 'e-bcborderright', 'e-bcborderbottom'];
+        this.clearBorder();
+        if (lRange) {
+            this.parent.notify(focusBorder, {
+                startcell: { rowIndex: lRange[0], colIndex: lRange[1] },
+                endcell: { rowIndex: lRange[2], colIndex: lRange[3] }, classes: [border[0], border[1]]
+            });
+        }
+        if (xRange) {
+            this.parent.notify(focusBorder, {
+                startcell: { rowIndex: xRange[0], colIndex: xRange[1] },
+                endcell: { rowIndex: xRange[2], colIndex: xRange[3] }, classes: [border[2], border[3]]
+            });
+        }
+        this.parent.notify(focusBorder, {
+            startcell: { rowIndex: yRange[0], colIndex: yRange[1] },
+            endcell: { rowIndex: yRange[2], colIndex: yRange[3] }, classes: [border[4], border[5]]
+        });
+    };
+    SpreadsheetChart.prototype.clearBorder = function () {
+        var mainCont = this.parent.getMainContent();
+        var border = ['e-rcborderright', 'e-rcborderbottom', 'e-vcborderright', 'e-vcborderbottom', 'e-bcborderright', 'e-bcborderbottom'];
+        for (var borderIdx = 0; borderIdx < border.length; borderIdx++) {
+            var eleColl = mainCont.querySelectorAll('.' + border[borderIdx]);
+            for (var tdIdx = 0; tdIdx < eleColl.length; tdIdx++) {
+                var td = eleColl[tdIdx];
+                td.classList.remove(border[borderIdx]);
+            }
+        }
+    };
+    // tslint:disable-next-line:max-func-body-length
+    SpreadsheetChart.prototype.initiateChartHandler = function (argsOpt) {
+        var isRangeSelect = true;
+        isRangeSelect = isNullOrUndefined(argsOpt.isInitCell) ? true : !argsOpt.isInitCell;
+        var l10n = this.parent.serviceLocator.getService(locale);
+        argsOpt.isUndoRedo = isNullOrUndefined(argsOpt.isUndoRedo) ? true : argsOpt.isUndoRedo;
+        var seriesModel;
+        argsOpt.isRefresh = isNullOrUndefined(argsOpt.isRefresh) ? false : argsOpt.isRefresh;
+        var sheet = this.parent.getActiveSheet();
+        var range = argsOpt.option.range ? (argsOpt.option.range.indexOf('!') > 0) ?
+            argsOpt.option.range.split('!')[1] : argsOpt.option.range.split('!')[0]
+            : this.parent.getActiveSheet().selectedRange;
+        var rangeIdx = getRangeIndexes(range);
+        var options = {};
+        var isRowLesser;
+        var xRange;
+        var yRange;
+        var lRange;
+        var eventArgs;
+        if (!this.parent.allowChart && sheet.isProtected) {
+            return seriesModel;
+        }
+        var sheetIdx = (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
+        var args = {
+            sheetIndex: sheetIdx, reqType: 'shape', type: 'actionBegin', shapeType: 'chart',
+            action: 'create', options: argsOpt.option, range: range, operation: 'create',
+        };
+        options = args.options;
+        range = args.range;
+        options = options || {};
+        var chartOptions;
+        var chartRange;
+        if (rangeIdx.length > 0) {
+            var rDiff = rangeIdx[2] - rangeIdx[0];
+            var cDiff = rangeIdx[3] - rangeIdx[1];
+            if (rDiff < cDiff) {
+                isRowLesser = true;
+            }
+        }
+        options.isSeriesInRows = isRowLesser ? true : options.isSeriesInRows ? options.isSeriesInRows : false;
+        argsOpt.dataSheetIdx = isNullOrUndefined(argsOpt.dataSheetIdx) ? sheetIdx : argsOpt.dataSheetIdx;
+        chartRange = this.processChartRange(rangeIdx, argsOpt.dataSheetIdx, options);
+        xRange = chartRange.xRange;
+        yRange = chartRange.yRange;
+        lRange = chartRange.lRange;
+        if (sheetIdx === this.parent.activeSheetIndex && isRangeSelect) {
+            this.focusChartRange(xRange, yRange, lRange);
+        }
+        chartOptions = this.processChartSeries(options, argsOpt.dataSheetIdx, xRange, yRange, lRange);
+        var primaryXAxis = {
+            majorGridLines: { width: 0 },
+            minorGridLines: { width: 0 },
+            majorTickLines: { width: 0 },
+            minorTickLines: { width: 0 },
+            lineStyle: { width: 0 },
+            valueType: 'Category'
+        };
+        var primaryYAxis = {
+            lineStyle: { width: 0 },
+            majorTickLines: { width: 0 },
+            majorGridLines: { width: 1 },
+            minorGridLines: { width: 1 },
+            minorTickLines: { width: 0 },
+            labelFormat: this.primaryYAxisFormat(yRange)
+        };
+        if (argsOpt.isRefresh) {
+            return chartOptions.series;
+        }
+        if (argsOpt.isUndoRedo) {
+            eventArgs = {
+                type: argsOpt.option.type, theme: argsOpt.option.theme, isSeriesInRows: argsOpt.option.isSeriesInRows,
+                range: argsOpt.option.range, id: argsOpt.option.id, posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
+            };
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
+            if (eventArgs.cancel) {
+                return [];
+            }
+            argsOpt.option.type = eventArgs.type;
+            argsOpt.option.theme = eventArgs.theme;
+            argsOpt.option.isSeriesInRows = eventArgs.isSeriesInRows;
+            argsOpt.option.range = eventArgs.range;
+            argsOpt.option.id = eventArgs.id;
+        }
+        var id = argsOpt.option.id + '_overlay';
+        var sheetIndex = (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
+            getSheetIndex(this.parent, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
+        var overlayObj = this.parent.serviceLocator.getService(overlay);
+        var eleRange = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
+        var element = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
+        element.classList.add('e-datavisualization-chart');
+        element.style.width = '482px';
+        element.style.height = '290px';
+        var chartContent = this.parent.createElement('div', {
+            id: argsOpt.option.id, className: argsOpt.option.id
+        });
+        if (argsOpt.option.type !== 'Pie' && argsOpt.option.type !== 'Doughnut') {
+            this.chart = new Chart({
+                primaryXAxis: primaryXAxis,
+                primaryYAxis: primaryYAxis,
+                chartArea: {
+                    border: {
+                        width: 0
+                    }
+                },
+                series: chartOptions.series,
+                tooltip: {
+                    enable: true
+                },
+                width: element.style.width,
+                height: element.style.height,
+                load: function (args) {
+                    var selectedTheme = argsOpt.option.theme;
+                    selectedTheme = selectedTheme ? selectedTheme : 'Material';
+                    args.chart.theme = (selectedTheme.charAt(0).toUpperCase() +
+                        selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+                }
+            });
+            this.chart.appendTo(chartContent);
+        }
+        else {
+            this.chart = new AccumulationChart({
+                series: chartOptions.series,
+                width: element.style.width,
+                height: element.style.height,
+                center: { x: '50%', y: '50%' },
+                enableSmartLabels: true,
+                enableAnimation: true,
+                legendSettings: { visible: true, position: 'Bottom' },
+                load: function (args) {
+                    var selectedTheme = location.hash.split('/')[1];
+                    selectedTheme = selectedTheme ? selectedTheme : 'Material';
+                    args.accumulation.theme = (selectedTheme.charAt(0).toUpperCase() +
+                        selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+                }
+            });
+            this.chart.appendTo(chartContent);
+        }
+        element.appendChild(chartContent);
+        if (argsOpt.isUndoRedo) {
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
+        }
+        return seriesModel;
+    };
+    SpreadsheetChart.prototype.deleteChart = function (args) {
+        this.clearBorder();
+        var chartElements = null;
+        var sheet;
+        if (isNullOrUndefined(args.id)) {
+            chartElements = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active');
+            args.id = chartElements ? chartElements.getElementsByClassName('e-control')[0].id : null;
+        }
+        else {
+            args.id = args.id.includes('overlay') ? args.id : args.id + '_overlay';
+            chartElements = document.getElementById(args.id);
+        }
+        if (isNullOrUndefined(args.id) || isNullOrUndefined(chartElements)) {
+            return;
+        }
+        else {
+            args.id = args.id.includes('overlay') ? args.id : args.id + '_overlay';
+        }
+        var rowIdx;
+        var colIdx;
+        var cellObj;
+        var prevCellChart;
+        var chartLength;
+        var isRemoveEle = false;
+        var chartObj;
+        for (var i = 0; i < this.parent.chartColl.length; i++) {
+            if (this.parent.chartColl[i].id === args.id.split('_overlay')[0]) {
+                chartObj = this.parent.chartColl[i];
+                break;
+            }
+        }
+        var eventArgs = {
+            id: chartObj.id, range: chartObj.range, type: chartObj.type, theme: chartObj.theme,
+            isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null, cancel: false
+        };
+        if (chartElements) {
+            this.parent.notify(deleteChartColl, { id: args.id });
+            var imgTop = { clientY: chartElements.offsetTop, isImage: true };
+            this.parent.notify(getRowIdxFromClientY, imgTop);
+            var imgleft = { clientX: chartElements.offsetLeft, isImage: true };
+            this.parent.notify(getColIdxFromClientX, imgleft);
+            isRemoveEle = true;
+            rowIdx = imgTop.clientY;
+            colIdx = imgleft.clientX;
+            sheet = this.parent.sheets[this.parent.activeSheetIndex];
+        }
+        else {
+            this.parent.notify(deleteChartColl, { id: args.id });
+            var sheetIndex = args.range && args.range.indexOf('!') > 0 ? getSheetIndex(this.parent, args.range.split('!')[0]) :
+                this.parent.activeSheetIndex;
+            var rangeVal = args.range ? args.range.indexOf('!') > 0 ? args.range.split('!')[1] : args.range.split('!')[0] :
+                this.parent.getActiveSheet().selectedRange;
+            var index = getRangeIndexes(rangeVal);
+            rowIdx = index[0];
+            colIdx = index[1];
+            sheet = this.parent.sheets[sheetIndex];
+        }
+        cellObj = getCell(rowIdx, colIdx, sheet);
+        if (cellObj) {
+            prevCellChart = cellObj.chart;
+        }
+        chartLength = prevCellChart ? prevCellChart.length : chartLength;
+        for (var i = 0; i < chartLength; i++) {
+            var overlayEle = document.getElementById(args.id);
+            var chartEleClassName = document.getElementById(prevCellChart[i].id);
+            if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
+                prevCellChart.splice(i, 1);
+            }
+        }
+        if (isRemoveEle) {
+            document.getElementById(args.id).remove();
+        }
+        setCell(rowIdx, colIdx, sheet, { chart: prevCellChart }, true);
+        eventArgs.posRange = getCellAddress(rowIdx, colIdx);
+        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'deleteChart' });
+    };
+    /**
+     * Removing event listener for success and failure
+     */
+    SpreadsheetChart.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(initiateChart, this.initiateChartHandler);
+            this.parent.off(refreshChartCellObj, this.refreshChartCellObj);
+            this.parent.off(updateChart, this.updateChartHandler);
+            this.parent.off(deleteChart, this.deleteChart);
+            this.parent.off(clearChartBorder, this.clearBorder);
+            this.parent.off(insertChart, this.insertChartHandler);
+        }
+    };
+    /**
+     * To Remove the event listeners.
+     */
+    SpreadsheetChart.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+        var chartEle = null;
+        if (this.chart) {
+            chartEle = this.chart.element;
+            this.chart.destroy();
+        }
+        if (chartEle) {
+            detach(chartEle);
+        }
+        this.chart = null;
+    };
+    /**
+     * Get the sheet chart module name.
+     */
+    SpreadsheetChart.prototype.getModuleName = function () {
+        return 'spreadsheetChart';
+    };
+    return SpreadsheetChart;
+}());
+
 /**
  * Export Spreadsheet integration modules
  */
@@ -33122,7 +35052,7 @@ var BasicModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function BasicModule() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace, Merge, ConditionalFormatting, SpreadsheetImage);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace, Merge, ConditionalFormatting, SpreadsheetImage, SpreadsheetChart);
     }
     /**
      * For internal use only - Get the module name.
@@ -33151,7 +35081,7 @@ var AllModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function AllModule() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, SpreadsheetImage, ConditionalFormatting);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, SpreadsheetImage, ConditionalFormatting, SpreadsheetChart);
     }
     /**
      * For internal use only - Get the module name.
@@ -33446,6 +35376,10 @@ var defaultLocale = {
     FLOOR: 'Rounds a number down to the nearest multiple of a given factor.',
     CEILING: 'Rounds a number up to the nearest multiple of a given factor.',
     PRODUCT: 'Multiplies a series of numbers and/or cells.',
+    INT: 'Returns a number to the nearest integer.',
+    ROUNDUP: 'Rounds a number away from zero.',
+    SUMPRODUCT: 'Returns sum of the product of given ranges of arrays.',
+    TODAY: 'Returns the current date as date value.',
     AVERAGE: 'Calculates average for the series of numbers and/or cells excluding text.',
     AVERAGEIF: 'Calculates average for the cells based on specified criterion.',
     AVERAGEIFS: 'Calculates average for the cells based on specified conditions.',
@@ -33656,6 +35590,27 @@ var defaultLocale = {
     FiveQuarters: '5 Quarters',
     FiveRatings: '5 Ratings',
     FiveBoxes: '5 Boxes',
+    Chart: 'Chart',
+    Column: 'Column',
+    Bar: 'Bar',
+    Area: 'Area',
+    Pie: 'Pie',
+    Doughnut: 'Doughnut',
+    PieAndDoughnut: 'Pie/Doughnut',
+    Line: 'Line',
+    Radar: 'Radar',
+    Scatter: 'Scatter',
+    ChartDesign: 'Chart Design',
+    ClusteredColumn: 'Clustered Column',
+    StackedColumn: 'Stacked Column',
+    StackedColumn100: '100% Stacked Column',
+    ClusteredBar: 'Clustered Bar',
+    StackedBar: 'Stacked Bar',
+    StackedBar100: '100% Stacked Bar',
+    StackedArea: 'Stacked Area',
+    StackedArea100: '100% Stacked Area',
+    StackedLine: 'Stacked Line',
+    StackedLine100: '100% Stacked Line',
 };
 
 /**
@@ -34461,10 +36416,17 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         args.td = this.element.cloneNode();
         args.td.className = 'e-cell';
         attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        var sheet = this.parent.getActiveSheet();
         if (this.checkMerged(args)) {
             return args.td;
         }
-        args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        var compiledTemplate = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        if (typeof compiledTemplate === 'string') {
+            args.td.innerHTML = compiledTemplate;
+        }
+        else {
+            args.td.appendChild(compiledTemplate);
+        }
         args.isRefresh = false;
         this.update(args);
         if (args.cell && args.td) {
@@ -34495,6 +36457,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         }
         return evtArgs.element;
     };
+    // tslint:disable-next-line:max-func-body-length
     CellRenderer.prototype.update = function (args) {
         if (args.isRefresh) {
             if (args.td.rowSpan) {
@@ -34540,6 +36503,9 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                     style = args.cell.style;
                 }
             }
+            if (args.cell.chart && args.cell.chart.length > 0) {
+                this.parent.notify(setChart, { chart: args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx) });
+            }
             if (args.cell.hyperlink) {
                 this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
             }
@@ -34579,6 +36545,11 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.allowConditionalFormat && args.lastCell) {
             this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell });
+        }
+        if (this.parent.allowChart && args.lastCell) {
+            this.parent.notify(refreshChart, {
+                cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex
+            });
         }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
             this.parent.notify(applyCellFormat, {
@@ -34653,15 +36624,22 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         return '';
     };
     CellRenderer.prototype.compileCellTemplate = function (template) {
-        var templateString;
-        if (template.trim().indexOf('#') === 0) {
-            templateString = document.querySelector(template).innerHTML.trim();
+        var compiledStr;
+        if (typeof template === 'string') {
+            var templateString = void 0;
+            if (template.trim().indexOf('#') === 0) {
+                templateString = document.querySelector(template).innerHTML.trim();
+            }
+            else {
+                templateString = template;
+            }
+            compiledStr = compile(templateString);
+            return compiledStr({}, null, null, '', true)[0].outerHTML;
         }
         else {
-            templateString = template;
+            compiledStr = compile(template);
+            return compiledStr({}, null, null, '')[0];
         }
-        var compiledStr = compile(templateString);
-        return compiledStr({}, null, null, '', true)[0].outerHTML;
     };
     CellRenderer.prototype.updateRowHeight = function (args) {
         if (args.cell && args.cell.children.length) {
@@ -35108,7 +37086,7 @@ var ActionEvents = /** @__PURE__ @class */ (function () {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
             || args.action === 'beforeWrap' || args.action === 'beforeReplace'
-            || args.action === 'beforeClear' || args.action === 'beforeInsertImage') {
+            || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart') {
             this.parent.notify(setActionData, { args: args });
         }
     };
@@ -35164,8 +37142,6 @@ var Overlay = /** @__PURE__ @class */ (function () {
         this.parent.getMainContent().appendChild(div);
         this.renderResizeHandles(div);
         this.addEventListener(div);
-        this.sheetTop = document.getElementById(this.parent.element.id + '_sheet_panel').getClientRects()[0].top + 31;
-        this.sheetLeft = document.getElementById(this.parent.element.id + '_sheet_panel').getClientRects()[0].left + 30;
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
         this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
         return div;
@@ -35184,12 +37160,15 @@ var Overlay = /** @__PURE__ @class */ (function () {
             switch (this.resizer) {
                 case 'e-ss-overlay-t':
                     var height1 = Math.max(this.originalMouseY - e.clientY + this.originalHeight, 20);
-                    var top_1 = e.clientY - ((this.originalMouseY - this.originalResizeTop) + this.sheetTop);
+                    var top_1 = e.clientY - (this.originalMouseY - this.originalResizeTop);
                     if (height1 > 180 && top_1 > -1) {
                         overlayElem.style.height = height1 + 'px';
                         overlayElem.style.top = top_1 + 'px';
                         this.resizedReorderTop = e.clientX; // resized divTop
                         this.currenHeight = height1;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem
+                        });
                     }
                     break;
                 case 'e-ss-overlay-r':
@@ -35197,6 +37176,9 @@ var Overlay = /** @__PURE__ @class */ (function () {
                     if (width1 > 180) {
                         overlayElem.style.width = width1 + 'px';
                         this.currentWidth = width1;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem
+                        });
                     }
                     break;
                 case 'e-ss-overlay-b':
@@ -35204,16 +37186,22 @@ var Overlay = /** @__PURE__ @class */ (function () {
                     if (height2 > 180) {
                         overlayElem.style.height = height2 + 'px';
                         this.currenHeight = height2;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem
+                        });
                     }
                     break;
                 case 'e-ss-overlay-l':
                     var width2 = Math.max(this.originalMouseX - e.clientX + this.originalWidth, 20);
-                    var left = e.clientX - ((this.originalMouseX - this.originalResizeLeft) + this.sheetLeft);
+                    var left = e.clientX - (this.originalMouseX - this.originalResizeLeft);
                     if (width2 > 180 && left > -1) {
                         overlayElem.style.width = width2 + 'px';
                         overlayElem.style.left = left + 'px';
                         this.resizedReorderLeft = left; //resized divLeft
                         this.currentWidth = width2;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem
+                        });
                     }
                     break;
             }
@@ -35234,9 +37222,16 @@ var Overlay = /** @__PURE__ @class */ (function () {
         }
     };
     Overlay.prototype.overlayMouseUpHandler = function (e) {
+        if (this.parent.getActiveSheet().isProtected) {
+            return;
+        }
         this.isOverlayClicked = false;
         this.isResizerClicked = false;
         var elem = e.target;
+        if (!elem.classList.contains('e-ss-overlay')) {
+            elem = closest(e.target, '.e-datavisualization-chart') ?
+                closest(e.target, '.e-datavisualization-chart') : elem;
+        }
         var eventArgs = {
             prevTop: this.originalReorderTop, prevLeft: this.originalReorderLeft,
             currentTop: this.resizedReorderTop ? this.resizedReorderTop : this.originalReorderTop, currentLeft: this.resizedReorderLeft ?
@@ -35247,12 +37242,20 @@ var Overlay = /** @__PURE__ @class */ (function () {
         if (elem.id.indexOf('overlay') > 0 || elem.classList.contains('e-ss-resizer')) {
             if (this.originalReorderTop !== this.resizedReorderTop || this.originalReorderLeft !== this.resizedReorderLeft) {
                 eventArgs.id = elem.id;
+                if (elem.classList.contains('e-datavisualization-chart')) {
+                    eventArgs.requestType = 'chartRefresh';
+                    this.parent.notify(refreshChartCellObj, eventArgs);
+                }
                 this.parent.notify(refreshImgCellObj, eventArgs);
                 this.resizedReorderTop = this.originalReorderTop;
                 this.resizedReorderLeft = this.originalReorderLeft;
             }
             else if (this.currenHeight !== this.originalHeight || this.originalWidth !== this.currentWidth) {
                 eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement.id;
+                if (elem.classList.contains('e-datavisualization-chart')) {
+                    eventArgs.requestType = 'chartRefresh';
+                    this.parent.notify(refreshChartCellObj, eventArgs);
+                }
                 this.parent.notify(refreshImgCellObj, eventArgs);
                 this.originalHeight = this.currenHeight;
                 this.originalWidth = this.currentWidth;
@@ -35260,11 +37263,15 @@ var Overlay = /** @__PURE__ @class */ (function () {
         }
     };
     Overlay.prototype.overlayClickHandler = function (e) {
+        if (this.parent.getActiveSheet().isProtected) {
+            return;
+        }
         this.isOverlayClicked = true;
         var target = e.target;
         var overlayElem = e.target;
         if (!target.classList.contains('e-ss-overlay')) {
-            overlayElem = target.parentElement;
+            overlayElem = closest(e.target, '.e-datavisualization-chart') ?
+                closest(e.target, '.e-datavisualization-chart') : target.parentElement;
         }
         this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
         this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop
@@ -35286,6 +37293,9 @@ var Overlay = /** @__PURE__ @class */ (function () {
             this.originalWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
             this.originalHeight = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('height').replace('px', ''));
             this.isResizerClicked = true;
+        }
+        if (overlayElem.classList.contains('e-datavisualization-chart')) {
+            this.parent.notify(focusChartBorder, { id: overlayElem.id });
         }
     };
     Overlay.prototype.renderResizeHandles = function (div) {
@@ -35370,7 +37380,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
             bottomIndex: 0, rightIndex: 0
         };
         _this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage, ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat, SpreadsheetChart, WorkbookChart);
         if (element) {
             _this.appendTo(element);
         }
@@ -35563,11 +37573,18 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     /**
      * To replace the specified cell value.
      * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
-     * @param {string} args.replaceValue - Specifies the value to be replaced.
+     * @param {string} args.replaceValue - Specifies the replacing value.
      * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
+     * @param {string} args.value - Specifies the value to be replaced
      * @return {void}
      */
     Spreadsheet.prototype.replace = function (args) {
+        args = {
+            value: args.value, mode: args.mode ? args.mode : 'Sheet', isCSen: args.isCSen ? args.isCSen : false,
+            isEMatch: args.isEMatch ? args.isEMatch : false, searchBy: args.searchBy ? args.searchBy : 'By Row',
+            replaceValue: args.replaceValue, replaceBy: args.replaceBy,
+            sheetIndex: args.sheetIndex ? args.sheetIndex : this.activeSheetIndex, findOpt: args.findOpt ? args.findOpt : ''
+        };
         _super.prototype.replaceHandler.call(this, args);
     };
     /**
@@ -35729,6 +37746,8 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @param {string} address - Specifies the range address.
      */
     Spreadsheet.prototype.copy = function (address) {
+        var activeAddress = this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
+        address = !isNullOrUndefined(address) ? address : activeAddress;
         var promise = new Promise(function (resolve, reject) { resolve((function () { })()); });
         this.notify(copy, address ? {
             range: getIndexesFromAddress(address),
@@ -35750,11 +37769,12 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To update the action which need to perform.
-     * @param {string} options - event options.
+     * @param {string} options - It describes an action and event args to perform.
+     * @param {string} options.action - specifies an action.
+     * @param {string} options.eventArgs - specifies an args to perform an action.
      */
     Spreadsheet.prototype.updateAction = function (options) {
-        var model = JSON.parse(options);
-        this.notify(collaborativeUpdate, { action: model.action, eventArgs: model.eventArgs });
+        updateAction(options, this);
     };
     Spreadsheet.prototype.setHeight = function () {
         if (this.height.toString().indexOf('%') > -1) {
@@ -36097,7 +38117,19 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * This method is used to add conditional formatting.
-     * @param {CFRulesModel} rules - specifies the conditional formatting rule.
+     * @param  {string} type - Conditional formatting HighlightCell, TopBottom, DataBar, ColorScale, IconSet Type.
+     * HighlightCell- 'GreaterThan' | 'LessThan' | 'Between' | 'EqualTo' | 'ContainsText' | 'DateOccur' | 'Duplicate' | 'Unique',
+     * TopBottom - 'Top10Items' | 'Bottom10Items' | 'Top10Percentage' | 'Bottom10Percentage' | 'BelowAverage' | 'AboveAverage',
+     * DataBar - 'BlueDataBar' | 'GreenDataBar' | 'RedDataBar' | 'OrangeDataBar' | 'LightBlueDataBar' | 'PurpleDataBar',
+     * ColorScale - 'GYRColorScale' | 'RYGColorScale' | 'GWRColorScale' | 'RWGColorScale' | 'BWRColorScale' | 'RWBColorScale' |
+     * 'WRColorScale' | 'RWColorScale' | 'GWColorScale' | 'WGColorScale' | 'GYColorScale' | 'YGColorScale',
+     * IconSet - 'ThreeArrows' | 'ThreeArrowsGray' | 'FourArrowsGray' | 'FourArrows' | 'FiveArrowsGray' | 'FiveArrows' |
+     * 'ThreeTrafficLights1' | 'ThreeTrafficLights2' | 'ThreeSigns' | 'FourTrafficLights' | 'FourRedToBlack' | 'ThreeSymbols' |
+     * 'ThreeSymbols2' | 'ThreeFlags' | 'FourRating' | 'FiveQuarters' | 'FiveRating' | 'ThreeTriangles' | 'ThreeStars' | 'FiveBoxes';
+     * @param  {string} cFColor - Pass the cFcolor to set the conditional formatting.
+     * CFColor - 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT'.
+     * @param  {string} value - Pass the value to set the conditional formatting.
+     * @param  {string} range - Pass the range to set the conditional formatting.
      */
     Spreadsheet.prototype.conditionalFormat = function (conditionalFormat) {
         _super.prototype.conditionalFormat.call(this, conditionalFormat);
@@ -36972,5 +39004,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, refreshRibbonIcons, checkIsFormula, isCellReference, isChar, isLocked, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, updateTableWidth, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, checkIsFormula, isCellReference, isChar, inRange, isLocked, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

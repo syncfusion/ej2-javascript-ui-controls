@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
-import { workbookEditOperation, checkDateFormat, workbookFormulaOperation } from '../common/event';
+import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart } from '../common/event';
 import { getRangeIndexes } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
@@ -131,11 +131,14 @@ export class WorkbookEdit {
                 }
             }
         } else {
-            if (value.toString().indexOf(this.decimalSep) > -1) {
+            if (value && value.toString().indexOf(this.decimalSep) > -1) {
                 value = this.checkDecimalPoint(value);
             }
             cell.value = value;
         }
         this.parent.setUsedRange(range[0], range[1]);
+        if (this.parent.allowChart) {
+            this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
+        }
     }
 }

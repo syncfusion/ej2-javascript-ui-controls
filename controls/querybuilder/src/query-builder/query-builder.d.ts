@@ -45,7 +45,7 @@ export declare class Columns extends ChildProperty<Columns> {
      * Specifies the template for value field such as slider or any other widgets.
      * @default null
      */
-    template: TemplateColumn;
+    template: TemplateColumn | string;
     /**
      * Specifies the validation for columns (text, number and date).
      * @default  { isRequired: true , min: 0, max: Number.MAX_VALUE }
@@ -399,6 +399,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getOperatorIndex;
     private getPreviousItemData;
     private renderValues;
+    private setColumnTemplate;
     private updateValues;
     private updateRules;
     private filterRules;
@@ -441,10 +442,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getParentGroup;
     private deleteGroup;
     private deleteGroupSuccessCallBack;
+    private isPlatformTemplate;
     private deleteRule;
     private deleteRuleSuccessCallBack;
     private setGroupRules;
     private keyBoardHandler;
+    private clearQBTemplate;
     private disableRuleCondition;
     /**
      * return the valid rule or rules collection.
@@ -535,7 +538,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getOperator;
     private getTypeFromColumn;
     private processParser;
-    private isBlazor;
 }
 export interface Level {
     [key: string]: number[];
@@ -616,4 +618,6 @@ export interface ActionEventArgs extends BaseEventArgs {
         [key: string]: Object;
     }[];
     operatorFields?: Object;
+    field?: string;
+    operator?: string;
 }

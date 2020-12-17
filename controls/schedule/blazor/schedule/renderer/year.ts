@@ -112,6 +112,7 @@ export class Year extends ViewBase implements IRenderer {
                         cellTop = cellData.offsetTop + cellHeader + (eventHeight * levelIndex) + EVENT_GAP;
                         height = eventHeight;
                         width = cellWidth - 2;
+                        this.parent.eventBase.wireAppointmentEvents(ele);
                     } else {
                         cellTop = cellData.offsetTop + (cellHeight - ele.offsetHeight);
                         width = cellWidth - 2;

@@ -103,6 +103,7 @@ export const setValidation: string = 'setValidation';
 export const addHighlight: string = 'addHighlight';
 /** @hidden */
 export const dataValidate: string = 'dataValidate';
+
 /** @hidden */
 export const findNext: string = 'findNext';
 /** @hidden */
@@ -180,4 +181,20 @@ export const clearCells: string = 'clearCells';
 /** @hidden */
 export const setImage: string = 'setImage';
 /** @hidden */
+export const setChart: string = 'setChart';
+/** @hidden */
+export const initiateChart: string = 'initiateChart';
+/** @hidden */
 export const refreshRibbonIcons: string = 'refreshRibbonIcons';
+/** @hidden */
+export const refreshChart: string = 'refreshChart';
+/** @hidden */
+export const refreshChartSize: string = 'refreshChartSize';
+/** @hidden */
+export const updateChart: string = 'updateChart';
+/** @hidden */
+export const deleteChartColl: string = 'deleteChartColl';
+/** @hidden */
+export const initiateChartModel: string = 'initiateChartModel';
+/** @hidden */
+export const focusChartBorder: string = 'focusChartBorder';

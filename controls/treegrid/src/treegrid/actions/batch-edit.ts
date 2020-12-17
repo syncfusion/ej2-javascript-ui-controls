@@ -4,7 +4,7 @@ import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, extendArray } from '../utils';
-import { BeforeBatchSaveArgs, BeforeBatchDeleteArgs, getUid, CellSaveArgs } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, BeforeBatchDeleteArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row } from '@syncfusion/ej2-grids';
 import { BatchAddArgs, BeforeBatchAddArgs, SaveEventArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -50,6 +50,7 @@ export class BatchEdit {
         this.parent.on(events.beforeBatchSave, this.beforeBatchSave, this);
         this.parent.on('batchPageAction', this.batchPageAction, this);
         this.parent.on('batchCancelAction', this.batchCancelAction, this);
+        this.parent.grid.on('immutable-batch-cancel', this.immutableBatchAction, this);
     }
       /**
        * @hidden
@@ -64,6 +65,7 @@ export class BatchEdit {
         this.parent.off(events.beforeBatchSave, this.beforeBatchSave);
         this.parent.off('batchPageAction', this.batchPageAction);
         this.parent.off('batchCancelAction', this.batchCancelAction);
+        this.parent.grid.off('immutable-batch-cancel', this.immutableBatchAction);
       }
       /**
        * To destroy the editModule 
@@ -519,6 +521,18 @@ private getActualRowObjectIndex(index: number): number {
             this.batchChildCount = 0;
           }
   return index;
+}
+
+private immutableBatchAction(e: { rows: Row<Column>[], args?: NotifyArgs }): void {
+  e.args.cancel = true;
+  let changes: Object = this.parent.grid.getBatchChanges();
+  let addedRecords: Object[] = []; let index: string = 'index';
+  if (Object.keys(changes).length) {
+    addedRecords = (<{ addedRecords?: Object[] }>changes).addedRecords;
+  }
+  for (let i: number = 0; i < addedRecords.length; i++) {
+    e.rows.splice(addedRecords[i][index], 1);
+  }
 }
 
 }

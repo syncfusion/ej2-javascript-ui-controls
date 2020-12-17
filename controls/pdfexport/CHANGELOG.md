@@ -2,23 +2,7 @@
 
 ## [Unreleased]
 
-## 18.3.53 (2020-12-08)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Rendering issue with Line break is fixed.
-
-## 18.2.45 (2020-07-14)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Rendering issue with Pdf number style is fixed.
-
-## 18.2.44 (2020-07-07)
+## 18.4.30 (2020-12-17)
 
 ### Pdf Export
 
@@ -33,6 +17,10 @@
 - Rendering issue with exceeded image into PDF export is fixed.
 
 - Rendering issue with PDF Grid border into PDF export is fixed.
+
+- Rendering issue with Pdf number style is fixed.
+
+- Rendering issue with Line break is fixed.
 
 #### New Features
 

@@ -298,6 +298,11 @@ export class HtmlEditor {
                 case 'FontColor':
                 case 'BackgroundColor':
                     break;
+                case 'File':
+                    this.parent.notify(events.renderFileManager, {
+                        member: 'fileManager', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
+                    break;
                 default:
                     this.parent.formatter.process(this.parent, args, args.originalEvent, null);
                     break;

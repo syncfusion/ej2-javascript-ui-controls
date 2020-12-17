@@ -1,4 +1,7 @@
-import { addClass, Browser, EventHandler, closest, extend, formatUnit, setStyleAttribute, isNullOrUndefined } from '@syncfusion/ej2-base';
+import {
+    addClass, Browser, EventHandler, closest, remove, extend, formatUnit,
+    setStyleAttribute, isNullOrUndefined
+} from '@syncfusion/ej2-base';
 import { ResizeEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import * as util from '../base/util';
@@ -96,11 +99,13 @@ export class Resize extends ActionBase {
             this.actionObj.start = eventObj.startTime as Date;
             this.actionObj.end = eventObj.endTime as Date;
             this.actionObj.originalElement = this.getOriginalElement(this.actionObj.element);
-            if (this.parent.options.currentView === 'Month' ||
+            if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear' ||
                 (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.daysVariation = -1;
                 this.cloneEventDetail = (this.actionObj.element as HTMLElement).querySelector('.e-appointment-details');
-                this.monthEvent = new MonthEvent(this.parent);
+                if (this.parent.options.currentView !== 'TimelineYear') {
+                    this.monthEvent = new MonthEvent(this.parent);
+                }
             }
             let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
@@ -118,14 +123,17 @@ export class Resize extends ActionBase {
             return;
         }
         let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
-        this.actionObj.pageX = pages.pageX;
-        this.actionObj.pageY = pages.pageY;
+        let doc: HTMLElement = document.documentElement;
+        let left: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+        let top: number = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+        this.actionObj.pageX = pages.pageX - left;
+        this.actionObj.pageY = pages.pageY - top;
         this.updateScrollPosition(e);
         this.updateResizingDirection(e);
     }
 
     public updateResizingDirection(e: MouseEvent & TouchEvent): void {
-        if (this.parent.options.currentView === 'Month' ||
+        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear' ||
             (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
             this.monthResizing();
             return;
@@ -184,18 +192,83 @@ export class Resize extends ActionBase {
             parseInt(td.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
         let startTime: Date = (<Date>this.actionObj.event.startTime);
         let endTime: Date = (<Date>this.actionObj.event.endTime);
-        if ((!this.parent.options.enableRtl && this.resizeEdges.left) || (this.parent.options.enableRtl && this.resizeEdges.right)) {
+        if ((!this.parent.options.enableRtl && this.resizeEdges.left) || (this.parent.options.enableRtl && this.resizeEdges.right)
+            || this.resizeEdges.top) {
             startTime = resizeTime;
-        } else if ((!this.parent.options.enableRtl && this.resizeEdges.right) || (this.parent.options.enableRtl && this.resizeEdges.left)) {
+        } else if ((!this.parent.options.enableRtl && this.resizeEdges.right) || (this.parent.options.enableRtl && this.resizeEdges.left)
+            || this.resizeEdges.bottom) {
             endTime = util.addDays(resizeTime, 1);
         }
         if (isSameCell && startTime < endTime) {
             this.actionObj.start = startTime;
             this.actionObj.end = endTime;
             let event: { [key: string]: Object } = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
-            this.dynamicEventsRendering(event);
+            if (this.parent.options.currentView === 'TimelineYear') {
+                this.yearEventsRendering(event);
+            } else {
+                this.dynamicEventsRendering(event);
+            }
             this.updateOriginalElement(this.actionObj.clone);
+        } else {
+            if (this.parent.options.currentView === 'TimelineYear') {
+                let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+                for (let wrapper of eventWrappers) {
+                    this.actionObj.cloneElement.push(wrapper);
+                }
+            }
         }
+    }
+
+    private yearEventsRendering(event: { [key: string]: Object }): void {
+        let eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+        for (let wrapper of eventWrappers) {
+            remove(wrapper);
+        }
+        let endDate: Date = new Date(event.endTime as Date);
+        let monthDiff: number = 0;
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            monthDiff = this.getMonthDiff(event.startTime as Date, util.addDays(endDate, -1));
+        }
+        for (let i: number = 0; i <= monthDiff; i++) {
+            let eventObj: { [key: string]: Object };
+            if (this.parent.activeViewOptions.group.resources.length === 0) {
+                eventObj = this.getEventCount(event, this.actionObj.start.getMonth() + i);
+            } else {
+                eventObj = extend({}, event, null, true) as { [key: string]: Object };
+                endDate = this.resizeEdges.left || this.resizeEdges.right ? util.addDays(endDate, -1) : endDate;
+                eventObj.count = this.getMonthDiff(event.startTime as Date, endDate) + (this.resizeEdges.top ? 0 : 1);
+            }
+            this.dynamicYearlyEventsRendering(eventObj, true);
+        }
+    }
+
+    private getMonthDiff(startDate: Date, endDate: Date): number {
+        let months: number;
+        months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+        months -= startDate.getMonth();
+        months += endDate.getMonth();
+        return months <= 0 ? 0 : months;
+    }
+
+    public getEventCount(eventObj: { [key: string]: Object }, month: number): { [key: string]: Object } {
+        let monthStart: Date = new Date(this.parent.options.selectedDate.getFullYear(), month, 1);
+        let monthEnd: Date = util.addDays(new Date(this.parent.options.selectedDate.getFullYear(), month + 1, 0), 1);
+        let eventData: { [key: string]: Object } = extend({}, eventObj, null, true) as { [key: string]: Object };
+        let eventStart: Date = eventData.startTime as Date;
+        let eventEnd: Date = eventData.endTime as Date;
+        let count: number = 1;
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData.startTime = monthStart;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData.endTime = monthEnd;
+        }
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            count = Math.ceil(((eventData.endTime as Date).getTime() -
+                (eventData.startTime as Date).getTime()) / util.MS_PER_DAY);
+        }
+        eventData.count = count;
+        return eventData;
     }
 
     private resizeStop(): void {

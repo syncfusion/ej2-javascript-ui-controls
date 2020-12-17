@@ -11,7 +11,7 @@ import {
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
     CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox,
-    ContentControlProperties
+    ContentControlProperties, FootnoteElementBox
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -246,6 +246,8 @@ export class SfdtExport {
         this.writeComments(this.documentHelper);
         this.writeRevisions(this.documentHelper);
         this.writeCustomXml(this.documentHelper);
+        this.footnotes(this.documentHelper);
+        this.endnotes(this.documentHelper);
         let doc: Document = this.document;
         this.clear();
         return doc;
@@ -353,6 +355,17 @@ export class SfdtExport {
         section.sectionFormat.headerDistance = bodyWidget.sectionFormat.headerDistance;
         section.sectionFormat.footerDistance = bodyWidget.sectionFormat.footerDistance;
         section.sectionFormat.bidi = bodyWidget.sectionFormat.bidi;
+        if (!isNullOrUndefined(bodyWidget.page.endnoteWidget || bodyWidget.page.footnoteWidget)) {
+            section.sectionFormat.restartPageNumbering = bodyWidget.sectionFormat.restartPageNumbering;
+            section.sectionFormat.pageStartingNumber = bodyWidget.sectionFormat.pageStartingNumber;
+            section.sectionFormat.endnoteNumberFormat = bodyWidget.sectionFormat.endnoteNumberFormat;
+            section.sectionFormat.footNoteNumberFormat = bodyWidget.sectionFormat.footNoteNumberFormat;
+            section.sectionFormat.restartIndexForFootnotes = bodyWidget.sectionFormat.restartIndexForFootnotes;
+            section.sectionFormat.restartIndexForEndnotes = bodyWidget.sectionFormat.restartIndexForEndnotes;
+            section.sectionFormat.initialFootNoteNumber = bodyWidget.sectionFormat.initialFootNoteNumber;
+            section.sectionFormat.initialEndNoteNumber = bodyWidget.sectionFormat.initialEndNoteNumber;
+
+        }
         section.blocks = [];
         section.headersFooters = {};
         return section;
@@ -577,6 +590,10 @@ export class SfdtExport {
                 }
             }
             if (element instanceof ListTextElementBox) {
+                continue;
+            }
+            if (element instanceof FootnoteElementBox) {
+                inlines.push(this.writeInlinesFootNote(paragraph, element, line, inlines));
                 continue;
             }
             if (element instanceof ContentControl || this.startContent || this.blockContent) {
@@ -1072,7 +1089,7 @@ export class SfdtExport {
                 }
                 contentControl = true;
             }
-            if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started  && !contentControl) {
+            if (element instanceof TextElementBox && element.hasOwnProperty('contentControlProperties') && started && !contentControl) {
                 isContentStarted = true;
             }
             if (element instanceof ContentControl) {
@@ -1119,6 +1136,20 @@ export class SfdtExport {
             }
         }
     }
+    private writeInlinesFootNote(paragraph: any, element: any, line: any, inlines: any): any {
+        let inline: any = {};
+        inline.footnoteType = element.footnoteType;
+        inline.characterFormat = {};
+        inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
+        inline.blocks = [];
+        for (let i: number = 0; i < element.blocks.length; i++) {
+            this.writeBlock(element.blocks[i], 0, inline.blocks);
+        }
+        inline.symbolCode = element.symbolCode;
+        inline.symbolFontName = element.symbolFontName;
+        inline.customMarker = element.customMarker;
+        return inline;
+    }
     private writeInlinesContentControl(element: ElementBox, lineWidget: LineWidget, inlines: any, i: number): any {
         if (element instanceof ContentControl) {
             if (element.contentControlWidgetType === 'Block') {
@@ -1155,9 +1186,9 @@ export class SfdtExport {
                     this.contentInline = [];
                 }
                 if (this.multipleLineContent) {
-                   inline = inlines[inlines.length - 1];
-                   this.nestedContentProperty(lineWidget.children[i + 1], inline);
-                   this.multipleLineContent = false;
+                    inline = inlines[inlines.length - 1];
+                    this.nestedContentProperty(lineWidget.children[i + 1], inline);
+                    this.multipleLineContent = false;
                 }
                 this.nestedContent = false;
                 return true;
@@ -1458,6 +1489,59 @@ export class SfdtExport {
         tableFormat.bidi = wTableFormat.hasValue('bidi') ? wTableFormat.bidi : undefined;
         tableFormat.allowAutoFit = wTableFormat.hasValue('allowAutoFit') ? wTableFormat.allowAutoFit : undefined;
         return tableFormat;
+    }
+    private footnotes(documentHelper: DocumentHelper): void {
+        for (let i: number = 0; i < documentHelper.footnotes.separator.length; i++) {
+            this.seprators(documentHelper);
+        }
+    }
+    private seprators(documentHelper: any): any {
+        if (documentHelper.footnotes.separator.length > 0) {
+            this.document.footnotes = {};
+            this.document.footnotes.separator = [];
+            for (let i: number = 0; i < documentHelper.footnotes.separator.length; i++) {
+                this.writeBlock(documentHelper.footnotes.separator[i], 0, this.document.footnotes.separator);
+            }
+        }
+        if (documentHelper.footnotes.continuationSeparator.length > 0) {
+            this.document.footnotes.continuationSeparator = [];
+            for (let i: number = 0; i < documentHelper.footnotes.continuationSeparator.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                this.writeBlock(documentHelper.footnotes.continuationSeparator[i], 0, this.document.footnotes.continuationSeparator);
+            }
+        }
+        if (documentHelper.footnotes.continuationNotice.length > 0) {
+            this.document.footnotes.continuationNotice = [];
+            for (let i: number = 0; i < documentHelper.footnotes.continuationNotice.length; i++) {
+                this.writeBlock(documentHelper.footnotes.continuationNotice[i], 0, this.document.footnotes.continuationNotice);
+            }
+        }
+    }
+    private endnotes(documentHelper: DocumentHelper): void {
+        for (let i: number = 0; i < this.documentHelper.endnotes.separator.length; i++) {
+            this.endnoteSeparator(documentHelper);
+        }
+    }
+    private endnoteSeparator(documentHelper: DocumentHelper): void {
+        if (documentHelper.endnotes.separator.length > 0) {
+            this.document.endnotes = {};
+            this.document.endnotes.separator = [];
+            for (let i: number = 0; i < documentHelper.endnotes.separator.length; i++) {
+                this.writeBlock(documentHelper.endnotes.separator[i], 0, this.document.endnotes.separator);
+            }
+        }
+        if (documentHelper.endnotes.continuationSeparator.length > 0) {
+            this.document.endnotes.continuationSeparator = [];
+            for (let i: number = 0; i < documentHelper.endnotes.continuationSeparator.length; i++) {
+                this.writeBlock(documentHelper.endnotes.continuationSeparator[i], 0, this.document.endnotes.continuationSeparator);
+            }
+        }
+        if (documentHelper.endnotes.continuationNotice.length > 0) {
+            this.document.endnotes.continuationNotice = [];
+            for (let i: number = 0; i < documentHelper.endnotes.continuationNotice.length; i++) {
+                this.writeBlock(documentHelper.endnotes.continuationNotice[i], 0, this.document.endnotes.continuationNotice);
+            }
+        }
     }
     private writeStyles(documentHelper: DocumentHelper): void {
         let styles: Object[] = [];

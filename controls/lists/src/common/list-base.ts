@@ -134,7 +134,7 @@ export namespace ListBase {
             // tslint:disable-next-line
             return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options,
                 // tslint:disable-next-line
-                ariaAttributes.level, isSingleLevel, componentInstance);
+                 ariaAttributes.level, isSingleLevel, componentInstance);
         }
     }
 
@@ -607,31 +607,9 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    // tslint:disable-next-line
-                    let compiledElement: any = compiledString(
-                        curItem,
-                        componentInstance,
-                        'headerTemplate',
-                        currentID,
-                        !!curOpt.isStringTemplate,
-                        null,
-                        li);
-                    if (compiledElement) {
-                        append(compiledElement, li);
-                    }
+                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                 } else {
-                    // tslint:disable-next-line
-                    let compiledElement: any = compiledString(
-                        curItem,
-                        componentInstance,
-                        'template',
-                        currentID,
-                        !!curOpt.isStringTemplate,
-                        null,
-                        li);
-                    if (compiledElement) {
-                        append(compiledElement, li);
-                    }
+                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -674,16 +652,14 @@ export namespace ListBase {
             let headerData: { [key: string]: string; } = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            // tslint:disable-next-line
-            let compiledElement: any = compiledString(
-                headerData,
-                componentInstance,
-                'groupTemplate',
-                curOpt.groupTemplateID,
-                !!curOpt.isStringTemplate, null, header);
-            if (compiledElement) {
-                append(compiledElement, header);
-            }
+            append(
+                compiledString(
+                    headerData,
+                    componentInstance,
+                    'groupTemplate',
+                    curOpt.groupTemplateID,
+                    !!curOpt.isStringTemplate),
+                header);
         }
         return headerItems;
     }
@@ -696,7 +672,6 @@ export namespace ListBase {
 
     function processSubChild(
         createElement: createElementParams, fieldData: { [key: string]: Object }, fields: FieldsMapping, ds: { [key: string]: Object }[],
-        // tslint:disable-next-line
         options: ListBaseOptions, element: HTMLElement, level: number): void {
         // Get SubList
         let subDS: { [key: string]: Object }[] = <{ [key: string]: Object }[]>fieldData[fields.child] || [];
@@ -864,32 +839,10 @@ export namespace ListBase {
         }
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
-            // tslint:disable-next-line
-            let compiledElement: any = compiledString(
-                item,
-                componentInstance,
-                'groupTemplate',
-                curOpt.groupTemplateID,
-                !!curOpt.isStringTemplate,
-                null,
-                li);
-            if (compiledElement) {
-                append(compiledElement, li);
-            }
+            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         } else if (!grpLI && options && options.template) {
             let compiledString: Function = compile(options.template);
-            // tslint:disable-next-line
-            let compiledElement: any = compiledString(
-                item,
-                componentInstance,
-                'template',
-                curOpt.templateID,
-                !!curOpt.isStringTemplate,
-                null,
-                li);
-            if (compiledElement) {
-                append(compiledElement, li);
-            }
+            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         } else {
             let innerDiv: HTMLElement = createElement('div', {
                 className: cssClass.textContent,

@@ -1,4 +1,4 @@
-import { Dialog, DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
@@ -34,8 +34,12 @@ export class DialogRenderer {
     private open(args: Object): void {
         this.parent.trigger(events.dialogOpen, args);
     }
-    private beforeClose(args: Object): void {
-        this.parent.trigger(events.beforeDialogClose, args);
+    private beforeClose(args: BeforeCloseEventArgs): void {
+        this.parent.trigger(events.beforeDialogClose, args, (closeArgs: BeforeCloseEventArgs) => {
+            if (!closeArgs.cancel) {
+                if (closeArgs.container.classList.contains('e-popup-close')) { closeArgs.cancel = true; }
+            }
+        });
     }
     /**
      * dialog close method

@@ -53,24 +53,32 @@ export class EditRender {
 
     private convertWidget(args: {
         rowData?: Object, columnName?: string, requestType?: string, row?: Element, type?: string,
-        foreignKeyData?: Object
+        foreignKeyData?: Object, frozenRightForm?: Element
     }): void {
         let gObj: IGrid = this.parent;
         let isFocused: boolean;
         let cell: HTMLElement;
         let value: string;
         let fForm: Element;
-        let frzCols: number = gObj.getFrozenColumns();
+        let frForm: Element;
+        let frzCols: boolean = gObj.isFrozenGrid();
+        let index: number = gObj.getFrozenMode() === 'Right' && gObj.editSettings.mode === 'Normal' ? 1 : 0;
         let form: Element = gObj.editSettings.mode === 'Dialog' ?
-        select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
-        gObj.element.querySelector('.e-gridform');
+            select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
+            gObj.element.querySelectorAll('.e-gridform')[index];
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             let rowIndex: number = parseInt(args.row.getAttribute('aria-rowindex'), 10);
             if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
                 || rowIndex < gObj.frozenRows)) {
                 fForm = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frForm = args.frozenRightForm;
+                }
             } else {
                 fForm = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frForm = args.frozenRightForm;
+                }
             }
         }
         let cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
@@ -92,8 +100,10 @@ export class EditRender {
                 continue;
             }
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
-            if (frzCols && cols.indexOf(col) >= frzCols && gObj.editSettings.mode === 'Normal') {
+            if (col.getFreezeTableName() === 'movable' && gObj.editSettings.mode === 'Normal') {
                 cell = fForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
+            } else if (frForm && col.getFreezeTableName() === 'frozen-right' && gObj.editSettings.mode === 'Normal') {
+                cell = frForm.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
             } else {
                 cell = form.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
             }
@@ -117,14 +127,22 @@ export class EditRender {
                 }
             }
         }
-        if (frzCols !== 0 && !this.parent.allowTextWrap && ((args.requestType === 'add') || args.requestType === 'beginEdit')
+        if (frzCols && !this.parent.allowTextWrap && ((args.requestType === 'add') || args.requestType === 'beginEdit')
             && this.parent.editSettings.mode !== 'Dialog' && !isNullOrUndefined(form) && !isNullOrUndefined(fForm)) {
             let mTdElement: Element = (fForm.querySelector('tr').children[0]);
             let fTdElement: Element = (form.querySelector('tr').children[0]);
             if ((<HTMLElement>fTdElement).offsetHeight > (<HTMLElement>mTdElement).offsetHeight) {
                 (<HTMLElement>mTdElement).style.height = (<HTMLElement>fTdElement).offsetHeight + 'px';
+                if (frForm) {
+                    let frTdElement: Element = fForm.querySelector('tr').children[0];
+                    (<HTMLElement>frTdElement).style.height = (<HTMLElement>fTdElement).offsetHeight + 'px';
+                }
             } else {
                 (<HTMLElement>fTdElement).style.height = (<HTMLElement>mTdElement).offsetHeight + 'px';
+                if (frForm) {
+                    let frTdElement: Element = fForm.querySelector('tr').children[0];
+                    (<HTMLElement>frTdElement).style.height = (<HTMLElement>mTdElement).offsetHeight + 'px';
+                }
             }
         }
     }

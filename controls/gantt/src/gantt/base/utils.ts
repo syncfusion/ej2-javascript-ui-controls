@@ -53,7 +53,7 @@ export function getTaskData(records: IGanttData[], isNotExtend?: boolean): objec
     let result: object[] = [];
     for (let i: number = 0; i < records.length; i++) {
         let data: object;
-        data = isNotExtend ? (data = records[i].taskData) : data = extend({}, records[i].taskData, {}, true);
+        data = isNotExtend ? (records[i].taskData) : extend({}, records[i].taskData, {}, true);
         result.push(data);
     }
     return result;

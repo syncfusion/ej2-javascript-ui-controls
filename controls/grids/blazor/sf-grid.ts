@@ -56,6 +56,11 @@ let Grid: object = {
             element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
         }
     },
+    clientTransformUpdate: function clientTransformUpdate(element: BlazorGridElement, xPosition: number, yPosition: number) {
+        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.virtualContentModule.updateTransform(xPosition, yPosition);
+        }
+    },
     autoFitColumns(element: BlazorGridElement, columns: Column[], fieldNames: string | string[]) {
         if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor__instance)) {
             var instance = element.blazor__instance;

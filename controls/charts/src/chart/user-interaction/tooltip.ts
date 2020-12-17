@@ -188,7 +188,7 @@ export class Tooltip extends BaseTooltip {
                     point.series.clipRect, point.point, this.findShapes(),
                     this.findMarkerHeight(<PointData>this.currentPoints[0]),
                     this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
-                    this.chart.tooltip.template ? argsData.template : '', this.chart.tooltip.position
+                    this.chart.tooltip.template ? argsData.template : ''
                 );
             } else {
                 this.removeHighlight(this.control);

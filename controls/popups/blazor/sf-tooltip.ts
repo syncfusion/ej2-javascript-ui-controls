@@ -18,6 +18,7 @@ const HIDE_POINTER_TIP_GAP: number = 8;
 const MOUSE_TRAIL_GAP: number = 2;
 const POINTER_ADJUST: number = 2;
 const ROOT: string = 'e-tooltip';
+const ELEMENT_HIDDNE: string = 'e-blazor-hidden';
 const TOOLTIP_WRAP: string = 'e-tooltip-wrap';
 const ARROW_TIP: string = 'e-arrow-tip';
 const ARROW_TIP_OUTER: string = 'e-arrow-tip-outer';
@@ -79,6 +80,7 @@ class SfTooltip {
     public isPopupHidden: boolean = true;
     private hasTitle: boolean;
     private isTooltipOpen: boolean;
+    public mouseAction: boolean = false;
     public tooltipEventArgs: TooltipEventArgs;
     constructor(element: BlazorTooltipElement, ref: BlazorDotnetObject, properties: InitProps, eventList: EventList) {
         this.element = element;
@@ -327,6 +329,7 @@ class SfTooltip {
         for (let target of targetList) {
             this.restoreElement(target as HTMLElement);
         }
+        this.mouseAction = false;
         this.showTooltip(target, this.properties.animation.open, e);
     }
     public isHidden(): boolean {
@@ -642,6 +645,7 @@ class SfTooltip {
 
     private onMouseOut(e: Event): void {
         const enteredElement: EventTarget = (e as MouseEvent).relatedTarget;
+        this.mouseAction = true;
         if (enteredElement && !this.properties.mouseTrail) {
             const checkForTooltipElement: Element = closest(
                 enteredElement as HTMLElement,
@@ -793,6 +797,9 @@ class SfTooltip {
                 this.popupHide(this.properties.animation.close, this.contentTargetValue);
             }
         } else {
+            if (NOU(this.contentAnimation)) {
+                return;
+            }
             let openAnimation: Object = {
                 name: this.contentAnimation.effect,
                 duration: this.contentAnimation.duration,
@@ -809,7 +816,7 @@ class SfTooltip {
     }
 
     public reposition(target: HTMLElement): void {
-        if (!this.tooltipEle) { return; }
+        if (target === null || !this.tooltipEle) { return; }
         let elePos: OffsetPosition = this.getTooltipPosition(target);
         this.popupObj.position = { X: elePos.left, Y: elePos.top };
         this.popupObj.dataBind();
@@ -831,6 +838,9 @@ class SfTooltip {
         this.tooltipEventArgs.name = 'Opened';
         this.isRestrictUpdate = this.element.eventList.opened && !this.isHidden();
         if (this.element.eventList.opened) { this.triggerEvent('TriggerOpenedEvent', this.tooltipEventArgs); }
+        if (this.mouseAction && !NOU(this.tooltipEle)) {
+           this.hideTooltip(this.properties.animation.close);
+        }
     }
     private closePopupHandler(): void {
         this.clear();
@@ -891,9 +901,8 @@ let Tooltip: object = {
         if (this.isValid(element)) {
             element.blazor__instance.formatPosition();
             element.blazor__instance.wireEvents(properties.opensOn);
+            removeClass([element], [ELEMENT_HIDDNE]);
         }
-        // tslint:disable-next-line
-        (<any>window).sfBlazor.renderComplete(element);
     },
     contentUpdated(element: BlazorTooltipElement): void {
         if (this.isValid(element)) {

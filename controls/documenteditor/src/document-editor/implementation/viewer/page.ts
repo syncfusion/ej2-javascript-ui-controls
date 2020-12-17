@@ -9,7 +9,7 @@ import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 // tslint:disable-next-line:max-line-length
 import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, BorderInfo } from '../editor/editor-helper';
-import { HeaderFooterType, TabLeader } from '../../base/types';
+import { HeaderFooterType, TabLeader, FootnoteType } from '../../base/types';
 import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { TextHelper } from './text-helper';
@@ -162,6 +162,8 @@ export abstract class Widget implements IWidget {
             return this.page.bodyWidgets.indexOf(this);
         } else if (this.containerWidget && this.containerWidget.childWidgets) {
             return this.containerWidget.childWidgets.indexOf(this);
+        } else if (this instanceof FootNoteWidget) {
+            return 0;
         }
         return -1;
     }
@@ -228,6 +230,15 @@ export abstract class Widget implements IWidget {
                 let page: Page = widget.page.previousPage;
                 widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
             }
+        } else if (widget instanceof FootNoteWidget) {
+            let page: Page = widget.page;
+            while (page.previousPage) {
+                page = page.previousPage;
+                widget = page.footnoteWidget;
+                if (!isNullOrUndefined(widget)) {
+                    break;
+                }
+            }
         } else {
             if (index > 0) {
                 widget = widget.containerWidget.childWidgets[index - 1] as Widget;
@@ -270,7 +281,16 @@ export abstract class Widget implements IWidget {
             } else {
                 widget = undefined;
             }
-        } else {
+        } else if (widget instanceof FootNoteWidget ) {
+            let page: Page = widget.page;
+            while (page.allowNextPageRendering  && page.nextPage) {
+                page = page.nextPage;
+                widget = page.footnoteWidget;
+                if (!isNullOrUndefined(widget)) {
+                    break;
+                }
+            }
+        }  else {
             if (index < widget.containerWidget.childWidgets.length - 1) {
                 widget = widget.containerWidget.childWidgets[index + 1] as Widget;
             } else {
@@ -278,7 +298,8 @@ export abstract class Widget implements IWidget {
                 if (widget.containerWidget instanceof TableCellWidget) {
                     nextContainer = widget.containerWidget.getNextSplitWidget();
                 } else if (!(widget.containerWidget instanceof TableRowWidget
-                    || widget.containerWidget instanceof HeaderFooterWidget)) {
+                    || widget.containerWidget instanceof HeaderFooterWidget
+                    || widget.containerWidget instanceof FootNoteWidget)) {
                     // Since cells are lay outed left to right, we should not navigate to next row.
                     nextContainer = widget.containerWidget.nextRenderedWidget;
                 }
@@ -512,6 +533,12 @@ export abstract class BlockContainer extends Widget {
         let node: BlockContainer = this;
         if (node instanceof BodyWidget) {
             hierarchicalIndex = node.index + ';' + hierarchicalIndex;
+        } else if (node instanceof FootNoteWidget) {
+            if (node.footNoteType === 'Footnote') {
+                hierarchicalIndex = 'FN' + ';' + hierarchicalIndex;
+            } else {
+                hierarchicalIndex = 'EN' + ';' + hierarchicalIndex;
+            }
         } else {
             if ((node as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1) {
                 hierarchicalIndex = 'H' + ';' + hierarchicalIndex;
@@ -729,6 +756,7 @@ export abstract class BlockWidget extends Widget {
      * @private
      */
     public contentControlProperties: ContentControlProperties;
+    public footNoteReference: FootnoteElementBox = undefined;
     /**
      * @private
      */
@@ -876,6 +904,62 @@ export abstract class BlockWidget extends Widget {
 
     }
 }
+/** 
+ * @private
+ */
+export class FootNoteWidget extends BlockContainer {
+    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
+        throw new Error('Method not implemented.');
+    }
+    /**
+     * @private
+     */
+    public footNoteType: FootnoteType;
+    /**
+     * @private
+     */
+    public containerWidget: BodyWidget;
+    /**
+     * @private
+     */
+    public block: BlockWidget;
+    /**
+     * @private
+     */
+    public getTableCellWidget(point: Point): TableCellWidget {
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public equals(widget: Widget): boolean {
+        // Todo: Need to work
+        return widget instanceof FootNoteWidget
+            && widget.containerWidget === this.containerWidget;
+    }
+    /**
+     * @private
+     */
+    public clone(): FootNoteWidget {
+        let footNote: FootNoteWidget = new FootNoteWidget();
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let block: BlockWidget = (this.childWidgets[i] as BlockWidget).clone();
+            footNote.childWidgets.push(block);
+            block.index = i;
+            block.containerWidget = footNote;
+        }
+        footNote.block = this.block;
+        return footNote;
+    }
+    /**
+     * @private
+     */
+    public destroyInternal(viewer: LayoutViewer): void {
+        this.block = undefined;
+        super.destroy();
+    }
+}
+
 /** 
  * @private
  */
@@ -3769,8 +3853,9 @@ export class LineWidget implements IWidget {
                         inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                         indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
                         return { 'element': inlineElement, 'index': indexInInline };
-                    }
-                    else {
+                    }else if (offset === inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox ) {
+                        return  { 'element': this.children[i + 1], 'index': indexInInline };
+                    } else {
                         indexInInline = (offset - count);
                     }
                     return { 'element': inlineElement, 'index': indexInInline };
@@ -4652,7 +4737,106 @@ export class TextElementBox extends ElementBox {
         super.destroy();
     }
 }
+/** 
+ * @private
+ */
+export class Footnote {
+    /**
+     * @private
+     */
+    public separator: BlockWidget[];
+    /**
+     * @private
+     */
+    public continuationSeparator: BlockWidget[];
+    /**
+     * @private
+     */
+    public continuationNotice: BlockWidget[];
+    constructor() {
+        this.separator = [];
+        this.continuationNotice = [];
+        this.continuationSeparator = [];
+    }
+    /**
+     * @private
+     */
+    public clear(): void {
+        this.separator = [];
+        this.continuationSeparator = [];
+        this.continuationNotice = [];
+    }
+    public destroy(): void {
+        this.separator = [];
+        this.continuationSeparator = [];
+        this.continuationNotice = [];
+    }
+}
 
+/** 
+ * @private
+ */
+export class FootnoteElementBox extends TextElementBox {
+    /**
+     * @private
+     */
+    public footnoteType: FootnoteType;
+    /**
+     * @private
+     */
+    public characterFormat: WCharacterFormat;
+    /**
+     * @private
+     */
+    public blocks: BlockWidget[];
+    /**
+     * @private
+     */
+    public symbolCode: string;
+    /**
+     * @private
+     */
+    public height: number;
+    /**
+     * @private
+     */
+    public index: boolean;
+    public isLayout: boolean = false;
+    /**
+     * @private
+     */
+    public symbolFontName: string;
+    /**
+     * @private
+     */
+    public customMarker: string;
+    constructor() {
+        super();
+        this.blocks = [];
+    }
+    public clone(): FootnoteElementBox {
+        let span: FootnoteElementBox = new FootnoteElementBox();
+        span.text = this.text;
+        span.characterFormat.copyFormat(this.characterFormat);
+        span.height = this.height;
+        span.footnoteType = this.footnoteType;
+        span.width = this.width;
+        span.symbolCode = this.symbolCode;
+        span.blocks = this.blocks;
+        if (this.margin) {
+            span.margin = this.margin.clone();
+        }
+        return span;
+    }
+    public getLength(): number {
+        return 1;
+    }
+    public destroy(): void {
+        this.symbolCode = '';
+        this.symbolFontName = '';
+        this.customMarker = '';
+    }
+}
 /** 
  * @private
  */
@@ -5246,6 +5430,10 @@ export class ShapeCommon extends ElementBox {
      */
     public lineFormat: LineFormat;
     /**
+     * @private
+     */
+    public fillFormat: FillFormat;
+    /**
      * 
      * @private
      */
@@ -5350,6 +5538,9 @@ export class ShapeElementBox extends ShapeBase {
         if (this.lineFormat) {
             shape.lineFormat = this.lineFormat.clone();
         }
+        if (this.fillFormat) {
+            shape.fillFormat = this.fillFormat.clone();
+        }
         if (this.textFrame) {
             shape.textFrame = this.textFrame.clone();
             shape.textFrame.containerShape = shape;
@@ -5453,6 +5644,28 @@ export class LineFormat {
         lineFormat.weight = this.weight;
         lineFormat.dashStyle = this.dashStyle;
         return lineFormat;
+    }
+}
+/** 
+ * @private
+ */
+export class FillFormat {
+    /**
+     * @private
+     */
+    public color: string;
+    /**
+     * @private
+     */
+    public fill: boolean;
+    /**
+     * @private
+     */
+    public clone(): FillFormat {
+        let fillFormat: FillFormat = new FillFormat();
+        fillFormat.color = this.color;
+        fillFormat.fill = this.fill;
+        return fillFormat;
     }
 }
 /** 
@@ -7560,6 +7773,14 @@ export class Page {
     /**
      * @private
      */
+    public footnoteWidget: FootNoteWidget = undefined;
+    /**
+     * @private
+     */
+    public endnoteWidget: FootNoteWidget = undefined;
+    /**
+     * @private
+     */
     public currentPageNum: number = 0;
     /**
      * 
@@ -7796,13 +8017,13 @@ export class WTableHolder {
             // If yes then set table preferred table width as container width. Else, check whether the total minimum word width is less than container width.
             // If yes, then set total minimum word width as container width. Else, set the container width to container width.
             if (!isAuto) {
-                let totalMinimumWordWidth: number = this.getTotalWidth(1);
-                if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
-                    this.fitColumns(containerWidth, preferredTableWidth, isAuto);
-                    return;
-                }
+                //let totalMinimumWordWidth: number = this.getTotalWidth(1);
+                //if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
+                this.fitColumns(containerWidth, preferredTableWidth, isAuto);
+                return;
+                //}
                 // tslint:disable-next-line:max-line-length
-                containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
+                //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
             }
             // Try to fit minimum word width to match preferredTableWidth or containerWidth.
             if (minTotal <= preferredTableWidth || minTotal <= containerWidth) {

@@ -62,6 +62,14 @@ export const CARD_CLASS: string = 'e-card';
 /** @hidden */
 export const DRAGGABLE_CLASS: string = 'e-draggable';
 /** @hidden */
+export const DROPPABLE_CLASS: string = 'e-droppable';
+/** @hidden */
+export const DRAG_CLASS: string = 'e-drag';
+/** @hidden */
+export const DROP_CLASS: string = 'e-drop';
+/** @hidden */
+export const DISABLED_CLASS: string = 'e-disabled';
+/** @hidden */
 export const CARD_HEADER_CLASS: string = 'e-card-header';
 /** @hidden */
 export const CARD_CONTENT_CLASS: string = 'e-card-content';
@@ -79,6 +87,8 @@ export const CARD_COLOR_CLASS: string = 'e-card-color';
 export const CARD_LABEL_CLASS: string = 'e-card-label';
 /** @hidden */
 export const CARD_FOOTER_CLASS: string = 'e-card-footer';
+/** @hidden */
+export const EMPTY_CARD_CLASS: string = 'e-empty-card';
 /** @hidden */
 export const CARD_FOOTER_CSS_CLASS: string = 'e-card-footer-css';
 /** @hidden */

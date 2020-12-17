@@ -440,6 +440,7 @@ var previousWidth = 0;
 var setWidth = true;
 // tslint:disable-next-line
 var proxy;
+var dialogBorderResize = ['north', 'west', 'east', 'south'];
 function createResize(args) {
     resizeStart = args.resizeBegin;
     resize = args.resizing;
@@ -448,8 +449,13 @@ function createResize(args) {
     containerElement = getDOMElement(args.boundary);
     var directions = args.direction.split(' ');
     for (var i = 0; i < directions.length; i++) {
-        var resizeHandler = sf.base.createElement('div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] });
-        targetElement.appendChild(resizeHandler);
+        if (dialogBorderResize.indexOf(directions[i]) >= 0 && directions[i]) {
+            setBorderResizeElm(directions[i]);
+        }
+        else if (directions[i].trim() !== '') {
+            var resizeHandler = sf.base.createElement('div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] });
+            targetElement.appendChild(resizeHandler);
+        }
     }
     minHeight = args.minHeight;
     minWidth = args.minWidth;
@@ -461,6 +467,40 @@ function createResize(args) {
     else {
         wireEvents();
     }
+}
+function setBorderResizeElm(direction) {
+    calculateValues();
+    var borderBottom = sf.base.createElement('span', {
+        attrs: {
+            'unselectable': 'on', 'contenteditable': 'false'
+        }
+    });
+    borderBottom.setAttribute('class', 'e-dialog-border-resize e-' + direction);
+    if (direction === 'south') {
+        borderBottom.style.height = '2px';
+        borderBottom.style.width = '100%';
+        borderBottom.style.bottom = '0px';
+        borderBottom.style.left = '0px';
+    }
+    if (direction === 'north') {
+        borderBottom.style.height = '2px';
+        borderBottom.style.width = '100%';
+        borderBottom.style.top = '0px';
+        borderBottom.style.left = '0px';
+    }
+    if (direction === 'east') {
+        borderBottom.style.height = '100%';
+        borderBottom.style.width = '2px';
+        borderBottom.style.right = '0px';
+        borderBottom.style.top = '0px';
+    }
+    if (direction === 'west') {
+        borderBottom.style.height = '100%';
+        borderBottom.style.width = '2px';
+        borderBottom.style.left = '0px';
+        borderBottom.style.top = '0px';
+    }
+    targetElement.appendChild(borderBottom);
 }
 function getDOMElement(element) {
     var domElement;
@@ -485,6 +525,15 @@ function wireEvents(args) {
         sf.base.EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
         var eventName = (sf.base.Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         sf.base.EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+    }
+    var borderResizers = targetElement.querySelectorAll('.e-dialog-border-resize');
+    if (!sf.base.isNullOrUndefined(borderResizers)) {
+        for (var i = 0; i < borderResizers.length; i++) {
+            selectedHandler = borderResizers[i];
+            sf.base.EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
+            var eventName = (sf.base.Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+            sf.base.EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+        }
     }
 }
 /* istanbul ignore next */
@@ -688,10 +737,6 @@ function resizeNorth(e) {
         calculateValue = true;
     }
     var currentHeight = originalHeight - (pageY - originalMouseY);
-    if ((getClientRectValues(targetElement).bottom + currentHeight) > maxHeight) {
-        calculateValue = false;
-        targetElement.style.height = maxHeight - getClientRectValues(targetElement).bottom + 'px';
-    }
     if (calculateValue) {
         if (currentHeight >= minHeight && currentHeight <= maxHeight) {
             var containerTop = 0;
@@ -729,7 +774,7 @@ function resizeWest(e) {
         }
     }
     if (!sf.base.isNullOrUndefined(containerElement) &&
-        (((targetRectValues.left - rectValues.left) + targetRectValues.width +
+        (Math.floor((targetRectValues.left - rectValues.left) + targetRectValues.width +
             (rectValues.right - targetRectValues.right)) - borderValue) <= maxWidth) {
         calculateValue = true;
     }
@@ -815,6 +860,12 @@ function removeResize() {
     var handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (var i = 0; i < handlers.length; i++) {
         sf.base.detach(handlers[i]);
+    }
+    var borderResizers = targetElement.querySelectorAll('.e-dialog-border-resize');
+    if (!sf.base.isNullOrUndefined(borderResizers)) {
+        for (var i = 0; i < borderResizers.length; i++) {
+            sf.base.detach(borderResizers[i]);
+        }
     }
 }
 

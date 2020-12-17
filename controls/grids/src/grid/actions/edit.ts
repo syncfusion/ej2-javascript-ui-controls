@@ -15,7 +15,7 @@ import { InlineEdit } from './inline-edit';
 import { BatchEdit } from './batch-edit';
 import { DialogEdit } from './dialog-edit';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { parentsUntil, getComplexFieldID, setComplexFieldID, getScrollBarWidth } from '../base/util';
+import { parentsUntil, getComplexFieldID, setComplexFieldID, getScrollBarWidth, setValidationRuels } from '../base/util';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DatePickerEditCell } from '../renderer/datepicker-edit-cell';
 import { calculateRelativeBasedPosition, OffsetPosition } from '@syncfusion/ej2-popups';
@@ -35,6 +35,7 @@ export class Edit implements IAction {
     /** @hidden */
     public formObj: FormValidator;
     public mFormObj: FormValidator;
+    public frFormObj: FormValidator;
     private static editCellType: Object = {
         'dropdownedit': DropDownEditCell, 'numericedit': NumericEditCell,
         'datepickeredit': DatePickerEditCell, 'datetimepickeredit': DatePickerEditCell,
@@ -630,6 +631,11 @@ export class Edit implements IAction {
         && this.parent.editSettings.mode !== 'Batch') {
             this.closeEdit();
         } else {
+            let editRow: Element = this.parent.element.querySelector('.e-editedrow');
+            if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
+                && parseInt(parentsUntil(editRow, 'e-row').getAttribute('aria-rowindex'), 10) < this.parent.frozenRows) {
+                return;
+            }
             let restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
@@ -778,13 +784,17 @@ export class Edit implements IAction {
      */
     public applyFormValidation(cols?: Column[]): void {
         let gObj: IGrid = this.parent;
-        let frzCols: number = gObj.getFrozenColumns();
+        let frzCols: boolean = gObj.isFrozenGrid();
+        let isInline: boolean = this.parent.editSettings.mode === 'Normal';
+        let idx: number = this.parent.getFrozenMode() === 'Right' && isInline ? 1 : 0;
         let form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
-        gObj.element.querySelector('.e-gridform') as HTMLFormElement :
-        select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
-        let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[1] as HTMLFormElement;
+            gObj.element.querySelectorAll('.e-gridform')[idx] as HTMLFormElement :
+            select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
+        let index: number = this.parent.getFrozenMode() === 'Right' && isInline ? 0 : 1;
+        let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[index] as HTMLFormElement;
         let rules: Object = {};
         let mRules: Object = {};
+        let frRules: Object = {};
         cols = cols ? cols : gObj.getColumns() as Column[];
         for (let i: number = 0; i < cols.length; i++) {
             if (!cols[i].visible) {
@@ -793,16 +803,18 @@ export class Edit implements IAction {
             if (isBlazor() && cols[i].editTemplate) {
                 continue;
             }
-            if (i < frzCols && cols[i].validationRules) {
-                rules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
-            } else if (i >= frzCols && cols[i].validationRules) {
-                mRules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
+            if (cols[i].validationRules) {
+                setValidationRuels(cols[i], index, rules, mRules, frRules, cols.length);
             }
         }
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {
             this.parent.editModule.mFormObj = this.createFormObj(mForm, mRules);
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                let frForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[2] as HTMLFormElement;
+                this.parent.editModule.frFormObj = this.createFormObj(frForm, frRules);
+            }
         } else {
-            rules = extend(rules, mRules);
+            rules = extend(rules, mRules, frRules);
         }
         if (isBlazor() && this.parent.editSettings.template) {
             this.parent.editModule.formObj = this.createFormObj(form, {});
@@ -869,8 +881,13 @@ export class Edit implements IAction {
 
      // tslint:disable-next-line:max-func-body-length
      private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
+        let column: Column = this.parent.getColumnByField(name);
+        let formObj: HTMLFormElement = this.parent.getFrozenMode() === 'Left-Right' && this.parent.editSettings.mode === 'Normal'
+            && column.getFreezeTableName() === 'frozen-right' ? this.frFormObj.element : this.formObj.element;
         let gcontent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
-        if (this.parent.getFrozenColumns()) {
+        let frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()
+         || this.parent.getFrozenRightColumnsCount();
+        if (frzCols) {
             gcontent = this.parent.getMovableVirtualContent() as HTMLElement;
         }
         let isScroll: boolean = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
@@ -893,8 +910,7 @@ export class Edit implements IAction {
         }
         if (isInline) {
             if (this.parent.frozenRows) {
-                let fHeraderRows: HTMLCollection = this.parent.getFrozenColumns() ?
-                    this.parent.getFrozenVirtualHeader().querySelector('tbody').children
+                let fHeraderRows: HTMLCollection = frzCols ? this.parent.getFrozenVirtualHeader().querySelector('tbody').children
                     : this.parent.getHeaderTable().querySelector('tbody').children;
                 isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
                 isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
@@ -919,7 +935,7 @@ export class Edit implements IAction {
             id: name + '_Error',
             styles: 'display:' + display + ';top:' +
                 ((isFHdr ? inputClient.top + inputClient.height : inputClient.bottom - client.top
-                    - (this.parent.getFrozenColumns() ? fCont.scrollTop : 0)) + table.scrollTop + 9) + 'px;left:' +
+                    - (frzCols ? fCont.scrollTop : 0)) + table.scrollTop + 9) + 'px;left:' +
                 (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
                 'max-width:' + inputClient.width + 'px;text-align:center;'
         });
@@ -941,15 +957,15 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        if ((this.parent.getFrozenColumns() || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
+        if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             let getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
                 (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))
-                || (this.parent.frozenRows && !this.parent.getFrozenColumns())) {
-                this.formObj.element.appendChild(div);
+                || (this.parent.frozenRows && !frzCols)) {
+                formObj.appendChild(div);
             } else {
                 this.mFormObj.element.appendChild(div);
             }
@@ -966,19 +982,18 @@ export class Edit implements IAction {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-        if ((this.parent.getFrozenColumns() || this.parent.frozenRows)
-            && (this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Batch')) {
+        if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
         } else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
         }
-        if (isInline && !isScroll && !this.parent.allowPaging || this.parent.getFrozenColumns() || this.parent.frozenRows) {
+        if (isInline && !isScroll && !this.parent.allowPaging || frzCols || this.parent.frozenRows) {
             gcontent.style.position = 'static';
             let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            if (isScroll && !this.parent.getFrozenColumns() && this.parent.height !== 'auto' && !this.parent.frozenRows
+            if (isScroll && !frzCols && this.parent.height !== 'auto' && !this.parent.frozenRows
                 && !this.parent.enableVirtualization) {
                 let scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
                 div.style.bottom = ((this.parent.height as number) - gcontent.querySelector('table').offsetHeight

@@ -53,192 +53,6 @@ var cardSpace = 16;
 var toggleWidth = 50;
 
 /**
- * Kanban CSS Constants
- */
-/** @hidden */
-var ROOT_CLASS = 'e-kanban';
-/** @hidden */
-var RTL_CLASS = 'e-rtl';
-/** @hidden */
-var DEVICE_CLASS = 'e-device';
-/** @hidden */
-var ICON_CLASS = 'e-icons';
-/** @hidden */
-var TEMPLATE_CLASS = 'e-template';
-/** @hidden */
-var SWIMLANE_CLASS = 'e-swimlane';
-/** @hidden */
-var TABLE_CLASS = 'e-kanban-table';
-/** @hidden */
-var HEADER_CLASS = 'e-kanban-header';
-/** @hidden */
-var HEADER_TABLE_CLASS = 'e-header-table';
-/** @hidden */
-var HEADER_CELLS_CLASS = 'e-header-cells';
-/** @hidden */
-var HEADER_WRAP_CLASS = 'e-header-wrap';
-/** @hidden */
-var HEADER_TITLE_CLASS = 'e-header-title';
-/** @hidden */
-var HEADER_TEXT_CLASS = 'e-header-text';
-/** @hidden */
-var HEADER_ICON_CLASS = 'e-header-icon';
-/** @hidden */
-var STACKED_HEADER_ROW_CLASS = 'e-stacked-header-row';
-/** @hidden */
-var STACKED_HEADER_CELL_CLASS = 'e-stacked-header-cell';
-/** @hidden */
-var CONTENT_CELLS_CLASS = 'e-content-cells';
-/** @hidden */
-var CONTENT_CLASS = 'e-kanban-content';
-/** @hidden */
-var CONTENT_TABLE_CLASS = 'e-content-table';
-/** @hidden */
-var HEADER_ROW_TOGGLE_CLASS = 'e-toggle-header';
-/** @hidden */
-var HEADER_ROW_CLASS = 'e-header-row';
-/** @hidden */
-var CONTENT_ROW_CLASS = 'e-content-row';
-/** @hidden */
-var SWIMLANE_ROW_CLASS = 'e-swimlane-row';
-/** @hidden */
-var SWIMLANE_ROW_EXPAND_CLASS = 'e-swimlane-row-expand';
-/** @hidden */
-var SWIMLANE_ROW_COLLAPSE_CLASS = 'e-swimlane-row-collapse';
-/** @hidden */
-var SWIMLANE_ROW_TEXT_CLASS = 'e-swimlane-text';
-/** @hidden */
-var CARD_ITEM_COUNT_CLASS = 'e-item-count';
-/** @hidden */
-var CARD_WRAPPER_CLASS = 'e-card-wrapper';
-/** @hidden */
-var CARD_CLASS = 'e-card';
-/** @hidden */
-var DRAGGABLE_CLASS = 'e-draggable';
-/** @hidden */
-var CARD_HEADER_CLASS = 'e-card-header';
-/** @hidden */
-var CARD_CONTENT_CLASS = 'e-card-content';
-/** @hidden */
-var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
-/** @hidden */
-var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
-/** @hidden */
-var CARD_TAGS_CLASS = 'e-card-tags';
-/** @hidden */
-var CARD_TAG_CLASS = 'e-card-tag';
-/** @hidden */
-var CARD_COLOR_CLASS = 'e-card-color';
-/** @hidden */
-var CARD_LABEL_CLASS = 'e-card-label';
-/** @hidden */
-var CARD_FOOTER_CLASS = 'e-card-footer';
-/** @hidden */
-var CARD_FOOTER_CSS_CLASS = 'e-card-footer-css';
-/** @hidden */
-var COLUMN_EXPAND_CLASS = 'e-column-expand';
-/** @hidden */
-var COLUMN_COLLAPSE_CLASS = 'e-column-collapse';
-/** @hidden */
-var COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
-/** @hidden */
-var COLLAPSED_CLASS = 'e-collapsed';
-/** @hidden */
-var DIALOG_CLASS = 'e-kanban-dialog';
-/** @hidden */
-
-/** @hidden */
-var FORM_CLASS = 'e-kanban-form';
-/** @hidden */
-var FORM_WRAPPER_CLASS = 'e-kanban-form-wrapper';
-/** @hidden */
-var ERROR_VALIDATION_CLASS = 'e-kanban-error';
-/** @hidden */
-var FIELD_CLASS = 'e-field';
-/** @hidden */
-var DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
-/** @hidden */
-var CLONED_CARD_CLASS = 'e-cloned-card';
-/** @hidden */
-var DRAGGED_CARD_CLASS = 'e-kanban-dragged-card';
-/** @hidden */
-var DROPPED_CLONE_CLASS = 'e-target-dropped-clone';
-/** @hidden */
-var DROPPING_CLASS = 'e-dropping';
-/** @hidden */
-var TOGGLE_VISIBLE_CLASS = 'e-toggle-visible';
-/** @hidden */
-
-/** @hidden */
-var MULTI_CARD_WRAPPER_CLASS = 'e-multi-card-wrapper';
-/** @hidden */
-var MULTI_ACTIVE_CLASS = 'e-multi-active';
-/** @hidden */
-var TARGET_MULTI_CLONE_CLASS = 'e-target-multi-clone';
-/** @hidden */
-var MULTI_COLUMN_KEY_CLASS = 'e-column-key';
-/** @hidden */
-var CARD_SELECTION_CLASS = 'e-selection';
-/** @hidden */
-var TOOLTIP_CLASS = 'e-kanban-tooltip';
-/** @hidden */
-var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
-/** @hidden */
-
-/** @hidden */
-var SWIMLANE_HEADER_CLASS = 'e-swimlane-header';
-/** @hidden */
-var SWIMLANE_HEADER_TOOLBAR_CLASS = 'e-swimlane-header-toolbar';
-/** @hidden */
-var TOOLBAR_MENU_CLASS = 'e-toolbar-menu';
-/** @hidden */
-var TOOLBAR_MENU_ICON_CLASS = 'e-icon-menu';
-/** @hidden */
-var TOOLBAR_LEVEL_TITLE_CLASS = 'e-toolbar-level-title';
-/** @hidden */
-var TOOLBAR_SWIMLANE_NAME_CLASS = 'e-toolbar-swimlane-name';
-/** @hidden */
-var SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
-/** @hidden */
-var SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
-/** @hidden */
-var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
-/** @hidden */
-var SWIMLANE_TREE_CLASS = 'e-swimlane-tree';
-/** @hidden */
-var LIMITS_CLASS = 'e-limits';
-/** @hidden */
-var MAX_COUNT_CLASS = 'e-max-count';
-/** @hidden */
-var MIN_COUNT_CLASS = 'e-min-count';
-/** @hidden */
-var MAX_COLOR_CLASS = 'e-max-color';
-/** @hidden */
-var MIN_COLOR_CLASS = 'e-min-color';
-/** @hidden */
-
-/** @hidden */
-var POPUP_HEADER_CLASS = 'e-popup-header';
-/** @hidden */
-var CLOSE_CLASS = 'e-close';
-/** @hidden */
-var POPUP_CONTENT_CLASS = 'e-popup-content';
-/** @hidden */
-var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
-/** @hidden */
-var CLOSE_ICON_CLASS = 'e-close-icon';
-/** @hidden */
-var POPUP_OPEN_CLASS = 'e-popup-open';
-/** @hidden */
-var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
-/** @hidden */
-var SHOW_ADD_BUTTON = 'e-show-add-button';
-/** @hidden */
-var SHOW_ADD_ICON = 'e-show-add-icon';
-/** @hidden */
-var SHOW_ADD_FOCUS = 'e-show-add-focus';
-
-/**
  * Kanban data module
  * @hidden
  */
@@ -396,11 +210,8 @@ var Data = /** @__PURE__ @class */ (function () {
             _this.parent.layoutModule.renderCardBasedOnIndex(data);
         });
         args.changedRecords.forEach(function (data) {
-            var card = [].slice.call(_this.parent.element
-                .querySelectorAll('.' + CARD_CLASS + '[data-id="' + data[_this.parent.cardSettings.headerField] + '"]'));
-            var updateIndex = [].slice.call(card[0].parentElement.children).indexOf(card[0]);
             _this.parent.layoutModule.removeCard(data);
-            _this.parent.layoutModule.renderCardBasedOnIndex(data, updateIndex);
+            _this.parent.layoutModule.renderCardBasedOnIndex(data, index);
             if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index'
                 && _this.parent.sortSettings.direction === 'Descending' && index > 0) {
                 --index;
@@ -464,6 +275,9 @@ var SwimlaneSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property('Ascending')
     ], SwimlaneSettings.prototype, "sortDirection", void 0);
+    __decorate$1([
+        Property()
+    ], SwimlaneSettings.prototype, "sortComparer", void 0);
     __decorate$1([
         Property(true)
     ], SwimlaneSettings.prototype, "showUnassignedRow", void 0);
@@ -617,6 +431,15 @@ var Columns = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(false)
     ], Columns.prototype, "showAddButton", void 0);
+    __decorate$4([
+        Property(true)
+    ], Columns.prototype, "allowDrag", void 0);
+    __decorate$4([
+        Property(true)
+    ], Columns.prototype, "allowDrop", void 0);
+    __decorate$4([
+        Property([])
+    ], Columns.prototype, "transitionColumns", void 0);
     return Columns;
 }(ChildProperty));
 
@@ -684,7 +507,7 @@ var SortSettings = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$6([
-        Property('DataSourceOrder')
+        Property('Index')
     ], SortSettings.prototype, "sortBy", void 0);
     __decorate$6([
         Property()
@@ -694,6 +517,202 @@ var SortSettings = /** @__PURE__ @class */ (function (_super) {
     ], SortSettings.prototype, "direction", void 0);
     return SortSettings;
 }(ChildProperty));
+
+/**
+ * Kanban CSS Constants
+ */
+/** @hidden */
+var ROOT_CLASS = 'e-kanban';
+/** @hidden */
+var RTL_CLASS = 'e-rtl';
+/** @hidden */
+var DEVICE_CLASS = 'e-device';
+/** @hidden */
+var ICON_CLASS = 'e-icons';
+/** @hidden */
+var TEMPLATE_CLASS = 'e-template';
+/** @hidden */
+var SWIMLANE_CLASS = 'e-swimlane';
+/** @hidden */
+var TABLE_CLASS = 'e-kanban-table';
+/** @hidden */
+var HEADER_CLASS = 'e-kanban-header';
+/** @hidden */
+var HEADER_TABLE_CLASS = 'e-header-table';
+/** @hidden */
+var HEADER_CELLS_CLASS = 'e-header-cells';
+/** @hidden */
+var HEADER_WRAP_CLASS = 'e-header-wrap';
+/** @hidden */
+var HEADER_TITLE_CLASS = 'e-header-title';
+/** @hidden */
+var HEADER_TEXT_CLASS = 'e-header-text';
+/** @hidden */
+var HEADER_ICON_CLASS = 'e-header-icon';
+/** @hidden */
+var STACKED_HEADER_ROW_CLASS = 'e-stacked-header-row';
+/** @hidden */
+var STACKED_HEADER_CELL_CLASS = 'e-stacked-header-cell';
+/** @hidden */
+var CONTENT_CELLS_CLASS = 'e-content-cells';
+/** @hidden */
+var CONTENT_CLASS = 'e-kanban-content';
+/** @hidden */
+var CONTENT_TABLE_CLASS = 'e-content-table';
+/** @hidden */
+var HEADER_ROW_TOGGLE_CLASS = 'e-toggle-header';
+/** @hidden */
+var HEADER_ROW_CLASS = 'e-header-row';
+/** @hidden */
+var CONTENT_ROW_CLASS = 'e-content-row';
+/** @hidden */
+var SWIMLANE_ROW_CLASS = 'e-swimlane-row';
+/** @hidden */
+var SWIMLANE_ROW_EXPAND_CLASS = 'e-swimlane-row-expand';
+/** @hidden */
+var SWIMLANE_ROW_COLLAPSE_CLASS = 'e-swimlane-row-collapse';
+/** @hidden */
+var SWIMLANE_ROW_TEXT_CLASS = 'e-swimlane-text';
+/** @hidden */
+var CARD_ITEM_COUNT_CLASS = 'e-item-count';
+/** @hidden */
+var CARD_WRAPPER_CLASS = 'e-card-wrapper';
+/** @hidden */
+var CARD_CLASS = 'e-card';
+/** @hidden */
+
+/** @hidden */
+var DROPPABLE_CLASS = 'e-droppable';
+/** @hidden */
+var DRAG_CLASS = 'e-drag';
+/** @hidden */
+var DROP_CLASS = 'e-drop';
+/** @hidden */
+var DISABLED_CLASS = 'e-disabled';
+/** @hidden */
+var CARD_HEADER_CLASS = 'e-card-header';
+/** @hidden */
+var CARD_CONTENT_CLASS = 'e-card-content';
+/** @hidden */
+var CARD_HEADER_TEXT_CLASS = 'e-card-header-caption';
+/** @hidden */
+var CARD_HEADER_TITLE_CLASS = 'e-card-header-title';
+/** @hidden */
+var CARD_TAGS_CLASS = 'e-card-tags';
+/** @hidden */
+var CARD_TAG_CLASS = 'e-card-tag';
+/** @hidden */
+var CARD_COLOR_CLASS = 'e-card-color';
+/** @hidden */
+var CARD_LABEL_CLASS = 'e-card-label';
+/** @hidden */
+var CARD_FOOTER_CLASS = 'e-card-footer';
+/** @hidden */
+var EMPTY_CARD_CLASS = 'e-empty-card';
+/** @hidden */
+var CARD_FOOTER_CSS_CLASS = 'e-card-footer-css';
+/** @hidden */
+var COLUMN_EXPAND_CLASS = 'e-column-expand';
+/** @hidden */
+var COLUMN_COLLAPSE_CLASS = 'e-column-collapse';
+/** @hidden */
+var COLLAPSE_HEADER_TEXT_CLASS = 'e-collapse-header-text';
+/** @hidden */
+var COLLAPSED_CLASS = 'e-collapsed';
+/** @hidden */
+var DIALOG_CLASS = 'e-kanban-dialog';
+/** @hidden */
+
+/** @hidden */
+var FORM_CLASS = 'e-kanban-form';
+/** @hidden */
+var FORM_WRAPPER_CLASS = 'e-kanban-form-wrapper';
+/** @hidden */
+var ERROR_VALIDATION_CLASS = 'e-kanban-error';
+/** @hidden */
+var FIELD_CLASS = 'e-field';
+/** @hidden */
+var DRAGGED_CLONE_CLASS = 'e-target-dragged-clone';
+/** @hidden */
+var CLONED_CARD_CLASS = 'e-cloned-card';
+/** @hidden */
+var DRAGGED_CARD_CLASS = 'e-kanban-dragged-card';
+/** @hidden */
+var DROPPED_CLONE_CLASS = 'e-target-dropped-clone';
+/** @hidden */
+var DROPPING_CLASS = 'e-dropping';
+/** @hidden */
+var TOGGLE_VISIBLE_CLASS = 'e-toggle-visible';
+/** @hidden */
+
+/** @hidden */
+var MULTI_CARD_WRAPPER_CLASS = 'e-multi-card-wrapper';
+/** @hidden */
+var MULTI_ACTIVE_CLASS = 'e-multi-active';
+/** @hidden */
+var TARGET_MULTI_CLONE_CLASS = 'e-target-multi-clone';
+/** @hidden */
+var MULTI_COLUMN_KEY_CLASS = 'e-column-key';
+/** @hidden */
+var CARD_SELECTION_CLASS = 'e-selection';
+/** @hidden */
+var TOOLTIP_CLASS = 'e-kanban-tooltip';
+/** @hidden */
+var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
+/** @hidden */
+
+/** @hidden */
+var SWIMLANE_HEADER_CLASS = 'e-swimlane-header';
+/** @hidden */
+var SWIMLANE_HEADER_TOOLBAR_CLASS = 'e-swimlane-header-toolbar';
+/** @hidden */
+var TOOLBAR_MENU_CLASS = 'e-toolbar-menu';
+/** @hidden */
+var TOOLBAR_MENU_ICON_CLASS = 'e-icon-menu';
+/** @hidden */
+var TOOLBAR_LEVEL_TITLE_CLASS = 'e-toolbar-level-title';
+/** @hidden */
+var TOOLBAR_SWIMLANE_NAME_CLASS = 'e-toolbar-swimlane-name';
+/** @hidden */
+var SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
+/** @hidden */
+var SWIMLANE_CONTENT_CLASS = 'e-swimlane-content';
+/** @hidden */
+var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
+/** @hidden */
+var SWIMLANE_TREE_CLASS = 'e-swimlane-tree';
+/** @hidden */
+var LIMITS_CLASS = 'e-limits';
+/** @hidden */
+var MAX_COUNT_CLASS = 'e-max-count';
+/** @hidden */
+var MIN_COUNT_CLASS = 'e-min-count';
+/** @hidden */
+var MAX_COLOR_CLASS = 'e-max-color';
+/** @hidden */
+var MIN_COLOR_CLASS = 'e-min-color';
+/** @hidden */
+
+/** @hidden */
+var POPUP_HEADER_CLASS = 'e-popup-header';
+/** @hidden */
+var CLOSE_CLASS = 'e-close';
+/** @hidden */
+var POPUP_CONTENT_CLASS = 'e-popup-content';
+/** @hidden */
+var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
+/** @hidden */
+var CLOSE_ICON_CLASS = 'e-close-icon';
+/** @hidden */
+var POPUP_OPEN_CLASS = 'e-popup-open';
+/** @hidden */
+var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
+/** @hidden */
+var SHOW_ADD_BUTTON = 'e-show-add-button';
+/** @hidden */
+var SHOW_ADD_ICON = 'e-show-add-icon';
+/** @hidden */
+var SHOW_ADD_FOCUS = 'e-show-add-focus';
 
 /**
  * Action module is used to perform card actions.
@@ -1267,7 +1286,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         }
         var cardElement = closest(e.target, '.' + CARD_CLASS);
         var target = cardElement || e.target;
-        var selector = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS;
+        var selector = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS
+            + '.' + DROPPABLE_CLASS;
         var contentCell = closest(target, selector);
         this.calculateArgs(e);
         if (contentCell) {
@@ -1310,12 +1330,14 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     target.appendChild(this.dragObj.targetClone);
                 }
             }
-            else if (keys.length > 1) {
+            else if (keys.length > 1 && contentCell.classList.contains(DROPPING_CLASS)) {
                 this.multiCloneCreate(keys, contentCell);
             }
             this.parent.notify(contentReady, {});
         }
-        this.addDropping();
+        if (this.parent.element.querySelectorAll('.' + DROPPING_CLASS).length === 0) {
+            this.cellDropping();
+        }
         var isCollapsed = false;
         if (contentCell) {
             isCollapsed = contentCell.classList.contains(COLLAPSED_CLASS) && contentCell.classList.contains(DROPPING_CLASS);
@@ -1333,7 +1355,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.parent.notify(contentReady, {});
         var multiKeyTarget = closest(target, '.' + MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
-            var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS)).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
+            var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS + ':not(.' +
+                DISABLED_CLASS + ')')).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
             if (columnKeys.length > 0) {
                 addClass(columnKeys, MULTI_ACTIVE_CLASS);
                 if (columnKeys[0].previousElementSibling) {
@@ -1341,16 +1364,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        document.body.style.cursor = contentCell ? '' : 'not-allowed';
-        if (this.parent.swimlaneSettings.keyField && !this.parent.swimlaneSettings.allowDragAndDrop) {
-            var dragElement = closest(this.dragObj.element, '.' + CONTENT_ROW_CLASS);
-            var classSelector = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
-            var dropElement = closest(target, classSelector);
-            if (dragElement && dropElement) {
-                if (dragElement.rowIndex !== dropElement.rowIndex) {
-                    document.body.style.cursor = 'not-allowed';
-                }
-            }
+        document.body.style.cursor = (contentCell && contentCell.classList.contains(DROPPING_CLASS)) ? '' : 'not-allowed';
+        if (cardElement && !(closest(cardElement, '.' + CONTENT_CELLS_CLASS)).classList.contains(DROPPING_CLASS)) {
+            cardElement.style.cursor = 'not-allowed';
+            document.body.style.cursor = 'not-allowed';
         }
         if (document.body.style.cursor === 'not-allowed') {
             this.removeElement(this.dragObj.targetClone);
@@ -1381,28 +1398,72 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         this.removeElement(this.dragObj.targetClone);
         for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
             var key = keys_1[_i];
-            var colKey = createElement('div', { className: MULTI_COLUMN_KEY_CLASS, attrs: { 'data-key': key.trim() } });
+            var dragCell = closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
+            var transition = this.parent.columns[dragCell.cellIndex].transitionColumns;
+            var allowTransition = this.allowedTransition(this.dragObj.element.getAttribute('data-key'), key, transition);
+            var name_1 = allowTransition ? '' : ' ' + DISABLED_CLASS;
+            var colKey = createElement('div', {
+                className: MULTI_COLUMN_KEY_CLASS + name_1,
+                attrs: { 'data-key': key.trim() }
+            });
             var text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
             contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
+            colKey.style.cursor = allowTransition ? '' : 'not-allowed';
             colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
             text.style.top = formatUnit((offsetHeight / 2) - (text.offsetHeight / 2));
         }
     };
-    DragAndDrop.prototype.addDropping = function () {
-        if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
-            var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
-            var cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
-            cells.forEach(function (cell) { return addClass([cell], DROPPING_CLASS); });
-        }
-        else {
-            var row = closest(this.dragObj.draggedClone, '.' + CONTENT_ROW_CLASS);
-            if (row) {
-                [].slice.call(row.children).forEach(function (cell) { return addClass([cell], DROPPING_CLASS); });
+    DragAndDrop.prototype.allowedTransition = function (currentCardKey, targetCardKey, allowedKey) {
+        var allowTransition = true;
+        var targetKey = targetCardKey.split(',');
+        for (var i = 0; i < targetKey.length; i++) {
+            if (currentCardKey === targetKey[i].trim()) {
+                return true;
+            }
+            if (allowedKey) {
+                if (allowedKey.length === 1 && allowedKey[0].length === 0) {
+                    return true;
+                }
+                for (var j = 0; j < allowedKey.length; j++) {
+                    if (targetKey[i].trim() === allowedKey[j].trim()) {
+                        return true;
+                    }
+                    else {
+                        allowTransition = false;
+                    }
+                }
             }
         }
-        var cell = closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
-        if (cell) {
-            removeClass([cell], DROPPING_CLASS);
+        return allowTransition;
+    };
+    DragAndDrop.prototype.cellDropping = function () {
+        var _this = this;
+        var dragCell = closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
+        var dragRow = closest(this.dragObj.draggedClone, '.' + CONTENT_ROW_CLASS);
+        this.addDropping(dragRow, dragCell);
+        if (dragCell && dragCell.classList.contains(DROP_CLASS)) {
+            addClass([dragCell], DROPPING_CLASS);
+        }
+        if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
+            var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
+            var rows = [].slice.call(this.parent.element.querySelectorAll(className));
+            [].slice.call(rows).forEach(function (row) {
+                if (dragRow !== row) {
+                    _this.addDropping(row, dragCell);
+                }
+            });
+        }
+    };
+    DragAndDrop.prototype.addDropping = function (dragRow, dragCell) {
+        var _this = this;
+        if (dragCell && dragRow) {
+            [].slice.call(dragRow.children).forEach(function (cell) {
+                var transition = _this.parent.columns[dragCell.cellIndex].transitionColumns;
+                if (cell !== dragCell && cell.classList.contains(DROP_CLASS) &&
+                    _this.allowedTransition(dragCell.getAttribute('data-key'), cell.getAttribute('data-key'), transition)) {
+                    addClass([cell], DROPPING_CLASS);
+                }
+            });
         }
     };
     DragAndDrop.prototype.dragStop = function (e) {
@@ -1416,7 +1477,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             dropIndex = element.indexOf(this.dragObj.targetClone);
         }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
-            columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
+            columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS + ':not(.' + DISABLED_CLASS + ')');
         }
         if (contentCell || columnKey) {
             var cardStatus_1;
@@ -1437,7 +1498,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 this.changeOrder(this.dragObj.modifiedData);
             }
         }
-        var dragArgs = { cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards };
+        var dragArgs = {
+            cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards,
+            dropIndex: dropIndex
+        };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
             _this.removeElement(_this.dragObj.draggedClone);
             _this.removeElement(_this.dragObj.targetClone);
@@ -1452,6 +1516,8 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             if (document.body.style.cursor === 'not-allowed') {
                 document.body.style.cursor = '';
             }
+            var styleCards = [].slice.call(_this.parent.element.querySelectorAll('.' + CARD_CLASS + '[style]'));
+            styleCards.forEach(function (styleCard) { styleCard.style.cursor = ''; });
             var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
             var cells = [].slice.call(_this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
             cells.forEach(function (cell) { return removeClass([cell], DROPPING_CLASS); });
@@ -1460,7 +1526,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                     var updateCard = dragEventArgs.data instanceof Array &&
                         dragEventArgs.data.length > 1 ? dragEventArgs.data :
                         dragEventArgs.data[0];
-                    _this.parent.crudModule.updateCard(updateCard, dropIndex);
+                    _this.parent.crudModule.updateCard(updateCard, dragEventArgs.dropIndex);
                 }
             }
             if (_this.parent.isAdaptive) {
@@ -1506,22 +1572,24 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         else {
             return;
         }
-        var obj = this.parent.getCardDetails(element);
-        var keyIndex = obj[this.parent.sortSettings.field];
-        if (modifieddata.length > 1 && this.parent.sortSettings.direction === 'Descending') {
-            modifieddata = modifieddata.reverse();
+        if (element.classList.contains(CARD_CLASS)) {
+            var obj = this.parent.getCardDetails(element);
+            var keyIndex_1 = obj[this.parent.sortSettings.field];
+            if (modifieddata.length > 1 && this.parent.sortSettings.direction === 'Descending') {
+                modifieddata = modifieddata.reverse();
+            }
+            modifieddata.forEach(function (data, index) {
+                if (prevele) {
+                    data[_this.parent.sortSettings.field] = ++keyIndex_1;
+                }
+                else if (keyIndex_1 !== 1 && index <= data[_this.parent.sortSettings.field]) {
+                    data[_this.parent.sortSettings.field] = --keyIndex_1;
+                }
+                else if (keyIndex_1 === 1) {
+                    data[_this.parent.sortSettings.field] = index + 1;
+                }
+            });
         }
-        modifieddata.forEach(function (data, index) {
-            if (prevele) {
-                data[_this.parent.sortSettings.field] = ++keyIndex;
-            }
-            else if (keyIndex !== 1 && index <= data[_this.parent.sortSettings.field]) {
-                data[_this.parent.sortSettings.field] = --keyIndex;
-            }
-            else if (keyIndex === 1) {
-                data[_this.parent.sortSettings.field] = index + 1;
-            }
-        });
     };
     DragAndDrop.prototype.toggleVisible = function (target, tColumn) {
         var _this = this;
@@ -1580,36 +1648,35 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
     DragAndDrop.prototype.updateScrollPosition = function (e) {
         var _this = this;
         if (isNullOrUndefined(this.dragObj.navigationInterval)) {
-            this.dragObj.navigationInterval = window.setInterval(function () {
-                if (_this.autoScrollValidation(e)) {
-                    _this.autoScroll();
-                }
-            }, 100);
+            this.dragObj.navigationInterval = window.setInterval(function () { _this.autoScroll(); }, 100);
         }
     };
-    DragAndDrop.prototype.autoScrollValidation = function (e) {
+    DragAndDrop.prototype.autoScrollValidation = function () {
         var pageY = this.dragObj.pageY;
         var pageX = this.dragObj.pageX;
         var autoScrollDistance = 30;
         var dragEdges = { left: false, right: false, top: false, bottom: false };
-        if (this.dragObj.pageY - window.scrollY < (autoScrollDistance + 36)) {
+        var viewBoundaries = this.parent.element.querySelector('.' + CONTENT_CLASS).getBoundingClientRect();
+        if ((pageY < viewBoundaries.top + autoScrollDistance + window.pageYOffset) &&
+            (pageY > viewBoundaries.top + window.pageYOffset)) {
             dragEdges.top = true;
         }
-        if ((pageY > (window.innerHeight - autoScrollDistance) + window.pageYOffset) &&
-            (pageY < window.innerHeight + window.pageYOffset)) {
+        if ((pageY > (viewBoundaries.bottom - autoScrollDistance) + window.pageYOffset) &&
+            (pageY < viewBoundaries.bottom + window.pageYOffset)) {
             dragEdges.bottom = true;
         }
-        if ((pageX < 0 + autoScrollDistance + window.pageXOffset) && (pageX > 0 + window.pageXOffset)) {
+        if ((pageX < viewBoundaries.left + autoScrollDistance + window.pageXOffset) &&
+            (pageX > viewBoundaries.left + window.pageXOffset)) {
             dragEdges.left = true;
         }
-        if ((pageX > (window.innerWidth - autoScrollDistance) + window.pageXOffset) &&
-            (pageX < window.innerWidth + window.pageXOffset)) {
+        if ((pageX > (viewBoundaries.right - autoScrollDistance) + window.pageXOffset) &&
+            (pageX < viewBoundaries.right + window.pageXOffset)) {
             dragEdges.right = true;
         }
         this.dragEdges = dragEdges;
-        return dragEdges.bottom || dragEdges.top || dragEdges.left || dragEdges.right;
     };
     DragAndDrop.prototype.autoScroll = function () {
+        this.autoScrollValidation();
         var scrollSensitivity = 30;
         if (this.parent.isAdaptive) {
             var parent_1;
@@ -1642,6 +1709,24 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             }
         }
         else {
+            var parent_2 = this.parent.element.querySelector('.' + CONTENT_CLASS);
+            var column = this.dragObj.targetClone.parentElement;
+            var yScrollable = parent_2.offsetHeight <= parent_2.scrollHeight;
+            var xScrollable = parent_2.offsetWidth <= parent_2.scrollWidth;
+            var yBounds = yScrollable && parent_2.scrollTop >= 0 && parent_2.scrollTop + parent_2.offsetHeight <= parent_2.scrollHeight;
+            var xBounds = xScrollable && parent_2.scrollLeft >= 0 && parent_2.scrollLeft + parent_2.offsetWidth <= parent_2.scrollWidth;
+            if (yBounds && (this.dragEdges.top || this.dragEdges.bottom)) {
+                parent_2.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
+                if (column) {
+                    column.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
+                }
+            }
+            if (xBounds && (this.dragEdges.left || this.dragEdges.right)) {
+                parent_2.scrollLeft += this.dragEdges.left ? -scrollSensitivity : scrollSensitivity;
+                if (column) {
+                    column.scrollLeft += this.dragEdges.left ? -scrollSensitivity : scrollSensitivity;
+                }
+            }
             if (this.dragObj.pageY - window.scrollY < scrollSensitivity) {
                 window.scrollTo(window.scrollX, window.scrollY - scrollSensitivity);
             }
@@ -1751,7 +1836,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
-            if (this.parent.sortSettings.sortBy !== 'DataSourceOrder') {
+            if (this.parent.sortSettings.field) {
                 fields.splice(fields.length - 1, 0, { key: this.parent.sortSettings.field, type: 'TextBox' });
             }
             if (this.parent.swimlaneSettings.keyField) {
@@ -2766,8 +2851,10 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 if (this_2.isColumnVisible(column)) {
                     var index = this_2.parent.actionModule.columnToggleArray.indexOf(column.keyField);
                     var className_1 = index === -1 ? CONTENT_CELLS_CLASS : CONTENT_CELLS_CLASS + ' ' + COLLAPSED_CLASS;
+                    var dragClass = (column.allowDrag ? ' ' + DRAG_CLASS : '') + (column.allowDrop ? ' ' + DROP_CLASS
+                        + ' ' + DROPPABLE_CLASS : '');
                     var td = createElement('td', {
-                        className: className_1,
+                        className: className_1 + dragClass,
                         attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true', 'tabindex': '0' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
@@ -2874,24 +2961,29 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     var columnWrapper = tr.querySelector('[data-key="' + column.keyField + '"]');
                     var cardWrapper_1 = createElement('div', { className: CARD_WRAPPER_CLASS });
                     columnWrapper.appendChild(cardWrapper_1);
-                    var _loop_4 = function (data) {
-                        var cardText = data[_this.parent.cardSettings.headerField];
-                        var cardIndex = _this.parent.actionModule.selectionArray.indexOf(cardText);
-                        var cardElement = _this.renderCard(data);
-                        if (cardIndex !== -1) {
-                            cardElement.setAttribute('aria-selected', 'true');
-                            addClass([cardElement], CARD_SELECTION_CLASS);
-                        }
-                        var args = { data: data, element: cardElement, cancel: false };
-                        _this.parent.trigger(cardRendered, args, function (cardArgs) {
-                            if (!cardArgs.cancel) {
-                                cardWrapper_1.appendChild(cardElement);
+                    if (columnData.length > 0) {
+                        var _loop_4 = function (data) {
+                            var cardText = data[_this.parent.cardSettings.headerField];
+                            var cardIndex = _this.parent.actionModule.selectionArray.indexOf(cardText);
+                            var cardElement = _this.renderCard(data);
+                            if (cardIndex !== -1) {
+                                cardElement.setAttribute('aria-selected', 'true');
+                                addClass([cardElement], CARD_SELECTION_CLASS);
                             }
-                        });
-                    };
-                    for (var _i = 0, _a = columnData; _i < _a.length; _i++) {
-                        var data = _a[_i];
-                        _loop_4(data);
+                            var args = { data: data, element: cardElement, cancel: false };
+                            _this.parent.trigger(cardRendered, args, function (cardArgs) {
+                                if (!cardArgs.cancel) {
+                                    cardWrapper_1.appendChild(cardElement);
+                                }
+                            });
+                        };
+                        for (var _i = 0, _a = columnData; _i < _a.length; _i++) {
+                            var data = _a[_i];
+                            _loop_4(data);
+                        }
+                    }
+                    else {
+                        cardWrapper_1.appendChild(_this.renderEmptyCard());
                     }
                 }
             };
@@ -2971,6 +3063,13 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         }
         return cardElement;
     };
+    LayoutRender.prototype.renderEmptyCard = function () {
+        var emptyCard = createElement('span', {
+            className: EMPTY_CARD_CLASS,
+            innerHTML: this.parent.localeObj.getConstant('noCard')
+        });
+        return emptyCard;
+    };
     LayoutRender.prototype.renderColGroup = function (table) {
         var _this = this;
         var colGroup = createElement('colgroup');
@@ -3016,14 +3115,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             kanbanRows = kanbanRows.filter(function (item, index, arr) {
                 return index === arr.map(function (item) { return item.keyField; }).indexOf(item.keyField);
             });
-            kanbanRows.sort(function (firstRow, secondRow) {
-                var first = firstRow.textField.toLowerCase();
-                var second = secondRow.textField.toLowerCase();
-                return (first > second) ? 1 : (second > first) ? -1 : 0;
-            });
-            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
-                kanbanRows.reverse();
-            }
+            kanbanRows = this.swimlaneSorting(kanbanRows);
             kanbanRows.forEach(function (row) {
                 row.count = _this.parent.kanbanData.filter(function (obj) {
                     return _this.columnKeys.indexOf(obj[_this.parent.keyField]) > -1 &&
@@ -3038,6 +3130,18 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             kanbanRows.push({ keyField: '', textField: '' });
         }
         return kanbanRows;
+    };
+    LayoutRender.prototype.swimlaneSorting = function (rows) {
+        if (this.parent.swimlaneSettings.sortComparer) {
+            rows = this.parent.swimlaneSettings.sortComparer.call(this.parent, rows);
+        }
+        else {
+            rows.sort(function (a, b) { return a.textField.localeCompare(b.textField, undefined, { numeric: true }); });
+            if (this.parent.swimlaneSettings.sortDirection === 'Descending') {
+                rows.reverse();
+            }
+        }
+        return rows;
     };
     LayoutRender.prototype.createStackedRow = function (rows) {
         var tr = createElement('tr', { className: HEADER_ROW_CLASS + ' ' + STACKED_HEADER_ROW_CLASS });
@@ -3394,9 +3498,14 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 return e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.replace(/\s/g, '')) !== -1;
             })[0];
             var cardWrapper_2 = td.querySelector('.' + CARD_WRAPPER_CLASS);
+            var emptyCard = cardWrapper_2.querySelector('.' + EMPTY_CARD_CLASS);
+            if (emptyCard) {
+                remove(emptyCard);
+            }
             var cardElement_1 = this.renderCard(data);
-            if (this.parent.allowDragAndDrop) {
-                addClass([cardElement_1], DRAGGABLE_CLASS);
+            if (this.parent.allowDragAndDrop && td.classList.contains(DRAG_CLASS)) {
+                this.parent.dragAndDropModule.wireDragEvents(cardElement_1);
+                addClass([cardElement_1], DROPPABLE_CLASS);
             }
             var args = { data: data, element: cardElement_1, cancel: false };
             this.parent.trigger(cardRendered, args, function (cardArgs) {
@@ -3414,8 +3523,12 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     LayoutRender.prototype.removeCard = function (data) {
         var cardKey = data[this.parent.cardSettings.headerField];
         var cardElement = this.parent.element.querySelector("." + CARD_CLASS + "[data-id=\"" + cardKey + "\"]");
+        var cardContainer = cardElement.parentElement;
         if (cardElement) {
             remove(cardElement);
+        }
+        if (cardContainer.childElementCount === 0) {
+            cardContainer.appendChild(this.renderEmptyCard());
         }
     };
     LayoutRender.prototype.wireEvents = function () {
@@ -3457,13 +3570,20 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         }
     };
     LayoutRender.prototype.wireDragEvent = function () {
+        var _this = this;
         if (this.parent.allowDragAndDrop) {
-            addClass(this.parent.element.querySelectorAll('.' + CARD_CLASS), DRAGGABLE_CLASS);
-            this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+            var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_CELLS_CLASS
+                + '.' + DRAG_CLASS + ' .' + CARD_CLASS));
+            addClass(cards, DROPPABLE_CLASS);
+            cards.forEach(function (card) { return _this.parent.dragAndDropModule.wireDragEvents(card); });
         }
     };
     LayoutRender.prototype.unWireDragEvent = function () {
-        this.parent.dragAndDropModule.unWireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+        var _this = this;
+        var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_CELLS_CLASS
+            + '.' + DRAG_CLASS + ' .' + CARD_CLASS));
+        removeClass(cards, DROPPABLE_CLASS);
+        cards.forEach(function (card) { return _this.parent.dragAndDropModule.unWireDragEvents(card); });
     };
     LayoutRender.prototype.destroy = function () {
         this.parent.resetTemplates();
@@ -3564,7 +3684,8 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
             cancel: 'Cancel',
             yes: 'Yes',
             no: 'No',
-            close: 'Close'
+            close: 'Close',
+            noCard: 'No cards to display'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
@@ -3905,8 +4026,8 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      * @param {{[key: string]: Object}[] | Object[]} cardData Collection of card objects to be updated into Kanban.
      * @returns {void}
      */
-    Kanban.prototype.updateCard = function (cardData) {
-        this.crudModule.updateCard(cardData);
+    Kanban.prototype.updateCard = function (cardData, index) {
+        this.crudModule.updateCard(cardData, index);
     };
     /**
      * Deletes the card based on the provided ID or card collection in the argument list.

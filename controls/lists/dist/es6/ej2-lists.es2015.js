@@ -556,18 +556,10 @@ var ListBase;
             else {
                 const currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    // tslint:disable-next-line
-                    let compiledElement = compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate, null, li);
-                    if (compiledElement) {
-                        append(compiledElement, li);
-                    }
+                    append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                 }
                 else {
-                    // tslint:disable-next-line
-                    let compiledElement = compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate, null, li);
-                    if (compiledElement) {
-                        append(compiledElement, li);
-                    }
+                    append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                 }
                 li.setAttribute('data-value', isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -608,11 +600,7 @@ var ListBase;
             let headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            // tslint:disable-next-line
-            let compiledElement = compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, header);
-            if (compiledElement) {
-                append(compiledElement, header);
-            }
+            append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -623,9 +611,7 @@ var ListBase;
             .substring(1);
     }
     ListBase.generateId = generateId;
-    function processSubChild(createElement, fieldData, fields, ds, 
-    // tslint:disable-next-line
-    options, element, level) {
+    function processSubChild(createElement, fieldData, fields, ds, options, element, level) {
         // Get SubList
         let subDS = fieldData[fields.child] || [];
         let hasChildren = fieldData[fields.hasChildren];
@@ -782,19 +768,11 @@ var ListBase;
         }
         if (grpLI && options && options.groupTemplate) {
             let compiledString = compile(options.groupTemplate);
-            // tslint:disable-next-line
-            let compiledElement = compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, li);
-            if (compiledElement) {
-                append(compiledElement, li);
-            }
+            append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             let compiledString = compile(options.template);
-            // tslint:disable-next-line
-            let compiledElement = compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate, null, li);
-            if (compiledElement) {
-                append(compiledElement, li);
-            }
+            append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             let innerDiv = createElement('div', {

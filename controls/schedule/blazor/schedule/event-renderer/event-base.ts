@@ -318,15 +318,17 @@ export class EventBase {
         }
     }
 
-    public wireAppointmentEvents(element: HTMLElement, isPreventCrud: Boolean = false): void {
+    public wireAppointmentEvents(element: HTMLElement, isPreventCrud: Boolean = false, isMorePopupEvent: Boolean = false): void {
         let isReadOnly: boolean = element.getAttribute('aria-readonly') === 'true';
         EventHandler.clearEvents(element);
-        EventHandler.add(element, 'click', this.eventClick, this);
-        if (!this.parent.isAdaptive) {
-            EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
-        }
-        if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
-            EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
+        if (this.parent.options.currentView !== 'TimelineYear' || isMorePopupEvent) {
+            EventHandler.add(element, 'click', this.eventClick, this);
+            if (!this.parent.isAdaptive) {
+                EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
+            }
+            if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
+                EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
+            }
         }
         if (!this.parent.activeViewOptions.readonly && !isReadOnly && !isPreventCrud) {
             if (this.parent.resizeModule) {

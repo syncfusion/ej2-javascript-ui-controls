@@ -12,11 +12,11 @@ import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
-import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ClipMode } from './enum';
+import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem } from './enum';
 import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
-import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode } from './enum';
+import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode } from './enum';
 import { Edit } from '../actions/edit';
 import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
@@ -500,6 +500,7 @@ export interface IGrid extends Component<HTMLElement> {
     enableHeaderFocus?: boolean;
     renderTemplates?: Function;
     isReact?: boolean;
+    tableIndex?: number;
     isVue?: boolean;
 
     /**
@@ -526,6 +527,8 @@ export interface IGrid extends Component<HTMLElement> {
     hoverFrozenRows?(value: MouseEvent): void;
     getRowByIndex?(index: number): Element;
     getMovableRowByIndex?(index: number): Element;
+    getFrozenRightRowByIndex?(index: number): Element;
+    getFrozenRightRowByIndex?(index: number): Element;
     getFrozenRowByIndex?(index: number): Element;
     getRowInfo?(target: Element): RowInfo;
     selectRow?(index: number, isToggle?: boolean): void;
@@ -544,6 +547,7 @@ export interface IGrid extends Component<HTMLElement> {
     getMovableRows?(): Element[];
     getCellFromIndex?(rowIndex: number, columnIndex: number): Element;
     getMovableCellFromIndex?(rowIndex: number, columnIndex: number): Element;
+    getFrozenRightCellFromIndex?(rowIndex: number, columnIndex: number): Element;
     getColumnFieldNames?(): string[];
     getSelectedRows?(): Element[];
     getSelectedRecords?(): Object[];
@@ -574,7 +578,9 @@ export interface IGrid extends Component<HTMLElement> {
     getVisibleColumns?(): Column[];
     refreshHeader?(): void;
     getDataRows?(): Element[];
+    getFrozenRightRows?(): Element[];
     getMovableDataRows?(): Element[];
+    getFrozenRightDataRows?(): Element[];
     getFrozenDataRows?(): Element[];
     addMovableRows?(fRows: HTMLElement[], mrows: HTMLElement[]): HTMLElement[];
     getPrimaryKeyFieldNames?(): string[];
@@ -585,6 +591,37 @@ export interface IGrid extends Component<HTMLElement> {
     isContextMenuOpen(): Boolean;
     goToPage(pageNo: number): void;
     getFrozenColumns(): number;
+    getFrozenRightColumnsCount?(): number;
+    getFrozenLeftColumnsCount?(): number;
+    getFrozenLeftCount?(): number;
+    getMovableColumnsCount?(): number;
+    isFrozenGrid?(): boolean;
+    getFrozenMode?(): freezeMode;
+    setTablesCount?(): void;
+    getTablesCount?(): number;
+    setFrozenCount?(): void;
+    getVisibleFrozenLeftCount?(): number;
+    getVisibleFrozenRightCount?(): number;
+    getVisibleMovableCount?(): number;
+    getFrozenRightColumns?(): Column[];
+    getFrozenLeftColumns?(): Column[];
+    getMovableColumns?(): Column[];
+    getFrozenRightRowsObject?(): Row<Column>[];
+    getFrozenRightContent?(): Element;
+    getFrozenRightHeader?(): Element;
+    getMovableHeaderTbody?(): Element;
+    getMovableContentTbody?(): Element;
+    getFrozenHeaderTbody?(): Element;
+    getFrozenLeftContentTbody?(): Element;
+    getFrozenRightHeaderTbody?(): Element;
+    getFrozenRightContentTbody?(): Element;
+    getAllDataRows?(includeBatch: boolean): Element[];
+    getAllMovableDataRows?(includeBatch: boolean): Element[];
+    getAllFrozenDataRows?(includeBatch: boolean): Element[];
+    getAllFrozenRightDataRows?(includeBatch: boolean): Element[];
+    getMovableColumnHeaderByIndex?(index: number): Element;
+    getFrozenRightColumnHeaderByIndex?(index: number): Element;
+    getFrozenLeftColumnHeaderByIndex?(index: number): Element;
     applyBiggerTheme(args: Element): void;
     getVisibleFrozenColumns(): number;
     print(): void;
@@ -601,7 +638,7 @@ export interface IGrid extends Component<HTMLElement> {
     closeEdit?(): void;
     addRecord?(data?: Object): void;
     deleteRow?(tr: HTMLTableRowElement): void;
-    getRowObjectFromUID?(uid: string): Row<Column>;
+    getRowObjectFromUID?(uid: string, isMovable?: boolean, isFrozenRight?: boolean): Row<Column>;
     addFreezeRows?(fRows: Row<Column>[], mRows?: Row<Column>[]): Row<Column>[];
     getRowsObject?(): Row<Column>[];
     getMovableRowsObject?(): Row<Column>[];
@@ -660,20 +697,25 @@ export interface IRenderer {
     getTable(): Element;
     getRows?(): Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>;
     getMovableRows?(): Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>;
+    getFrozenRightRows?(): Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement>;
     refreshUI?(): void;
     setVisible?(column?: Column[]): void;
     addEventListener?(): void;
     removeEventListener?(): void;
     getRowElements?(): Element[];
     getMovableRowElements?(): Element[];
+    getFrozenRightRowElements?(): Element[];
     setSelection?(uid: string, set: boolean, clearAll: boolean): void;
     getRowByIndex?(index: number): Element;
     getVirtualRowIndex?(index: number): number;
     getMovableRowByIndex?(index: number): Element;
+    getFrozenRightRowByIndex?(index: number): Element;
     getRowInfo?(target: Element): RowInfo;
     getState?(): Object;
     getMovableHeader?(): Element;
     getMovableContent?(): Element;
+    getFrozenRightContent?(): Element;
+    getFrozenRightHeader?(): Element;
     destroyTemplate?(templateName: string[]): void;
 }
 
@@ -833,7 +875,9 @@ export interface NotifyArgs {
     focusElement?: HTMLElement;
     rowObject?: Row<Column>;
     renderMovableContent?: boolean;
+    renderFrozenRightContent?: boolean;
     promise?: Promise<Object>;
+    isFrozenRowsRender?: boolean;
 }
 
 export interface LazyLoadArgs {
@@ -867,6 +911,17 @@ export interface InfiniteScrollArgs {
     startIndex?: number;
     direction?: string;
     isFrozen?: boolean;
+}
+
+/**
+ * @hidden
+ */
+export interface FrozenReorderArgs {
+    column?: Column;
+    destIndex?: number;
+    columns?: Column[];
+    parent?: Column;
+    cancel?: boolean;
 }
 
 /**
@@ -1578,6 +1633,10 @@ export interface InterSection {
     pageHeight?: number;
     debounceEvent?: boolean;
     axes?: string[];
+    scrollbar?: Element;
+    movableContainer?: Element;
+    prevTop?: number;
+    prevLeft?: number;
 }
 
 /**
@@ -1753,6 +1812,8 @@ export interface EditEventArgs extends BeginEditArgs {
     movableForm?: HTMLFormElement;
     /** Define the target for dialog */
     target?: HTMLElement;
+    /** Define frozen right table form element */
+    frozenRightForm?: HTMLFormElement;
 }
 
 export interface DialogEditEventArgs extends EditEventArgs {
@@ -2111,6 +2172,7 @@ export interface SwapInfo {
     toHeader?: boolean;
     toFrozen?: boolean;
     current?: number[];
+    toFrozenRight?: boolean;
 }
 
 /**
@@ -2507,6 +2569,8 @@ export interface ColumnDeselectEventArgs {
     columnIndexes?: number[];
     /** Defines the selected/deselected column. */
     headerCell?: Element | Element[];
+    /** Defines the selected/deselected column */
+    column?: Column;
     /** Defines the cancel option value. */
     cancel?: boolean;
     /** Defines the target element for column deselect. */

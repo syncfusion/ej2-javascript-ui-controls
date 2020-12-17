@@ -534,7 +534,6 @@ export class FormulaBar {
                 break;
         }
     }
-
     private isFormulaBarEdit(args: { [key: string]: Object }): void {
         let edit: boolean = this.parent.isEdit;
         if (edit && this.isGoto) {

@@ -60,6 +60,10 @@ export function isChar(value: string): boolean {
     return false;
 }
 
+export function inRange(range: number[], rowIdx: number, colIdx: number) : boolean {
+    return range && (rowIdx >= range[0] && rowIdx <= range[2] && colIdx >= range[1] && colIdx <= range[3]);
+}
+
 /**
  * Check whether the cell is locked or not
  * @hidden

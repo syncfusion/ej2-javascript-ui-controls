@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset } from '../common/index';
-import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder } from '../common/index';
+import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder } from '../common/index';
 import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, CellModel, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest } from '@syncfusion/ej2-base';
@@ -69,6 +69,7 @@ export class Selection {
         this.parent.on(clearCellRef, this.clearBorder, this);
         this.parent.on(getRowIdxFromClientY, this.getRowIdxFromClientY, this);
         this.parent.on(getColIdxFromClientX, this.getColIdxFromClientX, this);
+        this.parent.on(focusBorder, this.chartBorderHandler, this);
     }
 
     private removeEventListener(): void {
@@ -85,6 +86,7 @@ export class Selection {
             this.parent.off(clearCellRef, this.clearBorder);
             this.parent.off(getRowIdxFromClientY, this.getRowIdxFromClientY);
             this.parent.off(getColIdxFromClientX, this.getColIdxFromClientX);
+            this.parent.off(focusBorder, this.chartBorderHandler);
         }
     }
 
@@ -164,13 +166,20 @@ export class Selection {
         let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
         let isFormulaEdit: boolean = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
-            checkIsFormula(eventArgs.editedValue);
+        checkIsFormula(eventArgs.editedValue);
         if (!this.parent.isEdit || isFormulaEdit) {
             let overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
+            if (typeof((e.target as HTMLElement).className) === 'string' ) {
             if ((e.target as HTMLElement).className.indexOf('e-ss-overlay') > -1) {
                 return;
+            }
             } else if (overlayElem) {
                 overlayElem.classList.remove('e-ss-overlay-active');
+            }
+            if (closest(e.target as Element, '.e-datavisualization-chart')) {
+                return;
+            } else {
+                this.parent.notify(clearChartBorder, {});
             }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
@@ -675,36 +684,52 @@ export class Selection {
         this.focusBorder(this.dStartCell, this.dEndCell, formulaBorder[i % 6] as string[]);
     }
 
+    private chartBorderHandler(args: {
+        startcell: { rowIndex: number, colIndex: number }, endcell: { rowIndex: number, colIndex: number },
+        classes: string[]
+    }): void {
+        this.focusBorder(args.startcell, args.endcell, args.classes, true);
+    }
+
     private focusBorder(
         startcell: { rowIndex: number, colIndex: number }, endcell: { rowIndex: number, colIndex: number },
-        classes: string[]): void {
+        classes: string[], isChart?: boolean): void {
+        isChart = isNullOrUndefined(isChart) ? false : isChart;
         let range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
         let minr: number = range[0]; let minc: number = range[1]; let maxr: number = range[2]; let maxc: number = range[3];
         if (minr) {
             (this.getEleFromRange([minr - 1, minc, minr - 1, maxc])).forEach((td: HTMLElement): void => {
                 if (td) {
-                td.classList.add(classes[1]);
-                td.classList.add('e-formularef-selection');
+                    td.classList.add(classes[1]);
+                    if (!isChart) {
+                        td.classList.add('e-formularef-selection');
+                    }
                 }
             }); // top                            
         }
         (this.getEleFromRange([minr, maxc, maxr, maxc])).forEach((td: HTMLElement): void => {
             if (td) {
-            td.classList.add(classes[0]);
-            td.classList.add('e-formularef-selection');
+                td.classList.add(classes[0]);
+                if (!isChart) {
+                    td.classList.add('e-formularef-selection');
+                }
             }
         }); // right
         this.getEleFromRange([maxr, minc, maxr, maxc]).forEach((td: HTMLElement): void => {
             if (td) {
-            td.classList.add(classes[1]);
-            td.classList.add('e-formularef-selection');
+                td.classList.add(classes[1]);
+                if (!isChart) {
+                    td.classList.add('e-formularef-selection');
+                }
             }
         }); // bottom
         if (minc) {
             (this.getEleFromRange([minr, minc - 1, maxr, minc - 1])).forEach((td: HTMLElement): void => {
                 if (td) {
-                td.classList.add(classes[0]);
-                td.classList.add('e-formularef-selection');
+                    td.classList.add(classes[0]);
+                    if (!isChart) {
+                        td.classList.add('e-formularef-selection');
+                    }
                 }
             }); // left
         }

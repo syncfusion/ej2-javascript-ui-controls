@@ -1,4 +1,3 @@
-import { timelineHeaderCellLabel } from './../base/css-constants';
 import { TimelineFormat } from './../base/interface';
 import { createElement, isNullOrUndefined, getValue, addClass, removeClass, extend } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
@@ -248,7 +247,7 @@ export class Timeline {
         } else {
             date.setHours(isStartDate ? -48 : 48, 0, 0, 0);
         }
-    };
+    }
 
     private calculateNumberOfTimelineCells(newTimeline: ZoomTimelineSettings): number {
         let numberOfDays: number = Math.abs((this.parent.cloneProjectEndDate.getTime() -
@@ -729,17 +728,15 @@ export class Timeline {
     private formatDateHeader(dayFormat: string, data: Date): string {
         let date: Date = new Date(data.getTime());
         let dateString: string;
-        switch (dayFormat) {
-            case '':
-                dateString = this.parent.globalize.formatDate(date, { format: 'E' });
-                if (this.parent.locale === 'zh') {
-                    dateString = dateString.slice(1);
-                } else {
-                    dateString = dateString.slice(0, 1);
-                }
-                break;
-            default:
-                dateString = this.parent.globalize.formatDate(date, { format: dayFormat });
+        if (dayFormat === '') {
+            dateString = this.parent.globalize.formatDate(date, { format: 'E' });
+            if (this.parent.locale === 'zh') {
+                dateString = dateString.slice(1);
+            } else {
+                dateString = dateString.slice(0, 1);
+            }
+        } else {
+            dateString = this.parent.globalize.formatDate(date, { format: dayFormat });
         }
         return dateString;
     }
@@ -750,7 +747,7 @@ export class Timeline {
      * @private
      */
     private customFormat(date: Date, format: string, tier: string, mode: string, formatter: string | ITimelineFormatter): string {
-        formatter = (typeof formatter === 'string' ? getValue(<string>formatter, window) as ITimelineFormatter : formatter);
+        formatter = (typeof formatter === 'string' ? getValue(formatter, window) as ITimelineFormatter : formatter);
         return formatter(date, format, tier, mode);
     }
 
@@ -786,11 +783,10 @@ export class Timeline {
                 parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
             }
             parentTh = parentTh + parentTr;
-            parentTr = '';
             let tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
             timelineCell.endDate = new Date(startDate.getTime());
             tierCollection.push(timelineCell);
-        } while (!(startDate >= endDate));
+        } while ((startDate < endDate));
         return parentTh;
     }
 
@@ -815,7 +811,7 @@ export class Timeline {
      * @param mode 
      * @private
      */
-    public getIncrement(startDate: Date, count: number, mode: String): number {
+    public getIncrement(startDate: Date, count: number, mode: string): number {
         let firstDay: Date = new Date(startDate.getTime());
         let lastDay: Date = new Date(startDate.getTime());
         let increment: number;
@@ -823,12 +819,12 @@ export class Timeline {
             case 'Year':
                 firstDay = startDate;
                 lastDay = new Date(startDate.getFullYear() + (count - 1), 11, 31);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * 60 * 24);
+                increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24);
                 break;
             case 'Month':
                 firstDay = startDate;
                 lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 1);
-                increment = ((lastDay.getTime() - firstDay.getTime()));
+                increment = lastDay.getTime() - firstDay.getTime();
                 break;
             case 'Week':
                 let dayIndex: number = this.parent.timelineModule.customTimelineSettings.weekStartDay;
@@ -839,20 +835,20 @@ export class Timeline {
                 dayIntervel = startDate.getDay() < dayIndex ? dayIntervel > 0 ?
                     dayIntervel - 1 : dayIntervel : dayIntervel;
                 lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
-                increment = ((lastDay.getTime() - firstDay.getTime()));
+                increment = lastDay.getTime() - firstDay.getTime();
                 break;
             case 'Day':
                 lastDay.setHours(24, 0, 0, 0);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * 60 * 24 * (count - 1));
+                increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24 * (count - 1));
                 break;
             case 'Hour':
                 lastDay.setMinutes(60);
                 lastDay.setSeconds(0);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * 60 * (count - 1));
+                increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * (count - 1));
                 break;
             case 'Minutes':
                 lastDay.setSeconds(60);
-                increment = ((lastDay.getTime() - firstDay.getTime())) + (1000 * 60 * (count - 1));
+                increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * (count - 1));
                 break;
         }
         return increment;
@@ -911,7 +907,6 @@ export class Timeline {
         td += '">' + value + '</div>';
         parentTr += td;
         parentTr += '</th>';
-        td = '';
         if ((this.isSingleTier || tier === 'topTier') && !isLast) {
             this.totalTimelineWidth = this.totalTimelineWidth + thWidth;
         } else if ((this.isSingleTier || tier === 'topTier') && isLast) {
@@ -944,13 +939,10 @@ export class Timeline {
         let bottomTierCount: number = this.customTimelineSettings.bottomTier.count;
         let topTierCount: number = this.customTimelineSettings.topTier.count;
         this.bottomTierCellWidth = timelineUnitSize;
-        switch (this.bottomTier) {
-            case 'None':
-                this.parent.perDayWidth = this.getPerDayWidth(timelineUnitSize, topTierCount, this.topTier);
-                break;
-            default:
-                this.parent.perDayWidth = this.getPerDayWidth(timelineUnitSize, bottomTierCount, this.bottomTier);
-                break;
+        if (this.bottomTier === 'None') {
+            this.parent.perDayWidth = this.getPerDayWidth(timelineUnitSize, topTierCount, this.topTier);
+        } else {
+            this.parent.perDayWidth = this.getPerDayWidth(timelineUnitSize, bottomTierCount, this.bottomTier);
         }
         this.topTierCellWidth = this.bottomTier !== 'None' ? this.topTier === 'Week' ?
             this.parent.perDayWidth * 7 : this.topTier === 'Hour' ?

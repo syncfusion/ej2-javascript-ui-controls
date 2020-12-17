@@ -7,14 +7,14 @@ import { Row } from '../models/row';
 import { dataReady, modelChanged, refreshVirtualBlock, contentReady } from '../base/constant';
 import * as events from '../base/constant';
 import { SentinelType, Offsets } from '../base/type';
-import { RenderType } from '../base/enum';
+import { RenderType, freezeMode } from '../base/enum';
 import { ContentRender } from './content-renderer';
 import { HeaderRender } from './header-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, getTransformValues, ensureLastRow, ensureFirstRow, getEditedDataIndex, getScrollBarWidth } from '../base/util';
+import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex } from '../base/util';
 import { isBlazor, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 /**
@@ -26,7 +26,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private maxPage: number;
     private maxBlock: number;
     private prevHeight: number = 0;
-    private observer: InterSectionObserver;
+    /** @hidden */
+    public observer: InterSectionObserver;
     /**
      * @hidden
      */
@@ -44,8 +45,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private locator: ServiceLocator;
     private preventEvent: boolean = false;
     private actions: string[] = ['filtering', 'searching', 'grouping', 'ungrouping'];
-    private content: HTMLElement;
-    private offsets: { [x: number]: number } = {};
+    /** @hidden */
+    public content: HTMLElement;
+    /** @hidden */
+    public movableContent: HTMLElement;
+    /** @hidden */
+    public offsets: { [x: number]: number } = {};
     private tmpOffsets: { [x: number]: number } = {};
     /** @hidden */
     public virtualEle: VirtualElementHandler = new VirtualElementHandler();
@@ -72,9 +77,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private editedRowIndex: number;
     private requestTypes: string[] = ['beginEdit', 'cancel', 'delete', 'add', 'save'];
     private isNormaledit: boolean = this.parent.editSettings.mode === 'Normal';
-    private virtualData: Object = {};
+    /** @hidden */
+    public virtualData: Object = {};
     private emptyRowData: Object = {};
     private vfColIndex: number[] = [];
+    private frzIdx: number = 1;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -89,19 +96,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         super.renderTable();
         this.virtualEle.table = <HTMLElement>this.getTable();
         this.virtualEle.content = this.content = <HTMLElement>this.getPanel().querySelector('.e-content');
-        let minHeight: number = <number>this.parent.height;
-        if (this.parent.getFrozenColumns() && this.parent.height.toString().indexOf('%') < 0) {
-            minHeight = parseInt(this.parent.height as string, 10) - getScrollBarWidth();
-        }
-        this.virtualEle.renderWrapper(minHeight);
+        this.virtualEle.renderWrapper(<number>this.parent.height);
         this.virtualEle.renderPlaceHolder();
-        if (!this.parent.getFrozenColumns()) {
-            this.virtualEle.wrapper.style.position = 'absolute';
-        }
+        this.virtualEle.wrapper.style.position = 'absolute';
         let debounceEvent: boolean = (this.parent.dataSource instanceof DataManager && !this.parent.dataSource.dataSource.offline);
-        let content: HTMLElement = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() as HTMLElement : this.content;
         let opt: InterSection = {
-            container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
+            container: this.content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
         this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
@@ -110,17 +110,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     public renderEmpty(tbody: HTMLElement): void {
         this.getTable().appendChild(tbody);
         this.virtualEle.adjustTable(0, 0);
-    }
-
-    private refreshMvTbalTransform(): void {
-        let mCont: Element = this.parent.getMovableVirtualContent();
-        let fCont: Element = this.parent.getFrozenVirtualContent();
-        let mContTV: { width: number, height: number } = getTransformValues(mCont.firstElementChild);
-        let fContTV: { width: number, height: number } = getTransformValues(fCont.firstElementChild);
-        let top: number = mCont.scrollTop;
-        if (top > 0 && mContTV.height !== fContTV.height) {
-            (mCont.firstElementChild as HTMLElement).style.transform = `translate(${mContTV.width}px, ${fContTV.height}px)`;
-        }
     }
 
     private scrollListener(scrollArgs: ScrollArg): void {
@@ -133,9 +122,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.isFocused = false;
         } else {
             this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
-        }
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && scrollArgs.sentinel.axis === 'X') {
-            this.refreshMvTbalTransform();
         }
         let info: SentinelType = scrollArgs.sentinel;
         let pStartIndex: number = this.preStartIndex;
@@ -185,20 +171,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent.pageSettings.currentPage === viewInfo.currentPage) {
             this.parent.notify('refresh-virtual-indices', { requestType: 'virtualscroll', virtualStartIndex: viewInfo.startIndex,
             virtualEndIndex: viewInfo.endIndex, axis: 'Y', RHeight: this.parent.getRowHeight() });
-        }
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            let lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
-            if (this.parent.pageSettings.currentPage === lastPage && scrollArgs.sentinel.axis === 'Y') {
-                this.rndrCount++;
-            }
-            if (scrollArgs.sentinel.axis === 'Y') {
-                if (this.parent.pageSettings.currentPage === lastPage && this.rndrCount > 1) {
-                    this.rndrCount = 0;
-                    return;
-                } else if (this.parent.pageSettings.currentPage !== lastPage && this.parent.pageSettings.currentPage !== lastPage - 1) {
-                    this.rndrCount = 0;
-                }
-            }
         }
         if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
             this.requestType = 'virtualscroll';
@@ -308,7 +280,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let index: number = info.blockIndexes[info.block]; let mIdx: number;
         let old: number = index; let max: Function = Math.max;
         let indexes: number[] = info.direction === 'down' ? [max(index, 1), ++index, ++index] : [max(index - 1, 1), index, index + 1];
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()) {
+            // To avoid frozen content white space issue
             if (info.sentinelInfo.axis === 'X' || (info.sentinelInfo.axis === 'Y' && (info.page === this.prevInfo.page))) {
                 indexes = this.prevInfo.blockIndexes;
             }
@@ -338,38 +311,19 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         return indexes;
     }
 
-    /**
-     * @hidden
-     */
-    public vfTblTransform(info: VirtualInfo, left: number, top: number, e: NotifyArgs, cOffset: number, translate: number): void {
-        let lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
-        let isLastPage: boolean = lastPage === this.parent.pageSettings.currentPage && this.parent.enableColumnVirtualization;
-        let wrappers: HTMLElement[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-virtualtable'));
-        for (let i: number = 0; i < wrappers.length; i++) {
-            if (i === 0 && e.requestType === 'virtualscroll' && info.sentinelInfo.axis === 'X') {
-                continue;
-            }
-            if (lastPage !== this.parent.pageSettings.currentPage && this.parent.enableColumnVirtualization
-                && (left > 0 || (top > 0 && left === 0))) {
-                continue;
-            }
-            let cOff: number = isLastPage && i === 0 ? 0 : cOffset;
-            this.virtualEle.wrapper = wrappers[i];
-            this.virtualEle.adjustTable(cOff, translate);
-        }
-    }
-
     // tslint:disable-next-line:max-func-body-length
     public appendContent(target: HTMLElement, newChild: DocumentFragment | HTMLElement, e: NotifyArgs): void {
         // currentInfo value will be used if there are multiple dom updates happened due to mousewheel
-        let colVFtable: boolean = this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() !== 0;
+        let isFrozen: boolean = this.parent.isFrozenGrid();
+        let frzCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+        let colVFtable: boolean = this.parent.enableColumnVirtualization && isFrozen;
         this.checkFirstBlockColIndexes(e);
         let info: VirtualInfo = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
             this.currentInfo.page !== e.virtualInfo.page ? this.currentInfo : e.virtualInfo;
         this.prevInfo = this.prevInfo || e.virtualInfo;
         let cBlock: number = (info.columnIndexes[0]) - 1;
-        if (colVFtable && info.columnIndexes[0] === this.parent.getFrozenColumns()) {
-            cBlock = (info.columnIndexes[0] - this.parent.getFrozenColumns()) - 1;
+        if (colVFtable && info.columnIndexes[0] === frzCols) {
+            cBlock = (info.columnIndexes[0] - frzCols) - 1;
         }
         let cOffset: number = this.getColumnOffset(cBlock);
         let width: string; let blocks: number[] = info.blockIndexes;
@@ -381,37 +335,46 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
-        let translate: number = 0;
-        if (this.parent.getFrozenColumns()) {
-            let mCont: Element = this.parent.getMovableVirtualContent();
-            let left: number = mCont.scrollLeft;
-            let top: number = mCont.scrollTop;
-            translate = this.getTranslateY(mCont.scrollTop, <number>vHeight, info);
-            this.vfTblTransform(info, left, top, e, cOffset, translate);
-        } else {
-            if (!this.requestTypes.some((value: string) => value === this.requestType)) {
-                translate = this.getTranslateY(this.content.scrollTop, <number>vHeight, info);
-                this.virtualEle.adjustTable(cOffset, translate);
+        if (!this.requestTypes.some((value: string) => value === this.requestType)) {
+            let translate: number = this.getTranslateY(this.content.scrollTop, <number>vHeight, info);
+            this.virtualEle.adjustTable(colVFtable ? 0 : cOffset, translate);
+            if (colVFtable) {
+                this.virtualEle.adjustMovableTable(cOffset, 0);
             }
         }
-        if (this.parent.enableColumnVirtualization && !this.parent.getFrozenColumns()) {
-            this.header.virtualEle.adjustTable(cOffset, 0);
+        if (this.parent.enableColumnVirtualization) {
+            this.header.virtualEle.adjustTable(colVFtable ? 0 : cOffset, 0);
+            if (colVFtable) {
+                this.header.virtualEle.adjustMovableTable(cOffset, 0);
+            }
         }
 
         if (this.parent.enableColumnVirtualization) {
             let cIndex: number[] = info.columnIndexes;
             width = this.getColumnOffset(cIndex[cIndex.length - 1]) - this.getColumnOffset(cIndex[0] - 1) + '';
-            this.header.virtualEle.setWrapperWidth(width);
+            if (colVFtable) {
+                this.header.virtualEle.setMovableWrapperWidth(width);
+            } else {
+                this.header.virtualEle.setWrapperWidth(width);
+            }
         }
-        this.virtualEle.setWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
+        if (colVFtable) {
+            this.virtualEle.setMovableWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
+        } else {
+            this.virtualEle.setWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
+        }
         if (!isNullOrUndefined(target.parentNode)) {
             remove(target);
         }
         let tbody: HTMLElement;
-        if (this.parent.getFrozenColumns() && !e.renderMovableContent) {
-            tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
-        } else if (this.parent.getFrozenColumns() && e.renderMovableContent) {
-            tbody = this.parent.getMovableVirtualContent().querySelector('tbody');
+        if (isFrozen) {
+            if (e.renderFrozenRightContent) {
+                tbody = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+            } else if (!e.renderMovableContent) {
+                tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
+            } else if (e.renderMovableContent) {
+                tbody = this.parent.getMovableVirtualContent().querySelector('tbody');
+            }
         } else {
             tbody = this.parent.element.querySelector('.e-content').querySelector('tbody');
         }
@@ -431,12 +394,17 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 target.children[0].remove();
             }
         }
-        if (this.parent.getFrozenColumns()) {
-            if (!e.renderMovableContent) {
-                this.parent.getFrozenVirtualContent().querySelector('.e-table').appendChild(target);
-            } else {
-                this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(target);
+        if (isFrozen) {
+            if (e.renderFrozenRightContent) {
+                this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.e-table').appendChild(target);
                 this.requestType = this.requestType === 'virtualscroll' ? this.empty as string : this.requestType;
+            } else if (!e.renderMovableContent) {
+                this.parent.getFrozenVirtualContent().querySelector('.e-table').appendChild(target);
+            } else if (e.renderMovableContent) {
+                this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(target);
+                if (this.parent.getFrozenMode() !== 'Left-Right') {
+                    this.requestType = this.requestType === 'virtualscroll' ? this.empty as string : this.requestType;
+                }
             }
             if (this.vfColIndex.length) {
                 e.virtualInfo.columnIndexes = info.columnIndexes = extend([], this.vfColIndex) as number[];
@@ -446,7 +414,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.getTable().appendChild(target);
             this.requestType = this.requestType === 'virtualscroll' ? this.empty as string : this.requestType;
         }
-
         if (this.parent.groupSettings.columns.length) {
             if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
                 let blk: number = this.offsets[this.getTotalBlocks()] - this.prevHeight;
@@ -469,24 +436,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.isBottom = true;
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 2];
         }
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
-            && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
-            this.refreshMvTbalTransform();
-        }
         if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.parent.notify(events.autoCol, {});
         }
         this.focusCell(e);
-        this.restoreEdit();
-        this.restoreAdd();
+        this.restoreEdit(e);
+        this.restoreAdd(e);
     }
 
     private checkFirstBlockColIndexes(e: NotifyArgs): void {
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && e.virtualInfo.columnIndexes[0] === 0) {
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid() && e.virtualInfo.columnIndexes[0] === 0) {
             let indexes: number[] = [];
-            if (!e.renderMovableContent && e.virtualInfo.columnIndexes.length > this.parent.getFrozenColumns()) {
+            let frozenCols: number = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+            if (!e.renderMovableContent && e.virtualInfo.columnIndexes.length > frozenCols) {
                 this.vfColIndex = e.virtualInfo.columnIndexes;
-                for (let i: number = 0; i < this.parent.getFrozenColumns(); i++) {
+                for (let i: number = 0; i < frozenCols; i++) {
                     indexes.push(i);
                 }
                 e.virtualInfo.columnIndexes = indexes;
@@ -495,7 +459,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     this.vfColIndex = extend([], e.virtualInfo.columnIndexes) as number[];
                 }
                 e.virtualInfo.columnIndexes = extend([], this.vfColIndex) as number[];
-                e.virtualInfo.columnIndexes.splice(0, this.parent.getFrozenColumns());
+                e.virtualInfo.columnIndexes.splice(0, frozenCols);
             }
         }
     }
@@ -512,9 +476,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.activeKey = this.empty as string;
     }
 
-    private restoreEdit(): void {
+    private restoreEdit(e?: NotifyArgs): void {
         if (this.isNormaledit) {
-            if (this.parent.editSettings.allowEditing && this.parent.editModule && !isNullOrUndefined(this.editedRowIndex)) {
+            let left: number = this.parent.getFrozenColumns();
+            let isFrozen: boolean = e && this.parent.isFrozenGrid();
+            let table: freezeMode = this.parent.getFrozenMode();
+            let trigger: boolean = e && (left || table === 'Left' || table === 'Right' ? e.renderMovableContent
+                : e.renderFrozenRightContent);
+            if ((!isFrozen || (isFrozen && trigger)) && this.parent.editSettings.allowEditing
+                && this.parent.editModule && !isNullOrUndefined(this.editedRowIndex)) {
                 let row: HTMLTableRowElement = this.getRowByIndex(this.editedRowIndex) as HTMLTableRowElement;
                 if (Object.keys(this.virtualData).length && row && !this.content.querySelector('.e-editedrow')) {
                     let top: number = row.getBoundingClientRect().top;
@@ -528,17 +498,32 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     this.virtualData = this.getVirtualEditedData(rowData);
                 }
             }
-            this.restoreAdd();
+            this.restoreAdd(e);
         }
     }
 
     private getVirtualEditedData(rowData: Object): Object {
-        let editForm: Element = this.content.querySelector('.e-gridform');
-        return this.parent.editModule.getCurrentEditedData(editForm, rowData);
+        let editForms: Element = [].slice.call(this.parent.element.querySelectorAll('.e-gridform'));
+        let isFrozen: boolean = this.parent.isFrozenGrid();
+        let data: Object = this.parent.editModule.getCurrentEditedData(editForms[0], rowData);
+        if (isFrozen) {
+            if (this.parent.getTablesCount() === 2) {
+                data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
+            }
+            if (this.parent.getTablesCount() === 3) {
+                data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
+                data = this.parent.editModule.getCurrentEditedData(editForms[2], rowData);
+            }
+        }
+        return data;
     }
 
-    private restoreAdd(): void {
-        if (this.isNormaledit && this.isAdd && !this.content.querySelector('.e-addedrow')) {
+    private restoreAdd(e?: NotifyArgs): void {
+        let left: number = this.parent.getFrozenColumns();
+        let isFrozen: boolean = e && this.parent.isFrozenGrid();
+        let table: freezeMode = this.parent.getFrozenMode();
+        let trigger: boolean = e && (left || table === 'Left' || table === 'Right' ? e.renderMovableContent : e.renderFrozenRightContent);
+        if ((!isFrozen || (isFrozen && trigger)) && this.isNormaledit && this.isAdd && !this.parent.element.querySelector('.e-addedrow')) {
             let isTop: boolean = this.parent.editSettings.newRowPosition === 'Top' && this.content.scrollTop < this.parent.getRowHeight();
             let isBottom: boolean = this.parent.editSettings.newRowPosition === 'Bottom'
                 && this.parent.pageSettings.currentPage === this.maxPage;
@@ -559,10 +544,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             .some((value: string) => { return e.requestType === value; })) {
             this.refreshOffsets();
         }
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            let hdrTbls: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-table'));
-            this.header.virtualEle.table = hdrTbls[1];
-        }
         this.setVirtualHeight();
         this.resetScrollPosition(e.requestType);
     }
@@ -571,16 +552,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     public setVirtualHeight(height?: number): void {
         let width: string = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             let virtualHeightTemp: number = (this.parent.pageSettings.currentPage === 1 && Object.keys(this.offsets).length <= 2) ?
                 this.offsets[1] : this.offsets[this.getTotalBlocks() - 2];
-            let scrollableElementHeight: number = this.parent.getMovableVirtualContent().clientHeight;
+            let scrollableElementHeight: number = this.content.clientHeight;
             virtualHeightTemp = virtualHeightTemp > scrollableElementHeight ? virtualHeightTemp : 0;
-            let fTblWidth: string = this.parent.enableColumnVirtualization ? 'auto' : width;
-            this.virtualEle.placeholder = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtrack');
-            // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(virtualHeightTemp, fTblWidth);
-            this.virtualEle.placeholder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
             this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         } else {
@@ -590,6 +566,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);
+            if (this.parent.isFrozenGrid()) {
+                this.virtualEle.setMovableVirtualHeight(1, width);
+                this.header.virtualEle.setMovableVirtualHeight(1, width);
+            }
         }
     }
 
@@ -642,6 +622,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (Browser.isIE && !isWheel && check && !this.preventEvent) {
                 this.parent.showSpinner();
             }
+            let colVFtable: boolean = this.parent.enableColumnVirtualization && this.parent.isFrozenGrid();
             let xAxis: boolean = current.axis === 'X'; let top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
             let height: number = this.content.getBoundingClientRect().height;
             let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
@@ -649,27 +630,24 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (isBlazor() && this.parent.isServerRendered && this.currentInfo && this.currentInfo.startIndex && xAxis) {
                 y = this.currentInfo.startIndex * this.parent.getRowHeight();
             }
-            this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+            this.virtualEle.adjustTable(colVFtable ? 0 : x, Math.min(y, this.offsets[this.maxBlock]));
+            if (colVFtable) {
+                this.virtualEle.adjustMovableTable(x, 0);
+            }
             if (isBlazor() && this.parent.isServerRendered && xAxis) {
                 this.parent.notify('setcolumnstyles', { refresh: true });
             }
-            if (this.parent.getFrozenColumns() && !xAxis) {
-                let left: number = this.parent.getMovableVirtualContent().scrollLeft;
-                if (this.parent.enableColumnVirtualization && left > 0) {
-                    let fvTable: HTMLElement = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtable');
-                    fvTable.style.transform = `translate(${0}px, ${Math.min(y, this.offsets[this.maxBlock])}px)`;
-                } else {
-                    let fvTable: HTMLElement = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtable');
-                    fvTable.style.transform = `translate(${x}px, ${Math.min(y, this.offsets[this.maxBlock])}px)`;
-                }
-            }
             if (this.parent.enableColumnVirtualization && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered ))) {
-                this.header.virtualEle.adjustTable(x, 0);
+                this.header.virtualEle.adjustTable(colVFtable ? 0 : x, 0);
+                if (colVFtable) {
+                    this.header.virtualEle.adjustMovableTable(x, 0);
+                }
             }
         };
     }
 
     private dataBound(): void {
+        this.parent.notify(events.refreshVirtualFrozenHeight, {});
         if (this.isSelection && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
             this.parent.selectRow(this.selectedRowIndex);
         } else if (!isBlazor()) {
@@ -719,7 +697,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent.on(contentReady, fn, this);
     }
 
-    private getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
+    /** @hidden */
+    public getVirtualData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
         data.virtualData = this.virtualData;
         data.isAdd = this.isAdd;
         data.isCancel = this.isCancel;
@@ -751,6 +730,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private actionBegin(args: NotifyArgs): void {
         if (args.requestType !== 'virtualscroll') {
             this.requestType = args.requestType;
+        }
+        if (!args.cancel) {
+            this.parent.notify(events.refreshVirtualFrozenRows, args);
         }
     }
 
@@ -800,6 +782,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let block: number = Math.ceil((this.editedRowIndex + 1) / this.getBlockSize());
         let index: number = this.editedRowIndex - ((block - 1) * this.getBlockSize());
         this.vgenerator.cache[block][index].data = data;
+        if (this.vgenerator.movableCache[block]) {
+            this.vgenerator.movableCache[block][index].data = data;
+        }
+        if (this.vgenerator.frozenRightCache[block]) {
+            this.vgenerator.frozenRightCache[block][index].data = data;
+        }
     }
 
     private actionComplete(args: NotifyArgs): void {
@@ -833,9 +821,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private scrollAfterEdit(): void {
         if (this.parent.editModule && this.parent.editSettings.allowEditing && this.isNormaledit) {
-            if (this.content.querySelector('.e-gridform')) {
-                let editForm: Element = this.content.querySelector('.e-editedrow');
-                let addForm: Element = this.content.querySelector('.e-addedrow');
+            if (this.parent.element.querySelector('.e-gridform')) {
+                let editForm: Element = this.parent.element.querySelector('.e-editedrow');
+                let addForm: Element = this.parent.element.querySelector('.e-addedrow');
                 if (editForm || addForm) {
                     let rowData: Object = editForm ? extend({}, this.getRowObjectByIndex(this.editedRowIndex))
                         : extend({}, this.emptyRowData);
@@ -911,9 +899,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private resetScrollPosition(action: string): void {
         if (this.actions.some((value: string) => value === action)) {
-            let content: Element = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() : this.content;
-            this.preventEvent = content.scrollTop !== 0;
-            content.scrollTop = 0;
+            this.preventEvent = this.content.scrollTop !== 0;
+            this.content.scrollTop = 0;
         }
         if (action !== 'virtualscroll') {
             this.isAdd = false;
@@ -940,16 +927,25 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         return this.getRowCollection(index, true) as Element;
     }
 
-    public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean): Element | Object {
+    public getFrozenRightVirtualRowByIndex(index: number): Element {
+        return this.getRowCollection(index, false, false, true) as Element;
+    }
+
+    public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean, isFrozenRight?: boolean): Element | Object {
         let prev: number[] = this.prevInfo.blockIndexes;
         let startIdx: number = (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) ?
             (prev[0] - 1) * this.getBlockSize() : this.startIndex;
         let rowCollection: Element[] = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
+        rowCollection = isFrozenRight ? this.parent.getFrozenRightDataRows() : rowCollection;
         let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         let selectedRow: Element | Object = collection[index - startIdx];
-        if (!isRowObject && this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
-            selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
-                : rowCollection[(index - startIdx) + this.parent.frozenRows];
+        if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+            if (!isRowObject) {
+                selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
+                    : rowCollection[(index - startIdx) + this.parent.frozenRows];
+            } else {
+                selectedRow = index <= this.parent.frozenRows ? this.parent.getRowsObject()[index].data : selectedRow;
+            }
         }
         return selectedRow;
     }
@@ -1079,21 +1075,28 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private selectVirtualRow(args: { selectedIndex: number }): void {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
             && !this.requestTypes.some((value: string) => value === this.requestType) && !this.parent.selectionModule.isInteracted) {
-            let ele: Element = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-                : (this.parent.getContent() as HTMLElement).firstElementChild;
             let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);
             let rowHeight: number = this.parent.getRowHeight();
-            let eleOffsHeight: number = (ele as HTMLElement).offsetHeight;
-            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
+            let eleOffsHeight: number = (this.content as HTMLElement).offsetHeight;
+            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, this.content, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
                 let scrollTop: number = (args.selectedIndex + 1) * rowHeight;
                 if (!isNullOrUndefined(scrollTop)) {
-                    ele.scrollTop = scrollTop;
+                    this.content.scrollTop = scrollTop;
                 }
             }
         }
-        this.requestType = this.empty as string;
+        if (this.parent.isFrozenGrid() && this.requestType) {
+            if (this.parent.getTablesCount() === this.frzIdx) {
+                this.requestType = this.empty as string;
+                this.frzIdx = 1;
+            } else {
+                this.frzIdx++;
+            }
+        } else {
+            this.requestType = this.empty as string;
+        }
     }
 
     private isRowInView(index: number, selectedRow: Element, ele: Element, eleOffsHeight: number, rowHeight: number): boolean {
@@ -1115,7 +1118,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
  */
 export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     public virtualEle: VirtualElementHandler = new VirtualElementHandler();
-    private gen: VirtualRowModelGenerator;
+    /** @hidden */
+    public gen: VirtualRowModelGenerator;
+    public movableTbl: Element;
+    private isMovable: boolean = false;
 
     constructor(parent: IGrid, locator: ServiceLocator) {
         super(parent, locator);
@@ -1136,18 +1142,22 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
         super.renderTable();
         this.virtualEle.table = <HTMLElement>this.getTable();
         this.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.e-headercontent');
-        if (!this.parent.getFrozenColumns()) {
-            this.virtualEle.content.style.position = 'relative';
-        }
+        this.virtualEle.content.style.position = 'relative';
         this.virtualEle.renderWrapper();
         this.virtualEle.renderPlaceHolder('absolute');
     }
 
     public appendContent(table: Element): void {
-        this.virtualEle.wrapper.appendChild(table);
+        if (!this.isMovable) {
+            this.virtualEle.wrapper.appendChild(table);
+        } else {
+            this.virtualEle.movableWrapper.appendChild(table);
+            this.isMovable = false;
+        }
     }
 
     public refreshUI(): void {
+        this.isMovable = this.parent.isFrozenGrid();
         this.setFrozenTable(this.parent.getMovableVirtualContent());
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().querySelector('.e-headercontent')));
@@ -1212,7 +1222,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     }
 
     private setFrozenTable(content: Element): void {
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization
+        if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization
             && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()) {
             (<{ setTable?: Function }>(<Grid>this.parent).contentModule)
                 .setTable(content.querySelector('.e-table'));
@@ -1220,9 +1230,9 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     }
 
     private setDisplayNone(col: Column, displayVal: string): void {
-        let frozenCols: number = this.parent.getFrozenColumns();
+        let frozenCols: boolean = this.parent.isFrozenGrid();
         let table: Element = this.getTable();
-        if (frozenCols && col.index >= frozenCols) {
+        if (frozenCols && col.getFreezeTableName() === 'movable') {
             table = this.parent.getMovableVirtualHeader().querySelector('.e-table');
         }
         for (let ele of [].slice.apply(table.querySelectorAll('th.e-headercell'))) {
@@ -1245,6 +1255,10 @@ export class VirtualElementHandler {
     public placeholder: HTMLElement;
     public content: HTMLElement;
     public table: HTMLElement;
+    public movableWrapper: HTMLElement;
+    public movablePlaceholder: HTMLElement;
+    public movableTable: HTMLElement;
+    public movableContent: HTMLElement;
 
     public renderWrapper(height?: number): void {
         if (isBlazor()) {
@@ -1269,8 +1283,41 @@ export class VirtualElementHandler {
         this.content.appendChild(this.placeholder);
     }
 
+    public renderFrozenWrapper(height?: number): void {
+        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}; display: flex` });
+        this.content.appendChild(this.wrapper);
+    }
+
+    public renderFrozenPlaceHolder(): void {
+        this.placeholder = createElement('div', { className: 'e-virtualtrack' });
+        this.content.appendChild(this.placeholder);
+    }
+
+    public renderMovableWrapper(height?: number): void {
+        this.movableWrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
+        this.movableContent.appendChild(this.movableWrapper);
+    }
+
+    public renderMovablePlaceHolder(): void {
+        this.movablePlaceholder = createElement('div', { className: 'e-virtualtrack' });
+        this.movableContent.appendChild(this.movablePlaceholder);
+    }
+
     public adjustTable(xValue: number, yValue: number): void {
         this.wrapper.style.transform = `translate(${xValue}px, ${yValue}px)`;
+    }
+
+    public adjustMovableTable(xValue: number, yValue: number): void {
+        this.movableWrapper.style.transform = `translate(${xValue}px, ${yValue}px)`;
+    }
+
+    public setMovableWrapperWidth(width: string, full?: boolean): void {
+        this.movableWrapper.style.width = width ? `${width}px` : full ? '100%' : '';
+    }
+
+    public setMovableVirtualHeight(height?: number, width?: string): void {
+        this.movablePlaceholder.style.height = `${height}px`;
+        this.movablePlaceholder.style.width = width;
     }
 
     public setWrapperWidth(width: string, full?: boolean): void {

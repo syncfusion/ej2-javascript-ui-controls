@@ -112,7 +112,8 @@ export class TimelineEvent extends MonthEvent {
         let cellTd: HTMLElement = this.getCellTd();
         let overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
-        let appHeight: number = this.eventHeight;
+        let elem: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_CLASS);
+        let appHeight: number = (elem && elem.offsetHeight > 0) ? elem.offsetHeight : this.eventHeight;
         let diffInDays: number = eventData.count as number;
         let eventObj: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
         eventObj[this.fields.startTime] = eventData[this.fields.startTime];

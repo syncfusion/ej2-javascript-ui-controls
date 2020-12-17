@@ -1,8 +1,8 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';
+import { Component, Property, Event, Collection, L10n, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';
 import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';
-import { BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { BlazorDragEventArgs, SanitizeHtmlHelper, Browser } from '@syncfusion/ej2-base';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
@@ -128,6 +128,11 @@ export class AnimationSettings extends ChildProperty<AnimationSettings> {
 export type DialogEffect = 'Fade' | 'FadeZoom' | 'FlipLeftDown' | 'FlipLeftUp' | 'FlipRightDown' | 'FlipRightUp'
     | 'FlipXDown' | 'FlipXUp' | 'FlipYLeft' | 'FlipYRight' | 'SlideBottom' | 'SlideLeft' | 'SlideRight' | 'SlideTop' | 'Zoom'
     | 'None';
+
+/**
+ * Specifies the Resize Handles.
+ */
+export type ResizeDirections = 'South' | 'North' | 'East' | 'West' | 'NorthEast' | 'NorthWest' | 'SouthEast' | 'SouthWest' | 'All';
 
 const ROOT: string = 'e-dialog';
 const RTL: string = 'e-rtl';
@@ -451,6 +456,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Property(false)
     public enableResize: boolean;
+    /**
+     * Specifies the resize handles direction in the dialog component that can be resized by the end-user.
+     * @default ['South-East'] 
+     */
+    @Property(['South-East'])
+    public resizeHandles: ResizeDirections[];
     /**
      * Specifies the height of the dialog component.
      * @default 'auto'
@@ -784,7 +795,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!isNullOrUndefined(footerEle)) { computedFooterHeight = getComputedStyle(footerEle).height; }
         let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        setMinHeight(headerHeight + 30 + footerHeight);
+        setMinHeight(headerHeight + 30 + (isNaN(footerHeight) ? 0 : footerHeight));
         return (headerHeight + 30 + footerHeight);
     }
 
@@ -809,7 +820,38 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.classList.add(DLG_RESIZABLE);
             let computedHeight: string = getComputedStyle(this.element).minHeight;
             let computedWidth: string = getComputedStyle(this.element).minWidth;
-            let direction: string = this.enableRtl ? 'south-west' : 'south-east';
+            let direction: string = '';
+            for (let i: number = 0; i < this.resizeHandles.length; i++) {
+                if (this.resizeHandles[i] === 'All') {
+                    direction = 'south north east west north-east north-west south-east south-west';
+                    break;
+                } else {
+                    let directionValue: string = '';
+                    switch (this.resizeHandles[i].toString()) {
+                        case 'SouthEast':
+                            directionValue = 'south-east';
+                            break;
+                        case 'SouthWest':
+                            directionValue = 'south-west';
+                            break;
+                        case 'NorthEast':
+                            directionValue = 'north-east';
+                            break;
+                        case 'NorthWest':
+                            directionValue = 'north-west';
+                            break;
+                        default:
+                            directionValue = this.resizeHandles[i].toString();
+                            break;
+                    }
+                    direction += directionValue.toLocaleLowerCase() + ' ';
+                }
+            }
+            if (this.enableRtl && direction.trim() === 'south-east') {
+                direction = 'south-west';
+            } else if (this.enableRtl && direction.trim() === 'south-west') {
+                direction = 'south-east';
+            }
             if (this.isModal && this.enableRtl) {
                 this.element.classList.add(DLG_RESTRICT_LEFT_VALUE);
             } else if (this.isModal && this.target === document.body) {
@@ -840,7 +882,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.classList.remove(DLG_RESIZABLE);
         }
     }
-
     /* istanbul ignore next */
     private keyDown(event: KeyboardEvent): void {
         if (event.keyCode === 9) {
@@ -1377,6 +1418,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private focusContent(): void {
         let element: HTMLElement = this.getAutoFocusNode(this.element);
         let node: HTMLElement = !isNullOrUndefined(element) ? element : this.element;
+        let userAgent: string = Browser.userAgent;
+        if (userAgent.indexOf('MSIE ') > 0 || userAgent.indexOf('Trident/') > 0) {
+            this.element.focus();
+        }
         node.focus();
         this.bindEvent(this.element);
     }

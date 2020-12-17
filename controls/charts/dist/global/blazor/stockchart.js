@@ -598,9 +598,6 @@ var TooltipSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
-    __decorate$1([
-        sf.base.Property('None')
-    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(sf.base.ChildProperty));
 /**
@@ -994,9 +991,7 @@ var Double = /** @class */ (function () {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        var duplicateTempInterval;
-        for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
-            duplicateTempInterval = tempInterval;
+        for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
             labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
@@ -7493,10 +7488,9 @@ var BaseTooltip = /** @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate, tooltipPosition) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
-        if (tooltipPosition === void 0) { tooltipPosition = 'None'; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
@@ -7505,7 +7499,7 @@ var BaseTooltip = /** @class */ (function (_super) {
         var isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
         var inverted = this.chart.requireInvertedAxis && series.isRectSeries;
         var position = null;
-        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+        if (this.text.length <= 1) {
             var contentSize = sf.svgbase.measureText(this.text[0], chart.tooltip.textStyle);
             var headerSize = (!(this.header === '' || this.header === '<b></b>')) ? sf.svgbase.measureText(this.header, this.textStyle) :
                 new sf.svgbase.Size(0, 0);
@@ -7519,11 +7513,11 @@ var BaseTooltip = /** @class */ (function (_super) {
             isNegative = (position === 'Left') || (position === 'Bottom');
             inverted = (position === 'Left') || (position === 'Right');
         }
-        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-            position = tooltipPosition;
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
+        // else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+        //     position = tooltipPosition as TooltipPlacement;
+        //     isNegative = (position === 'Left') || (position === 'Bottom');
+        //     inverted = (position === 'Left') || (position === 'Right');
+        // }
         if (isFirst) {
             this.svgTooltip = new sf.svgbase.Tooltip({
                 opacity: chart.tooltip.opacity,
@@ -9650,19 +9644,21 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      * @param rect
      */
     CartesianAxisLayoutPanel.prototype.drawYAxisTitle = function (axis, index, parent, rect) {
-        var chart = this.chart;
-        var labelRotation = (axis.opposedPosition) ? 90 : -90;
-        var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
-            (axis.labelPosition === 'Inside' ? 0 :
-                (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
-        padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
-        var x = rect.x + padding;
-        var y = rect.y + rect.height * 0.5;
-        var titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
-        var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
-        var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
-        element.setAttribute('tabindex', axis.tabIndex.toString());
-        element.setAttribute('aria-label', axis.description || axis.title);
+        if (axis.title) {
+            var chart = this.chart;
+            var labelRotation = (axis.opposedPosition) ? 90 : -90;
+            var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+                (axis.labelPosition === 'Inside' ? 0 :
+                    (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
+            padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
+            var x = rect.x + padding;
+            var y = rect.y + rect.height * 0.5;
+            var titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+            var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
+            var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
+            element.setAttribute('aria-label', axis.description || axis.title);
+        }
     };
     /**
      * xAxis grid line calculation performed here
@@ -10116,19 +10112,21 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
      * @param rect
      */
     CartesianAxisLayoutPanel.prototype.drawXAxisTitle = function (axis, index, parent, rect) {
-        var chart = this.chart;
-        var elementSize = sf.svgbase.measureText(axis.title, axis.titleStyle);
-        var scrollBarHeight = sf.base.isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
-        var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
-            (axis.labelPosition === 'Inside' ? 0 :
-                axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-        var titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
-        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
-            elementSize.height / 4) + scrollBarHeight);
-        var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.titleCollection);
-        var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
-        element.setAttribute('aria-label', axis.description || axis.title);
-        element.setAttribute('tabindex', axis.tabIndex.toString());
+        if (axis.title) {
+            var chart = this.chart;
+            var elementSize = sf.svgbase.measureText(axis.title, axis.titleStyle);
+            var scrollBarHeight = sf.base.isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
+            var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+                (axis.labelPosition === 'Inside' ? 0 :
+                    axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
+            var titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+            padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
+                elementSize.height / 4) + scrollBarHeight);
+            var options = new sf.svgbase.TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.titleCollection);
+            var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+            element.setAttribute('aria-label', axis.description || axis.title);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
+        }
     };
     /**
      * To render the axis grid and tick lines(Both Major and Minor)
@@ -22995,7 +22993,7 @@ var Tooltip$1 = /** @class */ (function (_super) {
                 _this.headerText = argsData.headerText;
                 _this.formattedText = _this.formattedText.concat(argsData.text);
                 _this.text = _this.formattedText;
-                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '', _this.chart.tooltip.position);
+                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '');
             }
             else {
                 _this.removeHighlight(_this.control);
@@ -26825,9 +26823,14 @@ var DataLabel = /** @class */ (function () {
             }
         }
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
-            // tslint:disable-next-line:align
-            false, 'x', 'y', null, '', false, false, null, chart.duration);
+            if (!chart.enableCanvas) {
+                appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
+                // tslint:disable-next-line:align
+                false, 'x', 'y', null, '', false, false, null, chart.duration);
+            }
+            else {
+                getElement$1(chart.element.id + '_Secondary_Element').appendChild(element);
+            }
         }
     };
     /**
@@ -26873,8 +26876,11 @@ var DataLabel = /** @class */ (function () {
             parseFloat(childElement.style.left) <= hAxis.rect.x + hAxis.rect.width) {
             this.chart.dataLabelCollections.push(new sf.svgbase.Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
             appendChildElement(this.chart.enableCanvas, parentElement, childElement, redraw, true, 'left', 'top');
-            if (series.animation.enable && this.chart.animateSeries) {
+            if (series.animation.enable && this.chart.animateSeries && !this.chart.enableCanvas) {
                 this.doDataLabelAnimation(series, childElement);
+            }
+            else if (this.chart.enableCanvas) {
+                parentElement.appendChild(childElement);
             }
         }
     };

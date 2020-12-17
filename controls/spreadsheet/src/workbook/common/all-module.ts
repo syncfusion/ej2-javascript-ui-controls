@@ -1,5 +1,5 @@
 import { Workbook, DataBind } from '../../workbook/index';
-import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen } from '../integrations/index';
+import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen, WorkbookChart } from '../integrations/index';
 import { WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookDelete } from '../actions/index';
 import { WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge } from '../actions/index';
@@ -18,7 +18,8 @@ export class WorkbookAllModule {
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete,
-            WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat, WorkbookImage);
+            WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge, WorkbookConditionalFormat,
+            WorkbookImage, WorkbookChart);
     }
 
     /**

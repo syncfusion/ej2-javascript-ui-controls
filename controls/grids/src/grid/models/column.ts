@@ -2,7 +2,7 @@ import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base
 import { NumberFormatOptions, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions, DataResult, IGrid } from '../base/interface';
-import { TextAlign, ClipMode, Action, SortDirection, EditType, ColumnType, CommandButtonType } from '../base/enum';
+import { TextAlign, ClipMode, Action, SortDirection, CommandButtonType, freezeDirection, freezeTable } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer, HeaderValueAccessor } from '../base/type';
@@ -429,6 +429,15 @@ export class Column {
      */
     public autoFit: boolean = false;
 
+    /**
+     * defines which side the column need to freeze
+     * The available built-in freeze directions are
+     * * Left - Freeze the column at left side.
+     * * Right - Freeze the column at right side.
+     * @default null
+     */
+    public freeze: freezeDirection;
+
     private parent: IGrid;
     /**
      * @hidden
@@ -546,6 +555,7 @@ export class Column {
     private editTemplateFn: Function;
     private filterTemplateFn: Function;
     private sortDirection: string = 'Descending';
+    private freezeTable: freezeTable;
 
     /** @hidden */
     public getEditTemplate: Function = () => this.editTemplateFn;
@@ -561,6 +571,11 @@ export class Column {
     /** @hidden */
     public setSortDirection(direction: string): void {
         this.sortDirection = direction;
+    }
+
+    /** @hidden */
+    public getFreezeTableName(): freezeTable {
+        return this.freezeTable;
     }
 
     /** @hidden */
@@ -1144,6 +1159,8 @@ export interface ColumnModel {
      * @default false  
      */
     autoFit?: boolean;
+
+    freeze?: freezeDirection;
 }
 
 export interface ActionEventArgs {

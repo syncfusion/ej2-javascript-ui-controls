@@ -22,8 +22,9 @@ import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
 import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
-import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';
+import { FileManagerSettings } from '../models/toolbar-settings';
 import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';
 import { FontColor, BackgroundColor } from '../models/toolbar-settings';
 import { IFrameSettings } from '../models/iframe-settings';
@@ -46,6 +47,7 @@ import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } 
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { Resize } from '../actions/resize';
+import { FileManager } from '../actions/file-manager';
 
 /**
  * Represents the Rich Text Editor component.
@@ -171,6 +173,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public countModule: Count;
+    /**
+     * @hidden
+     * @deprecated
+     */
+    public fileManagerModule: FileManager;
 
     public needsID: boolean = true;
     /**
@@ -338,7 +345,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public floatingToolbarOffset: number;
     /**
      * Enable or disable the inline edit mode.
-     * * enable -  set boolean value to enable or disable the inline edit mode.
+     * * enable - set boolean value to enable or disable the inline edit mode.
      * * onSelection - If its set to true, upon selecting the text, the toolbar is opened in inline. 
      * If its set to false, upon clicking to the target element, the toolbar is opened.
      * 
@@ -352,6 +359,39 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<InlineModeModel>({}, InlineMode)
     public inlineMode: InlineModeModel;
+    /**
+     * Specifies the image manager options in Rich Text Editor component and control with the following properties.
+     * * enable - set boolean value to enable or disable the image manager.
+     * * ajaxSettings - Specifies the AJAX settings of the image manager.
+     * * contextMenuSettings - Specifies the context menu settings of the image manager.
+     * * navigationPaneSettings - Specifies the navigation pane settings of the image manager.
+     * * toolbarSettings - Specifies the group of items aligned horizontally in the toolbar.
+     * * uploadSettings - Specifies the upload settings for the image manager.
+     * 
+     * @default
+     * {
+     *  enable: false,
+     *  path: '/',
+     *  ajaxSettings: { getImageUrl: null, url: null, uploadUrl: null },
+     *  contextMenuSettings: {
+     *   visible: true,
+     *   file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'],
+     *   folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'],
+     *   layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll']
+     *  },
+     *  navigationPaneSettings: {
+     *   visible: true,
+     *   items: [
+     *    'NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download',
+     *    'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'
+     *   ]
+     *  },
+     *  toolbarSettings: { visible: true, items: ['Upload', 'NewFolder'] },
+     *  uploadSettings: { autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }
+     * }
+     */
+    @Complex<FileManagerSettingsModel>({}, FileManagerSettings)
+    public fileManagerSettings: FileManagerSettingsModel;
     /**
      * Specifies the width of the RichTextEditor.
      * @default '100%'
@@ -938,6 +978,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 { member: 'pasteCleanup', args: [this, this.serviceLocator] }
             );
         }
+        if (this.fileManagerSettings.enable) {
+            modules.push(
+                { member: 'fileManager', args: [this, this.serviceLocator] }
+            );
+        }
         if (this.enableResize) {
             modules.push(
                 { member: 'resize', args: [this] }
@@ -1240,6 +1285,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.RTERender();
         let execCommandCallBack: ExecCommandCallBack = new ExecCommandCallBack(this);
         this.notify(events.initialEnd, {});
+        if (this.enableXhtml) {
+            this.setProperties({ value: this.getXhtml() }, true);
+        }
         if (this.toolbarSettings.enable && this.toolbarSettings.type === 'Expand' && !isNOU(this.getToolbar()) &&
             (this.toolbarSettings.items.indexOf('Undo') > -1 && this.toolbarSettings.items.indexOf('Redo') > -1)) {
             this.disableToolbarItem(['Undo', 'Redo']);
@@ -1719,6 +1767,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.updatePanelValue();
                     this.setPlaceHolder();
                     this.notify(events.xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
+                    if (this.enableXhtml) {
+                        this.setProperties({ value: this.getXhtml() }, true);
+                    }
                     if (this.showCharCount) { this.countModule.refresh(); } break;
                 case 'valueTemplate':
                     this.setValue();
@@ -2138,6 +2189,23 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * Image max width calculation method
+     * @hidden
+     * @deprecated
+     */
+    public getInsertImgMaxWidth(): string | number {
+        let maxWidth: string | number = this.insertImageSettings.maxWidth;
+        let imgPadding: number = 12;
+        let imgResizeBorder: number = 2;
+        let editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
+        let eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
+        let editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +
+            parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
+            parseFloat(eleStyle.marginLeft.split('px')[0]) + parseFloat(eleStyle.marginRight.split('px')[0]));
+        return isNOU(maxWidth) ? editEleMaxWidth : maxWidth;
+    }
+
+    /**
      * setContentHeight method
      * @hidden
      * @deprecated
@@ -2461,8 +2529,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public invokeChangeEvent(): void {
+        let currentValue: string;
+        if (this.enableXhtml) {
+            currentValue = this.getXhtml();
+        } else {
+            currentValue = this.value;
+        }
         let eventArgs: ChangeEventArgs = {
-            value: this.value
+            value: currentValue
         };
         if (this.value !== this.cloneValue) {
             this.trigger('change', eventArgs);

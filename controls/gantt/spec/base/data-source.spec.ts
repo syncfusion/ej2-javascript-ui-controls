@@ -8,6 +8,44 @@ export let projectResources: Object[] = [
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
 
+export let virtualData: Object[] = [];
+let x: number = 0;
+for (let i: number = 0; i < 50; i++) {
+    let parent: Object = {};
+    parent["TaskID"] = ++x;
+    parent["TaskName"] = "Task " + x;
+    parent["StartDate"] = new Date("01/09/2017");
+    parent["EndDate"] = new Date("01/13/2017");
+    parent["Duration"] = 5;
+    parent["Status"] = Math.round(Math.random() * 100);
+    let d: Object[] = [];
+    for (let j: number = 1; j < 3; j++) {
+        let child: Object = {};
+        child["TaskID"] = ++x;
+        child["TaskName"] = "Task " + x;
+        child["StartDate"] = new Date("01/09/2017");
+        child["EndDate"] = new Date("01/13/2017");
+        child["Duration"] = 5;
+        child["Status"] = Math.round(Math.random() * 100);
+        let y: Object[] = [];
+        for (let k: number = 1; k < 4; k++) {
+            let c: Object  = {};
+            c["TaskID"] = ++x;
+            c["TaskName"] = "Task " + x;
+            c["StartDate"] = new Date("01/09/2017");
+            c["EndDate"] = new Date("01/13/2017");
+            c["Duration"] = 5;
+            c["Status"] = Math.round(Math.random() * 100);
+            c["Predecessor"] = x - 1;
+            y.push(c);
+        }
+        child["subtasks"] = y;
+        d.push(child);
+    }
+    parent["subtasks"] = d;
+    virtualData[i] = parent;
+};
+
 export let selfReference: Object[] = [
     {
         'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('02/27/2017'),

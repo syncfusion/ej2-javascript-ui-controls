@@ -692,33 +692,33 @@ describe('Column virtualization', () => {
         });
     });
 
-    describe('Grouping enabled', () => {
-        let grid: Grid;
-        beforeAll((done: Function) => {
-            grid = createGrid(
-                {
-                    dataSource: data1,
-                    columns: count5000,
-                    enableVirtualization: true,                    
-                    height: 300,                    
-                    allowGrouping: true,
-                    groupSettings: { columns: ['Column6'] }
-                },
-                () => {
-                    (<HTMLElement>grid.getContent().firstChild).scrollTop = 90;                    
-                    done();
-                }
-            );
-        });
-        it('Check the scrollTop value', () => {
-            let content: string = 'content';
-            expect(grid.scrollModule[content].scrollTop).toBe(90);           
-        });
-        afterAll(() => {
-            destroy(grid);
-            grid = null;
-        });
-    });
+    // describe('Grouping enabled', () => {
+    //     let grid: Grid;
+    //     beforeAll((done: Function) => {
+    //         grid = createGrid(
+    //             {
+    //                 dataSource: data1,
+    //                 columns: count5000,
+    //                 enableVirtualization: true,                    
+    //                 height: 300,                    
+    //                 allowGrouping: true,
+    //                 groupSettings: { columns: ['Column6'] }
+    //             },
+    //             () => {
+    //                 (<HTMLElement>grid.getContent().firstChild).scrollTop = 90;                    
+    //                 done();
+    //             }
+    //         );
+    //     });
+    //     it('Check the scrollTop value', () => {
+    //         let content: string = 'content';
+    //         expect(grid.scrollModule[content].scrollTop).toBe(90);           
+    //     });
+    //     afterAll(() => {
+    //         destroy(grid);
+    //         grid = null;
+    //     });
+    // });
 
     describe('EJ2-37789 - Summary has an empty when collapse the record', () => {
         let gObj: Grid;

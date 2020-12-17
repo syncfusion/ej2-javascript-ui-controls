@@ -12,7 +12,6 @@ import { Series, Points } from '../../chart/series/chart-series';
 import { FontModel } from '../../common/model/base-model';
 import { Tooltip as SVGTooltip, ITooltipAnimationCompleteArgs } from '@syncfusion/ej2-svg-base';
 import { ChartShape } from '../../chart/utils/enum';
-import { TooltipPosition } from '../../common/utils/enum';
 import { AccumulationSelection } from '../../accumulation-chart';
 
 /**
@@ -147,7 +146,7 @@ export class BaseTooltip extends ChartData {
     public createTooltip(
         chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
         point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect, extraPoints: PointData[] = null,
-        templatePoint: Points | AccPoints = null, customTemplate?: string, tooltipPosition: TooltipPosition = 'None'
+        templatePoint: Points | AccPoints = null, customTemplate?: string
     ): void {
         let series: Series = <Series>this.currentPoints[0].series;
         let module: AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
@@ -157,7 +156,7 @@ export class BaseTooltip extends ChartData {
         let isNegative: boolean = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
         let inverted: boolean = this.chart.requireInvertedAxis && series.isRectSeries;
         let position: TooltipPlacement = null;
-        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+        if (this.text.length <= 1) {
             let contentSize: Size = measureText(this.text[0], chart.tooltip.textStyle);
             let headerSize: Size = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
                 new Size(0, 0);
@@ -170,11 +169,12 @@ export class BaseTooltip extends ChartData {
             position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
             isNegative = (position === 'Left') || (position === 'Bottom');
             inverted = (position === 'Left') || (position === 'Right');
-        } else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-            position = tooltipPosition as TooltipPlacement;
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
         }
+        // else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+        //     position = tooltipPosition as TooltipPlacement;
+        //     isNegative = (position === 'Left') || (position === 'Bottom');
+        //     inverted = (position === 'Left') || (position === 'Right');
+        // }
 
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(

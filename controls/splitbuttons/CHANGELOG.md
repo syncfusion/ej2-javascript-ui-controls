@@ -2,31 +2,7 @@
 
 ## [Unreleased]
 
-## 18.3.53 (2020-12-08)
-
-### ProgressButton
-
-#### Bug Fixes
-
-- `#297963` - Click action prevented while the spinner is in progress.
-
-## 18.3.50 (2020-11-17)
-
-### DropDownButton
-
-#### Bug Fixes
-
-- Issue with setting HTML element id start with number is fixed
-
-## 18.3.48 (2020-11-11)
-
-### DropDownButton
-
-#### New Features
-
-- `#287701` - Provided `disabled` property in item model to enable / disable the items.
-
-## 18.3.47 (2020-11-05)
+## 18.4.30 (2020-12-17)
 
 ### SplitButton
 

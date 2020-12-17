@@ -3760,3 +3760,1116 @@ console.log('inline nested Content Control validation');
         expect(json).toBe(expectdoc);
     });*/
 });
+
+describe('FootnoteEndnote validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, SfdtExport);
+        editor = new DocumentEditor({ enableSfdtExport: true, enableEditor: true, enableSelection: true, isReadOnly: false });
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+
+    it('FootnoteEndnote document validation', () => {
+        console.log('FootnoteEndnote document validation');
+        let notedoc: any = {
+            "sections": [
+                {
+                    "blocks": [
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "footnte",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "footnoteType": "Footnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty",
+                                        "styleName": "Footnote Reference"
+                                    },
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Footnote Text"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "\u0002",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty",
+                                                        "styleName": "Footnote Reference"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "H",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "ello",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " footnote",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "symbolCode": 0,
+                                    "symbolFontName": "Symbol"
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "Endnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "footnoteType": "Endnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty",
+                                        "styleName": "Endnote Reference"
+                                    },
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Endnote Text"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "\u0002",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty",
+                                                        "styleName": "Endnote Reference"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " Hello ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "foot",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "note",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "s",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "symbolCode": 0,
+                                    "symbolFontName": "Symbol"
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": []
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "Arunkumar",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "footnoteType": "Footnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty",
+                                        "styleName": "Footnote Reference"
+                                    },
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Footnote Text"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "\u0002",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty",
+                                                        "styleName": "Footnote Reference"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "sadasdas",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "symbolCode": 0,
+                                    "symbolFontName": "Symbol"
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "syncfusion",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": " ",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "text": "Arun",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "kumar",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "headersFooters": {},
+                    "sectionFormat": {
+                        "headerDistance": 36.0,
+                        "footerDistance": 36.0,
+                        "pageWidth": 612.0,
+                        "pageHeight": 792.0,
+                        "leftMargin": 72.0,
+                        "rightMargin": 72.0,
+                        "topMargin": 72.0,
+                        "bottomMargin": 72.0,
+                        "differentFirstPage": false,
+                        "differentOddAndEvenPages": false,
+                        "bidi": false,
+                        "restartPageNumbering": false,
+                        "pageStartingNumber": 0,
+                        "footnotePosition": "PrintAtBottomOfPage",
+                        "endnotePosition": "DisplayEndOfDocument",
+                        "endnoteNumberFormat": "LowerCaseRoman",
+                        "footNoteNumberFormat": "Arabic",
+                        "restartIndexForFootnotes": "DoNotRestart",
+                        "restartIndexForEndnotes": "DoNotRestart"
+                    }
+                }
+            ],
+            "characterFormat": {
+                "fontSize": 11.0,
+                "fontFamily": "Calibri",
+                "fontColor": "empty",
+                "fontSizeBidi": 11.0,
+                "fontFamilyBidi": "Arial"
+            },
+            "paragraphFormat": {
+                "afterSpacing": 8.0,
+                "lineSpacing": 1.0791666507720948,
+                "lineSpacingType": "Multiple"
+            },
+            "background": {
+                "color": "#FFFFFFFF"
+            },
+            "styles": [
+                {
+                    "type": "Paragraph",
+                    "name": "Normal",
+                    "next": "Normal",
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Default Paragraph Font",
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    }
+                },
+                {
+                    "type": "Paragraph",
+                    "name": "Footnote Text",
+                    "basedOn": "Normal",
+                    "next": "Footnote Text",
+                    "link": "Footnote Text Char",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    },
+                    "paragraphFormat": {
+                        "afterSpacing": 0.0,
+                        "lineSpacing": 1.0,
+                        "lineSpacingType": "Multiple"
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Footnote Text Char",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Footnote Reference",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "baselineAlignment": "Superscript",
+                        "fontColor": "empty"
+                    }
+                },
+                {
+                    "type": "Paragraph",
+                    "name": "Endnote Text",
+                    "basedOn": "Normal",
+                    "next": "Endnote Text",
+                    "link": "Endnote Text Char",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    },
+                    "paragraphFormat": {
+                        "afterSpacing": 0.0,
+                        "lineSpacing": 1.0,
+                        "lineSpacingType": "Multiple"
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Endnote Text Char",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Endnote Reference",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "baselineAlignment": "Superscript",
+                        "fontColor": "empty"
+                    }
+                }
+            ],
+            "defaultTabWidth": 36.0,
+            "formatting": false,
+            "trackChanges": false,
+            "protectionType": "NoProtection",
+            "enforcement": false,
+            "dontUseHTMLParagraphAutoSpacing": false,
+            "alignTablesRowByRow": false,
+            "formFieldShading": true,
+            "footnotes": {
+                "separator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0003",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationSeparator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0004",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationNotice": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "Heloo",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            },
+                            {
+                                "text": " here",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "endnotes": {
+                "separator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0003",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationSeparator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0004",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationNotice": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "Heloo",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            },
+                            {
+                                "text": " here",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+        let expectdoc: any = {
+            "sections": [
+                {
+                    "blocks": [
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "footnte",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "footnoteType": "Footnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty",
+                                        "styleName": "Footnote Reference"
+                                    },
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Footnote Text"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "\u0002",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty",
+                                                        "styleName": "Footnote Reference"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "H",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "ello",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " footnote",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "symbolCode": 0,
+                                    "symbolFontName": "Symbol"
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "Endnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "footnoteType": "Endnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty",
+                                        "styleName": "Endnote Reference"
+                                    },
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Endnote Text"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "\u0002",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty",
+                                                        "styleName": "Endnote Reference"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " Hello ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "foot",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "note",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "s",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "symbolCode": 0,
+                                    "symbolFontName": "Symbol"
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": []
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "Arunkumar",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "footnoteType": "Footnote",
+                                    "characterFormat": {
+                                        "fontColor": "empty",
+                                        "styleName": "Footnote Reference"
+                                    },
+                                    "blocks": [
+                                        {
+                                            "characterFormat": {
+                                                "fontColor": "empty"
+                                            },
+                                            "paragraphFormat": {
+                                                "styleName": "Footnote Text"
+                                            },
+                                            "inlines": [
+                                                {
+                                                    "text": "\u0002",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty",
+                                                        "styleName": "Footnote Reference"
+                                                    }
+                                                },
+                                                {
+                                                    "text": " ",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                },
+                                                {
+                                                    "text": "sadasdas",
+                                                    "characterFormat": {
+                                                        "fontColor": "empty"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "symbolCode": 0,
+                                    "symbolFontName": "Symbol"
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "syncfusion",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": " ",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                },
+                                {
+                                    "text": "Arun",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "paragraphFormat": {
+                                "styleName": "Normal"
+                            },
+                            "inlines": [
+                                {
+                                    "text": "kumar",
+                                    "characterFormat": {
+                                        "fontColor": "empty"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "headersFooters": {},
+                    "sectionFormat": {
+                        "headerDistance": 36.0,
+                        "footerDistance": 36.0,
+                        "pageWidth": 612.0,
+                        "pageHeight": 792.0,
+                        "leftMargin": 72.0,
+                        "rightMargin": 72.0,
+                        "topMargin": 72.0,
+                        "bottomMargin": 72.0,
+                        "differentFirstPage": false,
+                        "differentOddAndEvenPages": false,
+                        "bidi": false,
+                        "restartPageNumbering": false,
+                        "pageStartingNumber": 0,
+                        "footnotePosition": "PrintAtBottomOfPage",
+                        "endnotePosition": "DisplayEndOfDocument",
+                        "endnoteNumberFormat": "LowerCaseRoman",
+                        "footNoteNumberFormat": "Arabic",
+                        "restartIndexForFootnotes": "DoNotRestart",
+                        "restartIndexForEndnotes": "DoNotRestart"
+                    }
+                }
+            ],
+            "characterFormat": {
+                "fontSize": 11.0,
+                "fontFamily": "Calibri",
+                "fontColor": "empty",
+                "fontSizeBidi": 11.0,
+                "fontFamilyBidi": "Arial"
+            },
+            "paragraphFormat": {
+                "afterSpacing": 8.0,
+                "lineSpacing": 1.0791666507720948,
+                "lineSpacingType": "Multiple"
+            },
+            "background": {
+                "color": "#FFFFFFFF"
+            },
+            "styles": [
+                {
+                    "type": "Paragraph",
+                    "name": "Normal",
+                    "next": "Normal",
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Default Paragraph Font",
+                    "characterFormat": {
+                        "fontColor": "empty"
+                    }
+                },
+                {
+                    "type": "Paragraph",
+                    "name": "Footnote Text",
+                    "basedOn": "Normal",
+                    "next": "Footnote Text",
+                    "link": "Footnote Text Char",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    },
+                    "paragraphFormat": {
+                        "afterSpacing": 0.0,
+                        "lineSpacing": 1.0,
+                        "lineSpacingType": "Multiple"
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Footnote Text Char",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Footnote Reference",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "baselineAlignment": "Superscript",
+                        "fontColor": "empty"
+                    }
+                },
+                {
+                    "type": "Paragraph",
+                    "name": "Endnote Text",
+                    "basedOn": "Normal",
+                    "next": "Endnote Text",
+                    "link": "Endnote Text Char",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    },
+                    "paragraphFormat": {
+                        "afterSpacing": 0.0,
+                        "lineSpacing": 1.0,
+                        "lineSpacingType": "Multiple"
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Endnote Text Char",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "fontSize": 10.0,
+                        "fontColor": "empty",
+                        "fontSizeBidi": 10.0
+                    }
+                },
+                {
+                    "type": "Character",
+                    "name": "Endnote Reference",
+                    "basedOn": "Default Paragraph Font",
+                    "characterFormat": {
+                        "baselineAlignment": "Superscript",
+                        "fontColor": "empty"
+                    }
+                }
+            ],
+            "defaultTabWidth": 36.0,
+            "formatting": false,
+            "trackChanges": false,
+            "protectionType": "NoProtection",
+            "enforcement": false,
+            "dontUseHTMLParagraphAutoSpacing": false,
+            "alignTablesRowByRow": false,
+            "formFieldShading": true,
+            "footnotes": {
+                "separator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0003",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationSeparator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0004",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationNotice": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "Heloo",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            },
+                            {
+                                "text": " here",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "endnotes": {
+                "separator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0003",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationSeparator": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "\u0004",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "continuationNotice": [
+                    {
+                        "characterFormat": {
+                            "fontColor": "empty"
+                        },
+                        "paragraphFormat": {
+                            "afterSpacing": 0.0,
+                            "lineSpacing": 1.0,
+                            "lineSpacingType": "Multiple",
+                            "styleName": "Normal"
+                        },
+                        "inlines": [
+                            {
+                                "text": "Heloo",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            },
+                            {
+                                "text": " here",
+                                "characterFormat": {
+                                    "fontColor": "empty"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+        editor.open(notedoc);
+        let json: string = editor.serialize();
+        editor.open(expectdoc);
+        let expected: string = editor.serialize();
+        expect(json).toBe(expected);
+    });
+});

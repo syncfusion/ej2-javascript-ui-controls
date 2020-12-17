@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, selectionComplete, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat } from '../common/index';
-import { findHandler, DialogBeforeOpenEventArgs } from '../common/index';
+import { findHandler, DialogBeforeOpenEventArgs, insertChart } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
@@ -43,9 +43,11 @@ export class Ribbon {
     private datavalidationDdb: DropDownButton;
     private bordersDdb: DropDownButton;
     private cFDdb: DropDownButton;
+    private chartDdb: DropDownButton;
     private clearDdb: DropDownButton;
     private bordersMenu: Menu;
     private cFMenu: Menu;
+    private chartMenu: Menu;
     private findDdb: Button;
     private findDialog: FindDialog;
     private border: string = '1px solid #000000';
@@ -93,6 +95,9 @@ export class Ribbon {
                 }]
         }];
     }
+
+
+    // tslint:disable-next-line:max-func-body-length
     private getRibbonItems(): RibbonItemModel[] {
         let id: string = this.parent.element.id; let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let items: RibbonItemModel[] = [  {
@@ -176,9 +181,17 @@ export class Ribbon {
                 { type: 'Separator', id: id + '_separator_10' },
                 { template: this.getCFDBB(id), tooltipText: l10n.getConstant('ConditionalFormatting'), id: id + '_conditionalformatting' });
         }
+        if (this.parent.allowChart) {
+            items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Insert')).content.push(
+                { type: 'Separator', id: id + '_separator_11' },
+                {
+                    template: this.getChartDBB(id), text: this.getLocaleText('Chart'),
+                    tooltipText: l10n.getConstant('Chart'), id: id + '_chart'
+                });
+        }
         if (this.parent.allowCellFormatting) {
             items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Home')).content.push(
-                { type: 'Separator', id: id + '_separator_10' },
+                { type: 'Separator', id: id + '_separator_12' },
                 { template: this.getClearDDB(id), tooltipText: l10n.getConstant('Clear'), id: id + '_clear' });
         }
         if (this.parent.allowSorting || this.parent.allowFiltering) {
@@ -343,6 +356,221 @@ export class Ribbon {
         this.fontSizeDdb.createElement = this.parent.createElement;
         this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
         return this.fontSizeDdb.element;
+    }
+
+    // tslint:disable-next-line:max-func-body-length
+    private getChartDBB(id: string): Element {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        this.chartMenu = new Menu({
+            cssClass: 'e-chart-menu',
+            items: [
+                {
+                    iconCss: 'e-icons e-column', text: l10n.getConstant('Column'),
+                    items: [{ id: 'column_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-bar', text: l10n.getConstant('Bar'),
+                    items: [{ id: 'bar_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-area', text: l10n.getConstant('Area'),
+                    items: [{ id: 'area_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-pie-doughnut', text: l10n.getConstant('PieAndDoughnut'),
+                    items: [{ id: 'pie_doughnut_chart' }]
+                },
+                {
+                    iconCss: 'e-icons e-line', text: l10n.getConstant('Line'),
+                    items: [{ id: 'line_chart' }]
+                },
+                // {
+                //     iconCss: 'e-icons e-radar', text: l10n.getConstant('Radar'),
+                //     items: [{ id: 'radar_chart' }]
+                // },
+                {
+                    iconCss: 'e-icons e-scatter', text: l10n.getConstant('Scatter'),
+                    items: [{ id: 'scatter_chart' }]
+                }
+            ],
+            orientation: 'Vertical',
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.parentItem.text === l10n.getConstant('Column')) {
+                    args.element.firstChild.appendChild(column);
+                    args.element.parentElement.classList.add('e-column-chart');
+                } else if (args.parentItem.text === l10n.getConstant('Bar')) {
+                    args.element.firstChild.appendChild(bar);
+                    args.element.parentElement.classList.add('e-bar-chart');
+                } else if (args.parentItem.text === l10n.getConstant('Area')) {
+                    args.element.firstChild.appendChild(area);
+                    args.element.parentElement.classList.add('e-area-chart');
+                } else if (args.parentItem.text === l10n.getConstant('Line')) {
+                    args.element.firstChild.appendChild(line);
+                    args.element.parentElement.classList.add('e-line-chart');
+                } else if (args.parentItem.text === l10n.getConstant('PieAndDoughnut')) {
+                    args.element.firstChild.appendChild(pie);
+                    args.element.parentElement.classList.add('e-pie-doughnut-chart');
+                } else if (args.parentItem.text === l10n.getConstant('Radar')) {
+                    args.element.firstChild.appendChild(radar);
+                    args.element.parentElement.classList.add('e-radar-chart');
+                } else if (args.parentItem.text === l10n.getConstant('Scatter')) {
+                    args.element.firstChild.appendChild(scatter);
+                    args.element.parentElement.classList.add('e-scatter-chart');
+                }
+            },
+            select: this.chartSelected.bind(this)
+        });
+        this.chartMenu.createElement = this.parent.createElement;
+        let column: HTMLElement = this.parent.createElement('div', { id: 'column_main', className: 'e-column-main' });
+        let column1Text: HTMLElement =
+            this.parent.createElement('div', { id: 'column1_text', className: 'e-column1-text', innerHTML: l10n.getConstant('Column') });
+        let column1Cont: HTMLElement = this.parent.createElement('div', { id: 'column1_cont', className: 'e-column1-cont' });
+        let column2Text: HTMLElement = this.parent.createElement('div', { id: 'column2_text', className: 'e-column2-text' });
+        let column2Cont: HTMLElement = this.parent.createElement('div', { id: 'column2_cont', className: 'e-column2-cont' });
+        column.appendChild(column1Text);
+        column.appendChild(column1Cont);
+        //column.appendChild(column2Text);
+        //column.appendChild(column2Cont);
+        let clusteredColumn: HTMLElement =
+            this.parent.createElement('span', { id: 'clusteredColumn', className: 'e-clusteredcolumn e-column-icon e-menu-icon e-icons' });
+        let stackedColumn: HTMLElement =
+            this.parent.createElement('span', {
+                id: 'stackedColumn', className: 'e-stackedcolumn e-column-icon e-menu-icon e-icons'
+            });
+        let stackedColumn100: HTMLElement =
+            this.parent.createElement('span', {
+                id: 'stackedColumn100', className: 'e-stackedcolumn100 e-column-icon e-menu-icon e-icons'
+            });
+        let clusteredColumn3D: HTMLElement =
+            this.parent.createElement('span', {
+                id: 'clusteredColumn3D', className: 'e-clusteredColumn3D e-column-icon'
+            });
+        let stackedColumn3D: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedColumn3D', className: 'e-stackedColumn3D e-column-icon' });
+        let stackedColumn1003D: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedColumn1003D', className: 'e-stackedColumn1003D e-column-icon' });
+        clusteredColumn.title = l10n.getConstant('ClusteredColumn'); stackedColumn.title = l10n.getConstant('StackedColumn');
+        stackedColumn100.title = l10n.getConstant('StackedColumn100'); stackedColumn1003D.title = l10n.getConstant('OrangeDataBar');
+        stackedColumn3D.title = l10n.getConstant('LightblueDataBar'); clusteredColumn3D.title = l10n.getConstant('PurpleDataBar');
+        column1Cont.appendChild(clusteredColumn); column1Cont.appendChild(stackedColumn); column1Cont.appendChild(stackedColumn100);
+        column2Cont.appendChild(clusteredColumn3D); column2Cont.appendChild(stackedColumn3D); column2Cont.appendChild(stackedColumn1003D);
+        let bar: HTMLElement = this.parent.createElement('div', { id: 'bar_main', className: 'e-bar-main' });
+        let bar1Text: HTMLElement =
+         this.parent.createElement('div', { id: 'bar1_text', className: 'e-bar1-text', innerHTML: l10n.getConstant('Bar') });
+        let bar1Cont: HTMLElement = this.parent.createElement('div', { id: 'bar1_cont', className: 'e-bar1-cont' });
+        let bar2Text: HTMLElement = this.parent.createElement('div', { id: 'bar2_text', className: 'e-bar2-text' });
+        let bar2Cont: HTMLElement = this.parent.createElement('div', { id: 'bar2_cont', className: 'e-bar2-cont' });
+        bar.appendChild(bar1Text);
+        bar.appendChild(bar1Cont);
+        //bar.appendChild(bar2Text);
+        //bar.appendChild(bar2Cont);
+        let clusteredBar: HTMLElement =
+            this.parent.createElement('span', { id: 'clusteredBar', className: 'e-clusteredbar e-bar-icon e-menu-icon e-icons' });
+        let stackedBar: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedBar', className: 'e-stackedbar e-bar-icon e-menu-icon e-icons' });
+        let stackedBar100: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedBar100', className: 'e-stackedbar100 e-bar-icon e-menu-icon e-icons' });
+        let clusteredBar3D: HTMLElement =
+            this.parent.createElement('span', { id: 'clusteredBar3D', className: 'e-clusteredBar3D e-bar-icon' });
+        let stackedBar3D: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedBar3D', className: 'e-stackedBar3D e-bar-icon' });
+        let stackedBar1003D: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedBar1003D', className: 'e-stackedBar1003D e-bar-icon' });
+        clusteredBar.title = l10n.getConstant('ClusteredBar'); stackedBar.title = l10n.getConstant('StackedBar');
+        stackedBar100.title = l10n.getConstant('StackedBar100'); stackedBar1003D.title = l10n.getConstant('OrangeDataBar');
+        stackedBar3D.title = l10n.getConstant('LightblueDataBar'); clusteredBar3D.title = l10n.getConstant('PurpleDataBar');
+        bar1Cont.appendChild(clusteredBar); bar1Cont.appendChild(stackedBar); bar1Cont.appendChild(stackedBar100);
+        bar2Cont.appendChild(clusteredBar3D); bar2Cont.appendChild(stackedBar3D); bar2Cont.appendChild(stackedBar1003D);
+
+        let area: HTMLElement =
+            this.parent.createElement('div', { id: 'area_main', className: 'e-area-main' });
+        let areaText: HTMLElement =
+            this.parent.createElement('div', { id: 'area_text', className: 'e-area-text', innerHTML: l10n.getConstant('Area') });
+        let areaCont: HTMLElement =
+            this.parent.createElement('div', { id: 'area_cont', className: 'e-area-cont' });
+        area.appendChild(areaText);
+        area.appendChild(areaCont);
+        let defArea: HTMLElement =
+            this.parent.createElement('span', { id: 'area', className: 'e-area e-area-icon e-menu-icon e-icons' });
+        let stackedArea: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedArea', className: 'e-stackedarea e-area-icon e-menu-icon e-icons' });
+        let stackedArea100: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedArea100', className: 'e-stackedarea100 e-area-icon e-menu-icon e-icons' });
+        defArea.title = l10n.getConstant('Area'); stackedArea.title = l10n.getConstant('StackedArea');
+        stackedArea100.title = l10n.getConstant('StackedArea100');
+        areaCont.appendChild(defArea); areaCont.appendChild(stackedArea); areaCont.appendChild(stackedArea100);
+
+        let line: HTMLElement =
+            this.parent.createElement('div', { id: 'line_main', className: 'e-line-main' });
+        let lineText: HTMLElement =
+         this.parent.createElement('div', { id: 'line_text', className: 'e-line-text', innerHTML: l10n.getConstant('Line') });
+        let lineCont: HTMLElement = this.parent.createElement('div', { id: 'line_cont', className: 'e-line-cont' });
+        line.appendChild(lineText);
+        line.appendChild(lineCont);
+        let defLine: HTMLElement = this.parent.createElement('span', { id: 'line', className: 'e-line e-line-icon e-menu-icon e-icons' });
+        let stackedLine: HTMLElement =
+            this.parent.createElement('span', { id: 'stackedLine', className: 'e-stackedline e-line-icon e-menu-icon e-icons' });
+        let stackedLine100: HTMLElement = this.parent.createElement('span', {
+            id: 'stackedline100', className: 'e-stackedline100 e-line-icon e-menu-icon e-icons'
+        });
+        defLine.title = l10n.getConstant('Line'); stackedLine.title = l10n.getConstant('StackedLine');
+        stackedLine100.title = l10n.getConstant('StackedLine100');
+        lineCont.appendChild(defLine); lineCont.appendChild(stackedLine); lineCont.appendChild(stackedLine100);
+
+        let pie: HTMLElement = this.parent.createElement('div', { id: 'pie_main', className: 'e-pie-main' });
+        let pieText: HTMLElement =
+            this.parent.createElement('div', { id: 'pie_text', className: 'e-pie-text', innerHTML: l10n.getConstant('Pie') });
+        let pieCont: HTMLElement = this.parent.createElement('div', { id: 'pie_cont', className: 'e-pie-cont' });
+        pie.appendChild(pieText);
+        pie.appendChild(pieCont);
+        let defPie: HTMLElement = this.parent.createElement('span', { id: 'pie', className: 'e-pie e-pie-icon e-menu-icon e-icons' });
+        let doughnut: HTMLElement =
+            this.parent.createElement('span', { id: 'doughnut', className: 'e-doughnut e-pie-icon e-menu-icon e-icons' });
+        defPie.title = l10n.getConstant('Pie'); doughnut.title = l10n.getConstant('Doughnut');
+        pieCont.appendChild(defPie); pieCont.appendChild(doughnut);
+
+        let radar: HTMLElement = this.parent.createElement('div', { id: 'radar_main', className: 'e-radar-main' });
+        let radarText: HTMLElement = this.parent.createElement('div', { id: 'radar_text', className: 'e-radar-text', innerHTML: 'Radar' });
+        let radarCont: HTMLElement = this.parent.createElement('div', { id: 'radar_cont', className: 'e-radar-cont' });
+        radar.appendChild(radarText);
+        radar.appendChild(radarCont);
+        let defradar: HTMLElement =
+            this.parent.createElement('span', { id: 'radar', className: 'e-radar e-radar-icon e-menu-icon e-icons' });
+        let radarMarkers: HTMLElement =
+            this.parent.createElement('span', { id: 'radar_markers', className: 'e-radar-markers e-radar-icon e-menu-icon e-icons' });
+        defradar.title = l10n.getConstant('BlueDataBar'); radarMarkers.title = l10n.getConstant('GreenDataBar');
+        radarCont.appendChild(defradar); radarCont.appendChild(radarMarkers);
+
+        let scatter: HTMLElement = this.parent.createElement('div', { id: 'scatter_main', className: 'e-scatter-main' });
+        let scatterText: HTMLElement =
+            this.parent.createElement('div', { id: 'scatter_text', className: 'e-scatter-text', innerHTML: l10n.getConstant('Scatter') });
+        let scatterCont: HTMLElement = this.parent.createElement('div', { id: 'scatter_cont', className: 'e-scatter-cont' });
+        scatter.appendChild(scatterText);
+        scatter.appendChild(scatterCont);
+        let defscatter: HTMLElement =
+            this.parent.createElement('span', { id: 'scatter', className: 'e-scatter e-scatter-icon e-menu-icon e-icons' });
+        defscatter.title = l10n.getConstant('Scatter');
+        scatterCont.appendChild(defscatter);
+        let ul: HTMLElement = this.parent.element.appendChild(this.parent.createElement('ul', {
+            id: id + '_chart_menu', styles: 'display: none;'
+        }));
+        this.chartMenu.appendTo(ul);
+        ul.classList.add('e-ul');
+        this.chartDdb = new DropDownButton({
+            iconCss: 'e-icons e-chart-icon',
+            cssClass: 'e-chart-ddb',
+            target: this.chartMenu.element.parentElement,
+            created: (): void => { this.chartMenu.element.style.display = ''; },
+            beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (args.event && closest(args.event.target as Element, '.e-chart-ddb')) { args.cancel = true; }
+            },
+            close: (): void => this.parent.element.focus()
+        });
+        this.chartDdb.createElement = this.parent.createElement;
+        let chartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart-btn' });
+        chartBtn.appendChild(this.parent.createElement('span', { id: id + '_chart', innerHTML: 'Chart' }));
+        this.chartDdb.appendTo(chartBtn);
+        return this.chartDdb.element;
     }
 
     // tslint:disable-next-line:max-func-body-length
@@ -711,6 +939,15 @@ export class Ribbon {
         return this.bordersDdb.element;
     }
 
+    private chartSelected(args: MenuEventArgs): void {
+        let eleId: string = args.element.id;
+        if (('column_chart' + 'bar_chart' + 'area_chart' + 'pie_doughnut_chart' +
+            'line_chart' + 'radar_chart' + 'scatter_chart').includes(eleId)) {
+            let id: string = (args.event.target as HTMLElement).id;
+            this.parent.notify(insertChart, { action: eleId, id: id });
+        }
+    }
+
     private cFSelected(args: MenuEventArgs): void {
         let eleId: string = args.element.id;
         if (('cf_greaterthan' + 'cf_lessthan' + 'cf_between' + 'cf_eqaulto' + 'cf_textthatcontains' +
@@ -1075,8 +1312,7 @@ export class Ribbon {
     private findToolDlg(): void {
         let countArgs: { [key: string]: string };
         if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
-            let toolbarObj: Toolbar;
-            let findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
+            let toolbarObj: Toolbar; let findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
             let findTextInput: HTMLElement = this.parent.createElement('input', {
                 className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' , value: this.findValue },
             });
@@ -1090,17 +1326,16 @@ export class Ribbon {
                 let value: string = element.value;
                 let nextElement: HTMLElement = document.querySelector('.e-findRib-next') as HTMLElement;
                 let prevElement: HTMLElement = document.querySelector('.e-findRib-prev') as HTMLElement;
-                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '1 of 0')) {
+                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0 of 0')) {
                     toolbarObj.enableItems(nextElement, false); toolbarObj.enableItems(prevElement, false);
                     findSpan.textContent = '0 of 0';
-                } else if (!isNullOrUndefined(value) || (countArgs.findCount !== '1 of 0')) {
+                } else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0 of 0')) {
                     toolbarObj.enableItems(nextElement, true); toolbarObj.enableItems(prevElement, true);
                 }
             };
             findTextInput.onkeydown = (e: KeyboardEvent): void => {
                 countArgs = { countOpt: 'count', findCount: '' };
-                this.parent.notify(findHandler, { countArgs: countArgs });
-                let count: string = countArgs.findCount;
+                this.parent.notify(findHandler, { countArgs: countArgs }); let count: string = countArgs.findCount;
                 this.findOnKeyDown(e, count);
             };
             findTextElement.appendChild(findTextInput);
@@ -1119,14 +1354,17 @@ export class Ribbon {
             toolbarObj = new Toolbar({
                 clicked: (args: ClickEventArgs): void => {
                     if (args.item.cssClass === 'e-findRib-next') {
-                        let buttonArg: object = { findOption: 'next' };
-                        this.parent.notify(findHandler, buttonArg);
+                        this.parent.notify(findHandler, { findOption: 'next' });
+                        countArgs = { countOpt: 'count', findCount: '' };
+                        this.parent.notify(findHandler, { countArgs: countArgs });
+                        findSpan.textContent = countArgs.findCount;
                     } else if (args.item.cssClass === 'e-findRib-prev') {
-                        let buttonArg: object = { findOption: 'prev' };
-                        this.parent.notify(findHandler, buttonArg);
+                        this.parent.notify(findHandler, { findOption: 'prev' });
+                        countArgs = { countOpt: 'count', findCount: '' };
+                        this.parent.notify(findHandler, { countArgs: countArgs });
+                        findSpan.textContent = countArgs.findCount;
                     } else if (args.item.cssClass === 'e-findRib-more') {
-                        this.parent.notify(findDlg, null);
-                        this.findDialog.hide();
+                        this.parent.notify(findDlg, null); this.findDialog.hide();
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
@@ -1174,7 +1412,7 @@ export class Ribbon {
     }
     private findOnKeyDown(e: KeyboardEvent, count: string): void {
         if ((document.querySelector('.e-text-findNext-short') as HTMLInputElement).value) {
-            if (count !== '1 of 0') {
+            if (count !== '0 of 0') {
             if (e.shiftKey) {
                 if (e.keyCode === 13) {
                     let buttonArgs: object = { findOption: 'prev' };
@@ -1929,7 +2167,7 @@ export class Ribbon {
     private protectSheetHandler(args?: {
         disableHomeBtnId: string[], enableHomeBtnId: string[], enableFrmlaBtnId: string[],
         enableInsertBtnId: string[], findBtnId: string[], dataValidationBtnId: string[],
-        imageBtnId: string[]
+        imageBtnId: string[], chartBtnId: string[]
     }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -1954,10 +2192,12 @@ export class Ribbon {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: false }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: false }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: false }]);
         } else {
             this.enableToolbarItems([{ tab: l10n.getConstant('Data'), items: args.dataValidationBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
             this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.imageBtnId, enable: true }]);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Insert'), items: args.chartBtnId, enable: true }]);
         }
     }
     private updateMergeItem(e: MouseEvent & TouchEvent): void {
@@ -2007,6 +2247,8 @@ export class Ribbon {
         this.bordersMenu.destroy(); this.bordersMenu = null;
         this.bordersDdb.destroy(); this.bordersDdb = null;
         this.findDdb.destroy(); this.findDdb = null;
+        this.chartDdb.destroy(); this.chartDdb = null;
+        this.chartMenu.destroy(); this.chartMenu = null;
         this.parent.notify('destroyRibbonComponents', null);
         this.ribbon.destroy();
         if (ribbonEle) { detach(ribbonEle); } this.ribbon = null;

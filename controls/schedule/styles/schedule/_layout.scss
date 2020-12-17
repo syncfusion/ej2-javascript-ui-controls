@@ -568,6 +568,23 @@
       }
     }
 
+    .e-timeline-year-view {
+      .e-event-resize {
+
+        &.e-left-handler,
+        &.e-right-handler {
+          height: 100%;
+          width: 5px;
+        }
+
+        &.e-top-handler,
+        &.e-bottom-handler {
+          height: 5px;
+          width: 100%;
+        }
+      }
+    }
+
     .e-event-resize {
       position: absolute;
 

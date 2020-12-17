@@ -5292,7 +5292,8 @@ class VerticalEvent extends EventBase {
         this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.lastResourceLevel : [];
-        this.cellHeight = parseFloat(this.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
+        this.cellHeight =
+            parseFloat(this.parent.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
         this.dateRender[0] = this.parent.activeView.renderDates;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             for (let i = 0, len = this.resources.length; i < len; i++) {
@@ -6618,7 +6619,8 @@ class TimelineEvent extends MonthEvent {
         let cellTd = this.getCellTd();
         let overlapCount = this.getIndex(startTime);
         event.Index = overlapCount;
-        let appHeight = this.eventHeight;
+        let elem = this.element.querySelector('.' + APPOINTMENT_CLASS);
+        let appHeight = (elem && elem.offsetHeight > 0) ? elem.offsetHeight : this.eventHeight;
         let diffInDays = eventData.count;
         let eventObj = extend({}, event, null, true);
         eventObj[this.fields.startTime] = eventData[this.fields.startTime];
@@ -8241,7 +8243,7 @@ class QuickPopups {
         }
         this.parent.renderTemplates();
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
-        let popupType = this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo';
+        let popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp = {
             type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
@@ -8459,7 +8461,7 @@ class QuickPopups {
         }
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         let args = {
-            type: this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo',
+            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
             cancel: false, data: popupData, element: this.quickPopup.element,
             target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element)
         };
@@ -14020,7 +14022,12 @@ class ResourceBase {
                 index = this.getIndexFromResourceId(id, levelName, resource);
             }
             else {
-                index = resource.dataSource.map((e) => e[resource.idField]).indexOf(id);
+                if (levelName === this.parent.resourceCollection.slice(-1)[0].name) {
+                    index = this.lastResourceLevel.map((e) => e.resourceData[resource.idField]).indexOf(id);
+                }
+                else {
+                    index = resource.dataSource.map((e) => e[resource.idField]).indexOf(id);
+                }
             }
             let offsetTarget = this.parent.element.querySelector(`.${HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
             let offset = [].slice.call(offsetTarget.children).map((node) => node.offsetLeft);
@@ -14650,9 +14657,9 @@ let Schedule = class Schedule extends Component {
                 this.trigger(navigating, navArgs, (navigationArgs) => {
                     if (!navigationArgs.cancel) {
                         this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
-                        this.validateDate(selectedDate);
+                        this.validateDate(navigationArgs.currentDate);
                         if (this.headerModule) {
-                            this.headerModule.setCalendarDate(selectedDate);
+                            this.headerModule.setCalendarDate(navigationArgs.currentDate);
                         }
                         this.initializeView(this.currentView);
                         this.onServerDataBind();
@@ -16492,7 +16499,7 @@ class ActionBase {
     }
     removeCloneElementClasses() {
         let elements = this.actionObj.originalElement;
-        if (this.parent.currentView === 'Month') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
             elements = [].slice.call(this.parent.element.querySelectorAll('.' + EVENT_ACTION_CLASS));
         }
         removeClass(elements, EVENT_ACTION_CLASS);
@@ -16587,6 +16594,70 @@ class ActionBase {
         event[this.parent.eventFields.startTime] = startTime;
         event[this.parent.eventFields.endTime] = endTime;
         return event;
+    }
+    dynamicYearlyEventsRendering(event, isResize = false) {
+        let appWidth = this.actionObj.cellWidth - 7;
+        if (isResize && (this.resizeEdges.left || this.resizeEdges.right)) {
+            appWidth = this.actionObj.cellWidth * event.count;
+        }
+        if (!isResize && (this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length === 0)) {
+            let month = event[this.parent.eventFields.startTime].getMonth();
+            let eventObj = this.yearEvent.isSpannedEvent(event, month);
+            if (eventObj[this.parent.eventFields.startTime].getTime() ===
+                eventObj[this.parent.eventFields.endTime].getTime()) {
+                eventObj.isSpanned.count = 1;
+            }
+            appWidth = eventObj.isSpanned.count * this.actionObj.cellWidth;
+        }
+        let appointmentElement = this.createAppointmentElement(this.actionObj.groupIndex);
+        appointmentElement.setAttribute('drag', 'true');
+        addClass([appointmentElement], CLONE_ELEMENT_CLASS);
+        setStyleAttribute(appointmentElement, {
+            'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none',
+            'position': 'absolute', 'overflow': 'hidden', 'padding': '3px'
+        });
+        if (this.actionObj.clone.style.backgroundColor !== '') {
+            setStyleAttribute(appointmentElement, { 'backgroundColor': this.actionObj.clone.style.backgroundColor });
+        }
+        let date = addLocalOffset(resetTime(event[this.parent.eventFields.startTime])).getTime();
+        let query = '.' + WORK_CELLS_CLASS + '[data-date="' + date + '"]';
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            query = '.' + WORK_CELLS_CLASS + '[data-date="' + date + '"][data-group-index="' + this.actionObj.groupIndex + '"]';
+        }
+        let cellTd = this.parent.element.querySelector(query);
+        if (isResize) {
+            let dateHeader = cellTd.querySelector('.' + DATE_HEADER_CLASS);
+            let appHeight = this.actionObj.cellHeight * event.count -
+                (dateHeader ? dateHeader.offsetHeight : 0) - 7;
+            if (this.resizeEdges.right || this.resizeEdges.left) {
+                appHeight = parseInt(this.actionObj.clone.style.height, 10);
+            }
+            setStyleAttribute(appointmentElement, { 'height': appHeight + 'px' });
+        }
+        this.renderDynamicElement(cellTd, appointmentElement, true);
+        this.actionObj.cloneElement.push(appointmentElement);
+    }
+    renderDynamicElement(cellTd, element, isAppointment = false) {
+        if (cellTd.querySelector('.' + APPOINTMENT_WRAPPER_CLASS)) {
+            cellTd.querySelector('.' + APPOINTMENT_WRAPPER_CLASS).appendChild(element);
+        }
+        else {
+            let wrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+            wrapper.appendChild(element);
+            cellTd.appendChild(wrapper);
+        }
+    }
+    createAppointmentElement(resIndex) {
+        let appDetails = this.actionObj.clone.querySelector('.e-appointment-details') ?
+            this.actionObj.clone.querySelector('.e-appointment-details') : this.actionObj.clone.querySelector('.e-subject');
+        let appointmentWrapper = createElement('div', {
+            className: APPOINTMENT_CLASS,
+            innerHTML: appDetails.innerText
+        });
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            appointmentWrapper.setAttribute('data-group-index', resIndex.toString());
+        }
+        return appointmentWrapper;
     }
     dynamicEventsRendering(event) {
         let dateRender = this.parent.activeView.renderDates;
@@ -16763,7 +16834,7 @@ class Resize extends ActionBase {
         this.parent.trigger(resizing, resizeArgs);
     }
     updateResizingDirection(e) {
-        if (this.parent.currentView === 'Month') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
             this.monthResizing();
             return;
         }
@@ -16832,19 +16903,76 @@ class Resize extends ActionBase {
             parseInt(td.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
         let startTime = new Date(this.actionObj.event[this.parent.eventFields.startTime].getTime());
         let endTime = new Date(this.actionObj.event[this.parent.eventFields.endTime].getTime());
-        if ((!this.parent.enableRtl && this.resizeEdges.left) || (this.parent.enableRtl && this.resizeEdges.right)) {
+        if ((!this.parent.enableRtl && this.resizeEdges.left) || (this.parent.enableRtl && this.resizeEdges.right)
+            || this.resizeEdges.top) {
             startTime = resizeTime;
         }
-        else if ((!this.parent.enableRtl && this.resizeEdges.right) || (this.parent.enableRtl && this.resizeEdges.left)) {
+        else if ((!this.parent.enableRtl && this.resizeEdges.right) || (this.parent.enableRtl && this.resizeEdges.left)
+            || this.resizeEdges.bottom) {
             endTime = addDays(resizeTime, 1);
         }
         if (isSameCell && startTime < endTime) {
             this.actionObj.start = startTime;
             this.actionObj.end = endTime;
             let event = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
-            this.dynamicEventsRendering(event);
+            if (this.parent.currentView === 'TimelineYear') {
+                this.yearEventsRendering(event);
+            }
+            else {
+                this.dynamicEventsRendering(event);
+            }
             this.updateOriginalElement(this.actionObj.clone);
         }
+    }
+    yearEventsRendering(event) {
+        let eventWrappers = [].slice.call(this.parent.element.querySelectorAll('.' + CLONE_ELEMENT_CLASS));
+        for (let wrapper of eventWrappers) {
+            remove(wrapper);
+        }
+        let endDate = new Date(event[this.parent.eventFields.endTime]);
+        let monthDiff = 0;
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            monthDiff = this.getMonthDiff(event[this.parent.eventFields.startTime], addDays(endDate, -1));
+        }
+        for (let i = 0; i <= monthDiff; i++) {
+            let eventObj;
+            if (this.parent.activeViewOptions.group.resources.length === 0) {
+                eventObj = this.getEventCount(event, this.actionObj.start.getMonth() + i);
+            }
+            else {
+                eventObj = extend({}, event, null, true);
+                endDate = this.resizeEdges.left || this.resizeEdges.right ? addDays(endDate, -1) : endDate;
+                eventObj.count = this.getMonthDiff(event[this.parent.eventFields.startTime], endDate) + 1;
+            }
+            this.dynamicYearlyEventsRendering(eventObj, true);
+        }
+    }
+    getMonthDiff(startDate, endDate) {
+        let months;
+        months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+        months -= startDate.getMonth();
+        months += endDate.getMonth();
+        return months <= 0 ? 0 : months;
+    }
+    getEventCount(eventObj, month) {
+        let eventData = extend({}, eventObj, null, true);
+        let eventStart = eventData[this.parent.eventFields.startTime];
+        let eventEnd = eventData[this.parent.eventFields.endTime];
+        let monthStart = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+        let monthEnd = addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
+        let count = 1;
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData[this.parent.eventFields.startTime] = monthStart;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData[this.parent.eventFields.endTime] = monthEnd;
+        }
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            count = Math.ceil((eventData[this.parent.eventFields.endTime].getTime() -
+                eventData[this.parent.eventFields.startTime].getTime()) / MS_PER_DAY);
+        }
+        eventData.count = count;
+        return eventData;
     }
     resizeStop(e) {
         EventHandler.remove(document, Browser.touchMoveEvent, this.resizing);
@@ -17111,6 +17239,427 @@ class Resize extends ActionBase {
     }
 }
 
+const EVENT_GAP$2 = 2;
+/**
+ * Year view events render
+ */
+class YearEvent extends TimelineEvent {
+    /**
+     * Constructor for year events
+     */
+    constructor(parent) {
+        super(parent, 'day');
+        this.isResource = false;
+    }
+    renderAppointments() {
+        this.fields = this.parent.eventFields;
+        let elementSelector = (this.parent.currentView === 'Year') ? '.' + APPOINTMENT_CLASS :
+            '.' + APPOINTMENT_WRAPPER_CLASS + ',.' + MORE_INDICATOR_CLASS;
+        let eventWrappers = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
+        for (let wrapper of eventWrappers) {
+            remove(wrapper);
+        }
+        this.renderedEvents = [];
+        if (this.parent.currentView === 'Year') {
+            this.yearViewEvents();
+        }
+        else {
+            this.removeCellHeight();
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                this.isResource = true;
+                this.timelineResourceEvents();
+            }
+            else {
+                this.timelineYearViewEvents();
+            }
+        }
+        this.parent.renderTemplates();
+        this.parent.notify(contentReady, {});
+    }
+    yearViewEvents() {
+        for (let month = 0; month < 12; month++) {
+            let queryString = `.e-month-calendar:nth-child(${month + 1}) td.e-work-cells`;
+            let workCells = [].slice.call(this.parent.element.querySelectorAll(queryString));
+            let monthDate = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+            let monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
+            let startDate = getWeekFirstDate(monthStart, this.parent.firstDayOfWeek);
+            let endDate = addDays(getWeekLastDate(monthEnd, this.parent.firstDayOfWeek), 1);
+            for (let index = 0; startDate.getTime() < endDate.getTime(); index++) {
+                let start = resetTime(new Date(startDate.getTime()));
+                let end = addDays(new Date(start.getTime()), 1);
+                let filterEvents = this.parent.eventBase.filterEvents(start, end);
+                if (filterEvents.length > 0) {
+                    let workCell = workCells[index];
+                    if (workCell) {
+                        workCell.appendChild(createElement('div', { className: APPOINTMENT_CLASS }));
+                    }
+                }
+                startDate = addDays(new Date(startDate.getTime()), 1);
+            }
+        }
+    }
+    timelineYearViewEvents() {
+        let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
+        this.cellWidth = workCell.offsetWidth;
+        this.cellHeader = getOuterHeight(workCell.querySelector('.' + DATE_HEADER_CLASS));
+        let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
+        let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
+        for (let row = 0; row < 12; row++) {
+            let wrapper = wrapperCollection[row];
+            let td = row + 1;
+            let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+            wrapper.appendChild(eventWrapper);
+            let monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
+            let monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+            let dayIndex = monthStart.getDay();
+            let isSpannedCollection = [];
+            while (monthStart.getTime() <= monthEnd.getTime()) {
+                let leftValue;
+                let rightValue;
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    let wrapper = wrapperCollection[dayIndex];
+                    td = dayIndex + 1;
+                    let eventWrapper = wrapper.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
+                    if (!eventWrapper) {
+                        eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+                        wrapper.appendChild(eventWrapper);
+                    }
+                    this.parent.enableRtl ? (rightValue = row * this.cellWidth) : (leftValue = row * this.cellWidth);
+                }
+                else {
+                    this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
+                        (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
+                }
+                let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${td}) td`);
+                this.cellHeight = rowTd.offsetHeight;
+                let dayStart = resetTime(new Date(monthStart.getTime()));
+                let dayEnd = addDays(new Date(dayStart.getTime()), 1);
+                let resource;
+                if (this.parent.uiStateValues.isGroupAdaptive) {
+                    resource = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
+                }
+                let dayEvents = this.parent.eventBase.filterEvents(dayStart, dayEnd, undefined, resource);
+                for (let index = 0, count = dayEvents.length; index < count; index++) {
+                    let eventData = extend({}, dayEvents[index], null, true);
+                    this.updateSpannedEvents(eventData, dayStart, dayEnd);
+                    let overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+                    eventData.Index = overlapIndex;
+                    let availedHeight = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
+                    if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                        let isRendered = this.renderedEvents.filter((eventObj) => eventObj.Guid === eventData.Guid);
+                        let isSpanned = isSpannedCollection.filter((eventObj) => eventObj.Guid === eventData.Guid);
+                        if (isRendered.length > 0 || isSpanned.length > 0) {
+                            continue;
+                        }
+                    }
+                    let isRowAutoHeight = this.parent.rowAutoHeight && this.parent.activeViewOptions.orientation === 'Horizontal';
+                    if (isRowAutoHeight || this.cellHeight > availedHeight) {
+                        this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, dayIndex);
+                        this.updateCellHeight(rowTd, availedHeight);
+                        isSpannedCollection.push(eventData);
+                    }
+                    else {
+                        let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
+                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
+                        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                            for (let a = index; a < dayEvents.length; a++) {
+                                let moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
+                                this.renderedEvents.push(moreData);
+                                isSpannedCollection.push(eventData);
+                            }
+                        }
+                        break;
+                    }
+                }
+                monthStart = addDays(new Date(monthStart.getTime()), 1);
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    dayIndex++;
+                    this.renderedEvents = [];
+                }
+            }
+        }
+    }
+    updateSpannedEvents(eventObj, dayStart, dayEnd) {
+        let isLeftRightResize = (this.isResource && this.parent.activeViewOptions.orientation === 'Vertical') ||
+            (!this.isResource && this.parent.activeViewOptions.orientation === 'Horizontal');
+        let data = { isLeft: true, isRight: true, isBottom: true, isTop: true };
+        if (dayStart.getTime() <= eventObj[this.fields.startTime].getTime()) {
+            if (isLeftRightResize) {
+                data.isLeft = false;
+            }
+            else {
+                data.isTop = false;
+            }
+        }
+        if ((dayEnd.getTime() >= eventObj[this.fields.endTime].getTime()) || (isLeftRightResize && !this.isResource &&
+            addDays(dayEnd, -1).getMonth() === eventObj[this.fields.endTime].getMonth())) {
+            if (isLeftRightResize) {
+                data.isRight = false;
+            }
+            else {
+                data.isBottom = false;
+            }
+        }
+        eventObj.data = data;
+    }
+    timelineResourceEvents() {
+        let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
+        this.cellWidth = workCell.offsetWidth;
+        this.cellHeader = 0;
+        let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
+        let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
+        let resources = this.parent.uiStateValues.isGroupAdaptive ?
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] : this.parent.resourceBase.lastResourceLevel;
+        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            for (let month = 0; month < 12; month++) {
+                for (let i = 0, len = resources.length; i < len; i++) {
+                    this.renderedEvents = [];
+                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i);
+                }
+            }
+        }
+        else {
+            for (let i = 0, len = resources.length; i < len; i++) {
+                this.renderedEvents = [];
+                for (let month = 0; month < 12; month++) {
+                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i);
+                }
+            }
+        }
+    }
+    renderResourceEvent(wrapper, resource, month, index) {
+        let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+        wrapper.appendChild(eventWrapper);
+        let monthStart = firstDateOfMonth(new Date(this.parent.selectedDate.getFullYear(), month, 1));
+        let monthEnd = addDays(lastDateOfMonth(new Date(monthStart.getTime())), 1);
+        let eventDatas = this.parent.eventBase.filterEvents(monthStart, monthEnd, undefined, resource);
+        let rowIndex = this.parent.activeViewOptions.orientation === 'Vertical' ? index : month;
+        let td = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${rowIndex + 1}) td`);
+        this.cellHeight = td.offsetHeight;
+        for (let a = 0; a < eventDatas.length; a++) {
+            let data = eventDatas[a];
+            let overlapIndex;
+            let eventData = extend({}, data, null, true);
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                let eventObj = this.isSpannedEvent(eventData, month);
+                overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
+                eventData.Index = overlapIndex;
+            }
+            else {
+                overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+                eventData.Index = overlapIndex;
+            }
+            let availedHeight = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
+            let leftValue = (this.parent.activeViewOptions.orientation === 'Vertical') ?
+                month * this.cellWidth : index * this.cellWidth;
+            if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+                this.renderEvent(eventWrapper, eventData, month, leftValue, leftValue, index);
+                this.updateCellHeight(td, availedHeight);
+            }
+            else {
+                let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? month : index;
+                this.renderMoreIndicatior(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, leftValue, index);
+                if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                    for (let i = index; i < eventDatas.length; i++) {
+                        let moreData = extend({}, eventDatas[i], { Index: overlapIndex + i }, true);
+                        this.renderedEvents.push(moreData);
+                    }
+                }
+                break;
+            }
+        }
+    }
+    renderEvent(wrapper, eventData, row, left, right, rowIndex) {
+        let eventObj = this.isSpannedEvent(eventData, row);
+        let wrap = this.createEventElement(eventObj);
+        let width;
+        let index;
+        if (eventObj.isSpanned.count === 1) {
+            let endTime = addDays(eventObj[this.fields.endTime], -1);
+            eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
+        }
+        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            index = row + 1;
+            if (eventObj[this.fields.startTime].getTime() === eventObj[this.fields.endTime].getTime()) {
+                eventObj.isSpanned.count = 1;
+            }
+            width = eventObj.isSpanned.count * this.cellWidth;
+        }
+        else {
+            index = rowIndex + 1;
+            width = this.cellWidth;
+        }
+        let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`);
+        let top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
+        setStyleAttribute(wrap, {
+            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
+        });
+        let args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
+        this.parent.trigger(eventRendered, args, (eventArgs) => {
+            if (!eventArgs.cancel) {
+                wrapper.appendChild(wrap);
+                this.wireAppointmentEvents(wrap, eventObj);
+                if (this.parent.activeViewOptions.group.resources.length > 0) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
+                else if (!eventObj.isSpanned.isRight) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
+            }
+        });
+    }
+    renderMoreIndicatior(wrapper, count, startDate, row, left, right, index) {
+        let endDate;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            endDate = addDays(lastDateOfMonth(new Date(startDate.getTime())), 1);
+        }
+        else {
+            endDate = addDays(new Date(startDate.getTime()), 1);
+        }
+        let moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
+        let rowTr = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`);
+        let top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
+        left = (Math.floor(left / this.cellWidth) * this.cellWidth);
+        right = (Math.floor(right / this.cellWidth) * this.cellWidth);
+        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
+        if (!isNullOrUndefined(index)) {
+            moreIndicator.setAttribute('data-group-index', index.toString());
+        }
+        wrapper.appendChild(moreIndicator);
+        EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
+    }
+    createEventElement(record) {
+        let eventSubject = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default);
+        let eventWrapper = createElement('div', {
+            className: APPOINTMENT_CLASS,
+            attrs: {
+                'data-id': 'Appointment_' + record[this.fields.id],
+                'data-guid': record.Guid,
+                'role': 'button', 'tabindex': '0',
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
+            }
+        });
+        if (this.cssClass) {
+            addClass([eventWrapper], this.cssClass);
+        }
+        if (record[this.fields.isReadonly]) {
+            addClass([eventWrapper], READ_ONLY);
+        }
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let resIndex = this.getGroupIndexFromEvent(record);
+            eventWrapper.setAttribute('data-group-index', resIndex.toString());
+        }
+        let templateElement = [];
+        let eventObj = extend({}, record, null, true);
+        if (this.parent.activeViewOptions.eventTemplate) {
+            let templateId = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
+            let templateArgs = addLocalOffsetToEvent(eventObj, this.parent.eventFields);
+            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
+        }
+        else {
+            let locationEle = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
+            let subjectEle = createElement('div', {
+                className: SUBJECT_CLASS,
+                innerHTML: (eventSubject + (locationEle ? ';&nbsp' + locationEle : ''))
+            });
+            let startTimeEle = createElement('div', {
+                className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                innerHTML: this.parent.getTimeString(eventObj[this.fields.startTime])
+            });
+            let endTimeEle = createElement('div', {
+                className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                innerHTML: this.parent.getTimeString(eventObj[this.fields.endTime])
+            });
+            addClass([subjectEle], 'e-text-center');
+            if (record[this.fields.isAllDay]) {
+                templateElement = [subjectEle];
+            }
+            else if (!eventObj.isLeft && !eventObj.isRight) {
+                templateElement = [startTimeEle, subjectEle, endTimeEle];
+            }
+            else {
+                if (!eventObj.isLeft) {
+                    templateElement.push(startTimeEle);
+                }
+                templateElement.push(subjectEle);
+                if (!eventObj.isRight) {
+                    templateElement.push(endTimeEle);
+                }
+            }
+        }
+        let appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
+        append(templateElement, appointmentDetails);
+        eventWrapper.appendChild(appointmentDetails);
+        this.renderResizeHandler(eventWrapper, record.data, record[this.fields.isReadonly]);
+        this.applyResourceColor(eventWrapper, eventObj, 'backgroundColor', this.groupOrder);
+        return eventWrapper;
+    }
+    isSpannedEvent(eventObj, month) {
+        let monthStart = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+        let monthEnd = addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
+        let eventData = extend({}, eventObj, null, true);
+        let eventStart = eventData[this.fields.startTime];
+        let eventEnd = eventData[this.fields.endTime];
+        let isSpanned = { isLeft: false, isRight: false, count: 1 };
+        if (this.isResource) {
+            this.updateSpannedEvents(eventObj, monthStart, monthEnd);
+        }
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData[this.fields.startTime] = monthStart;
+            isSpanned.isLeft = true;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData[this.fields.endTime] = monthEnd;
+            isSpanned.isRight = true;
+        }
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
+                eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        }
+        eventData.isSpanned = isSpanned;
+        return eventData;
+    }
+    getOverlapEvents(date, appointments) {
+        let appointmentsList = [];
+        let dateStart;
+        let dateEnd;
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(date.getTime()));
+            let monthEnd = addDays(this.parent.calendarUtil.getMonthEndDate(new Date(date.getTime())), -1);
+            dateStart = resetTime(new Date(monthStart.getTime())).getTime();
+            dateEnd = resetTime(new Date(monthEnd.getTime())).getTime();
+        }
+        else {
+            if (this.parent.rowAutoHeight) {
+                dateStart = resetTime(new Date(date.getTime())).getTime();
+                dateEnd = addDays(resetTime(new Date(date.getTime())), 1).getTime();
+            }
+            else {
+                dateStart = dateEnd = resetTime(new Date(date.getTime())).getTime();
+            }
+        }
+        for (let app of appointments) {
+            let appStart = new Date(app[this.fields.startTime].getTime());
+            let appEnd = new Date(app[this.fields.endTime].getTime());
+            if ((resetTime(appStart).getTime() >= dateStart) && (resetTime(appEnd).getTime() <= dateEnd)) {
+                appointmentsList.push(app);
+            }
+        }
+        return appointmentsList;
+    }
+    removeCellHeight() {
+        let elementSelector = `.${MONTH_HEADER_WRAPPER} tbody tr,.${RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${CONTENT_TABLE_CLASS} tbody tr`;
+        let rows = [].slice.call(this.element.querySelectorAll(elementSelector));
+        for (let row of rows) {
+            row.firstElementChild.style.height = '';
+        }
+    }
+}
+
 const MINUTES_PER_DAY = 1440;
 /**
  * Schedule events drag actions
@@ -17280,7 +17829,7 @@ class DragAndDrop extends ActionBase {
             this.minDiff = 0;
             this.isMorePopupOpened = false;
             this.daysVariation = -1;
-            if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable)) {
+            if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable) && this.parent.currentView !== 'TimelineYear') {
                 if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
                     this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)) {
                     this.isMorePopupOpened = true;
@@ -17297,6 +17846,9 @@ class DragAndDrop extends ActionBase {
                 else {
                     this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
                 }
+            }
+            if (this.parent.currentView === 'TimelineYear') {
+                this.yearEvent = new YearEvent(this.parent);
             }
             if (this.parent.currentView === 'Month') {
                 this.updateOriginalElement(this.actionObj.clone);
@@ -17446,7 +17998,7 @@ class DragAndDrop extends ActionBase {
             this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)) {
             this.morePopupEventDragging(e);
         }
-        else if (this.parent.activeView.isTimelineView()) {
+        else if (this.parent.activeView.isTimelineView() && this.parent.currentView !== 'TimelineYear') {
             this.timelineEventModule.dateRender = this.parent.activeView.renderDates;
             this.timelineEventModule.cellWidth = this.actionObj.cellWidth;
             this.timelineEventModule.getSlotDates();
@@ -17454,7 +18006,7 @@ class DragAndDrop extends ActionBase {
             this.calculateTimelineTime(e);
         }
         else {
-            if (this.parent.currentView === 'Month') {
+            if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
                 this.calculateVerticalDate(e);
             }
             else {
@@ -17537,6 +18089,9 @@ class DragAndDrop extends ActionBase {
         let eventDuration = eventObj[this.parent.eventFields.endTime].getTime() -
             eventObj[this.parent.eventFields.startTime].getTime();
         let td = closest(e.target, 'td');
+        if (this.parent.currentView === 'TimelineYear' && !td.classList.contains('e-work-cells')) {
+            return;
+        }
         let dragStart$$1 = this.parent.getDateFromElement(td);
         let dragEnd = new Date(dragStart$$1.getTime());
         dragEnd.setMilliseconds(eventDuration);
@@ -17757,7 +18312,12 @@ class DragAndDrop extends ActionBase {
             }
         }
         let event = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
-        this.dynamicEventsRendering(event);
+        if (this.parent.currentView === 'TimelineYear') {
+            this.dynamicYearlyEventsRendering(event);
+        }
+        else {
+            this.dynamicEventsRendering(event);
+        }
     }
     calculateTimelineTime(e) {
         let eventObj = extend({}, this.actionObj.event, null, true);
@@ -17773,7 +18333,9 @@ class DragAndDrop extends ActionBase {
         }
         offsetLeft = this.getOffsetValue(offsetLeft, rightOffset);
         let colIndex = this.getColumnIndex(offsetLeft);
-        let cloneIndex = Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left) / this.actionObj.cellWidth);
+        let dragArea = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        let leftVal = (this.parent.eventDragArea) ? dragArea.scrollLeft - dragArea.offsetLeft : 0;
+        let cloneIndex = Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left + leftVal) / this.actionObj.cellWidth);
         if (this.parent.enableRtl) {
             cloneIndex = Math.abs(Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().right) /
                 this.actionObj.cellWidth)) - 1;
@@ -19983,377 +20545,6 @@ class Month extends ViewBase {
     }
 }
 
-const EVENT_GAP$2 = 2;
-/**
- * Year view events render
- */
-class YearEvent extends TimelineEvent {
-    /**
-     * Constructor for year events
-     */
-    constructor(parent) {
-        super(parent, 'day');
-    }
-    renderAppointments() {
-        this.fields = this.parent.eventFields;
-        let elementSelector = (this.parent.currentView === 'Year') ? '.' + APPOINTMENT_CLASS :
-            '.' + APPOINTMENT_WRAPPER_CLASS + ',.' + MORE_INDICATOR_CLASS;
-        let eventWrappers = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
-        for (let wrapper of eventWrappers) {
-            remove(wrapper);
-        }
-        this.renderedEvents = [];
-        if (this.parent.currentView === 'Year') {
-            this.yearViewEvents();
-        }
-        else {
-            this.removeCellHeight();
-            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
-                this.timelineResourceEvents();
-            }
-            else {
-                this.timelineYearViewEvents();
-            }
-        }
-        this.parent.renderTemplates();
-        this.parent.notify(contentReady, {});
-    }
-    yearViewEvents() {
-        for (let month = 0; month < 12; month++) {
-            let queryString = `.e-month-calendar:nth-child(${month + 1}) td.e-work-cells`;
-            let workCells = [].slice.call(this.parent.element.querySelectorAll(queryString));
-            let monthDate = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
-            let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
-            let monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
-            let startDate = getWeekFirstDate(monthStart, this.parent.firstDayOfWeek);
-            let endDate = addDays(getWeekLastDate(monthEnd, this.parent.firstDayOfWeek), 1);
-            for (let index = 0; startDate.getTime() < endDate.getTime(); index++) {
-                let start = resetTime(new Date(startDate.getTime()));
-                let end = addDays(new Date(start.getTime()), 1);
-                let filterEvents = this.parent.eventBase.filterEvents(start, end);
-                if (filterEvents.length > 0) {
-                    let workCell = workCells[index];
-                    if (workCell) {
-                        workCell.appendChild(createElement('div', { className: APPOINTMENT_CLASS }));
-                    }
-                }
-                startDate = addDays(new Date(startDate.getTime()), 1);
-            }
-        }
-    }
-    timelineYearViewEvents() {
-        let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
-        this.cellWidth = workCell.offsetWidth;
-        this.cellHeader = getOuterHeight(workCell.querySelector('.' + DATE_HEADER_CLASS));
-        let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
-        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
-        let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
-        for (let row = 0; row < 12; row++) {
-            let wrapper = wrapperCollection[row];
-            let td = row + 1;
-            let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
-            wrapper.appendChild(eventWrapper);
-            let monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
-            let monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
-            let dayIndex = monthStart.getDay();
-            let isSpannedCollection = [];
-            while (monthStart.getTime() <= monthEnd.getTime()) {
-                let leftValue;
-                let rightValue;
-                if (this.parent.activeViewOptions.orientation === 'Vertical') {
-                    let wrapper = wrapperCollection[dayIndex];
-                    td = dayIndex + 1;
-                    let eventWrapper = wrapper.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
-                    if (!eventWrapper) {
-                        eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
-                        wrapper.appendChild(eventWrapper);
-                    }
-                    this.parent.enableRtl ? (rightValue = row * this.cellWidth) : (leftValue = row * this.cellWidth);
-                }
-                else {
-                    this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
-                        (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
-                }
-                let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${td}) td`);
-                this.cellHeight = rowTd.offsetHeight;
-                let dayStart = resetTime(new Date(monthStart.getTime()));
-                let dayEnd = addDays(new Date(dayStart.getTime()), 1);
-                let resource;
-                if (this.parent.uiStateValues.isGroupAdaptive) {
-                    resource = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
-                }
-                let dayEvents = this.parent.eventBase.filterEvents(dayStart, dayEnd, undefined, resource);
-                for (let index = 0, count = dayEvents.length; index < count; index++) {
-                    let eventData = extend({}, dayEvents[index], null, true);
-                    let overlapIndex = this.getIndex(eventData[this.fields.startTime]);
-                    eventData.Index = overlapIndex;
-                    let availedHeight = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
-                    if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                        let isRendered = this.renderedEvents.filter((eventObj) => eventObj.Guid === eventData.Guid);
-                        let isSpanned = isSpannedCollection.filter((eventObj) => eventObj.Guid === eventData.Guid);
-                        if (isRendered.length > 0 || isSpanned.length > 0) {
-                            continue;
-                        }
-                    }
-                    let isRowAutoHeight = this.parent.rowAutoHeight && this.parent.activeViewOptions.orientation === 'Horizontal';
-                    if (isRowAutoHeight || this.cellHeight > availedHeight) {
-                        this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, dayIndex);
-                        this.updateCellHeight(rowTd, availedHeight);
-                        isSpannedCollection.push(eventData);
-                    }
-                    else {
-                        let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
-                        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                            for (let a = index; a < dayEvents.length; a++) {
-                                let moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
-                                this.renderedEvents.push(moreData);
-                                isSpannedCollection.push(eventData);
-                            }
-                        }
-                        break;
-                    }
-                }
-                monthStart = addDays(new Date(monthStart.getTime()), 1);
-                if (this.parent.activeViewOptions.orientation === 'Vertical') {
-                    dayIndex++;
-                    this.renderedEvents = [];
-                }
-            }
-        }
-    }
-    timelineResourceEvents() {
-        let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
-        this.cellWidth = workCell.offsetWidth;
-        this.cellHeader = 0;
-        let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
-        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
-        let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
-        let resources = this.parent.uiStateValues.isGroupAdaptive ?
-            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] : this.parent.resourceBase.lastResourceLevel;
-        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-            for (let month = 0; month < 12; month++) {
-                for (let i = 0, len = resources.length; i < len; i++) {
-                    this.renderedEvents = [];
-                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i);
-                }
-            }
-        }
-        else {
-            for (let i = 0, len = resources.length; i < len; i++) {
-                this.renderedEvents = [];
-                for (let month = 0; month < 12; month++) {
-                    this.renderResourceEvent(wrapperCollection[i], resources[i], month, i);
-                }
-            }
-        }
-    }
-    renderResourceEvent(wrapper, resource, month, index) {
-        let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
-        wrapper.appendChild(eventWrapper);
-        let monthStart = firstDateOfMonth(new Date(this.parent.selectedDate.getFullYear(), month, 1));
-        let monthEnd = addDays(lastDateOfMonth(new Date(monthStart.getTime())), 1);
-        let eventDatas = this.parent.eventBase.filterEvents(monthStart, monthEnd, undefined, resource);
-        let rowIndex = this.parent.activeViewOptions.orientation === 'Vertical' ? index : month;
-        let td = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${rowIndex + 1}) td`);
-        this.cellHeight = td.offsetHeight;
-        for (let a = 0; a < eventDatas.length; a++) {
-            let data = eventDatas[a];
-            let overlapIndex;
-            let eventData = extend({}, data, null, true);
-            if (this.parent.activeViewOptions.group.resources.length > 0) {
-                let eventObj = this.isSpannedEvent(eventData, month);
-                overlapIndex = this.getIndex(eventObj[this.fields.startTime]);
-                eventData.Index = overlapIndex;
-            }
-            else {
-                overlapIndex = this.getIndex(eventData[this.fields.startTime]);
-                eventData.Index = overlapIndex;
-            }
-            let availedHeight = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
-            let leftValue = (this.parent.activeViewOptions.orientation === 'Vertical') ?
-                month * this.cellWidth : index * this.cellWidth;
-            if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
-                this.renderEvent(eventWrapper, eventData, month, leftValue, leftValue, index);
-                this.updateCellHeight(td, availedHeight);
-            }
-            else {
-                let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? month : index;
-                this.renderMoreIndicatior(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, leftValue, index);
-                if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                    for (let i = index; i < eventDatas.length; i++) {
-                        let moreData = extend({}, eventDatas[i], { Index: overlapIndex + i }, true);
-                        this.renderedEvents.push(moreData);
-                    }
-                }
-                break;
-            }
-        }
-    }
-    renderEvent(wrapper, eventData, row, left, right, rowIndex) {
-        let eventObj = this.isSpannedEvent(eventData, row);
-        let wrap = this.createEventElement(eventObj);
-        let width;
-        let index;
-        if (eventObj.isSpanned.count === 1) {
-            let endTime = addDays(eventObj[this.fields.endTime], -1);
-            eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
-        }
-        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-            index = row + 1;
-            if (eventObj[this.fields.startTime].getTime() === eventObj[this.fields.endTime].getTime()) {
-                eventObj.isSpanned.count = 1;
-            }
-            width = eventObj.isSpanned.count * this.cellWidth;
-        }
-        else {
-            index = rowIndex + 1;
-            width = this.cellWidth;
-        }
-        let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`);
-        let top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
-        setStyleAttribute(wrap, {
-            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
-        });
-        let args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
-        this.parent.trigger(eventRendered, args, (eventArgs) => {
-            if (!eventArgs.cancel) {
-                wrapper.appendChild(wrap);
-                this.wireAppointmentEvents(wrap, eventObj, true);
-                if (this.parent.activeViewOptions.group.resources.length > 0) {
-                    this.renderedEvents.push(extend({}, eventObj, null, true));
-                }
-                else if (!eventObj.isSpanned.isRight) {
-                    this.renderedEvents.push(extend({}, eventObj, null, true));
-                }
-            }
-        });
-    }
-    renderMoreIndicatior(wrapper, count, startDate, row, left, right, index) {
-        let endDate = addDays(lastDateOfMonth(new Date(startDate.getTime())), 1);
-        let moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
-        let rowTr = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`);
-        let top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
-        left = (Math.floor(left / this.cellWidth) * this.cellWidth);
-        right = (Math.floor(right / this.cellWidth) * this.cellWidth);
-        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
-        if (!isNullOrUndefined(index)) {
-            moreIndicator.setAttribute('data-group-index', index.toString());
-        }
-        wrapper.appendChild(moreIndicator);
-        EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
-    }
-    createEventElement(record) {
-        let eventSubject = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default);
-        let eventWrapper = createElement('div', {
-            className: APPOINTMENT_CLASS,
-            attrs: {
-                'data-id': 'Appointment_' + record[this.fields.id],
-                'data-guid': record.Guid,
-                'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': this.parent.getAnnocementString(record)
-            }
-        });
-        if (this.cssClass) {
-            addClass([eventWrapper], this.cssClass);
-        }
-        if (record[this.fields.isReadonly]) {
-            addClass([eventWrapper], READ_ONLY);
-        }
-        if (this.parent.activeViewOptions.group.resources.length > 0) {
-            let resIndex = this.getGroupIndexFromEvent(record);
-            eventWrapper.setAttribute('data-group-index', resIndex.toString());
-        }
-        let templateElement = [];
-        let eventObj = extend({}, record, null, true);
-        if (this.parent.activeViewOptions.eventTemplate) {
-            let templateId = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
-            let templateArgs = addLocalOffsetToEvent(eventObj, this.parent.eventFields);
-            templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', templateId, false);
-        }
-        else {
-            let locationEle = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
-            let subjectEle = createElement('div', {
-                className: SUBJECT_CLASS,
-                innerHTML: (eventSubject + (locationEle ? ';&nbsp' + locationEle : ''))
-            });
-            let startTimeEle = createElement('div', {
-                className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
-                innerHTML: this.parent.getTimeString(eventObj[this.fields.startTime])
-            });
-            let endTimeEle = createElement('div', {
-                className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
-                innerHTML: this.parent.getTimeString(eventObj[this.fields.endTime])
-            });
-            addClass([subjectEle], 'e-text-center');
-            if (record[this.fields.isAllDay]) {
-                templateElement = [subjectEle];
-            }
-            else if (!eventObj.isLeft && !eventObj.isRight) {
-                templateElement = [startTimeEle, subjectEle, endTimeEle];
-            }
-            else {
-                if (!eventObj.isLeft) {
-                    templateElement.push(startTimeEle);
-                }
-                templateElement.push(subjectEle);
-                if (!eventObj.isRight) {
-                    templateElement.push(endTimeEle);
-                }
-            }
-        }
-        let appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
-        append(templateElement, appointmentDetails);
-        eventWrapper.appendChild(appointmentDetails);
-        this.applyResourceColor(eventWrapper, eventObj, 'backgroundColor', this.groupOrder);
-        return eventWrapper;
-    }
-    isSpannedEvent(eventObj, month) {
-        let monthStart = new Date(this.parent.selectedDate.getFullYear(), month, 1);
-        let monthEnd = addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
-        let eventData = extend({}, eventObj, null, true);
-        let eventStart = eventData[this.fields.startTime];
-        let eventEnd = eventData[this.fields.endTime];
-        let isSpanned = { isLeft: false, isRight: false, count: 1 };
-        if (eventStart.getTime() < monthStart.getTime()) {
-            eventData[this.fields.startTime] = monthStart;
-            isSpanned.isLeft = true;
-        }
-        if (eventEnd.getTime() > monthEnd.getTime()) {
-            eventData[this.fields.endTime] = monthEnd;
-            isSpanned.isRight = true;
-        }
-        if (this.parent.activeViewOptions.group.resources.length === 0) {
-            isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
-                eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
-        }
-        eventData.isSpanned = isSpanned;
-        return eventData;
-    }
-    getOverlapEvents(date, appointments) {
-        let appointmentsList = [];
-        let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(date.getTime()));
-        let monthEnd = addDays(this.parent.calendarUtil.getMonthEndDate(new Date(date.getTime())), -1);
-        for (let app of appointments) {
-            let appStart = new Date(app[this.fields.startTime].getTime());
-            let appEnd = new Date(app[this.fields.endTime].getTime());
-            if ((resetTime(appStart).getTime() >= resetTime(new Date(monthStart.getTime())).getTime()) &&
-                (resetTime(appEnd).getTime() <= resetTime(new Date(monthEnd.getTime())).getTime())) {
-                appointmentsList.push(app);
-            }
-        }
-        return appointmentsList;
-    }
-    removeCellHeight() {
-        let elementSelector = `.${MONTH_HEADER_WRAPPER} tbody tr,.${RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${CONTENT_TABLE_CLASS} tbody tr`;
-        let rows = [].slice.call(this.element.querySelectorAll(elementSelector));
-        for (let row of rows) {
-            row.firstElementChild.style.height = '';
-        }
-    }
-}
-
 /**
  * year view
  */
@@ -20525,7 +20716,7 @@ class Year extends ViewBase {
         let startDate = getWeekFirstDate(firstDateOfMonth(date), this.parent.firstDayOfWeek);
         let endDate = addDays(new Date(+startDate), (6 * WEEK_LENGTH));
         let dateCollection = [];
-        for (let start = startDate.getTime(); start < endDate.getTime(); start = start + MS_PER_DAY) {
+        for (let start = startDate; start.getTime() < endDate.getTime(); start = addDays(start, 1)) {
             dateCollection.push(resetTime(new Date(start)));
         }
         return dateCollection;

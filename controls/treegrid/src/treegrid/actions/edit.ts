@@ -263,7 +263,7 @@ export class Edit {
   private batchCancel(e: BatchCancelArgs): void {
     if (this.parent.editSettings.mode === 'Cell') {
       let cellDetails: RowInfo = getValue('editModule.cellDetails', this.parent.grid.editModule);
-      let treeCell : HTMLElement = this.parent.getCellFromIndex(cellDetails.rowIndex, this.parent.treeColumnIndex) as HTMLElement;
+      let treeCell: HTMLElement = this.parent.getCellFromIndex(cellDetails.rowIndex, this.parent.treeColumnIndex) as HTMLElement;
       this.parent.renderModule.cellRender({
         data: cellDetails.rowData,
         cell: treeCell,
@@ -540,15 +540,19 @@ export class Edit {
           rows[index + 1][position](rows[0]);
           setValue('batchIndex', index + 1, this.batchEditModule);
           let rowObjectIndex: number = this.parent.editSettings.newRowPosition  === 'Above' ? index : index + 1;
-          this.parent.grid.contentModule[r].splice(0, 1);
-          this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
+          if (this.parent.editSettings.mode === 'Batch') {
+            this.parent.grid.contentModule[r].splice(0, 1);
+            this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
+          }
           if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns) {
             let movableRows: Object[] = this.parent.getMovableDataRows();
             let frows: string = 'freezeRows';
             let newFreezeRowObject: Row<Column> = this.parent.grid.getRowsObject()[0];
             movableRows[index + 1][position](movableRows[0]);
-            this.parent.grid.contentModule[frows].splice(0, 1);
-            this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);
+            if (this.parent.editSettings.mode === 'Batch') {
+              this.parent.grid.contentModule[frows].splice(0, 1);
+              this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);
+            }
             setValue('batchIndex', index + 1, this.batchEditModule);
           }
           if (this.parent.editSettings.mode === 'Row' || this.parent.editSettings.mode === 'Cell') {

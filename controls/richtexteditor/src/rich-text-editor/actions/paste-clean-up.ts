@@ -260,7 +260,8 @@ export class PasteCleanup {
     let beforeUploadArgs: ImageUploadingEventArgs;
     let uploadObj: Uploader = new Uploader({
       asyncSettings: {
-        saveUrl: this.parent.insertImageSettings.saveUrl
+        saveUrl: this.parent.insertImageSettings.saveUrl,
+        removeUrl: this.parent.insertImageSettings.removeUrl
       },
       cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
       dropArea: this.parent.inputElement,
@@ -493,7 +494,8 @@ export class PasteCleanup {
       width: '300px',
       height: '265px',
       cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
-      isModal: true
+      isModal: true,
+      visible: false
     };
     let dialog: Dialog = this.dialogRenderObj.render(dialogModel);
     let rteDialogWrapper: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID()

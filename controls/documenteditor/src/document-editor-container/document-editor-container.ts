@@ -11,7 +11,7 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, ServiceFailureArgs, CommentActionEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 // tslint:disable-next-line:max-line-length
 import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
@@ -195,6 +195,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Event()
     public commentDelete: EmitType<CommentDeleteEventArgs>;
     /**
+     * Triggers on comment actions(Post, edit, reply, resolve, reopen).
+     * @event
+     */
+    @Event()
+    public beforeCommentAction: EmitType<CommentActionEventArgs>;
+    /**
      * Triggers when the server action fails.
      * @event
      */
@@ -314,7 +320,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Defines toolbar items for DocumentEditorContainer.
      * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','Comments','TrackChanges','LocalClipboard','RestrictEditing','Separator','FormFields']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'InsertFootnote', 'InsertEndnote', 'Separator', 'Find', 'Separator', 'Comments', 'TrackChanges', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     //tslint:enable:max-line-length
     /**
@@ -350,6 +356,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public defaultLocale: Object = {
         'New': 'New',
+        'Insert Footnote': 'Insert Footnote',
+        'Insert Endnote': 'Insert Endnote',
+        'Footnote Tooltip': 'Insert Footnote (Alt+Ctrl+F).',
+        'Endnote Tooltip': 'Insert Endnote (Alt+Ctrl+D).',
         'Open': 'Open',
         'Undo': 'Undo',
         'Redo': 'Redo',
@@ -817,6 +827,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             commentBegin: this.onCommentBegin.bind(this),
             commentEnd: this.onCommentEnd.bind(this),
             commentDelete: this.onCommentDelete.bind(this),
+            beforeCommentAction: this.onCommentAction.bind(this),
             trackChange: this.onTrackChange.bind(this),
             serviceFailure: this.fireServiceFailure.bind(this),
             locale: this.locale,
@@ -853,7 +864,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     private onCommentDelete(args: CommentDeleteEventArgs): void {
         this.trigger('commentDelete', args);
     }
-
+    private onCommentAction(args: CommentActionEventArgs): void {
+        this.trigger('beforeCommentAction', args);
+    }
     private onTrackChange(args: TrackChangeEventArgs): void {
         this.trigger('trackChange', args);
         if (this.toolbarModule) {

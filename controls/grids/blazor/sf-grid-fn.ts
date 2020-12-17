@@ -457,7 +457,7 @@ export class SfGrid {
     }
 
     public resetColumnWidth(): void {
-        if ((this.options.width === 'auto' || typeof (this.options.width) === 'string' && this.options.width.indexOf('%') !== -1)
+        if ((this.options.width === 'auto' || typeof (this.options.width) === 'string')
             && this.getColumns().filter((col: Column) => (!col.width || col.width === 'auto') && col.minWidth).length > 0) {
             let tgridWidth: number = this.widthService.getTableWidth(this.getColumns());
             this.widthService.setMinwidthBycalculation(tgridWidth);
@@ -471,6 +471,7 @@ export class SfGrid {
         if (this.options.frozenColumns) {
             this.freezeModule.refreshRowHeight();
             this.freezeModule.setFrozenHeight();
+            this.freezeModule.refreshStackedHdrHgt(); 
         }
         if (this.options.enableVirtualization) {
             this.virtualContentModule.onDataReady();
@@ -614,7 +615,7 @@ export class SfGrid {
 
         //TODO: datepicker in dialog editing
         if ((e.key == "Tab" || e.key == 'Escape' || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter") 
-            && ((e.target as HTMLElement).classList.contains('e-datepicker') || (e.target as HTMLElement).classList.contains('e-datetimepicker'))) {
+            && ((e.target as HTMLElement).tagName == 'INPUT' || (e.target as HTMLElement).classList.contains('e-datepicker') || (e.target as HTMLElement).classList.contains('e-datetimepicker'))) {
             (e.target as HTMLElement).blur();
         }
 

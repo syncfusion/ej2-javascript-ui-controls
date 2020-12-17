@@ -1,6 +1,7 @@
 import { SheetModel } from './index';
 import { ColumnModel } from './column-model';
-import { ChildProperty, Property } from '@syncfusion/ej2-base';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
+import { FormatModel, Format } from '../common/index';
 
 /**
  * Configures the Column behavior for the spreadsheet.
@@ -35,6 +36,13 @@ export class Column extends ChildProperty<Column> {
      */
     @Property(false)
     public hidden: boolean;
+
+    /**
+     * Specifies format of the column.
+     * @default {}
+     */
+    @Complex<FormatModel>({}, Format)
+    public format: FormatModel;
 
     /**
      * To lock/unlock the column in the protected sheet.

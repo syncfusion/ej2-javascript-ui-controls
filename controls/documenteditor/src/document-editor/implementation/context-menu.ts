@@ -47,6 +47,7 @@ const CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS: string = '_contextmenu_otherSugge
 const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
 const CONTEXTMENU_ACCEPT_CHANGES: string = '_contextmenu_accept_changes';
 const CONTEXTMENU_REJECT_CHANGES: string = '_contextmenu_reject_changes';
+const CONTEXTMENU_NOTE_OPTIONS: string = '_contextmenu_note_options';
 /**
  * Context Menu class
  */
@@ -247,7 +248,11 @@ export class ContextMenu {
                 id: id + CONTEXTMENU_PARAGRAPH
             },
             {
-                separator: true,
+                text: localValue.getConstant('Notes Options') + '...',
+                id: id + CONTEXTMENU_NOTE_OPTIONS
+            },
+            {
+                separator: true
             },
             {
                 text: localValue.getConstant('Table Properties') + '...',
@@ -515,6 +520,9 @@ export class ContextMenu {
                     }
                 }
                 break;
+            case id + CONTEXTMENU_NOTE_OPTIONS:
+                this.documentHelper.owner.showFootNotesDialog();
+                break;
             default:
                 let expectedData: string = this.documentHelper.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
                 if (item.substring(0, expectedData.length) === expectedData) {
@@ -714,6 +722,7 @@ export class ContextMenu {
         return contextMenuItems;
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private showHideElements(selection: Selection): boolean {
         if (isNullOrUndefined(selection)) {
             return false;
@@ -744,6 +753,7 @@ export class ContextMenu {
         let restartAt: HTMLElement = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
         let addComment: HTMLElement = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
+        let editNoteoptions: HTMLElement = document.getElementById(id + CONTEXTMENU_NOTE_OPTIONS);
         if (!this.documentHelper.owner.enableLockAndEdit) {
             lock.style.display = 'none';
             unlock.style.display = 'none';
@@ -774,6 +784,8 @@ export class ContextMenu {
         let acceptChange: HTMLElement = document.getElementById(id + CONTEXTMENU_ACCEPT_CHANGES);
         let rejectChange: HTMLElement = document.getElementById(id + CONTEXTMENU_REJECT_CHANGES);
         hyperlink.style.display = 'none';
+        editNoteoptions.style.display = 'none';
+        (editNoteoptions.nextSibling as HTMLElement).style.display = 'none';
         (font.previousSibling as HTMLElement).style.display = 'none';
         openHyperlink.style.display = 'none';
         copyHyperlink.style.display = 'none';
@@ -785,7 +797,7 @@ export class ContextMenu {
         autoFitTable.style.display = 'none';
         font.style.display = 'none';
         paragraph.style.display = 'none';
-        (paragraph.nextSibling as HTMLElement).style.display = 'none';
+        // (paragraph.nextSibling as HTMLElement).style.display = 'none';
         insertTable.style.display = 'none';
         deleteTable.style.display = 'none';
         tableProperties.style.display = 'none';
@@ -911,6 +923,9 @@ export class ContextMenu {
             (acceptChange.previousSibling as HTMLElement).style.display = this.documentHelper.owner.enableHeaderAndFooter ? 'none' : 'block';
             acceptChange.style.display = 'block';
             rejectChange.style.display = 'block';
+        }
+        if (this.documentHelper.selection.isinFootnote || this.documentHelper.selection.isinEndnote) {
+            editNoteoptions.style.display = 'block';
         }
         return true;
     }

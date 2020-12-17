@@ -1,4 +1,4 @@
-import { HyperlinkType } from './types';
+import { CommentAction, HyperlinkType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 
@@ -190,6 +190,23 @@ export interface CommentDeleteEventArgs {
      * Specifies whether the event is canceled or not.
      */
     cancel: boolean;
+}
+/**
+ * This event args provides the necessary information about comment actions.
+ */
+export interface CommentActionEventArgs {
+    /**
+     * Comment author.
+     */
+    author: string;
+    /**
+     * Specifies whether the event is canceled or not.
+     */
+    cancel: boolean;
+    /**
+     * Specifies the comment action type.
+     */
+    type: CommentAction;
 }
 export interface BeforeFileOpenArgs {
     /**

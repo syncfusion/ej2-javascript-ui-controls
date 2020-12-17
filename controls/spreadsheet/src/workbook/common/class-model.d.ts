@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, chartType, chartTheme } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';
 
 /**
  * Interface for a class CellStyle
@@ -234,10 +234,22 @@ export interface ValidationModel {
 export interface FormatModel {
 
     /**
+     * Specifies the number format code to display value in specified number format.
+     * @default 'General'
+     */
+    format?: string;
+
+    /**
      * Specifies the cell style options.
      * @default {}
      */
     style?: CellStyleModel;
+
+    /**
+     * Specifies the range is locked or not, for allow edit range in spreadsheet protect option.
+     * @default true
+     */
+    isLocked?: boolean;
 
 }
 
@@ -276,6 +288,43 @@ export interface ConditionalFormatModel {
      * @default ''
      */
     range?: string;
+
+}
+
+/**
+ * Interface for a class Chart
+ */
+export interface ChartModel {
+
+    /**
+     * Specifies the type of a chart.
+     * @default 'Line'
+     */
+    type?: chartType;
+
+    /**
+     * Specifies the theme of a chart.
+     * @default 'Material'
+     */
+    theme?: chartTheme;
+
+    /**
+     * Specifies to switch the row or a column.
+     * @default false
+     */
+    isSeriesInRows?: boolean;
+
+    /**
+     * Specifies the selected range or specified range.
+     * @default ''
+     */
+    range?: string;
+
+    /**
+     * Specifies chart element id.
+     * @default ''
+     */
+    id?: string;
 
 }
 

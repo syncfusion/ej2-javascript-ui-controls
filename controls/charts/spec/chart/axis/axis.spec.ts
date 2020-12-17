@@ -968,7 +968,7 @@ describe('Chart Control', () =>{
                 
                 expect(insideGroup.childElementCount).toBe(3);
                 expect(outsideGroup.childElementCount).toBe(1);
-                expect(xAxisInside.childElementCount).toBe(12);
+                expect(xAxisInside.childElementCount).toBe(11);
               
                 expect((parseInt(xLine.getAttribute('d').split(' ')[2]) - 1 === parseInt(chartArea.getAttribute('y')) + parseInt(chartArea.getAttribute('height')))).toBe(true);
                 done();
@@ -992,7 +992,7 @@ describe('Chart Control', () =>{
                 
                 expect(insideGroup.childElementCount).toBe(3);
                 expect(outsideGroup.childElementCount).toBe(2);
-                expect(yAxisInside.childElementCount).toBe(13);
+                expect(yAxisInside.childElementCount).toBe(12);
                 expect((yLine.getAttribute('d').split(' ')[1] === chartArea.getAttribute('x'))).toBe(true);
                 done();
             };
@@ -1012,8 +1012,8 @@ describe('Chart Control', () =>{
                 let yLine: Element = yAxisInside.children[0];
                 
                 expect(outsideGroup.childElementCount).toBe(2);
-                expect(xAxisInside.childElementCount).toBe(12);
-                expect(yAxisInside.childElementCount).toBe(13);
+                expect(xAxisInside.childElementCount).toBe(11);
+                expect(yAxisInside.childElementCount).toBe(12);
                 expect((xLine.getAttribute('d').split(' ')[2] === '249') && (xLine.getAttribute('d').split(' ')[5] === '249' )).toBe(true);
 
                  expect((yLine.getAttribute('d').split(' ')[1] === '400' ) && (yLine.getAttribute('d').split(' ')[4] === '400')).toBe(true);

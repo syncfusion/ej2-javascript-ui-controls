@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Dialog
+
+#### New Features
+
+- `#274382`, `#282351` - Provided the support to resize the dialog in all directions from all the edges and borders.
+
 ## 18.3.50 (2020-11-17)
 
 ### Tooltip

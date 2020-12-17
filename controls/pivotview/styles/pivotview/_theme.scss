@@ -124,10 +124,20 @@
     // sass-lint:disable-all
 
     .e-sortfilterdiv {
+      float: right;
       margin: $pivotgrid-vsort-mouse-margin !important;
       @if ($pivotgrid-skin == 'bootstrap4') {
         font-size: 10px !important;
         padding: 15px;
+      }
+
+      &.e-value-sort-icon {
+        margin: 0px !important;
+        padding-bottom: 10px !important;
+        padding-top: 10px !important;
+        @if ($pivotgrid-skin == 'bootstrap4') {
+          padding: 5px !important;
+        }
       }
     }
 
@@ -188,7 +198,12 @@
 
     .e-stackedheadercelldiv.e-cellvalue {
       padding-left: 8px !important;
-      margin-top:5px;
+      margin-top: 5px;
+    }
+
+    .e-stackedheadertext.e-cellvalue {
+      margin-top: $pivotgrid-header-text-margin-top;
+      padding-left: 8px !important;
     }
 
     .e-headercelldiv.e-cellvalue {
@@ -854,10 +869,14 @@
       }
 
       // sass-lint:disable-all
+      .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
         padding-right: 8px !important;
       }
 
+      .e-sortfilterdiv {
+        float: left;
+      }
       // sass-lint:enable-all
     }
 
@@ -946,7 +965,8 @@
     }
   }
 
-  .e-pivottooltipwrap {
+  .e-pivottooltipwrap,
+  .e-pivottooltip-container {
     opacity: 1;
   }
 
@@ -1120,7 +1140,9 @@
         .e-axis-nav-div {
 
           .e-left-nav-wrapper,
-          .e-right-nav-wrapper {
+          .e-right-nav-wrapper,
+          .e-left-nav-container,
+          .e-right-nav-container {
             width: 24px;
           }
         }
@@ -1182,6 +1204,10 @@
       @if ($pivotgrid-skin == 'bootstrap4') {
         font-size: 12px !important;
       }
+      
+      &.e-value-sort-icon {
+        margin: 0px !important;
+      }
     }
 
     .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
@@ -1191,7 +1217,8 @@
 
     // sass-lint:enable-all
 
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container {
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container {
       height: $pivotgrid-member-filter-list-bigger-height;
     }
 
@@ -1253,6 +1280,7 @@
       }
 
       // sass-lint:disable-all
+      .e-stackedheadertext.e-cellvalue,
       .e-stackedheadercelldiv.e-cellvalue {
         padding-right: 8px !important;
       }

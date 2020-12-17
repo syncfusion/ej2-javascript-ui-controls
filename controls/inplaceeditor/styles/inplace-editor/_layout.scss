@@ -26,6 +26,28 @@
       }
     }
 
+    .e-editable-value-container {
+      padding: $editor-big-value-container-padding;
+
+      .e-editable-value {
+        font-size: $editor-big-value-text-font-size;
+        margin: $editor-big-value-margin;
+      }
+
+      .e-editable-overlay-icon {
+        right: $editor-big-overlay-icon-left-right;
+        width: $editor-big-overlay-icon-container-size;
+
+        &::before {
+          font-size: $editor-big-overlay-icon-size;
+        }
+      }
+
+      .e-spinner-pane .e-spinner-inner {
+        right: $editor-big-value-container-spin-padding;
+      }
+    }
+
     .e-editable-action-buttons {
 
       .e-btn-save {
@@ -40,6 +62,23 @@
     &.e-rtl {
 
       .e-editable-value-wrapper {
+
+        .e-editable-value {
+          margin: $editor-rtl-big-value-margin;
+        }
+
+        .e-editable-overlay-icon {
+          left: $editor-big-overlay-icon-left-right;
+          right: auto;
+        }
+
+        .e-spinner-pane,
+        .e-spinner-pane .e-spinner-inner {
+          left: $editor-big-value-container-spin-padding;
+        }
+      }
+
+      .e-editable-value-container {
 
         .e-editable-value {
           margin: $editor-rtl-big-value-margin;
@@ -79,7 +118,80 @@
       visibility: hidden;
     }
 
+    .e-input-group.e-numeric.e-control-container .e-clear-icon.e-clear-icon-hide {
+      display: block;
+      visibility: hidden;
+    }
+
     .e-editable-value-wrapper {
+      display: inline-block;
+      padding: $editor-nrml-value-container-padding;
+      position: relative;
+      width: auto;
+      word-break: break-word;
+
+      .e-editable-value {
+        display: inline-block;
+        font-family: $font-family;
+        font-size: $editor-nrml-value-text-font-size;
+        margin: $editor-nrml-value-margin;
+
+        @if $inplace-skin == 'bootstrap4' {
+          line-height: 24px;
+        }
+      }
+
+      .e-editable-overlay-icon {
+        bottom: 0;
+        cursor: pointer;
+        display: inline-flex;
+        height: inherit;
+        position: absolute;
+        right: $editor-nrml-overlay-icon-left-right;
+        top: 0;
+        visibility: hidden;
+        width: $editor-nrml-overlay-icon-container-size;
+
+        &::before {
+          align-items: center;
+          display: flex;
+          font-size: $editor-nrml-overlay-icon-size;
+        }
+      }
+
+      &.e-hide {
+        display: none;
+      }
+
+      &.e-editable-open {
+        user-select: none;
+      }
+
+      &.e-loading {
+        pointer-events: none;
+      }
+
+      .e-spinner-pane .e-spinner-inner {
+        left: unset;
+        right: $editor-nrml-value-container-spin-padding;
+      }
+
+      &:hover {
+
+        .e-editable-overlay-icon {
+          visibility: visible;
+        }
+
+        &.e-editable-open {
+
+          .e-editable-overlay-icon {
+            visibility: hidden;
+          }
+        }
+      }
+    }
+
+    .e-editable-value-container {
       display: inline-block;
       padding: $editor-nrml-value-container-padding;
       position: relative;
@@ -161,6 +273,27 @@
     &.e-rtl {
 
       .e-editable-value-wrapper {
+
+        .e-editable-value {
+          margin: $editor-rtl-nrml-value-margin;
+        }
+
+        .e-editable-overlay-icon {
+          left: $editor-nrml-overlay-icon-left-right;
+          right: auto;
+        }
+
+        .e-spinner-pane {
+          right: unset;
+        }
+
+        .e-spinner-pane,
+        .e-spinner-pane .e-spinner-inner {
+          left: $editor-nrml-value-container-spin-padding;
+        }
+      }
+
+      .e-editable-value-container {
 
         .e-editable-value {
           margin: $editor-rtl-nrml-value-margin;
@@ -356,7 +489,15 @@
           padding: $editor-big-tip-wrapper-padding;
         }
 
+        .e-editable-container {
+          padding: $editor-big-tip-wrapper-padding;
+        }
+
         .e-editable-title+.e-editable-wrapper {
+          padding: $editor-big-wrapper-title-with-padding;
+        }
+
+        .e-editable-title+.e-editable-container {
           padding: $editor-big-wrapper-title-with-padding;
         }
       }
@@ -414,7 +555,24 @@
           }
         }
 
+        .e-editable-container {
+          display: flex;
+          padding: $editor-nrml-tip-wrapper-padding;
+
+          .e-editable-action-buttons {
+            float: right;
+            margin-top: $editor-buttons-top-margin;
+            position: relative;
+            right: auto;
+            top: auto;
+          }
+        }
+
         .e-editable-title+.e-editable-wrapper {
+          padding: $editor-nrml-wrapper-title-with-padding;
+        }
+
+        .e-editable-title+.e-editable-container {
           padding: $editor-nrml-wrapper-title-with-padding;
         }
       }
@@ -438,6 +596,14 @@
             float: left;
           }
         }
+
+        .e-editable-container {
+
+          .e-editable-action-buttons {
+            float: left;
+          }
+        }
+
       }
     }
   }

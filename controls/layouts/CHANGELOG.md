@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `F159402` - The issue with "The Syncfusion components are not rendered inside the Dashboard Layout while using the selector template" has been resolved.
+
+- `F159797` - Now, the Dashboard Layout component is also available in the Theme studio.
+
 ## 18.3.53 (2020-12-08)
 
 ### Dashboard Layout
 
 #### Bug Fixes
 
-- `#I303968` - The issue with "Script error occur in DashboardLayout, when updating its parent props using setState method in React platform" has been fixed.
+- `#303968` - The issue with "Script error occur in DashboardLayout, when updating its parent props using setState method in React platform" has been fixed.
 
 ## 18.3.48 (2020-11-11)
 
@@ -43,6 +53,8 @@
 - `#284795, #286988, #291408, #291630` - The issue with rendering panels when using angular template has been fixed.
 
 - `#282904` - The issue with the empty space while setting allowFloating as true has been resolved.
+
+- `#271335` - The support for rendering panels with their respective column size in the mobile view has been provided.
 
 ## 18.2.58 (2020-09-15)
 

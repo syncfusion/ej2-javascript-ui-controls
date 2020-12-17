@@ -2,37 +2,19 @@
 
 ## [Unreleased]
 
-## 18.3.52 (2020-12-01)
+## 18.4.30 (2020-12-17)
 
 ### RichTextEditor
 
-#### Bug Fixes
+#### New Features
 
-- `#F140345`, `F159759` - The issue with "Unable to configure multiple CSS classes using the `cssClass` API in the Rich Text Editor" has been resolved.
+- **File Manager**: `F144048`, `#234755`, `#261368`, `#261882`, `#150871`, `#270549` - This feature allows the editor to browse and insert the images from FileManager using various remote service.
 
-## 18.3.50 (2020-11-17)
+- `F149800` - Provided new property `removeUrl` in `insertImageSettings` API to trigger the image remove operation in server, when image removed from editor.
 
-### RichTextEditor
+- `#301980` - Provided the support to return the `Xhtml` value in the `value` property when the `enableXtml` property is enabled in the Rich Text Editor.
 
-#### Bug Fixes
-
-- `#300791` - The issue with "empty 'p' tags are created when performing alignment with the table content in the Rich Text Editor" has been resolved.
-
-- `#300845` - The issue with "Script error occurred when enabling the `enableXhtml` property and setting the value property as null in the Rich Text Editor" has been resolved.
-
-## 18.3.48 (2020-11-11)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#299128` - The issue with "The `insertHorizontalRule` in `executeCommand` public method is not working properly in the Rich Text Editor" has been resolved.
-
-- `#300179`, `#300838` - The issue with "The `insertHtml` in `executeCommand` public method removes the `HR` tag when inserting in the Rich Text Editor" has been resolved.
-
-## 18.3.44 (2020-10-27)
-
-### RichTextEditor
+- `#264791`, `#295032`, `#299905`, `#F159588` - Provided the support to retain all the styles from MS Excel while pasting the content in the Rich Text Editor.
 
 #### Bug Fixes
 

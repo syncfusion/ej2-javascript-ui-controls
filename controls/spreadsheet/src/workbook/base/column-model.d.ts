@@ -1,4 +1,4 @@
-import { SheetModel } from './index';import { ChildProperty, Property } from '@syncfusion/ej2-base';
+import { SheetModel } from './index';import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FormatModel, Format } from '../common/index';
 
 /**
  * Interface for a class Column
@@ -30,6 +30,12 @@ export interface ColumnModel {
      * @default false
      */
     hidden?: boolean;
+
+    /**
+     * Specifies format of the column.
+     * @default {}
+     */
+    format?: FormatModel;
 
     /**
      * To lock/unlock the column in the protected sheet.

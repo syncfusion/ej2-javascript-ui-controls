@@ -29,6 +29,7 @@ let previousWidth: number = 0;
 let setWidth: boolean = true;
 // tslint:disable-next-line
 let proxy: any;
+let dialogBorderResize: string [] = ['north', 'west', 'east', 'south'];
 
 /**
  * Provides information about a Resize event.
@@ -56,10 +57,14 @@ export function createResize(args: ResizeArgs): void {
     containerElement = getDOMElement(args.boundary);
     let directions: string[] = args.direction.split(' ');
     for (let i: number = 0; i < directions.length; i++) {
-        let resizeHandler: HTMLElement = createElement(
-            'div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] }
-        );
-        targetElement.appendChild(resizeHandler);
+        if (dialogBorderResize.indexOf(directions[i]) >= 0 && directions[i]) {
+            setBorderResizeElm(directions[i]);
+        } else if (directions[i].trim() !== '') {
+            let resizeHandler: HTMLElement = createElement(
+                'div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] }
+            );
+            targetElement.appendChild(resizeHandler);
+        }
     }
     minHeight = args.minHeight;
     minWidth = args.minWidth;
@@ -70,6 +75,41 @@ export function createResize(args: ResizeArgs): void {
     } else {
         wireEvents();
     }
+}
+
+function setBorderResizeElm(direction: string): void {
+    calculateValues();
+    let borderBottom: HTMLElement = createElement('span', {
+        attrs: {
+            'unselectable': 'on', 'contenteditable': 'false'
+        }
+    });
+    borderBottom.setAttribute('class', 'e-dialog-border-resize e-' + direction);
+    if (direction === 'south') {
+        borderBottom.style.height = '2px';
+        borderBottom.style.width = '100%';
+        borderBottom.style.bottom = '0px';
+        borderBottom.style.left = '0px';
+    }
+    if (direction === 'north') {
+        borderBottom.style.height = '2px';
+        borderBottom.style.width = '100%';
+        borderBottom.style.top = '0px';
+        borderBottom.style.left = '0px';
+    }
+    if (direction === 'east') {
+        borderBottom.style.height = '100%';
+        borderBottom.style.width = '2px';
+        borderBottom.style.right = '0px';
+        borderBottom.style.top = '0px';
+    }
+    if (direction === 'west') {
+        borderBottom.style.height = '100%';
+        borderBottom.style.width = '2px';
+        borderBottom.style.left = '0px';
+        borderBottom.style.top = '0px';
+    }
+    targetElement.appendChild(borderBottom);
 }
 
 function getDOMElement(element: string | HTMLElement): HTMLElement {
@@ -95,6 +135,15 @@ function wireEvents(args?: any): void  {
         EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
         let eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+    }
+    let borderResizers: NodeListOf<Element> = targetElement.querySelectorAll('.e-dialog-border-resize');
+    if (!isNOU(borderResizers)) {
+        for (let i: number = 0; i < borderResizers.length; i++) {
+            selectedHandler = borderResizers[i] as HTMLElement;
+            EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
+            let eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+            EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+        }
     }
 }
 
@@ -299,10 +348,6 @@ function resizeNorth(e: any): void {
         calculateValue = true;
     }
     let currentHeight: number = originalHeight - (pageY - originalMouseY);
-    if ((getClientRectValues(targetElement).bottom + currentHeight) > maxHeight ) {
-        calculateValue = false;
-        targetElement.style.height = maxHeight - getClientRectValues(targetElement).bottom + 'px';
-    }
     if (calculateValue) {
         if (currentHeight >= minHeight && currentHeight <= maxHeight) {
             let containerTop: number = 0;
@@ -340,7 +385,7 @@ function resizeWest(e: any): void {
         }
     }
     if (!isNOU(containerElement) &&
-    (((targetRectValues.left - rectValues.left) + targetRectValues.width +
+    (Math.floor((targetRectValues.left - rectValues.left) + targetRectValues.width +
     (rectValues.right - targetRectValues.right)) - borderValue) <= maxWidth) {
         calculateValue = true;
     } else if (isNOU(containerElement) && pageX >= 0) {
@@ -426,5 +471,11 @@ export function removeResize(): void {
     let handlers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i: number = 0; i < handlers.length; i++ ) {
         detach(handlers[i]);
+    }
+    let borderResizers: NodeListOf<HTMLElement> = targetElement.querySelectorAll('.e-dialog-border-resize');
+    if (!isNOU(borderResizers)) {
+        for (let i: number = 0; i < borderResizers.length; i++ ) {
+            detach(borderResizers[i]);
+        }
     }
 }

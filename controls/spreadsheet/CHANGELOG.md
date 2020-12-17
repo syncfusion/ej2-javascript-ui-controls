@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Spreadsheet
+
+#### New Features
+
+- **Chart:** Transforms your Spreadsheet data to an intuitive overview for better understanding and to make smart business decisions.
+`#I298335` - Provided support to paste content inside a cell while editing.
+`#I301769` - Provided support for short date formats `dd/MM/yyyy` and `yyyy-MM-dd`.
+
+#### Bug Fixes
+
+`#I301769` - Entered date value changes for Eastern European Standard Time issue has been fixed.
+`#I301769` - Sorting whole column show empty rows first issue has been fixed.
+
 ## 18.3.52 (2020-12-01)
 
 ### Spreadsheet
@@ -73,7 +88,7 @@
 
 #### Bug Fixes
 
-`#I297215`- LockCell method not working in JS platform issue has been fixed.
+`#I297215`- The method `lockCell` is not working in JS platform issue has been fixed.
 `#I296710`- Formula reference selection issue has been fixed.
 
 ## 18.3.40 (2020-10-13)
@@ -89,6 +104,8 @@
 `#I290629`- Script error throws while editing the formula bar after scrolling fixed.
 `#I288573` - Fixed issue of cell is duplicated randomly on merge cell during scrolling.
 `#I295398`- Added isLocked cell property in import export support.
+`#I301019` - Default value not set for data validation model issue has been fixed.
+`#I301121` - Script error throws while editing the border style applied cell issue fixed.
 
 ## 18.3.35 (2020-10-01)
 

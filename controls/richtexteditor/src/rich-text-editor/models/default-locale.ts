@@ -130,7 +130,9 @@ export let defaultLocale: { [key: string]: string } = {
     'cleanFormat': 'Clean',
     'keepFormat': 'Keep',
     'pasteDialogOk': 'OK',
-    'pasteDialogCancel': 'Cancel'   
+    'pasteDialogCancel': 'Cancel',
+    'fileManager': 'File Manager',
+    'fileDialogHeader': 'File Browser'
 };
 
 export let toolsLocale: { [key: string]: string } = {

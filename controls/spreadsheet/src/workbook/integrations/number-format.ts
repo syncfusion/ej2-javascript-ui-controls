@@ -230,7 +230,6 @@ export class WorkbookNumberFormat {
         format = format.toString().split('_)').join(' ').split('_(').join(' ').split('[Red]').join('');
         return format;
     }
-
     private currencyFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         args.format = args.format === '' ? getFormatFromType('Currency') : args.format;
         args.format = args.format.toString().split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
@@ -311,7 +310,8 @@ export class WorkbookNumberFormat {
             return '';
         }
         if (!isNullOrUndefined(args.value.toString().split(this.decimalSep)[1])) {
-            args.value = parseFloat('1' + this.decimalSep + args.value.toString().split(this.decimalSep)[1]) || args.value;        }
+            args.value = parseFloat('1' + this.decimalSep + args.value.toString().split(this.decimalSep)[1]) || args.value;
+        }
         let time: Date = intToDate(args.value as number);
         let code: string = (args.format === '' || args.format === 'General') ? getFormatFromType('Time')
             : args.format.toString();
@@ -374,7 +374,7 @@ export class WorkbookNumberFormat {
         if (value && (value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) && checkedDate !== 'Invalid') {
             value = checkedDate;
             if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
-                dateObj = toDate(value, intl);
+                dateObj = toDate(value, intl, cell && cell.format);
                 if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
                     cell = cell ? cell : {};
                     value = dateToInt(dateObj.dateObj, value.indexOf(':') > -1).toString();
@@ -421,7 +421,8 @@ export class WorkbookNumberFormat {
         let type: string = getTypeFromFormat((<CellModel>args.cell) ? (<CellModel>args.cell).format : '');
         let intl: Internationalization = new Internationalization();
         let beforeText: string = <string>args.value;
-        let date: string = getFormatFromType('ShortDate');
+        let date: string = (type === 'ShortDate' && args.cell && (<CellModel>args.cell).format) ?
+            (<CellModel>args.cell).format : getFormatFromType('ShortDate');
         let time: string = getFormatFromType('Time');
         switch (type) {
             case 'ShortDate':
@@ -441,7 +442,7 @@ export class WorkbookNumberFormat {
     /**
      * Adding event listener for number format.
      */
-    public addEventListener(): void {
+    private addEventListener(): void {
         this.parent.on(applyNumberFormatting, this.numberFormatting, this);
         this.parent.on(getFormattedCellObject, this.getFormattedCell, this);
         this.parent.on(checkDateFormat, this.checkDateFormat, this);
@@ -452,7 +453,7 @@ export class WorkbookNumberFormat {
     /**
      * Removing event listener for number format.
      */
-    public removeEventListener(): void {
+    private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(applyNumberFormatting, this.numberFormatting);
             this.parent.off(getFormattedCellObject, this.getFormattedCell);
@@ -545,6 +546,8 @@ export function getTypeFromFormat(format: string): string {
         case 'dd-mm-yyyy':
         case 'dd-mm-yy':
         case 'mm-dd-yy':
+        case 'dd/MM/yyyy':
+        case 'yyyy-MM-dd':
             code = 'ShortDate';
             break;
         case 'dddd, mmmm dd, yyyy':

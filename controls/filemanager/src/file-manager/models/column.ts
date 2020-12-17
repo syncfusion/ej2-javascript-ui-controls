@@ -121,7 +121,7 @@ export class Column extends ChildProperty<Column> {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../common/template-engine.html) or HTML element ID.
+     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      * @default null
      */
     @Property(null)

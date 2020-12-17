@@ -459,6 +459,28 @@ export const beforeCheckboxRenderer: string = 'beforeCheckboxRenderer';
 /** @hidden */
 export const refreshHandlers: string = 'refreshResizeHandlers';
 /** @hidden */
+export const refreshFrozenColumns: string = 'refresh-frozen-columns';
+/** @hidden */
+export const setReorderDestinationElement: string = 'set-reorder-destination-element';
+/** @hidden */
+export const refreshVirtualFrozenHeight: string = 'refresh-virtual-frozen-height';
+/** @hidden */
+export const setFreezeSelection: string = 'set-freeze-selection';
+/** @hidden */
+export const setInfiniteFrozenHeight: string = 'set-infinite-frozen-height';
+/** @hidden */
+export const setInfiniteColFrozenHeight: string = 'set-infinite-col-frozen-height';
+/** @hidden */
 export const beforeRefreshOnDataChange: string = 'before-refresh-on-data-change';
 /** @hidden */
 export const immutableBatchCancel: string = 'immutable-batch-cancel';
+/** @hidden */
+export const refreshVirtualFrozenRows: string = 'refresh-virtual-frozenrows';
+/** @hidden */
+export const checkScrollReset: string = 'check-scroll-reset';
+/** @hidden */
+export const refreshFrozenHeight: string = 'refresh-frozen-height';
+/** @hidden */
+export const setHeightToFrozenElement: string = 'set-height-to-frozen-element';
+/** @hidden */
+export const preventFrozenScrollRefresh: string = 'prevent-frozen-scroll-refresh';

@@ -37,7 +37,8 @@ let defaultRTE: RichTextEditor = new RichTextEditor({
             '|', 'ClearFormat', 'Print']
     },
     insertImageSettings: {
-        saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+        saveUrl:"http://localhost:62869/api/RichTextEditor/RenameFile",
+        removeUrl:"http://localhost:62869/api/RichTextEditor/RemoveFile",
         path: "../Images/"
     },
     value: innerHTML,

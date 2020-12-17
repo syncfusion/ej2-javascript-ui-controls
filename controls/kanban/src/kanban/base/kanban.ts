@@ -336,7 +336,8 @@ export class Kanban extends Component<HTMLElement> {
             cancel: 'Cancel',
             yes: 'Yes',
             no: 'No',
-            close: 'Close'
+            close: 'Close',
+            noCard: 'No cards to display'
         };
         this.localeObj = new L10n(this.getModuleName(), defaultLocale, this.locale);
         this.scrollPosition = { content: { left: 0, top: 0 }, column: {} };
@@ -686,8 +687,8 @@ export class Kanban extends Component<HTMLElement> {
      * @param {{[key: string]: Object}[] | Object[]} cardData Collection of card objects to be updated into Kanban.
      * @returns {void}
      */
-    public updateCard(cardData: Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[]): void {
-        this.crudModule.updateCard(cardData as { [key: string]: Object } | { [key: string]: Object }[]);
+    public updateCard(cardData: Object | Object[] | { [key: string]: Object } | { [key: string]: Object }[], index?: number): void {
+        this.crudModule.updateCard(cardData as { [key: string]: Object } | { [key: string]: Object }[], index);
     }
 
     /**

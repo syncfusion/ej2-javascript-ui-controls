@@ -1,5 +1,6 @@
 @include export-module('color-picker-layout') {
-  .e-colorpicker-wrapper {
+  .e-colorpicker-wrapper,
+  .e-colorpicker-container {
     display: inline-block;
     line-height: 0;
     outline: none;
@@ -83,30 +84,60 @@
 
       & .e-container {
         & .e-handler,
-        & .e-preview-container {
+        & .e-preview-container,
+        & .e-slider-preview .e-colorpicker-slider .e-hue-slider,
+        & .e-slider-preview .e-colorpicker-slider .e-opacity-slider,
+        & .e-slider-preview .e-colorpicker-slider .e-slider-container .e-handle {
           cursor: default;
+        }
+
+        & .e-hsv-container {
+          pointer-events: none;
         }
       }
     }
   }
 
-  .e-colorpicker-popup {
+  .e-colorpicker-popup:not(.e-split-btn-wrapper):not(.e-dropdown-btn) {
     line-height: 0;
   }
 
   // sass-lint:disable no-vendor-prefixes
   .e-colorpicker {
-    &.e-modal {
+    &.e-modal,
+    &.e-hsv-model {
       -webkit-overflow-scrolling: touch;
-      background-color: $cpicker-overlay;
       height: 100%;
       left: 0;
-      opacity: .5;
-      pointer-events: auto;
       position: fixed;
       top: 0;
       width: 100%;
     }
+
+    &.e-modal {
+      background-color: $cpicker-overlay;
+      opacity: .5;
+      pointer-events: auto;
+    }
+
+    &.e-hsv-model {
+      background-color: transparent;
+    }
+  }
+
+  & .sf-colorpicker .e-switch-ctrl-btn .e-ctrl-btn {
+    position: relative;
+  }
+
+  &.e-show-value .sf-colorpicker.e-color-palette {
+    & .e-selected-value,
+    & .e-switch-ctrl-btn {
+      width: 270px;
+    }
+  }
+
+  .e-dropdown-popup.e-transparent .e-container {
+    display: none;
   }
 
   body {
@@ -116,7 +147,9 @@
   }
 
   .e-bigger .e-colorpicker-wrapper,
-  .e-bigger.e-colorpicker-wrapper {
+  .e-bigger.e-colorpicker-wrapper,
+  .e-bigger .e-colorpicker-container,
+  .e-bigger.e-colorpicker-container {
     & .e-split-btn-wrapper {
       & .e-split-colorpicker.e-split-btn {
         line-height: $cpicker-bigger-split-line-height;
@@ -177,7 +210,7 @@
     }
 
     & .e-custom-palette {
-      display: inline-block;
+      width: auto;
 
       & .e-palette {
         padding: 10px;
@@ -307,19 +340,19 @@
 
         & .e-opacity-slider {
           & .e-slider-track {
+            background: $cpicker-transparent-bg-pattern;
             border: $cpicker-opacity-slider-border;
-            z-index: 1;
+            z-index: 0;
           }
 
           & .e-opacity-empty-track {
-            background: $cpicker-transparent-bg-pattern;
             background-size: contain;
             border: $cpicker-opacity-slider-border;
             height: $cpicker-slider-height;
             position: absolute;
             top: $cpicker-slider-track-top;
             width: 100%;
-            z-index: 0;
+            z-index: 1;
           }
         }
 
@@ -365,7 +398,7 @@
 
     & .e-selected-value {
       align-items: center;
-      display: inline-flex;
+      display: flex;
       padding: $cpicker-input-picker-padding;
       user-select: none;
       width: 100%;
@@ -529,6 +562,10 @@
     }
   }
 
+  .sf-colorpicker.e-container .e-input-container .e-float-input {
+    margin-right: $cpicker-blazor-input-margin;
+  }
+
   .e-hide-opacity .e-container {
     & .e-slider-preview {
       & .e-colorpicker-slider {
@@ -672,6 +709,10 @@
           }
         }
       }
+
+      &.sf-colorpicker .e-selected-value .e-input-container .e-float-input {
+        margin-right: $cpicker-blazor-input-margin;
+      }
     }
 
     &.e-hide-valueswitcher {
@@ -813,6 +854,10 @@
       & .e-mode-switch-btn {
         margin-top: $cpicker-bigger-type-switch-btn-margin;
       }
+
+      &.sf-colorpicker .e-input-container .e-float-input {
+        margin-right: $cpicker-blazor-bigger-input-margin;
+      }
     }
 
     & .e-hide-opacity,
@@ -923,6 +968,10 @@
           margin-left: $cpicker-bigger-label-margin;
           margin-right: 0;
         }
+      }
+
+      &.sf-colorpicker .e-selected-value .e-input-container .e-float-input {
+        margin-left: $cpicker-blazor-bigger-input-margin;
       }
     }
 

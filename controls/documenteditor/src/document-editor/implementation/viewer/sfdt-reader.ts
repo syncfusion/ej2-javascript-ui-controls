@@ -14,7 +14,7 @@ import {
     ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines,
     ChartSeriesFormat, ElementBox, CommentCharacterElementBox, CommentElementBox, FormField,
     TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, LineFormat, TextFrame, ContentControlProperties,
-    ContentControlListItems, ContentControl, IWidget, CheckBoxState, XmlMapping, CustomXmlPart
+    ContentControlListItems, ContentControl, IWidget, CheckBoxState, XmlMapping, CustomXmlPart, Footnote, FootnoteElementBox, FillFormat
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -40,6 +40,8 @@ export class SfdtReader {
     private isPageBreakInsideTable: boolean = false;
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
     private isParseHeader: boolean = false;
+    public footnotes: Footnote = undefined;
+    public endnotes: Footnote = undefined;
     /**
      * @private
      */
@@ -68,6 +70,8 @@ export class SfdtReader {
         this.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
         this.commentsCollection = new Dictionary<string, CommentElementBox>();
         this.revisionCollection = new Dictionary<string, Revision>();
+        this.footnotes = new Footnote();
+        this.endnotes = new Footnote();
         let sections: BodyWidget[] = [];
         let jsonObject: any = json;
         jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
@@ -118,7 +122,35 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.formFieldShading)) {
             this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading = jsonObject.formFieldShading;
         }
+        if (!isNullOrUndefined(jsonObject.footnotes)) {
+            this.parseFootnotes(jsonObject.footnotes, this.documentHelper.footnotes);
+        }
+        if (!isNullOrUndefined(jsonObject.endnotes)) {
+            this.parseEndtnotes(jsonObject.endnotes, this.documentHelper.endnotes);
+        }
         return sections;
+    }
+    private parseFootnotes(data: any, footnote: Footnote): void {
+        if (!isNullOrUndefined(data.separator)) {
+            this.parseBody(data.separator, footnote.separator);
+        }
+        if (!isNullOrUndefined(data.continuationNotice)) {
+            this.parseBody(data.continuationNotice, footnote.continuationNotice);
+        }
+        if (!isNullOrUndefined(data.continuationSeparator)) {
+            this.parseBody(data.continuationSeparator, footnote.continuationSeparator);
+        }
+    }
+    private parseEndtnotes(data: any, endnote: Footnote): void {
+        if (!isNullOrUndefined(data.separator)) {
+            this.parseBody(data.separator, endnote.separator);
+        }
+        if (!isNullOrUndefined(data.continuationNotice)) {
+            this.parseBody(data.continuationNotice, endnote.continuationNotice);
+        }
+        if (!isNullOrUndefined(data.continuationSeparator)) {
+            this.parseBody(data.continuationSeparator, endnote.continuationSeparator);
+        }
     }
     private parseCustomXml(data: any): void {
         for (let i: number = 0; i < data.customXml.length; i++) {
@@ -185,7 +217,7 @@ export class SfdtReader {
         }
         this.documentHelper.revisionsInternal = this.revisionCollection;
         if (this.documentHelper.owner.sfdtExportModule) {
-           this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
+            this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
         }
     }
     /**
@@ -838,6 +870,28 @@ export class SfdtReader {
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
                 hasValidElmts = true;
+            } else if (inline.hasOwnProperty('footnoteType')) {
+                let footnoteElement: FootnoteElementBox = new FootnoteElementBox();
+                footnoteElement.line = lineWidget;
+                footnoteElement.footnoteType = inline.footnoteType;
+                if (footnoteElement.footnoteType === 'Footnote') {
+                    this.documentHelper.footnoteCollection.push(footnoteElement);
+                } else {
+                    this.documentHelper.endnoteCollection.push(footnoteElement);
+                }
+                footnoteElement.symbolCode = inline.symbolCode;
+                footnoteElement.symbolFontName = inline.symbolFontName;
+                footnoteElement.customMarker = inline.customMarker;
+                footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
+                this.parseCharacterFormat(inline.characterFormat, footnoteElement.characterFormat, writeInlineFormat);
+                this.applyCharacterStyle(inline, footnoteElement);
+                this.parseBody(inline.blocks, footnoteElement.blocks, undefined, false);
+
+                lineWidget.children.push(footnoteElement);
+                for (let j: number = 0; j < footnoteElement.blocks.length; j++) {
+                    footnoteElement.blocks[j].footNoteReference = footnoteElement;
+                }
+                hasValidElmts = true;
             } else if (inline.hasOwnProperty('chartType')) {
                 // chartPreservation
                 let chartElement: ChartElementBox = new ChartElementBox();
@@ -1087,6 +1141,12 @@ export class SfdtReader {
                     lineFormat.weight = inline.lineFormat.weight;
                     lineFormat.dashStyle = inline.lineFormat.lineStyle;
                     shape.lineFormat = lineFormat;
+                }
+                if (inline.hasOwnProperty('fillFormat')) {
+                    let fillFormat: FillFormat = new FillFormat();
+                    fillFormat.color = inline.fillFormat.color;
+                    fillFormat.fill = inline.fillFormat.weight;
+                    shape.fillFormat = fillFormat;
                 }
                 if (inline.hasOwnProperty('textFrame')) {
                     let textFrame: TextFrame = new TextFrame();
@@ -1650,6 +1710,24 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(data.pageStartingNumber)) {
             sectionFormat.pageStartingNumber = data.pageStartingNumber;
+        }
+        if (!isNullOrUndefined(data.endnoteNumberFormat)) {
+            sectionFormat.endnoteNumberFormat = data.endnoteNumberFormat;
+        }
+        if (!isNullOrUndefined(data.footNoteNumberFormat)) {
+            sectionFormat.footNoteNumberFormat = data.footNoteNumberFormat;
+        }
+        if (!isNullOrUndefined(data.restartIndexForFootnotes)) {
+            sectionFormat.restartIndexForFootnotes = data.restartIndexForFootnotes;
+        }
+        if (!isNullOrUndefined(data.pageStartingNumber)) {
+            sectionFormat.restartIndexForEndnotes = data.restartIndexForEndnotes;
+        }
+        if (!isNullOrUndefined(data.initialFootNoteNumber)) {
+            sectionFormat.initialFootNoteNumber = data.initialFootNoteNumber;
+        }
+        if (!isNullOrUndefined(data.initialEndNoteNumber)) {
+            sectionFormat.initialEndNoteNumber = data.initialEndNoteNumber;
         }
     }
 

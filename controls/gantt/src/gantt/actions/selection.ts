@@ -58,7 +58,7 @@ export class Selection {
      * @private
      */
     public selectRowByIndex(): void {
-        if (this.parent.selectedRowIndex !== -1 || this.parent.staticSelectedRowIndex !== -1) {
+        if ((this.parent.selectedRowIndex !== -1 || this.parent.staticSelectedRowIndex !== -1) && this.parent.isLoad) {
             this.selectRow(
                 this.parent.staticSelectedRowIndex !== -1 ? this.parent.staticSelectedRowIndex : this.parent.selectedRowIndex);
             this.parent.staticSelectedRowIndex = -1;
@@ -96,7 +96,7 @@ export class Selection {
         let rowIndexes: string = 'rowIndexes';
         let index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes])) ?
             args[rowIndexes] : [args.rowIndex];
-        this.addClass(index);
+        this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
@@ -125,7 +125,7 @@ export class Selection {
     }
     private rowDeselected(args: RowDeselectEventArgs): void {
         let rowIndexes: string = 'rowIndexes';
-        let index: number[] | number;
+        let index: number[];
         let isContains: boolean;
         if (this.multipleIndexes.length !== 0) {
             index = this.multipleIndexes;
@@ -139,13 +139,13 @@ export class Selection {
                 if (isContains) {
                     index = args.rowIndexes;
                 } else {
-                    index = args.rowIndex;
+                    index = [args.rowIndex];
                 }
              } else {
-                 index = args.rowIndex;
+                 index = [args.rowIndex];
              }
         }
-        this.removeClass(index);
+        this.addRemoveClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
@@ -209,7 +209,8 @@ export class Selection {
      * @return {void}
      */
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
-        let selectedRow: HTMLElement = this.parent.getRowByIndex(index);
+        let ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+        let selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
         let condition: boolean;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
@@ -300,7 +301,7 @@ export class Selection {
      * @return {void}
      */
     public clearSelection(): void {
-        this.removeClass(this.selectedRowIndexes);
+        this.addRemoveClass(this.selectedRowIndexes);
         this.parent.treeGrid.clearSelection();
         this.parent.selectedRowIndex = -1;
         this.selectedRowIndexes = [];
@@ -313,15 +314,15 @@ export class Selection {
 
     private highlightSelectedRows(e: PointerEvent, fromChart: boolean): void {
         let rows: HTMLCollection = closest((e.target as Element), 'tbody').children;
-        let selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
-        let rIndex: number = [].slice.call(rows).indexOf(selectedRow);
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
         this.actualTarget = e.target;
         this.isInteracted = true;
         this.isSelectionFromChart = fromChart;
-        let isToggle: boolean = this.parent.selectionSettings.enableToggle;
         if (fromChart) {
+            let selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
+            let rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10);
+            let isToggle: boolean = this.parent.selectionSettings.enableToggle;
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
                 this.selectRow(rIndex, isToggle);
             } else {
@@ -330,6 +331,10 @@ export class Selection {
                 } else {
                     setValue('isMultiCtrlRequest', true, this.parent.treeGrid.grid.selectionModule);
                     this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
+                    let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rIndex) > -1;
+                    if (isUnSelected) {
+                        this.addRemoveClass([rIndex]);
+                    }
                 }
             }
         }
@@ -360,26 +365,24 @@ export class Selection {
         this.selectRows(this.selectedRowIndexes);
     }
 
-    private addClass(records: number[]): void {
-        let ganttRow: HTMLCollection = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
+    private addRemoveClass(records: number[]): void {
+        let ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
-            if (!isNullOrUndefined(ganttRow[records[i]])) {
-                addClass([ganttRow[records[i]]], 'e-active');
-                ganttRow[records[i]].setAttribute('aria-selected', 'true');
+            let selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
+             parseInt(e.getAttribute('aria-rowindex'), 0) === records[i])[0];
+            if (!isNullOrUndefined(selectedRow)) {
+                this.getSelectedRowIndexes().indexOf(records[i]) > -1 ? this.addClass(selectedRow) : this.removeClass(selectedRow);
             }
         }
     }
+    private addClass(selectedRow: HTMLElement): void {
+        addClass([selectedRow], 'e-active');
+        selectedRow.setAttribute('aria-selected', 'true');
+    }
 
-    private removeClass(records: number | number[]): void {
-        if (!this.parent.selectionSettings.persistSelection) {
-            let ganttRow: HTMLCollection = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
-            /* tslint:disable-next-line:no-any */
-            let rowIndex: any | number | number[] = isNullOrUndefined((records as number[]).length) ? [records] : records;
-            for (let i: number = 0; i < (rowIndex as number[]).length; i++) {
-                removeClass([ganttRow[rowIndex[i]]], 'e-active');
-                ganttRow[rowIndex[i]].removeAttribute('aria-selected');
-            }
-        }
+    private removeClass(selectedRow: HTMLElement): void {
+        removeClass([selectedRow], 'e-active');
+        selectedRow.removeAttribute('aria-selected');
     }
 
     private showPopup(e: MouseEvent): void {
@@ -485,7 +488,16 @@ export class Selection {
             }
         }
     }
-
+    /** 
+     * To add class for selected records in virtualization mode. 
+     * @hidden
+     */
+    public maintainSelectedRecords(i: number): void {
+        let index: number =  this.parent.selectionModule.getSelectedRowIndexes().indexOf(i);
+        if (index > -1) {
+            this.addRemoveClass([i]);
+        }
+    }
     /**
      * To destroy the selection module.
      * @return {void}

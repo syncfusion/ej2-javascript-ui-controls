@@ -205,7 +205,7 @@ var Dialog = /** @class */ (function (_super) {
         }
         var headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         var footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        sf.popups.setMinHeight(headerHeight + 30 + footerHeight);
+        sf.popups.setMinHeight(headerHeight + 30 + (isNaN(footerHeight) ? 0 : footerHeight));
         return (headerHeight + 30 + footerHeight);
     };
     Dialog.prototype.onResizeStart = function (args, dialogObj) {
@@ -226,7 +226,40 @@ var Dialog = /** @class */ (function (_super) {
             this.element.classList.add(DLG_RESIZABLE);
             var computedHeight = getComputedStyle(this.element).minHeight;
             var computedWidth = getComputedStyle(this.element).minWidth;
-            var direction = this.enableRtl ? 'south-west' : 'south-east';
+            var direction = '';
+            for (var i = 0; i < this.resizeHandles.length; i++) {
+                if (this.resizeHandles[i] === 'All') {
+                    direction = 'south north east west north-east north-west south-east south-west';
+                    break;
+                }
+                else {
+                    var directionValue = '';
+                    switch (this.resizeHandles[i].toString()) {
+                        case 'SouthEast':
+                            directionValue = 'south-east';
+                            break;
+                        case 'SouthWest':
+                            directionValue = 'south-west';
+                            break;
+                        case 'NorthEast':
+                            directionValue = 'north-east';
+                            break;
+                        case 'NorthWest':
+                            directionValue = 'north-west';
+                            break;
+                        default:
+                            directionValue = this.resizeHandles[i].toString();
+                            break;
+                    }
+                    direction += directionValue.toLocaleLowerCase() + ' ';
+                }
+            }
+            if (this.enableRtl && direction.trim() === 'south-east') {
+                direction = 'south-west';
+            }
+            else if (this.enableRtl && direction.trim() === 'south-west') {
+                direction = 'south-east';
+            }
             if (this.isModal && this.enableRtl) {
                 this.element.classList.add(DLG_RESTRICT_LEFT_VALUE);
             }
@@ -831,6 +864,10 @@ var Dialog = /** @class */ (function (_super) {
     Dialog.prototype.focusContent = function () {
         var element = this.getAutoFocusNode(this.element);
         var node = !sf.base.isNullOrUndefined(element) ? element : this.element;
+        var userAgent = sf.base.Browser.userAgent;
+        if (userAgent.indexOf('MSIE ') > 0 || userAgent.indexOf('Trident/') > 0) {
+            this.element.focus();
+        }
         node.focus();
         this.bindEvent(this.element);
     };
@@ -1391,6 +1428,9 @@ var Dialog = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property(false)
     ], Dialog.prototype, "enableResize", void 0);
+    __decorate([
+        sf.base.Property(['South-East'])
+    ], Dialog.prototype, "resizeHandles", void 0);
     __decorate([
         sf.base.Property('auto')
     ], Dialog.prototype, "height", void 0);

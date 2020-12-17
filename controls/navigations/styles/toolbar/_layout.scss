@@ -508,6 +508,12 @@
     user-select: none;
     white-space: nowrap;
 
+    .e-blazor-toolbar-items {
+      position: absolute;
+      top: -9999px;
+      visibility: hidden;
+    }
+
     &.e-extended-toolbar.e-rtl {
 
       .e-hor-nav {

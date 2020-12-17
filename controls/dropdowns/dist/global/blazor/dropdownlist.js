@@ -76,6 +76,8 @@ var DropDownList = /** @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.previousValue = null;
         _this.isListSearched = false;
+        _this.preventChange = false;
+        _this.isAngular = false;
         return _this;
     }
     
@@ -1207,7 +1209,12 @@ var DropDownList = /** @class */ (function (_super) {
                 value: this.value,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 this.interopAdaptor.invokeMethodAsync('ServerChange');

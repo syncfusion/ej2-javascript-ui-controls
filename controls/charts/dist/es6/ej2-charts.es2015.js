@@ -531,9 +531,6 @@ __decorate$1([
 __decorate$1([
     Complex({ color: '#cccccc', width: 0.5 }, Border)
 ], TooltipSettings.prototype, "border", void 0);
-__decorate$1([
-    Property('None')
-], TooltipSettings.prototype, "position", void 0);
 /**
  * button settings in period selector
  */
@@ -896,9 +893,7 @@ class Double {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        let duplicateTempInterval;
-        for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
-            duplicateTempInterval = tempInterval;
+        for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
             labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
@@ -4572,19 +4567,21 @@ class CartesianAxisLayoutPanel {
      * @param rect
      */
     drawYAxisTitle(axis, index, parent, rect) {
-        let chart = this.chart;
-        let labelRotation = (axis.opposedPosition) ? 90 : -90;
-        let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
-            (axis.labelPosition === 'Inside' ? 0 :
-                (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
-        padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
-        let x = rect.x + padding;
-        let y = rect.y + rect.height * 0.5;
-        let titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
-        let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
-        element.setAttribute('tabindex', axis.tabIndex.toString());
-        element.setAttribute('aria-label', axis.description || axis.title);
+        if (axis.title) {
+            let chart = this.chart;
+            let labelRotation = (axis.opposedPosition) ? 90 : -90;
+            let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+                (axis.labelPosition === 'Inside' ? 0 :
+                    (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
+            padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
+            let x = rect.x + padding;
+            let y = rect.y + rect.height * 0.5;
+            let titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+            let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
+            let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
+            element.setAttribute('aria-label', axis.description || axis.title);
+        }
     }
     /**
      * xAxis grid line calculation performed here
@@ -5038,19 +5035,21 @@ class CartesianAxisLayoutPanel {
      * @param rect
      */
     drawXAxisTitle(axis, index, parent, rect) {
-        let chart = this.chart;
-        let elementSize = measureText(axis.title, axis.titleStyle);
-        let scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
-        let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
-            (axis.labelPosition === 'Inside' ? 0 :
-                axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-        let titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
-        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
-            elementSize.height / 4) + scrollBarHeight);
-        let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.titleCollection);
-        let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
-        element.setAttribute('aria-label', axis.description || axis.title);
-        element.setAttribute('tabindex', axis.tabIndex.toString());
+        if (axis.title) {
+            let chart = this.chart;
+            let elementSize = measureText(axis.title, axis.titleStyle);
+            let scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
+            let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+                (axis.labelPosition === 'Inside' ? 0 :
+                    axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
+            let titleSize = (axis.titleSize.height * (axis.titleCollection.length - 1));
+            padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
+                elementSize.height / 4) + scrollBarHeight);
+            let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.titleCollection);
+            let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+            element.setAttribute('aria-label', axis.description || axis.title);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
+        }
     }
     /**
      * To render the axis grid and tick lines(Both Major and Minor)
@@ -18264,7 +18263,7 @@ class BaseTooltip extends ChartData {
             }
         }
     }
-    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null, customTemplate, tooltipPosition = 'None') {
+    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null, customTemplate) {
         let series = this.currentPoints[0].series;
         let module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
@@ -18273,7 +18272,7 @@ class BaseTooltip extends ChartData {
         let isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
         let inverted = this.chart.requireInvertedAxis && series.isRectSeries;
         let position = null;
-        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+        if (this.text.length <= 1) {
             let contentSize = measureText(this.text[0], chart.tooltip.textStyle);
             let headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
                 new Size(0, 0);
@@ -18287,11 +18286,11 @@ class BaseTooltip extends ChartData {
             isNegative = (position === 'Left') || (position === 'Bottom');
             inverted = (position === 'Left') || (position === 'Right');
         }
-        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-            position = tooltipPosition;
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
+        // else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+        //     position = tooltipPosition as TooltipPlacement;
+        //     isNegative = (position === 'Left') || (position === 'Bottom');
+        //     inverted = (position === 'Left') || (position === 'Right');
+        // }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
@@ -18695,7 +18694,7 @@ class Tooltip$1 extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
-                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point), this.chart.tooltip.template ? argsData.template : '', this.chart.tooltip.position);
+                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point), this.chart.tooltip.template ? argsData.template : '');
             }
             else {
                 this.removeHighlight(this.control);
@@ -22438,9 +22437,14 @@ class DataLabel {
             }
         }
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
-            // tslint:disable-next-line:align
-            false, 'x', 'y', null, '', false, false, null, chart.duration);
+            if (!chart.enableCanvas) {
+                appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
+                // tslint:disable-next-line:align
+                false, 'x', 'y', null, '', false, false, null, chart.duration);
+            }
+            else {
+                getElement$1(chart.element.id + '_Secondary_Element').appendChild(element);
+            }
         }
     }
     /**
@@ -22486,8 +22490,11 @@ class DataLabel {
             parseFloat(childElement.style.left) <= hAxis.rect.x + hAxis.rect.width) {
             this.chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
             appendChildElement(this.chart.enableCanvas, parentElement, childElement, redraw, true, 'left', 'top');
-            if (series.animation.enable && this.chart.animateSeries) {
+            if (series.animation.enable && this.chart.animateSeries && !this.chart.enableCanvas) {
                 this.doDataLabelAnimation(series, childElement);
+            }
+            else if (this.chart.enableCanvas) {
+                parentElement.appendChild(childElement);
             }
         }
     }
@@ -27239,7 +27246,8 @@ let AccumulationChart = class AccumulationChart extends Component {
         else {
             for (let i = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
-                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping];
+                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping] != null
+                    ? currentSeries.dataSource[i][currentSeries.pointColorMapping] : currentSeries.points[i].color;
                 currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
             }
             this.redraw = this.enableAnimation;
@@ -31110,7 +31118,7 @@ class RangeNavigatorAxis extends DateTime {
             else {
                 continue;
             }
-            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).style.cursor = axis.valueType === 'DateTime' ? 'pointer' : 'default';
+            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

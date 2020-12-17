@@ -190,7 +190,7 @@ export class BaseQuickToolbar {
             this.checkCollision(showPopupData, 'parent', '');
         }
         this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : ''));
-        this.popupObj.element.classList.remove(classes.CLS_POPUP_OPEN);
+        this.popupObj.element.classList.remove(classes.CLS_POPUP_CLOSE);
         removeClass([this.element], [classes.CLS_HIDE]);
         this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
         setStyleAttribute(this.element, {

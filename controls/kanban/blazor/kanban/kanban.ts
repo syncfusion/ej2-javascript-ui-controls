@@ -5,7 +5,7 @@ import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { DragAndDrop } from './drag';
 import { Keyboard } from './keyboard';
 import { KanbanTouch } from './touch';
-import { BlazorKanbanElement, ScrollPosition, ScrollOffset } from './interface';
+import { BlazorKanbanElement, ScrollPosition, ScrollOffset, TransitionColumns } from './interface';
 import * as cls from './constant';
 
 /**
@@ -38,6 +38,7 @@ export class SfKanban {
     public treePopup: Popup;
     public swimlaneSettings: { [key: string]: Object };
     public cardSettings: { [key: string]: Object };
+    public transition: TransitionColumns[];
 
     constructor(element: BlazorKanbanElement, options: { [key: string]: Object }, dotnetRef: BlazorDotnetObject) {
         this.element = element;
@@ -87,6 +88,15 @@ export class SfKanban {
             cards.setAttribute('aria-selected', 'false');
         } else {
             cards.forEach((card: HTMLElement) => { card.setAttribute('aria-selected', 'false'); });
+        }
+    }
+
+    public wireDragEvent(): void {
+        if (this.allowDragAndDrop) {
+            let cards: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS
+                                        + '.' + cls.DRAG_CLASS + ' .' + cls.CARD_CLASS + ':not(' + cls.DRAGGABLE_CLASS + ')'));
+            addClass(cards, cls.DROPPABLE_CLASS);
+            cards.forEach((card: HTMLElement) => this.dragAndDropModule.wireDragEvents(card));
         }
     }
 
@@ -260,6 +270,7 @@ export class SfKanban {
             }
             EventHandler.add(container, 'scroll', this.onColumnScroll, this);
         });
+        this.wireDragEvent();
     }
 
     private unWireEvents(): void {

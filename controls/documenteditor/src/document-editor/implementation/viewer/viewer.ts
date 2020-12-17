@@ -10,14 +10,17 @@ import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
     CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
-    TextFrame, BlockContainer, ContentControl
+    TextFrame, BlockContainer, ContentControl, Footnote, FootnoteElementBox, FootNoteWidget, IWidget, TextElementBox
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
     BodyWidget, LineWidget, TableWidget, TableRowWidget, TableCellWidget,
     ElementBox, BlockWidget, HeaderFooters, BookmarkElementBox
 } from './page';
-import { HelperMethods, Point, TextPositionInfo, ImagePointInfo, PageInfo, CanvasInfo, ShapeInfo } from '../editor/editor-helper';
+import {
+    HelperMethods, Point, TextPositionInfo, ImagePointInfo,
+    PageInfo, CanvasInfo, ShapeInfo, ElementInfo
+} from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection, CommentReviewPane, } from '../index';
@@ -25,7 +28,10 @@ import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
-import { HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType } from '../../base/types';
+import {
+    HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType,
+    FootnoteRestartIndex, FootEndNoteNumberFormat, FootnoteType
+} from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
 import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs } from '../../base/events-helper';
@@ -490,6 +496,42 @@ export class DocumentHelper {
      */
     public contentControlCollection: ContentControl[];
     /**
+     * @private
+     */
+    public footnotes: Footnote = new Footnote();
+    /**
+     * @private
+     */
+    public endnotes: Footnote = new Footnote();
+    /**
+     * @private
+     */
+    public endnoteNumberFormat: FootEndNoteNumberFormat;
+    /**
+     * @private
+     */
+    public footNoteNumberFormat: FootEndNoteNumberFormat;
+    /**
+     * @private
+     */
+    public restartIndexForFootnotes: FootnoteRestartIndex;
+    /**
+     * @private
+     */
+    public restartIndexForEndnotes: FootnoteRestartIndex;
+    /**
+     * @private
+     */
+    public footnoteCollection: FootnoteElementBox[];
+    /**
+     * @private
+     */
+    public endnoteCollection: FootnoteElementBox[];
+    /**
+     * @private
+     */
+    public isFootnoteWidget: boolean = false;
+    /**
      * Gets visible bounds.
      * @private
      */
@@ -691,6 +733,8 @@ export class DocumentHelper {
         this.formFillPopup = new FormFieldPopUp(this.owner);
         this.customXmlData = new Dictionary<string, string>();
         this.contentControlCollection = [];
+        this.footnoteCollection = [];
+        this.endnoteCollection = [];
     }
     private initalizeStyles(): void {
         /* tslint:disable-next-line:max-line-length */
@@ -787,6 +831,10 @@ export class DocumentHelper {
         }
         this.customXmlData.clear();
         this.contentControlCollection = [];
+        this.endnotes.clear();
+        this.footnotes.clear();
+        this.footnoteCollection = [];
+        this.endnoteCollection = [];
     }
     /**
      * @private
@@ -1618,6 +1666,7 @@ export class DocumentHelper {
             || event.offsetY > (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
             return;
         }
+        this.isFootnoteWidget = false;
         if (!isNullOrUndefined(this.selection)) {
             this.updateCursor(event);
             if (this.formFillPopup) {
@@ -1825,6 +1874,43 @@ export class DocumentHelper {
                 this.tapCount = 2;
                 return;
             }
+            let startPosition: TextPosition = this.selection.start.clone();
+            let endPosition: TextPosition = this.selection.end.clone();
+            let inlineObj: ElementInfo = startPosition.currentWidget.getInline(startPosition.offset, 0);
+            let inline: ElementBox = inlineObj.element;
+            if (inline instanceof FootnoteElementBox) {
+                if (inline.footnoteType === 'Footnote') {
+                    let footnotes: FootNoteWidget = this.currentPage.footnoteWidget;
+                    let i: number;
+                    for (i = 1; i <= footnotes.childWidgets.length; i++) {
+                        let footnoteText: FootnoteElementBox = (footnotes.childWidgets[i] as BlockWidget).footNoteReference;
+                        if (inline.text === footnoteText.text) {
+                            break;
+                        }
+                    }
+                    startPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    endPosition.setPositionParagraph((footnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    this.selection.selectRange(startPosition, endPosition);
+                } else {
+                    let endnotes: FootNoteWidget = this.pages[this.pages.length - 1].endnoteWidget;
+                    let i: number;
+                    if (!isNullOrUndefined(endnotes)) {
+                    for (i = 1; i <= endnotes.childWidgets.length; i++) {
+                        let endnoteText: FootnoteElementBox = (endnotes.childWidgets[i] as BlockWidget).footNoteReference;
+                        if (inline.text === endnoteText.text) {
+                            break;
+                        }
+                    }
+                }
+                    startPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    endPosition.setPositionParagraph((endnotes.childWidgets[i] as BlockWidget).childWidgets[0] as LineWidget, 0);
+                    this.selection.selectRange(startPosition, endPosition);
+                }
+            } else {
+                if (inline instanceof TextElementBox && (this.selection.isinEndnote || this.selection.isinFootnote)) {
+                    this.selection.footnoteReferenceElement(startPosition, endPosition, inline);
+                }
+            }
             // tslint:disable-next-line:max-line-length
             if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
                 this.owner.selection.selectCurrentWord();
@@ -1941,6 +2027,7 @@ export class DocumentHelper {
                 this.selection.caret.style.display = 'none';
             }
             this.isMouseDown = false;
+            this.isFootnoteWidget = false;
             this.isSelectionChangedOnMouseMoved = false;
             this.isTouchInput = false;
             this.useTouchSelectionMark = true;
@@ -2647,12 +2734,36 @@ export class DocumentHelper {
                         return shapeInfo.element.line;
                     }
                     widget = this.selection.getLineWidgetBodyWidget((shapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                } else if (isMouseDragged && this.isFootnoteWidget) {
+                    // tslint:disable-next-line:max-line-length
+                    if (this.selection.start.paragraph.footNoteReference !== undefined && this.selection.start.paragraph.containerWidget instanceof FootNoteWidget && this.selection.start.paragraph.containerWidget.footNoteType === 'Footnote') {
+                        return this.selection.getLineWidgetBodyWidget(this.currentPage.footnoteWidget, cursorPoint);
+                    } else if (this.selection.start.paragraph.footNoteReference !== undefined &&
+                        this.selection.start.paragraph.containerWidget instanceof FootNoteWidget
+                        && this.selection.start.paragraph.containerWidget.footNoteType === 'Endnote') {
+                        return this.selection.getLineWidgetBodyWidget(this.currentPage.endnoteWidget, cursorPoint);
+                    }
                 } else {
-                    for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
-                        let bodyWidgets: BodyWidget = this.currentPage.bodyWidgets[i];
-                        widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
-                        if (!isNullOrUndefined(widget)) {
-                            break;
+                    // tslint:disable-next-line:max-line-length
+                    if (!isMouseDragged && this.currentPage.footnoteWidget && this.isInFootnoteWidget(this.currentPage.footnoteWidget, cursorPoint)) {
+                        widget = this.selection.getLineWidgetBodyWidget(this.currentPage.footnoteWidget, cursorPoint);
+                        if (widget) {
+                            this.isFootnoteWidget = true;
+                        }
+                    } else if (!isMouseDragged && this.currentPage.endnoteWidget &&
+                        this.isInFootnoteWidget(this.currentPage.endnoteWidget, cursorPoint)) {
+                        widget = this.selection.getLineWidgetBodyWidget(this.currentPage.endnoteWidget, cursorPoint);
+                        if (widget) {
+                            this.isFootnoteWidget = true;
+                        }
+                    } else {
+                        for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                            let bodyWidgets: BodyWidget = this.currentPage.bodyWidgets[i];
+                            widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
+                            if (!isNullOrUndefined(widget)) {
+                                this.isFootnoteWidget = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -2660,7 +2771,16 @@ export class DocumentHelper {
         }
         return widget;
     }
-
+    private isInFootnoteWidget(footnoteWidget: FootNoteWidget, point: Point): boolean {
+        for (let i: number = 0; i < footnoteWidget.childWidgets.length; i++) {
+            let childWidget: IWidget = footnoteWidget.childWidgets[i];
+            if (childWidget instanceof Widget && (childWidget as Widget).y <= point.y
+                && ((childWidget as Widget).y + (childWidget as Widget).height) >= point.y) {
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * @private
      */
@@ -2833,7 +2953,7 @@ export class DocumentHelper {
                 fieldPattern = fieldCodes[1].replace(/[^\w\s]/gi, '').trim();
             }
             fieldCategory = (!fieldCategory.match('numpages') && !fieldCategory.match('sectionpages') &&
-            fieldCategory.match('page')) ? 'page' : fieldCategory;
+                fieldCategory.match('page')) ? 'page' : fieldCategory;
             switch (fieldCategory) {
                 case 'page':
                     if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
@@ -3009,6 +3129,7 @@ export class DocumentHelper {
      */
     public updateCursor(event: MouseEvent): void {
         let hyperlinkField: FieldElementBox = undefined;
+        let footnoteElement: FootnoteElementBox = undefined;
         let div: HTMLDivElement = this.viewerContainer as HTMLDivElement;
         let point: Point = new Point(event.offsetX, event.offsetY);
         let touchPoint: Point = this.owner.viewer.findFocusedPage(point, true);
@@ -3032,6 +3153,7 @@ export class DocumentHelper {
         if (!isNullOrUndefined(widget)) {
             lineLeft = this.selection.getLineStartLeft(widget);
             hyperlinkField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint);
+
             if (isNullOrUndefined(hyperlinkField)) {
                 formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
             }
@@ -3077,6 +3199,14 @@ export class DocumentHelper {
                     this.selection.setLockInfoTooptip(widget, touchPoint.x, block.lockedBy);
                 } else {
                     this.selection.setLockInfoTooptip(undefined, touchPoint.x, '');
+                }
+            }
+        }
+        if (!isNullOrUndefined(widget)) {
+            if (isNullOrUndefined(footnoteElement)) {
+                footnoteElement = this.selection.getFootNoteElementInCurrentSelection(widget, touchPoint)
+                if (footnoteElement instanceof FootnoteElementBox) {
+                    this.selection.setFootnoteContentToToolTip(footnoteElement, widget, touchPoint.x);
                 }
             }
         }
@@ -3179,7 +3309,10 @@ export abstract class LayoutViewer {
         this.pageFitTypeIn = value;
         this.onPageFitTypeChanged(this.pageFitTypeIn);
     }
-    public updateClientArea(sectionFormat: WSectionFormat, page: Page): void {
+    /**
+     * @private
+     */
+    public updateClientArea(sectionFormat: WSectionFormat, page: Page, isRelayout?: boolean): void {
         let width: number = 0; let height: number = 0;
         if (this instanceof WebLayoutViewer) {
             let top: number = 0;
@@ -3225,6 +3358,9 @@ export abstract class LayoutViewer {
                 width = 0;
             }
             this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
+            if (isRelayout && page.footnoteWidget) {
+                this.clientArea.height -= page.footnoteWidget.height;
+            }
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         }
     }
@@ -3314,6 +3450,16 @@ export abstract class LayoutViewer {
             this.clientArea = new Rect(textBox.x + marginLeft, textBox.y + marginTop, width - marginLeft - marginRight, height - marginTop - marginBottom);
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
         }
+    }
+    /**
+    * Updates the client area based on widget.
+    * @private
+    */
+    public updateClientAreaByWidgetfootnote(widget: FootNoteWidget): void {
+        this.clientArea.x = widget.x;
+        this.clientArea.y = widget.y;
+        this.clientActiveArea.x = widget.x;
+        this.clientActiveArea.y = widget.y;
     }
     /**
      * Updates the client area based on widget.
@@ -3960,6 +4106,22 @@ export class PageLayoutViewer extends LayoutViewer {
                 this.clientActiveArea.height = Number.POSITIVE_INFINITY;
             }
         }
+    }
+    public updateFooterWidgetTop() {
+
+
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public updateFootnoteClientArea(sectionFormat: WSectionFormat, footnote: FootNoteWidget, footnotetype?: FootnoteType, para?: ParagraphWidget): void {
+        let width = HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.leftMargin - sectionFormat.rightMargin);
+        // tslint:disable-next-line:max-line-length
+        this.clientArea = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), HelperMethods.convertPointToPixel(sectionFormat.pageHeight - sectionFormat.bottomMargin) - footnote.height, width, footnote.height);
+
+        this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, footnote.height);
+
     }
     /**
      * Scrolls to the specified page

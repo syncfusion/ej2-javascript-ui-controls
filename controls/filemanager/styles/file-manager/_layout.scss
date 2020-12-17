@@ -755,7 +755,8 @@
   .e-fe-popup {
 
     &.e-dropdown-popup ul .e-item,
-    &.e-contextmenu-wrapper ul .e-menu-item {
+    &.e-contextmenu-wrapper ul .e-menu-item,
+    &.e-contextmenu-container ul .e-menu-item {
       @include popup-active-icon;
     }
 
@@ -766,7 +767,8 @@
       }
     }
 
-    &.e-contextmenu-wrapper ul .e-menu-item.e-separator {
+    &.e-contextmenu-wrapper ul .e-menu-item.e-separator,
+    &.e-contextmenu-container ul .e-menu-item.e-separator {
       margin: $fe-cm-separator-margin;
     }
 

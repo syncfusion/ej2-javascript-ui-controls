@@ -221,7 +221,11 @@ export type ContextMenuItem =
     /** Defines the delete dependency task */
     'DeleteDependency' |
     /** Defines the convert to task or milestone */
-    'Convert';
+    'Convert' |
+    /** Defines the split a task or segment into two segments  */
+    'Split Task' |
+    /** Defines the merge two segments into one segment */
+    'Merge Task';
 
 /**
  * Defines contextmenu types.

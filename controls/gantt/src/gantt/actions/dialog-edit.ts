@@ -191,12 +191,10 @@ export class DialogEdit {
     private getDefaultDialogFields(): AddDialogFieldSettingsModel[] {
         let dialogFields: AddDialogFieldSettingsModel[] = [];
         let fieldItem: AddDialogFieldSettingsModel = {};
-        let fields: string[];
         let taskFields: TaskFieldsModel = this.parent.taskFields;
         let columnMapping: { [key: string]: string; } = this.parent.columnMapping;
         if (Object.keys(columnMapping).length !== 0) {
             fieldItem.type = 'General';
-            fields = this.getGeneralColumnFields();
             dialogFields.push(fieldItem);
         }
         if (!isNullOrUndefined(getValue('dependency', columnMapping))) {
@@ -318,10 +316,10 @@ export class DialogEdit {
             let selectedRowId: number | string = gObj.selectionModule ?
                 (gObj.selectionSettings.mode === 'Row' || gObj.selectionSettings.mode === 'Both') &&
                     gObj.selectionModule.selectedRowIndexes.length === 1 ?
-                    gObj.currentViewData[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.rowUniqueID :
+                    gObj.updatedRecords[gObj.selectionModule.selectedRowIndexes[0]].ganttProperties.rowUniqueID :
                     gObj.selectionSettings.mode === 'Cell' &&
                         gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ?
-                        gObj.currentViewData[gObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex].ganttProperties.rowUniqueID :
+                        gObj.updatedRecords[gObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex].ganttProperties.rowUniqueID :
                         null : null;
             if (!isNullOrUndefined(selectedRowId)) {
                 this.openEditDialog(selectedRowId);
@@ -484,7 +482,7 @@ export class DialogEdit {
         let ganttObj: Gantt = this.parent;
         for (let i: number = 0; i < childNodes.length; i++) {
             let div: HTMLElement = childNodes[i] as HTMLElement;
-            let inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]') as HTMLInputElement;
+            let inputElement: HTMLInputElement = div.querySelector('input[id^="' + ganttObj.element.id + '"]');
             if (inputElement) {
                 let fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
                 /* tslint:disable-next-line:no-any */
@@ -611,9 +609,9 @@ export class DialogEdit {
             requestType: this.beforeOpenArgs.requestType as string,
             cancel: this.beforeOpenArgs.cancel as boolean
         };
-        this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (args: ActionBeginArgs | CObject) => {
+        this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (arg: ActionBeginArgs | CObject) => {
             this.renderTabItems();
-            if (!args.cancel) {
+            if (!arg.cancel) {
                 tabModel.selected = this.tabSelectedEvent.bind(this);
                 tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
                 tabModel.overflowMode = 'Scrollable';
@@ -636,8 +634,8 @@ export class DialogEdit {
                 if (isBlazor()) {
                     this.parent.updateDataArgs(actionCompleteArgs);
                 }
-                this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArgs: CObject) => {
-                    if (actionCompleteArgs.cancel) {
+                this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
+                    if (actionCompleteArg.cancel) {
                         this.resetValues();
                     }
                 });
@@ -789,7 +787,7 @@ export class DialogEdit {
                     let dropDownListObj: DropDownListModel = common as DropDownListModel;
                     dropDownListObj.change = (args: CObject | ChangeEventArgs): void => {
                         if (column.field === taskSettings.manual) {
-                            this.editedRecord.ganttProperties.isAutoSchedule = !args.value as boolean;
+                            this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
                         }
                         this.validateScheduleFields(args as CObject, column, ganttObj);
                     };
@@ -816,7 +814,7 @@ export class DialogEdit {
         } else if (!isNullOrUndefined(args.container)) {
             inputElement = args.container as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
-            inputElement = inputElement.querySelector('#' + targetId) as HTMLInputElement;
+            inputElement = inputElement.querySelector('#' + targetId);
         } else if (!isNullOrUndefined((args.event as CObject).path[1])) {
             inputElement = (args.event as CObject).path[1] as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
@@ -1483,25 +1481,11 @@ export class DialogEdit {
             if (this.parent.customColumns.indexOf(column.field) !== -1) {
                 disabled = true;
             } else {
-                if (column.field === this.parent.taskFields.id) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.name) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.duration) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.progress) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.startDate) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.endDate) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.baselineStartDate) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.baselineEndDate) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.work) {
-                    disabled = true;
-                } else if (column.field === 'taskType') {
+                if (column.field === this.parent.taskFields.id || column.field === this.parent.taskFields.name ||
+                    column.field === this.parent.taskFields.duration || column.field === this.parent.taskFields.progress ||
+                    column.field === this.parent.taskFields.startDate || column.field === this.parent.taskFields.endDate ||
+                    column.field === this.parent.taskFields.baselineStartDate || column.field === this.parent.taskFields.baselineEndDate ||
+                    column.field === this.parent.taskFields.work || column.field === 'taskType') {
                     disabled = true;
                 }
             }
@@ -1511,15 +1495,9 @@ export class DialogEdit {
                 disabled = true;
             }
             if (this.editedRecord.hasChildRecords) {
-                if (column.field === this.parent.taskFields.endDate) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.duration) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.progress) {
-                    disabled = true;
-                } else if (column.field === this.parent.taskFields.work) {
-                    disabled = true;
-                } else if (column.field === 'taskType') {
+                if (column.field === this.parent.taskFields.endDate || column.field === this.parent.taskFields.duration ||
+                    column.field === this.parent.taskFields.progress || column.field === this.parent.taskFields.work ||
+                    column.field === 'taskType') {
                     disabled = true;
                 }
             }
@@ -1558,12 +1536,12 @@ export class DialogEdit {
                     allowCustom: false,
                     fields: { value: 'text' },
                     value: args.rowData[field],
-                    change: (args: ChangeEventArgs) => {
-                        let tr: HTMLElement = closest(args.element, 'tr') as HTMLElement;
+                    change: (arg: ChangeEventArgs) => {
+                        let tr: HTMLElement = closest(arg.element, 'tr') as HTMLElement;
                         let idInput: HTMLInputElement = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
                         if (idInput) {
-                            if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
-                                idInput.value = (args.itemData as IPreData).id;
+                            if (!isNullOrUndefined(arg.itemData) && !isNullOrUndefined(arg.item)) {
+                                idInput.value = (arg.itemData as IPreData).id;
                             } else {
                                 idInput.value = '';
                             }
@@ -1748,7 +1726,7 @@ export class DialogEdit {
                     column: column, rowData: ganttData, element: inputElement,
                 });
             } else {
-                inputObj = (column.edit.write as Function) ({
+                inputObj = (column.edit.write as Function)({
                     column: column, rowData: ganttData, element: inputElement,
                 });
             }
@@ -1762,7 +1740,7 @@ export class DialogEdit {
             inputObj.appendTo(inputElement);
         }
         return divElement;
-    };
+    }
 
     private taskNameCollection(): void {
         let flatData: IGanttData[] = this.parent.flatData;

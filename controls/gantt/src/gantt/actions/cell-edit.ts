@@ -55,18 +55,18 @@ export class CellEdit {
             args.cancel = true;
         } else {
             let callBackPromise: Deferred = new Deferred();
-            this.parent.trigger('cellEdit', args, (args: CellEditArgs) => {
+            this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
                 if (isBlazor()) {
-                    args.cell = getElement(args.cell);
-                    args.row = getElement(args.row);
+                    arg.cell = getElement(arg.cell);
+                    arg.row = getElement(arg.row);
                 }
                 if (data.level === 0 && this.parent.viewType === 'ResourceView') {
-                    args.cancel = true;
+                    arg.cancel = true;
                 }
-                callBackPromise.resolve(args);
-                if (!args.cancel) {
-                    if (args.columnName === this.parent.taskFields.notes) {
-                        this.openNotesEditor(args);
+                callBackPromise.resolve(arg);
+                if (!arg.cancel) {
+                    if (arg.columnName === this.parent.taskFields.notes) {
+                        this.openNotesEditor(arg);
                     } else {
                         this.isCellEdit = true;
                         if (!isNOU(this.parent.toolbarModule)) {

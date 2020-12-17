@@ -73,10 +73,6 @@
             }
           }
 
-          @if $kanban-skin == 'bootstrapdark' {
-            background: $kanban-bg-color;
-          }
-
           .e-card-header {
             color: $kanban-default-font;
           }

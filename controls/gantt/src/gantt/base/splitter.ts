@@ -21,10 +21,6 @@ export class Splitter {
      * @private
      */
     public renderSplitter(): void {
-        let toolbarHeight: number = 0;
-        if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
-            toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
-        }
         let splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings);
         this.parent.splitterElement = createElement('div', { className: cls.splitter });
         this.parent.treeGridPane = createElement('div', { className: cls.treeGridPane });
@@ -146,10 +142,10 @@ export class Splitter {
         let pane2: HTMLElement = this.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
         let eventArgs: ISplitterResizedEventArgs = {
             event: null,
-            element: this.splitterObject.element as HTMLElement,
+            element: this.splitterObject.element,
             pane: [pane1, pane2],
             index: [0, 1],
-            separator: this.splitterObject.element.querySelector('.e-split-bar') as HTMLElement,
+            separator: this.splitterObject.element.querySelector('.e-split-bar'),
             paneSize: [pane1.offsetWidth, pane2.offsetWidth]
         };
         this.parent.trigger('splitterResized', eventArgs);

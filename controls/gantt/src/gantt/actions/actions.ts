@@ -15,3 +15,4 @@ export * from './excel-export';
 export * from './column-menu';
 export * from './rowdragdrop';
 export * from './pdf-export';
+export * from './virtual-scroll';

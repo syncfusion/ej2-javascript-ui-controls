@@ -3,6 +3,7 @@ import { Dictionary } from '../../base/dictionary';
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { EditorHistory } from '../editor-history/editor-history';
+import { FootEndNoteNumberFormat, FootnoteRestartIndex } from '../../base/types';
 
 /** 
  * @private
@@ -91,6 +92,42 @@ export class WSectionFormat {
     set pageStartingNumber(value: number) {
         this.setPropertyValue('pageStartingNumber', value);
     }
+    get endnoteNumberFormat(): FootEndNoteNumberFormat {
+        return this.getPropertyValue('endnoteNumberFormat') as FootEndNoteNumberFormat;
+    }
+    set endnoteNumberFormat(value: FootEndNoteNumberFormat) {
+        this.setPropertyValue('endnoteNumberFormat', value);
+    }
+    get restartIndexForEndnotes(): FootnoteRestartIndex {
+        return this.getPropertyValue('restartIndexForEndnotes') as FootnoteRestartIndex;
+    }
+    set restartIndexForEndnotes(value: FootnoteRestartIndex) {
+        this.setPropertyValue('restartIndexForEndnotes', value);
+    }
+    get restartIndexForFootnotes(): FootnoteRestartIndex {
+        return this.getPropertyValue('restartIndexForFootnotes') as FootnoteRestartIndex;
+    }
+    set restartIndexForFootnotes(value: FootnoteRestartIndex) {
+        this.setPropertyValue('restartIndexForFootnotes', value);
+    }
+    get footNoteNumberFormat(): FootEndNoteNumberFormat {
+        return this.getPropertyValue('footNoteNumberFormat') as FootEndNoteNumberFormat;
+    }
+    set footNoteNumberFormat(value: FootEndNoteNumberFormat) {
+        this.setPropertyValue('footNoteNumberFormat', value);
+    }
+    get initialFootNoteNumber(): number {
+        return this.getPropertyValue('initialFootNoteNumber') as number;
+    }
+    set initialFootNoteNumber(value: number) {
+        this.setPropertyValue('initialFootNoteNumber', value);
+    }
+    get initialEndNoteNumber(): number {
+        return this.getPropertyValue('initialEndNoteNumber') as number;
+    }
+    set initialEndNoteNumber(value: number) {
+        this.setPropertyValue('initialEndNoteNumber', value);
+    }
     constructor(node?: Object) {
         this.ownerBase = node;
     }
@@ -150,6 +187,30 @@ export class WSectionFormat {
             case 'pageStartingNumber':
                 value = 0;
                 break;
+            case 'footnotePosition':
+                value = 'PrintAtBottomOfPage';
+                break;
+            case 'endnoteNumberFormat':
+                value = 'LowerCaseRoman';
+                break;
+            case 'endnotePosition':
+                value = 'DisplayEndOfDocument';
+                break;
+            case 'restartIndexForEndnotes':
+                value = 'DoNotRestart';
+                break;
+            case 'restartIndexForFootnotes':
+                value = 'DoNotRestart';
+                break;
+            case 'footNoteNumberFormat':
+                value = 'Arabic';
+                break;
+            case 'initialFootNoteNumber':
+                value = 1;
+                break;
+            case 'initialEndNoteNumber':
+                value = 1;
+                break;
 
         }
         return value;
@@ -196,6 +257,14 @@ export class WSectionFormat {
         this.addUniqueSectionFormat('bidi', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('restartPageNumbering', property, propValue, uniqueSectionFormatTemp);
         this.addUniqueSectionFormat('pageStartingNumber', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('endnoteNumberFormat', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('endnotePosition', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('footNoteNumberFormat', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('footnotePosition', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('restartIndexForEndnotes', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('restartIndexForFootnotes', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('initialFootNoteNumber', property, propValue, uniqueSectionFormatTemp);
+        this.addUniqueSectionFormat('initialEndNoteNumber', property, propValue, uniqueSectionFormatTemp);
         // tslint:disable-next-line:max-line-length
         this.uniqueSectionFormat = WSectionFormat.uniqueSectionFormats.addUniqueFormat(uniqueSectionFormatTemp, WSectionFormat.uniqueFormatType);
     }

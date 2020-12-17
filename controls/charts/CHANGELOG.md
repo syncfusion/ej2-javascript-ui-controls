@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Chart
+
+#### Bug Fixes
+
+- `#293532` - Chart gets crash while using small values issue fixed.
+- `#300644` - Data label template console error in canvas mode issue fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#160214` - Range navigator cursor style issue fixed.
+
 ## 18.3.52 (2020-12-01)
 
 ### RangeNavigator

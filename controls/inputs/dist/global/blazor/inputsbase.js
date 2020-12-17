@@ -351,11 +351,13 @@ var CLASSNAMES = {
             var parentElement = getParentNode(element);
             if (!sf.base.isNullOrUndefined(parentElement)) {
                 var button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-                if (element.value && parentElement.classList.contains('e-input-focus')) {
-                    sf.base.removeClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
-                else {
-                    sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE);
+                if (!sf.base.isNullOrUndefined(button)) {
+                    if (element.value && parentElement.classList.contains('e-input-focus')) {
+                        sf.base.removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
+                    else {
+                        sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
                 }
             }
         }

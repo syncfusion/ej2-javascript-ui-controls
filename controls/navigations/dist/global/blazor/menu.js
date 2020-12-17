@@ -1500,9 +1500,9 @@ var MenuBase = /** @class */ (function (_super) {
             var sli = void 0;
             var ul_1;
             var item_1;
-            var items_1;
-            var beforeCloseArgs = void 0;
             var wrapper = this.getWrapper();
+            var beforeCloseArgs = void 0;
+            var items_1;
             var popups = this.getPopups();
             var isClose = false;
             var cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
@@ -1520,7 +1520,7 @@ var MenuBase = /** @class */ (function (_super) {
                 item_1 = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items_1 = item_1 ? item_1.items : this.items;
                 beforeCloseArgs = { element: ul_1, parentItem: this.isMenu && sf.base.isBlazor() ? this.getMenuItemModel(item_1, ulIndex) : item_1,
-                    items: items_1, event: e, cancel: false };
+                    items: items_1, event: e, cancel: false, liElement: liElem_1 };
                 this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
                     var popupEle;
                     var closeArgs;
@@ -1606,7 +1606,7 @@ var MenuBase = /** @class */ (function (_super) {
                             if (sli_1) {
                                 sli_1.setAttribute('aria-expanded', 'false');
                                 sli_1.classList.remove(SELECTED);
-                                if (liElem_1) {
+                                if (observedCloseArgs.liElement) {
                                     sli_1.classList.add(FOCUSED);
                                     sli_1.focus();
                                 }

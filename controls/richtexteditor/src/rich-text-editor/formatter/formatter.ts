@@ -38,6 +38,7 @@ export class Formatter {
             && args.item.command !== 'Actions'
             && args.item.command !== 'Links'
             && args.item.command !== 'Images'
+            && args.item.command !== 'Files'
             && range
             && !(self.contentModule.getEditPanel().contains(this.getAncestorNode(range.commonAncestorContainer))
                 || self.contentModule.getEditPanel() === range.commonAncestorContainer

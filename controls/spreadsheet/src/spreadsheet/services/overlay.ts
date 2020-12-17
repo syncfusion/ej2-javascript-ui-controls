@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base';
-import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData } from '../common/index';
-import { getRangeIndexes, SheetModel } from '../../workbook/index';
-import { EventHandler, removeClass } from '@syncfusion/ej2-base';
+import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj } from '../common/index';
+import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder } from '../../workbook/index';
+import { EventHandler, removeClass, closest } from '@syncfusion/ej2-base';
 
 /**
  * Specifes to create or modify overlay.
@@ -11,8 +11,6 @@ export class Overlay {
     private parent: Spreadsheet;
     private minHeight: string = '300px';
     private minWidth: string = '400px';
-    private sheetTop: number;
-    private sheetLeft: number;
     private isOverlayClicked: boolean = false;
     private isResizerClicked: boolean = false;
     private originalMouseX: number;
@@ -56,8 +54,6 @@ export class Overlay {
         this.parent.getMainContent().appendChild(div);
         this.renderResizeHandles(div);
         this.addEventListener(div);
-        this.sheetTop = document.getElementById(this.parent.element.id + '_sheet_panel').getClientRects()[0].top + 31;
-        this.sheetLeft = document.getElementById(this.parent.element.id + '_sheet_panel').getClientRects()[0].left + 30;
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
         this.originalHeight = parseFloat(getComputedStyle(div, null).getPropertyValue('height').replace('px', ''));
         return div;
@@ -78,12 +74,14 @@ export class Overlay {
             switch (this.resizer) {
                 case 'e-ss-overlay-t':
                     const height1: number = Math.max(this.originalMouseY - e.clientY + this.originalHeight, 20);
-                    let top: number = e.clientY - ((this.originalMouseY - this.originalResizeTop) + this.sheetTop);
+                    let top: number = e.clientY - (this.originalMouseY - this.originalResizeTop);
                     if (height1 > 180 && top > -1) {
                         overlayElem.style.height = height1 + 'px';
                         overlayElem.style.top = top + 'px';
                         this.resizedReorderTop = e.clientX; // resized divTop
                         this.currenHeight = height1;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem });
                     }
                     break;
                 case 'e-ss-overlay-r':
@@ -91,6 +89,8 @@ export class Overlay {
                     if (width1 > 180) {
                         overlayElem.style.width = width1 + 'px';
                         this.currentWidth = width1;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem });
                     }
                     break;
                 case 'e-ss-overlay-b':
@@ -98,16 +98,20 @@ export class Overlay {
                     if (height2 > 180) {
                         overlayElem.style.height = height2 + 'px';
                         this.currenHeight = height2;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem });
                     }
                     break;
                 case 'e-ss-overlay-l':
                     const width2: number = Math.max(this.originalMouseX - e.clientX + this.originalWidth, 20);
-                    let left: number = e.clientX - ((this.originalMouseX - this.originalResizeLeft) + this.sheetLeft);
+                    let left: number = e.clientX - (this.originalMouseX - this.originalResizeLeft);
                     if (width2 > 180 && left > -1) {
                         overlayElem.style.width = width2 + 'px';
                         overlayElem.style.left = left + 'px';
                         this.resizedReorderLeft = left; //resized divLeft
                         this.currentWidth = width2;
+                        this.parent.notify(refreshChartSize, {
+                            height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem });
                     }
                     break;
             }
@@ -127,9 +131,16 @@ export class Overlay {
         }
     }
     private overlayMouseUpHandler(e: MouseEvent): void {
+        if (this.parent.getActiveSheet().isProtected) {
+            return;
+        }
         this.isOverlayClicked = false;
         this.isResizerClicked = false;
         let elem: HTMLElement = (e.target as HTMLElement);
+        if (!elem.classList.contains('e-ss-overlay')) {
+            elem = closest(e.target as Element, '.e-datavisualization-chart') ?
+             closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement : elem;
+        }
         let eventArgs: BeforeImageRefreshData = {
             prevTop: this.originalReorderTop, prevLeft: this.originalReorderLeft,
             currentTop: this.resizedReorderTop ? this.resizedReorderTop : this.originalReorderTop, currentLeft: this.resizedReorderLeft ?
@@ -140,11 +151,19 @@ export class Overlay {
         if (elem.id.indexOf('overlay') > 0 || elem.classList.contains('e-ss-resizer')) {
             if (this.originalReorderTop !== this.resizedReorderTop || this.originalReorderLeft !== this.resizedReorderLeft) {
                 eventArgs.id = elem.id;
+                if (elem.classList.contains('e-datavisualization-chart')) {
+                    eventArgs.requestType = 'chartRefresh';
+                    this.parent.notify(refreshChartCellObj, eventArgs);
+                }
                 this.parent.notify(refreshImgCellObj, eventArgs);
                 this.resizedReorderTop = this.originalReorderTop;
                 this.resizedReorderLeft = this.originalReorderLeft;
             } else if (this.currenHeight !== this.originalHeight || this.originalWidth !== this.currentWidth) {
                 eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement.id;
+                if (elem.classList.contains('e-datavisualization-chart')) {
+                    eventArgs.requestType = 'chartRefresh';
+                    this.parent.notify(refreshChartCellObj, eventArgs);
+                }
                 this.parent.notify(refreshImgCellObj, eventArgs);
                 this.originalHeight = this.currenHeight;
                 this.originalWidth = this.currentWidth;
@@ -153,11 +172,15 @@ export class Overlay {
     }
 
     private overlayClickHandler(e: MouseEvent): void {
+        if (this.parent.getActiveSheet().isProtected) {
+            return;
+        }
         this.isOverlayClicked = true;
         let target: HTMLElement = e.target as HTMLElement;
         let overlayElem: HTMLElement = e.target as HTMLElement;
         if (!target.classList.contains('e-ss-overlay')) {
-            overlayElem = target.parentElement;
+            overlayElem = closest(e.target as Element, '.e-datavisualization-chart') ?
+             closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement : target.parentElement;
         }
         this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
         this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop
@@ -179,6 +202,9 @@ export class Overlay {
             this.originalWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
             this.originalHeight = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('height').replace('px', ''));
             this.isResizerClicked = true;
+        }
+        if (overlayElem.classList.contains('e-datavisualization-chart')) {
+           this.parent.notify(focusChartBorder, { id : overlayElem.id});
         }
     }
 

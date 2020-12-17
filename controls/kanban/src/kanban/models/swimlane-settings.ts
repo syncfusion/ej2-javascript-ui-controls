@@ -58,6 +58,14 @@ export class SwimlaneSettings extends ChildProperty<SwimlaneSettings> {
     public sortDirection: SortDirection;
 
     /**
+     * Defines the custom sort comparer function.
+     * The sort comparer function has the same functionality like 
+     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     */
+    @Property()
+    public sortComparer: Function;
+
+    /**
      * Enable or disable unassigned swimlane group
      * @default true
      */

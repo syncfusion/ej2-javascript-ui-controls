@@ -1,4 +1,4 @@
-import { closest } from '@syncfusion/ej2-base';
+import { closest, Browser } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
@@ -59,6 +59,9 @@ export class WrapText {
                             ele.innerHTML
                                 = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
                         }
+                    }
+                    if (Browser.isIE) {
+                        ele.classList.add('e-ie-wrap');
                     }
                     if (!isCustomHgt) {
                         colwidth = getColumnWidth(args.sheet, j);

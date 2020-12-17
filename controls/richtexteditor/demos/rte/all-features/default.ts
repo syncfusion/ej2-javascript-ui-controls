@@ -58,7 +58,7 @@ let defaultRTE: RichTextEditor = new RichTextEditor({
             'SubScript', 'SuperScript', '|',
             'LowerCase', 'UpperCase', '|', 
             'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
-            'Indent', 'Outdent', '|', 'CreateTable', '|', 'CreateLink', '|', 'Image', '|', 'SourceCode',
+            'Indent', 'Outdent', '|', 'CreateTable', '|', 'CreateLink', '|', 'Image', 'FileManager', '|', 'SourceCode',
             '|', 'ClearFormat', 'Print', 'InsertCode']
     },
     value: innerHTML

@@ -77,6 +77,8 @@ var CalendarBase = /** @class */ (function (_super) {
         _this.isPopupClicked = false;
         _this.isDateSelected = true;
         _this.isTodayClicked = false;
+        _this.preventChange = false;
+        _this.isAngular = false;
         return _this;
     }
     /**
@@ -2373,7 +2375,12 @@ var Calendar = /** @class */ (function (_super) {
     Calendar.prototype.changeEvent = function (e) {
         if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
             || this.isMultiSelection) {
-            this.trigger('change', this.changedArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', this.changedArgs);
+            }
             this.previousDate = new Date(+this.value);
         }
     };

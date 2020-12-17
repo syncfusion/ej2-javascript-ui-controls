@@ -620,7 +620,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         } else {
             for (let i: number = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
-                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping];
+                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping] != null
+                    ? currentSeries.dataSource[i][currentSeries.pointColorMapping] : currentSeries.points[i].color;
                 currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
             }
             this.redraw = this.enableAnimation;

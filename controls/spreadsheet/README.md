@@ -65,6 +65,7 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Clear:** Provides option to clear the content, formats, and hyperlinks applied to a cell or range of cells in a spreadsheet.
 - **Aggregates:** Provides option to check the sum, average, and count for the selected cells or range in the sheet tab.
 - **Picture:** Allows you to view, insert, and modify a picture in a spreadsheet with customizing options.
+- **Chart:** Transforms your Spreadsheet data to an intuitive overview for better understanding and to make smart business decisions.
 - **Multi-line editing:** Allows you to insert a line break between paragraphs of the text within a cell in a Spreadsheet.
 - **Range selection helper:** Helps you to select a range or multiple ranges when editing a formula in a cell.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.

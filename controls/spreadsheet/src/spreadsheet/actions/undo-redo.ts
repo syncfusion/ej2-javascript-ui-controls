@@ -63,6 +63,9 @@ export class UndoRedo {
             case 'beforeInsertImage':
                 address = getRangeIndexes(eventArgs.range);
                 break;
+            case 'beforeInsertChart':
+                address = getRangeIndexes(eventArgs.range);
+                break;
         }
         cells = this.getCellDetails(address, sheet);
         this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
@@ -124,6 +127,13 @@ export class UndoRedo {
                 case 'imageRefresh':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
+                case 'insertChart':
+                case 'deleteChart':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
+                case 'chartRefresh':
+                    updateAction(undoRedoArgs, this.parent, !args.isUndo);
+                    break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -144,7 +154,8 @@ export class UndoRedo {
 
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh'];
+            'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
+            'chartRefresh'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -155,7 +166,8 @@ export class UndoRedo {
         let eventArgs: UndoRedoEventArgs = options.args.eventArgs;
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
-            action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh') {
+            action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
+            action === 'chartRefresh') {
             let beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -317,7 +329,7 @@ export class UndoRedo {
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
                     style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
                     wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
-                    hyperlink: cell && cell.hyperlink, image: cell && cell.image
+                    hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
                 });
             }
         }

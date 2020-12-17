@@ -1,6 +1,6 @@
-import { FormulasErrorsStrings, CommonErrors, IBasicFormula } from '../common/index';
+import { FormulasErrorsStrings, CommonErrors, IBasicFormula, getSkeletonVal } from '../common/index';
 import { Calculate } from '../base/index';
-import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, Internationalization } from '@syncfusion/ej2-base';
 
 /**
  * Represents the basic formulas module.
@@ -12,6 +12,10 @@ export class BasicFormulas {
         {
             formulaName: 'SUMIFS', category: 'Math & Trig',
             description: 'Sums the cells specified by a given set of conditionsor criteria.'
+        },
+        {
+            formulaName: 'SUMPRODUCT', category: 'Math & Trig',
+            description: 'Returns sum of the product of given ranges of arrays.'
         },
         { formulaName: 'ABS', category: 'Math & Trig', description: 'Returns the absolute value of a number.' },
         { formulaName: 'RAND', category: 'Math & Trig', description: 'Return a random number between 0 and 1.' },
@@ -61,6 +65,7 @@ export class BasicFormulas {
         { formulaName: 'MAX', category: 'Statistical', description: 'Returns the largest number in set of arguments.' },
         { formulaName: 'DATE', category: 'Date', description: 'Returns the date, given the year, month and day of the month.' },
         { formulaName: 'DAY', category: 'Date', description: 'Returns the day of a given date.' },
+        { formulaName: 'TODAY', category: 'Date', description: 'Returns the current date as date value.' },
         { formulaName: 'DAYS', category: 'Date', description: 'Returns the number of days between two dates.' },
         {
             formulaName: 'IF', category: 'Logical',
@@ -111,6 +116,12 @@ export class BasicFormulas {
             description: 'Calculates the point of the Y-intercept line via linear regression.'
         },
         {
+            formulaName: 'ROUNDUP', category: 'Math & Trig', description: 'Rounds a number away from zero.'
+        },
+        {
+            formulaName: 'INT', category: 'Math & Trig', description: 'Returns a number to the nearest integer.'
+        },
+        {
             formulaName: 'LN', category: 'Math & Trig', description: 'Returns the natural logarithm of a number.'
         },
         {
@@ -136,6 +147,7 @@ export class BasicFormulas {
             formulaName: 'GEOMEAN', category: 'Statistical',
             description: 'Returns the geometric mean of an array or range of positive data.'
         },
+        { formulaName: 'TEXT', category: 'Lookup & Reference', description: 'Returns the value in required format.' }
     ];
     private isConcat: boolean = false;
     constructor(parent?: Calculate) {
@@ -206,7 +218,166 @@ export class BasicFormulas {
         }
         return sum;
     }
+    /** @hidden */
+    public ComputeINT(...args: string[]): string | number {
+        let str: string; let num: number; let index: number;
+        if (!isNullOrUndefined(args) && args.length !== 1 || args[0] === '') {
+            str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        if (args[0] !== '' && args.length === 1) {
+            str = args[0];
+            index = str.indexOf('"');
+            str = str.indexOf('"') > -1 ? str.replace('"', '') : str;
+            str = str.indexOf('"') > -1 ? str.replace('"', '') : str;
+            str = this.parent.getValueFromArg(str);
+            str = str.toUpperCase() === 'TRUE' ? '1' : (str === 'FALSE' ? '0' : str);
+            num = this.parent.parseFloat(str);
+            num = Math.floor(num);
+        }
+        if (isNaN(num)) {
+            str = index > -1 ? this.parent.getErrorStrings()[CommonErrors.value] : this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        return num ? num : str;
+    };
 
+    /** @hidden */
+    public ComputeTODAY(...args: string[]): Date | string {
+        let str: string;
+        if (args && args[0] !== '') {
+            str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        } else {
+            let dt: Date = new Date(Date.now());
+            str = dt.getFullYear() + '/' + this.parent.calculateDate((dt.getMonth() + 1).toString()) + '/'
+                + this.parent.calculateDate(dt.getDate().toString());
+        }
+        return str;
+    }
+
+    /** @hidden */
+    public ComputeSUMPRODUCT(...args: string[]): string | number {
+        let sum: number = 0; let count: number = 0; let index: number;
+        let mulValues: number[] = null;
+        let ranges: string[] = args;
+        for (let k: number = 0; k < ranges.length; ++k) {
+            let range: string = ranges[k];
+            if (!range.startsWith(this.parent.tic) && this.parent.isCellReference(range)) {
+                let i: number = range.indexOf(':');
+                let startRow: number = this.parent.rowIndex(range.substr(0, i));
+                let endRow: number = this.parent.rowIndex(range.substr(i + 1));
+                if (!(startRow !== -1 || endRow === -1) === (startRow === -1 || endRow !== -1)) {
+                    return this.parent.getErrorStrings()[CommonErrors.name];
+                }
+                let col1: number = this.parent.colIndex(range.substr(0, i));
+                let col2: number = this.parent.colIndex(range.substr(i + 1));
+                if (mulValues === null) {
+                    count = (endRow - startRow + 1) * (col2 - col1 + 1);
+                    mulValues = [];
+                    for (i = 0; i < count; ++i) {
+                        mulValues[i] = 1; //To create required index.
+                    }
+                }
+                i = 0;
+                for (let row: number = startRow; row <= endRow; ++row) {
+                    for (let col: number = col1; col <= col2; ++col) {
+                        let cellRef: string = '' + this.parent.convertAlpha(col) + (row);
+                        let result: string = this.parent.getValueFromArg(cellRef);
+                        if (!isNaN(parseFloat(result))) {
+                            //To return #VALUE! error when array dimensions are mismatched.
+                            if (isNaN(mulValues[i])) {
+                                return this.parent.getErrorStrings()[CommonErrors.name];
+                            }
+                            mulValues[i] = mulValues[i] * parseFloat(result);
+                        } else {
+                            mulValues[i] = 0;
+                        }
+                        i++;
+                    }
+                }
+            } else {
+                let s1: string = this.parent.getValueFromArg(range);
+                index = s1.indexOf('"');
+                if (this.parent.getErrorStrings().indexOf(s1) > -1) {
+                    return s1;
+                } else if (index > -1) {
+                    return 0;
+                } else {
+                    return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+                }
+            }
+        }
+        for (let i: number = 0; i < count; ++i) {
+            sum += mulValues[i];
+        }
+        return sum;
+    };
+
+    /** @hidden */
+    public ComputeROUNDUP(...args: string[]): string | number {
+        let str: string; let num: number; let arg1: string; let arg2: string; let index: number;
+        let len: number = args.length;
+        if (!isNullOrUndefined(args) && len > 2) {
+            str = this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        if (len === 1 && args[0] !== '') {
+            index = args[0].indexOf('"');
+            arg1 = args[0].indexOf('"') > -1 ? args[0].replace('"', '') : args[0];
+            arg1 = arg1.indexOf('"') > -1 ? arg1.replace('"', '') : arg1;
+            arg1 = arg1.toUpperCase() === 'TRUE' ? '1' : (arg1 === 'FALSE' ? '0' : arg1);
+            arg1 = this.parent.getValueFromArg(arg1);
+            num = this.parent.parseFloat(arg1);
+            if (num > 0) {
+                num += .4999999999; // To round the number, we using this value.
+            } else if (num < 0) {
+                num -= .4999999999;
+            }
+            num = this.parent.parseFloat(num.toFixed(0));
+            str = num.toString();
+        } else if (len === 2 && args[0] !== '' && args[1] !== '') {
+            index = args[0].indexOf('"') > -1 ? args[0].indexOf('"') : (args[1].indexOf('"') > -1 ? args[1].indexOf('"') : -1);
+            arg1 = args[0].indexOf('"') > -1 ? args[0].replace('"', '') : args[0];
+            arg1 = arg1.indexOf('"') > -1 ? arg1.replace('"', '') : arg1;
+            arg2 = args[1].indexOf('"') > -1 ? args[1].replace('"', '') : args[1];
+            arg2 = arg2.indexOf('"') > -1 ? arg2.replace('"', '') : arg2;
+            arg1 = arg1.toUpperCase() === 'TRUE' ? '1' : (arg1 === 'FALSE' ? '0' : arg1);
+            arg2 = arg2.toUpperCase() === 'TRUE' ? '1' : (arg2 === 'FALSE' ? '0' : arg2);
+            arg1 = this.parent.getValueFromArg(arg1);
+            arg2 = this.parent.getValueFromArg(arg2);
+            let digits: number = Math.ceil(this.parent.parseFloat(arg2));
+            num = this.parent.parseFloat(arg1);
+            if (digits > 0) {
+                if (num > 0) {
+                    num += .4999999999 / Math.pow(10, digits);
+                } else if (num < 0) {
+                    num -= .4999999999 / Math.pow(10, digits);
+                }
+                num = this.parent.parseFloat(num.toFixed(digits));
+                str = num.toFixed(digits);
+                if (isNaN(num)) {
+                    if (digits.toString().indexOf('"') > - 1) {
+                        str = this.parent.getErrorStrings()[CommonErrors.value];
+                    } else {
+                        str = this.parent.getErrorStrings()[CommonErrors.name];
+                    }
+                }
+            } else {
+                if (num > 0) {
+                    num = (num / Math.pow(10, -digits)) + .49999;
+                } else if (num < 0) {
+                    num = (num / Math.pow(10, -digits)) - .49999;
+                }
+                num = this.parent.parseFloat(num.toFixed(0)) * Math.pow(10, -digits);
+                str = num.toString();
+                if (isNaN(num)) {
+                    str = (digits.toString().indexOf('"') > - 1) ? this.parent.getErrorStrings()[CommonErrors.value] :
+                        str = this.parent.getErrorStrings()[CommonErrors.name];
+                }
+            }
+        } else {
+            str = index > - 1 ? this.parent.getErrorStrings()[CommonErrors.value] :
+                this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
+        }
+        return str;
+    };
     /** @hidden */
     public ComputeCOUNT(...args: string[]): number | string {
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
@@ -995,6 +1166,109 @@ export class BasicFormulas {
     }
 
     /** @hidden */
+    public ComputeTEXT(...args: string[]): string | number {
+        let checkArgs: string; let argsLength: number = args.length;
+        for (let i: number = 0; i < argsLength; i++) {
+            if (isNullOrUndefined(checkArgs)) {
+                checkArgs = args[i];
+            } else {
+                checkArgs = checkArgs + ',' + args[i];
+            }
+        }
+        let splitIndex: number = checkArgs.indexOf(',');
+        let frtArg: string = checkArgs.slice(0, splitIndex);
+        let scndArg: string = checkArgs.slice(checkArgs.indexOf('"') + 1, checkArgs.length);
+        let checkScndArg: number = scndArg.indexOf('"');
+        if ( splitIndex > -1 && checkScndArg !== scndArg.length - 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        let s1: string = frtArg;
+        let s2: string = scndArg.slice(0, scndArg.length - 1);
+        let dTime: Date | number = new Date(1900, 0, 1, 0, 0, 0);
+        let checkString: string = s1 + ',' + s2;
+        let intl: Internationalization = new Internationalization();
+        if (this.parent.getErrorStrings().indexOf(checkString) > -1) {
+            return checkString;
+        }
+        s1 = this.parent.getValueFromArg(s1);
+        s2 = s2.split(this.parent.tic).join('');
+        if (s2 === '') {
+            return '';
+        }
+        if (s1 === '' && (s2.length > 0 && (s2.toUpperCase().indexOf('M') > -1 || s2.toUpperCase().indexOf('D') > -1
+            || s2.toUpperCase().indexOf('Y') > -1 || s2.toUpperCase().indexOf('S') > -1 || s2.toUpperCase().indexOf('T') > -1)
+            || s2.toUpperCase().indexOf('H') > -1)) {
+            s1 = dTime.toString();
+        }
+        let d: number = this.parseDouble(s1);
+        if (isNaN(d) && this.parent.isDate(new Date(s1)) !== null) {
+            d = this.parent.toOADate(new Date(s1));
+        }
+        dTime = Date.parse(s1.split(this.parent.tic).join(''));
+        if (!isNaN(d) || !isNaN(dTime)) {
+            if (s2[0] === '[') {
+                return this.parent.tic + s1 + this.parent.tic;
+            }
+            if (s2.length > 0 && (s2.toUpperCase().indexOf('M') > -1 || s2.toUpperCase().indexOf('D') > -1
+                || s2.toUpperCase().indexOf('Y') > -1 || s2.toUpperCase().indexOf('S') > -1 || s2.toUpperCase().indexOf('T') > -1)
+                || s2.toUpperCase().indexOf('H') > -1) {
+                s2 = s2.split('Y').join('y').split('D').join('d').split('H').join('h');
+                s2 = s2.split('S').join('s').split('m').join('M').split('AM/PM').join('tt');
+                let formatChar: string[] = s2.split('');
+                let isH: boolean = false; let isMFound: boolean = false; let isFirstM: boolean = false;
+                let i: number = 0; let mcount: number = 0;
+                let lastCharIndex: number = 0; let totalCharforM: number = 0;
+                for (i = 0; i < formatChar.length; ) {
+                    let c: string = formatChar[i];
+                    if (c === 's' && formatChar[lastCharIndex] === 'M') {
+                        formatChar[lastCharIndex] = 'm';
+                        if (formatChar[lastCharIndex - 1] === 'M') {
+                            formatChar[lastCharIndex - 1] = 'm';
+                        }
+                    }
+                    if (this.parent.isChar(c)) {
+                        lastCharIndex = i;
+                        if (c === 'M') {
+                            mcount++;
+                            totalCharforM++;
+                        }
+                    } else if (totalCharforM > 1) {
+                        totalCharforM++;
+                    }
+                    if (c === 'M' && isH) {
+                        formatChar[i] = 'm';
+                        isMFound = true;
+                        isFirstM = (mcount === 1);
+                    }
+                    if (c === 'h') {
+                        isH = true;
+                    } else if (this.parent.isChar(c) && c !== 'M' && c !== 'h' && !isMFound) {
+                        isH = false;
+                        isMFound = false;
+                    }
+                    i++;
+                }
+                s2 = String(formatChar);
+                s2 = s2.split(',').join('').split('\n').join(' ');
+                let dt: Date | number = this.parent.fromOADate(d);
+                if (d === 0) {
+                    dt = dTime;
+                }
+                let getSkeleton: string = getSkeletonVal(s2);
+                if (getSkeleton === '') {
+                    return this.parent.getErrorStrings()[CommonErrors.name];
+                }
+                let dFormatter: Function = intl.getDateFormat({ skeleton: getSkeleton, type: 'date' });
+                let formattedString: string = dFormatter(new Date(dt.toString()));
+                s1 = formattedString;
+            } else {
+                s1 = intl.formatNumber(d, { format: s2 });
+            }
+        }
+        return s1;
+    }
+
+    /** @hidden */
     public ComputeCOUNTIFS(...args: string[]): number | string {
         let sum: string | number;
         sum = this.parent.computeIfsFormulas(args, this.parent.trueValue);
@@ -1597,7 +1871,11 @@ export class BasicFormulas {
         }
         return cellsData;
     }
-
+    /** @hidden */
+    private parseDouble(value: string): number {
+        let val: number = this.parent.parseFloat(value.toString());
+        return !isNaN(val) ? val : NaN;
+    };
     protected getModuleName(): string {
         return 'basic-formulas';
     }

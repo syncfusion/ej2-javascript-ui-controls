@@ -323,10 +323,14 @@ export class Resize {
 
     private resizeStart(e: PointerEvent | TouchEvent): void {
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
+            let columnList: Object[] = [];
+            let columnData: Object = {};
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
                     for (let col of this.refreshColumnWidth()) {
                         this.widthService.setColumnWidth(col, null, null, false);
+                        columnData = { width: col.width, columnUid: col.uid};
+                        columnList.push(columnData);
                     }
                     this.widthService.setWidthToTable();
                 }
@@ -379,7 +383,7 @@ export class Resize {
                 EventHandler.add(this.parent.element, Browser.touchMoveEvent, this.resizing, this);
                 this.updateCursor('add');
                 this.parent.dotNetRef.invokeMethodAsync("ResizeStarted", {
-                    columnUid: this.column.uid
+                    columnUid: this.column.uid, columnList : columnList
                 });
                 // });
             }
@@ -541,7 +545,7 @@ export class Resize {
         }
         let width: string = this.column.width.toString();
         width = width.replace("px", "");
-        this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { width: width, columnUid: this.column.uid });
+        this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { width: width, columnUid: this.column.uid, allowStopEvent: true });
         this.refresh();
         this.doubleTapEvent(e);
         this.isDblClk = true;

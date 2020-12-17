@@ -280,6 +280,10 @@ var Column = /** @__PURE__ @class */ (function () {
         this.sortDirection = direction;
     };
     /** @hidden */
+    Column.prototype.getFreezeTableName = function () {
+        return this.freezeTable;
+    };
+    /** @hidden */
     Column.prototype.setProperties = function (column) {
         var _this = this;
         //Angular two way binding
@@ -819,9 +823,31 @@ var beforeCheckboxRenderer = 'beforeCheckboxRenderer';
 /** @hidden */
 var refreshHandlers = 'refreshResizeHandlers';
 /** @hidden */
+var refreshFrozenColumns = 'refresh-frozen-columns';
+/** @hidden */
+var setReorderDestinationElement = 'set-reorder-destination-element';
+/** @hidden */
+var refreshVirtualFrozenHeight = 'refresh-virtual-frozen-height';
+/** @hidden */
+var setFreezeSelection = 'set-freeze-selection';
+/** @hidden */
+var setInfiniteFrozenHeight = 'set-infinite-frozen-height';
+/** @hidden */
+var setInfiniteColFrozenHeight = 'set-infinite-col-frozen-height';
+/** @hidden */
 var beforeRefreshOnDataChange = 'before-refresh-on-data-change';
 /** @hidden */
 var immutableBatchCancel = 'immutable-batch-cancel';
+/** @hidden */
+var refreshVirtualFrozenRows = 'refresh-virtual-frozenrows';
+/** @hidden */
+var checkScrollReset = 'check-scroll-reset';
+/** @hidden */
+var refreshFrozenHeight = 'refresh-frozen-height';
+/** @hidden */
+var setHeightToFrozenElement = 'set-height-to-frozen-element';
+/** @hidden */
+var preventFrozenScrollRefresh = 'prevent-frozen-scroll-refresh';
 
 /**
  * Defines types of Cell
@@ -941,8 +967,13 @@ var Data = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         this.dataManager = gObj.dataSource instanceof DataManager ? gObj.dataSource :
             (isNullOrUndefined(gObj.dataSource) ? new DataManager() : new DataManager(gObj.dataSource));
-        this.isQueryInvokedFromData = true;
-        gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
+        if (gObj.isAngular && !(gObj.query instanceof Query)) {
+            gObj.setProperties({ query: new Query() }, true);
+        }
+        else {
+            this.isQueryInvokedFromData = true;
+            gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
+        }
     };
     /**
      * The function is used to generate updated Query from Grid model.
@@ -1825,6 +1856,8 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
                     if (summarycell.length) {
                         var lastSummaryCell = (summarycell[summarycell.length - 1]);
                         addClass([lastSummaryCell], ['e-lastsummarycell']);
+                        var firstSummaryCell = (summarycell[0]);
+                        addClass([firstSummaryCell], ['e-firstsummarycell']);
                     }
                 }
             }
@@ -1942,7 +1975,8 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
         this.refreshForeignKeyRow(options);
         var cells = this.ensureColumns();
         var row = new Row(options, this.parent);
-        row.cells = cells.concat(this.generateCells(options));
+        row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
+            : cells.concat(this.generateCells(options));
         return row;
     };
     RowModelGenerator.prototype.refreshForeignKeyRow = function (options) {
@@ -2450,6 +2484,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.isRemove = false;
         this.visibleRows = [];
         this.visibleFrozenRows = [];
+        this.rightFreezeRows = [];
         this.isAddRows = false;
         this.isInfiniteFreeze = false;
         this.useGroupCache = false;
@@ -2457,7 +2492,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         this.rafCallback = function (args) {
             var arg = args;
             return function () {
-                if (_this.parent.getFrozenColumns() && _this.parent.enableVirtualization) {
+                if (_this.parent.isFrozenGrid() && _this.parent.enableVirtualization) {
                     var mContentRows = [].slice.call(_this.parent.getMovableVirtualContent().querySelectorAll('.e-row'));
                     var fContentRows = [].slice.call(_this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
                     _this.isLoaded = !mContentRows ? false : mContentRows.length === fContentRows.length;
@@ -2472,8 +2507,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 var rows = _this.rows.slice(0);
-                if (_this.parent.getFrozenColumns() !== 0) {
-                    rows = args.isFrozen ? _this.freezeRows : _this.movableRows;
+                if (_this.parent.isFrozenGrid()) {
+                    rows = args.isFrozen ? _this.freezeRows : args.renderFrozenRightContent ? _this.parent.getFrozenRightRowsObject()
+                        : _this.movableRows;
                 }
                 _this.parent.notify(contentReady, { rows: rows, args: arg });
                 if (_this.isLoaded) {
@@ -2582,22 +2618,11 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                     id: this.parent.element.id + id
                 }
             });
-        this.setColGroup(this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true));
+        this.setColGroup(this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true));
         table.appendChild(this.getColGroup());
         table.appendChild(this.parent.createElement('tbody'));
         innerDiv.appendChild(table);
         return innerDiv;
-    };
-    ContentRender.prototype.splitRows = function (idx) {
-        if (this.parent.getFrozenColumns()) {
-            if (idx === 0) {
-                this.freezeRows = this.rows;
-                this.freezeRowElements = this.rowElements;
-            }
-            else {
-                this.movableRows = this.rows;
-            }
-        }
     };
     /**
      * Refresh the content of the Grid.
@@ -2612,6 +2637,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             return;
         }
         var dataSource = this.currentMovableRows || gObj.currentViewData;
+        var contentModule = this.parent.contentModule;
         var isReact = gObj.isReact && !isNullOrUndefined(gObj.rowTemplate);
         var frag = isReact ? gObj.createElement('tbody') : document.createDocumentFragment();
         if (!this.initialPageRecords) {
@@ -2622,6 +2648,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         var tr;
         var hdrTbody;
         var frzCols = gObj.getFrozenColumns();
+        var isFrozenGrid = this.parent.isFrozenGrid();
         var trElement;
         var row = new RowRenderer(this.serviceLocator, null, this.parent);
         var isInfiniteScroll = this.parent.enableInfiniteScrolling
@@ -2631,6 +2658,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         var fCont = this.getPanel().querySelector('.e-frozencontent');
         var mCont = this.getPanel().querySelector('.e-movablecontent');
         var cont = this.getPanel().querySelector('.e-content');
+        var tbdy;
+        var tableName;
         if (isGroupAdaptive(gObj)) {
             if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
                 .some(function (value) { return args.requestType === value; })) {
@@ -2719,21 +2748,11 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             }
             return;
         }
-        if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
-            if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll') {
-                if (args.virtualInfo.sentinelInfo.axis === 'X') {
-                    modelData = this.parent.contentModule.generateRows(dataSource, args);
-                    args.renderMovableContent = true;
-                }
-                else if (mCont.scrollLeft > 0 && !args.renderMovableContent) {
-                    this.viewColIndexes = args.virtualInfo.columnIndexes;
-                    var indexes = [];
-                    for (var i = 0; i < this.parent.getFrozenColumns(); i++) {
-                        indexes.push(i);
-                    }
-                    this.parent.setColumnIndexesInView(indexes);
-                    args.virtualInfo.columnIndexes = indexes;
-                }
+        if (this.parent.enableVirtualization && this.parent.isFrozenGrid()) {
+            if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
+                && args.virtualInfo.sentinelInfo.axis === 'X') {
+                modelData = this.parent.contentModule.generateRows(dataSource, args);
+                args.renderMovableContent = true;
             }
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
@@ -2745,16 +2764,10 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
         this.setGroupCache(modelData, args);
         this.parent.notify(setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
-        if (isNullOrUndefined(modelData[0].cells[0])) {
-            mCont.querySelector('tbody').innerHTML = '';
-        }
         var idx = modelData[0].cells[0].index;
-        if (isUndefined(idx) && this.parent.getFrozenColumns() && this.parent.isRowDragable()) {
-            idx = modelData[0].cells[1].index;
-        }
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && args.renderMovableContent
-            && args.requestType === 'virtualscroll' && mCont.scrollLeft > 0 && args.virtualInfo.columnIndexes[0] !== 0) {
-            idx = this.parent.getFrozenColumns();
+        if (isFrozenGrid) {
+            tableName = contentModule.setTbody(modelData, args);
+            tbdy = contentModule.getTbody(tableName);
         }
         /* tslint:disable:no-any */
         if (args.requestType !== 'infiniteScroll' && this.parent.registeredTemplate
@@ -2778,10 +2791,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             var cellMerge = new CellMergeRender(this.serviceLocator, this.parent);
             cellMerge.updateVirtualCells(modelData);
         }
-        if (frzCols && idx >= frzCols) {
-            this.tbody = mCont.querySelector('tbody');
-        }
-        else {
+        if (!isFrozenGrid) {
             this.tbody = this.getTable().querySelector('tbody');
         }
         var startIndex = 0;
@@ -2814,7 +2824,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        var isVFFrozenOnly = gObj.frozenRows && !gObj.getFrozenColumns() && this.parent.enableVirtualization
+        var isVFFrozenOnly = gObj.frozenRows && !gObj.isFrozenGrid() && this.parent.enableVirtualization
             && args.requestType === 'reorder';
         if ((gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') || isVFFrozenOnly) {
             var bIndex = args.virtualInfo.blockIndexes;
@@ -2847,14 +2857,15 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                     continue;
                 }
             }
-            this.setInfiniteVisibleRows(args, modelData[i]);
+            this.setInfiniteVisibleRows(args, modelData[i], tableName);
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
                 var isVFreorder = this.ensureFrozenHeaderRender(args);
-                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && isVFreorder) {
+                if (gObj.frozenRows && i < gObj.frozenRows && !isInfiniteScroll && args.requestType !== 'virtualscroll' && isVFreorder
+                    && this.ensureVirtualFrozenHeaderRender(args)) {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2910,11 +2921,12 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             }
             this.ariaService.setOptions(this.getTable(), { colcount: gObj.getColumns().length.toString() });
         }
-        this.splitRows(idx);
-        if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll)
+        if (isFrozenGrid) {
+            contentModule.splitRows(tableName);
+        }
+        if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll && this.ensureVirtualFrozenHeaderRender(args))
             || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
-            hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'
-                : '.e-movableheader').querySelector('tbody') : gObj.getHeaderTable().querySelector('tbody');
+            hdrTbody = isFrozenGrid ? contentModule.getFrozenHeader(tableName) : gObj.getHeaderTable().querySelector('tbody');
             if (isReact) {
                 var parentTable = hdrTbody.parentElement;
                 remove(hdrTbody);
@@ -2928,65 +2940,47 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
         }
-        if (frzCols && idx === 0) {
-            this.getPanel().firstChild.style.overflowY = 'hidden';
-        }
         if (!isBlazor() || this.parent.isJsComponent) {
             args.rows = this.rows.slice(0);
         }
-        args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+        if (isFrozenGrid) {
+            contentModule.setIsFrozen(args, tableName);
+        }
         this.index = idx;
         getUpdateUsingRaf(function () {
             _this.parent.notify(beforeFragAppend, args);
-            var isVFTable = _this.parent.enableVirtualization && _this.parent.getFrozenColumns() !== 0;
+            var isVFTable = _this.parent.enableVirtualization && _this.parent.isFrozenGrid();
             if (!_this.parent.enableVirtualization && !isInfiniteScroll) {
-                remove(_this.tbody);
-                _this.tbody = _this.parent.createElement('tbody');
+                if (_this.parent.isFrozenGrid()) {
+                    remove(tbdy);
+                    tbdy = _this.parent.createElement('tbody');
+                }
+                else {
+                    remove(_this.tbody);
+                    _this.tbody = _this.parent.createElement('tbody');
+                }
             }
-            if (frzCols && !isVFTable && !_this.parent.enableInfiniteScrolling) {
-                if (isReact) {
-                    _this.tbody = frag;
-                }
-                else {
-                    _this.tbody.appendChild(frag);
-                }
-                if (_this.index === 0) {
-                    _this.isLoaded = false;
-                    fCont.querySelector('table').appendChild(_this.tbody);
-                }
-                else {
-                    if (_this.tbody.childElementCount < 1) {
-                        _this.tbody.appendChild(_this.parent.createElement('tr').appendChild(_this.parent.createElement('td')));
-                    }
-                    _this.isLoaded = true;
-                    mCont.querySelector('table').appendChild(_this.tbody);
-                    if (_this.parent.getFrozenColumns() !== 0 && !_this.parent.allowTextWrap) {
-                        _this.parent.notify(freezeRender, { case: 'refreshHeight' });
-                    }
-                    fCont.style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
-                    mCont.style.overflowY = _this.parent.height !== 'auto' ? 'scroll' : 'auto';
-                    fCont.style.borderRightWidth = '1px';
-                }
+            if (isFrozenGrid && !isVFTable && !_this.parent.enableInfiniteScrolling) {
+                _this.appendContent(tbdy, frag, args, tableName);
             }
             else {
                 if (gObj.rowTemplate) {
                     updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate', gObj);
                 }
                 if (isVFTable) {
-                    if (!args.renderMovableContent) {
+                    if (args.renderFrozenRightContent) {
+                        var frCont = gObj.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+                        _this.appendContent(frCont, frag, args);
+                    }
+                    else if (!args.renderMovableContent) {
                         _this.appendContent(fCont.querySelector('tbody'), frag, args);
-                        if (_this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
-                            && mCont.scrollLeft > 0) {
-                            _this.parent.setColumnIndexesInView(_this.viewColIndexes);
-                            args.virtualInfo.columnIndexes = _this.viewColIndexes;
-                        }
                     }
                     else {
                         _this.appendContent(mCont.querySelector('tbody'), frag, args);
-                        if (args.virtualInfo && args.virtualInfo.direction !== 'right' && args.virtualInfo.direction !== 'left') {
-                            fCont.style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
-                        }
                         args.renderMovableContent = false;
+                    }
+                    if (!_this.parent.getFrozenColumns()) {
+                        contentModule.renderNextFrozentPart(args, tableName);
                     }
                 }
                 else {
@@ -2994,13 +2988,16 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                         _this.isAddRows = false;
                         _this.parent.notify(removeInfiniteRows, { args: args });
                         _this.parent.notify(appendInfiniteContent, {
-                            tbody: _this.tbody, frag: frag, args: args, rows: _this.rows,
-                            rowElements: _this.rowElements, visibleRows: _this.visibleRows
+                            tbody: tbdy ? tbdy : _this.tbody, frag: frag, args: args, rows: _this.rows,
+                            rowElements: _this.rowElements, visibleRows: _this.visibleRows,
+                            tableName: tableName
                         });
-                        if (frzCols && idx !== 0) {
-                            fCont.style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
-                            mCont.style.overflowY = _this.parent.height !== 'auto' ? 'scroll' : 'auto';
-                            fCont.style.borderRightWidth = '1px';
+                        if (!frzCols && isFrozenGrid) {
+                            var count = _this.parent.getTablesCount();
+                            if ((count === 2 && (tableName === 'frozen-left' || tableName === 'frozen-right'))
+                                || (count === 3 && (tableName === 'frozen-left' || tableName === 'movable'))) {
+                                _this.refreshContentRows(extend({}, args));
+                            }
                         }
                     }
                     else {
@@ -3009,16 +3006,13 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            if (frzCols && idx === 0) {
-                if (isVFTable) {
-                    args.renderMovableContent = true;
-                }
-                _this.refreshContentRows(extend({}, args));
+            if (frzCols) {
+                contentModule.renderNextFrozentPart(args, tableName);
             }
             frag = null;
         }, this.rafCallback(extend({}, args)));
     };
-    ContentRender.prototype.appendContent = function (tbody, frag, args) {
+    ContentRender.prototype.appendContent = function (tbody, frag, args, tableName) {
         var isReact = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
         if (isReact) {
             this.getTable().appendChild(frag);
@@ -3044,10 +3038,13 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             && this.parent.frozenRows && this.parent.infiniteScrollModule.requestType === 'delete'
             && this.parent.pageSettings.currentPage !== 1));
     };
+    ContentRender.prototype.ensureVirtualFrozenHeaderRender = function (args) {
+        return !(this.parent.enableVirtualization && args.requestType === 'delete');
+    };
     ContentRender.prototype.checkCache = function (modelData, args) {
         if (this.parent.infiniteScrollSettings.enableCache && args.requestType === 'infiniteScroll') {
             var index = args.isFrozen ? 1 : 0;
-            var frozenCols = this.parent.getFrozenColumns();
+            var frozenCols = this.parent.isFrozenGrid();
             this.isAddRows = !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
             if (frozenCols && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
                 this.isAddRows = this.infiniteCache[this.parent.pageSettings.currentPage][index].length !== 0;
@@ -3067,11 +3064,19 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
         return null;
     };
-    ContentRender.prototype.setInfiniteVisibleRows = function (args, data) {
-        var frozenCols = this.parent.getFrozenColumns();
+    ContentRender.prototype.setInfiniteVisibleRows = function (args, data, tableName) {
+        var frozenCols = this.parent.isFrozenGrid();
         if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
             if (frozenCols) {
-                !args.isFrozen ? this.visibleFrozenRows.push(data) : this.visibleRows.push(data);
+                if (tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right' && tableName === 'frozen-right')) {
+                    this.visibleFrozenRows.push(data);
+                }
+                else if (tableName === 'movable') {
+                    this.visibleRows.push(data);
+                }
+                else {
+                    this.rightFreezeRows.push(data);
+                }
             }
             else if (!this.parent.infiniteScrollSettings.enableCache) {
                 this.visibleRows.push(data);
@@ -3084,7 +3089,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             if (!Object.keys(this.infiniteCache).length) {
                 return [];
             }
-            var frozenCols = this.parent.getFrozenColumns();
+            var frozenCols = this.parent.isFrozenGrid();
             var rows = this.parent.getRows();
             var index = parseInt(rows[this.parent.frozenRows].getAttribute('aria-rowindex'), 10);
             var first = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
@@ -3115,7 +3120,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         return this.parent.contentModule.getReorderedFrozenRows(args);
     };
     ContentRender.prototype.virtualFrozenHdrRefresh = function (hdrfrag, modelData, row, args, dataSource, columns) {
-        if (this.parent.frozenRows && this.parent.getFrozenColumns() && this.parent.enableVirtualization
+        if (this.parent.frozenRows && this.parent.isFrozenGrid() && this.parent.enableVirtualization
             && (args.requestType === 'reorder' || args.requestType === 'refresh')) {
             var tr = void 0;
             this.currentMovableRows = dataSource;
@@ -3135,7 +3140,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     };
     ContentRender.prototype.getInfiniteRows = function () {
         var rows = [];
-        var frozenCols = this.parent.getFrozenColumns();
+        var frozenCols = this.parent.isFrozenGrid();
         if (this.parent.enableInfiniteScrolling) {
             if (this.parent.infiniteScrollSettings.enableCache) {
                 var keys = Object.keys(this.infiniteCache);
@@ -3247,18 +3252,27 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         if (isBlazor() && gObj.isServerRendered) {
             this.parent.notify('setvisibility', columns);
         }
+        var isFrozenGrid = this.parent.isFrozenGrid();
         var frzCols = gObj.getFrozenColumns();
         var rows = [];
-        if (frzCols) {
+        if (isFrozenGrid) {
             var fRows = this.freezeRows;
             var mRows = this.movableRows;
             var rowLen = fRows.length;
             var cellLen = void 0;
+            var rightRows = [];
+            if (gObj.getTablesCount() === 3) {
+                rightRows = gObj.getFrozenRightRowsObject();
+            }
             for (var i = 0, row = void 0; i < rowLen; i++) {
                 cellLen = mRows[i].cells.length;
+                var rightLen = rightRows.length ? rightRows[i].cells.length : 0;
                 row = fRows[i].clone();
                 for (var j = 0; j < cellLen; j++) {
                     row.cells.push(mRows[i].cells[j]);
+                }
+                for (var k = 0; k < rightLen; k++) {
+                    row.cells.push(rightRows[i].cells[k]);
                 }
                 rows.push(row);
             }
@@ -3285,17 +3299,27 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             var colIdx = this.parent.getColumnIndexByUid(column.uid);
             var displayVal = column.visible === true ? '' : 'none';
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                if (frzCols) {
-                    var normalizedfrzCols = this.parent.isRowDragable() ? frzCols + 1 : frzCols;
-                    if (idx < normalizedfrzCols) {
-                        setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
-                        var infiniteFreezeData = this.infiniteRowVisibility(true);
-                        contentrows = infiniteFreezeData ? infiniteFreezeData : this.freezeRows;
-                        tr = gObj.getDataRows();
+                if (isFrozenGrid) {
+                    if (column.getFreezeTableName() !== 'movable') {
+                        if (column.getFreezeTableName() === 'frozen-right') {
+                            var left = this.parent.getFrozenLeftColumnsCount();
+                            var movable = this.parent.getMovableColumnsCount();
+                            colIdx = idx = idx - (left + movable);
+                            var colG = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('colgroup');
+                            setStyleAttribute(colG.childNodes[idx], { 'display': displayVal });
+                            contentrows = gObj.getFrozenRightRowsObject();
+                            tr = gObj.getFrozenRightDataRows();
+                        }
+                        else {
+                            setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+                            var infiniteFreezeData = this.infiniteRowVisibility(true);
+                            contentrows = infiniteFreezeData ? infiniteFreezeData : this.freezeRows;
+                            tr = gObj.getDataRows();
+                        }
                     }
                     else {
                         var mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                        colIdx = idx = idx - frzCols;
+                        colIdx = idx = idx - frzCols - this.parent.getFrozenLeftColumnsCount();
                         setStyleAttribute(mTable.childNodes[idx], { 'display': displayVal });
                         tr = gObj.getMovableDataRows();
                         var infiniteMovableData = this.infiniteRowVisibility();
@@ -3371,12 +3395,15 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 colGroup = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
             }
             else {
-                colGroup = isBlazor() ? this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
-                    this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+                colGroup = this.getHeaderColGroup();
             }
             this.getTable().replaceChild(colGroup, this.getColGroup());
             this.setColGroup(colGroup);
         }
+    };
+    ContentRender.prototype.getHeaderColGroup = function () {
+        return isBlazor() ? this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :
+            this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
     };
     ContentRender.prototype.initializeContentDrop = function () {
         var gObj = this.parent;
@@ -3414,7 +3441,12 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
     };
     ContentRender.prototype.setSelection = function (uid, set, clearAll) {
-        if (this.parent.getFrozenColumns()) {
+        this.parent.notify(setFreezeSelection, { uid: uid, set: set, clearAll: clearAll });
+        var isFrozen = this.parent.isFrozenGrid();
+        if (isFrozen && this.parent.enableVirtualization) {
+            return;
+        }
+        if (isFrozen) {
             var rows = this.getMovableRows().filter(function (row) { return clearAll || uid === row.uid; });
             for (var i = 0; i < rows.length; i++) {
                 rows[i].isSelected = set;
@@ -3744,7 +3776,8 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        if (!this.parent.enableColumnVirtualization) {
+        if (!this.parent.enableColumnVirtualization
+            && !this.parent.getFrozenLeftColumnsCount() && !this.parent.getFrozenRightColumnsCount()) {
             this.parent.on(columnVisibilityChanged, this.setVisible, this);
         }
         this.parent.on(columnPositionChanged, this.colPosRefresh, this);
@@ -3772,11 +3805,11 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var headerDiv = this.getPanel();
         headerDiv.appendChild(this.createHeaderTable());
         this.setTable(headerDiv.querySelector('.e-table'));
-        if (!this.parent.getFrozenColumns()) {
+        if (!this.parent.getFrozenColumns() && !this.parent.getFrozenRightColumnsCount() && !this.parent.getFrozenLeftColumnsCount()) {
             this.initializeHeaderDrag();
             this.initializeHeaderDrop();
         }
-        this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: this.parent.getFrozenColumns() !== 0 } });
+        this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: this.parent.isFrozenGrid() } });
     };
     /**
      * Get the header content div element of grid
@@ -3850,7 +3883,8 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         if (tableEle === void 0) { tableEle = null; }
         var skipDom = isBlazor() && this.parent.frozenRows !== 0;
         var gObj = this.parent;
-        if (!(isBlazor() && !gObj.isJsComponent) && this.getTable() && (!gObj.getFrozenColumns())) {
+        var isFrozen = gObj.isFrozenGrid();
+        if (!(isBlazor() && !gObj.isJsComponent) && this.getTable() && !isFrozen) {
             remove(this.getTable());
         }
         var columns = gObj.getColumns();
@@ -3891,6 +3925,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
     };
     HeaderRender.prototype.createHeaderContent = function () {
         var gObj = this.parent;
+        var frozenMode = gObj.getFrozenMode();
         var columns = gObj.getColumns();
         var thead = this.parent.createElement('thead');
         var colHeader = this.parent.createElement('tr', { className: 'e-columnheader' });
@@ -3903,13 +3938,29 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             rows[i] = this.generateRow(i);
             rows[i].cells = [];
         }
-        rows = this.ensureColumns(rows);
+        if (frozenMode !== 'Right') {
+            rows = this.ensureColumns(rows);
+        }
         rows = this.getHeaderCells(rows);
+        if (frozenMode === 'Right') {
+            rows = this.ensureColumns(rows);
+        }
         var frzCols = this.parent.getFrozenColumns();
-        if (this.parent.isRowDragable() && frzCols) {
-            var row = rows[0];
-            if (row.cells[1].column.index === frzCols) {
-                rows[0].cells.shift();
+        if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[1]) {
+            var colFreezeMode = rows[0].cells[1].column.getFreezeTableName();
+            if (colFreezeMode === 'movable' || (frozenMode === 'Left-Right' && colFreezeMode === 'frozen-right')) {
+                if (frozenMode === 'Right') {
+                    rows[0].cells.pop();
+                }
+                else {
+                    rows[0].cells.shift();
+                }
+            }
+            else if (!frzCols && colFreezeMode === 'frozen-left') {
+                rows[0].cells[0].column.freeze = colFreezeMode === 'frozen-left' ? 'Left' : 'Right';
+            }
+            else if (frozenMode === 'Right' && colFreezeMode === 'frozen-right') {
+                rows[0].cells[rows[0].cells.length - 1].column.freeze = 'Right';
             }
         }
         for (var i = 0, len = this.colDepth; i < len; i++) {
@@ -3948,7 +3999,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             col = this.parent.createElement('col', { className: 'e-detail-intent' });
             colGroup.appendChild(col);
         }
-        if (this.parent.isRowDragable()) {
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() !== 'Right') {
             col = this.parent.createElement('col', { className: 'e-drag-intent' });
             colGroup.appendChild(col);
         }
@@ -3957,6 +4008,10 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             if (cols[i].visible === false) {
                 setStyleAttribute(col, { 'display': 'none' });
             }
+            colGroup.appendChild(col);
+        }
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() === 'Right') {
+            col = this.parent.createElement('col', { className: 'e-drag-intent' });
             colGroup.appendChild(col);
         }
         return colGroup;
@@ -3989,42 +4044,48 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var thead = this.parent.getHeaderTable() && this.parent.getHeaderTable().querySelector('thead');
         var cols = this.parent.enableColumnVirtualization ?
             this.parent.getColumns(this.parent.enablePersistence) : this.parent.columns;
+        var tableName;
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()
+            && this.parent.contentModule.isXaxis()) {
+            tableName = 'movable';
+        }
+        else {
+            tableName = getFrozenTableName(this.parent);
+        }
         this.frzIdx = 0;
         this.notfrzIdx = 0;
         if (this.parent.lockcolPositionCount) {
             for (var i = 0; i < cols.length; i++) {
                 this.lockColsRendered = false;
-                rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (cols.length - 1), thead);
+                rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (cols.length - 1), thead, tableName);
             }
         }
         for (var i = 0, len = cols.length; i < len; i++) {
             this.notfrzIdx = 0;
             this.lockColsRendered = true;
-            rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (len - 1), thead);
+            rows = this.appendCells(cols[i], rows, 0, i === 0, false, i === (len - 1), thead, tableName);
         }
         return rows;
     };
-    HeaderRender.prototype.appendCells = function (cols, rows, index, isFirstObj, isFirstCol, isLastCol, isMovable) {
+    HeaderRender.prototype.appendCells = function (cols, rows, index, isFirstObj, isFirstCol, isLastCol, isMovable, tableName) {
         var lastCol = isLastCol ? 'e-lastcell' : '';
-        var frzCols = this.parent.getFrozenColumns();
+        var isFrozen = this.parent.isFrozenGrid();
+        var isLockColumn = !this.parent.lockcolPositionCount
+            || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered);
+        var isFrozenLockColumn = !this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered)
+            || (!cols.lockColumn && this.lockColsRendered);
+        var scrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
         var left;
-        if (this.parent.enableColumnVirtualization && frzCols) {
-            left = this.parent.getContent().querySelector('.e-movablecontent').scrollLeft;
+        if (isFrozen && scrollbar && this.parent.enableColumnVirtualization) {
+            left = scrollbar.scrollLeft;
         }
         if (!cols.columns) {
             if (left && left > 0 && this.parent.contentModule.isXaxis()
-                && this.parent.inViewIndexes[0] !== 0 && this.frzIdx > this.parent.getFrozenColumns()) {
+                && this.parent.inViewIndexes[0] !== 0 && cols.getFreezeTableName() === 'movable') {
                 rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
             }
             else {
-                if (!frzCols && (!this.parent.lockcolPositionCount
-                    || (cols.lockColumn && !this.lockColsRendered) || (!cols.lockColumn && this.lockColsRendered))
-                    || (frzCols && ((!isMovable && (this.frzIdx + this.notfrzIdx < this.parent.frozenColumns || cols.isFrozen) &&
-                        (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
-                            (!cols.lockColumn && this.lockColsRendered)))
-                        || (isMovable && (this.frzIdx + this.notfrzIdx >= this.parent.frozenColumns && !cols.isFrozen) &&
-                            (!this.parent.lockcolPositionCount || (cols.lockColumn && !this.lockColsRendered) ||
-                                (!cols.lockColumn && this.lockColsRendered)))))) {
+                if ((!isFrozen && isLockColumn) || (isFrozen && cols.getFreezeTableName() === tableName && isFrozenLockColumn)) {
                     rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
                 }
             }
@@ -4045,49 +4106,42 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             this.isFirstCol = false;
             var colSpan = this.getCellCnt(cols, 0);
             if (colSpan) {
-                var frzObj = this.refreshFrozenHdr(cols.columns, { isPartial: false, isComp: true, cnt: 0 });
                 var stackedLockColsCount = this.getStackedLockColsCount(cols, 0);
-                if (!frzCols && (!this.parent.lockcolPositionCount
-                    || (!this.lockColsRendered && stackedLockColsCount) || (this.lockColsRendered && (colSpan - stackedLockColsCount)))
-                    || (frzCols && ((!isMovable && this.checkFrozenStackHeader(cols.columns, isMovable)
-                        && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
-                        || (isMovable && ((colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp)
-                            || this.checkFrozenStackHeader(cols.columns, isMovable)))))) {
+                var isStackedLockColumn = this.parent.lockcolPositionCount === 0
+                    || (!this.lockColsRendered && stackedLockColsCount !== 0)
+                    || (this.lockColsRendered && (colSpan - stackedLockColsCount) !== 0);
+                var isFrozenStack = isFrozen && this.ensureStackedFrozen(cols.columns, tableName, false);
+                if ((!isFrozen && isStackedLockColumn) || isFrozenStack) {
                     rows[index].cells.push(new Cell({
                         cellType: CellType.StackedHeader, column: cols,
-                        colSpan: this.getColSpan(colSpan, isMovable, frzObj.cnt, stackedLockColsCount)
+                        colSpan: this.getColSpan(colSpan, stackedLockColsCount, cols.columns, tableName, isFrozen)
                     }));
                 }
             }
             if (this.parent.lockcolPositionCount && !this.lockColsRendered) {
                 for (var i = 0; i < cols.columns.length; i++) {
-                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (cols.columns.length - 1) && isLastCol, isMovable);
+                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (cols.columns.length - 1) && isLastCol, isMovable, tableName);
                 }
             }
             if (this.lockColsRendered) {
                 for (var i = 0, len = cols.columns.length; i < len; i++) {
                     var isFirstCol_1 = this.isFirstCol = cols.columns[i].visible && !this.isFirstCol && len !== 1;
                     var isLaststackedCol = i === (len - 1);
-                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, isFirstCol_1, isLaststackedCol && isLastCol, isMovable);
+                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, isFirstCol_1, isLaststackedCol && isLastCol, isMovable, tableName);
                 }
             }
         }
         return rows;
     };
-    HeaderRender.prototype.checkFrozenStackHeader = function (cols, isMovable) {
-        var isTrue = false;
-        for (var i = 0; i < cols.length; i++) {
-            var col = cols[i];
-            var colIndex = this.parent.getNormalizedColumnIndex(col.uid);
-            if (!col.columns) {
-                if (isMovable && colIndex >= this.parent.getFrozenColumns() && col.visible) {
-                    isTrue = true;
-                    break;
-                }
-                if (!isMovable && colIndex < this.parent.getFrozenColumns() && col.visible) {
-                    isTrue = true;
-                    break;
-                }
+    HeaderRender.prototype.ensureStackedFrozen = function (columns, tableName, isTrue) {
+        var length = columns.length;
+        for (var i = 0; i < length; i++) {
+            if (columns[i].columns) {
+                isTrue = this.ensureStackedFrozen(columns[i].columns, tableName, isTrue);
+            }
+            else if (columns[i].getFreezeTableName() === tableName) {
+                isTrue = true;
+                break;
             }
         }
         return isTrue;
@@ -4103,36 +4157,26 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         }
         return lockColsCount;
     };
-    HeaderRender.prototype.refreshFrozenHdr = function (cols, frzObj) {
-        for (var i = 0; i < cols.length; i++) {
-            if (cols[i].columns) {
-                frzObj = this.refreshFrozenHdr(cols[i].columns, frzObj);
-            }
-            else {
-                if (cols[i].isFrozen) {
-                    frzObj.isPartial = true;
-                    frzObj.cnt++;
-                }
-                frzObj.isComp = frzObj.isComp && (cols[i].isFrozen ||
-                    this.parent.getColumnIndexByField(cols[i].field) < this.parent.frozenColumns);
-            }
-        }
-        return frzObj;
-    };
-    HeaderRender.prototype.getColSpan = function (colSpan, isMovable, frozenCnt, stackedLockColsCount) {
-        var frzCol = this.parent.frozenColumns;
-        if (this.parent.getFrozenColumns() && this.frzIdx + colSpan > frzCol) {
-            if (isMovable) {
-                colSpan = colSpan - (frzCol > this.frzIdx ? frzCol - this.frzIdx : 0) - frozenCnt;
-            }
-            else {
-                colSpan = colSpan - (colSpan - (frzCol > this.frzIdx ? frzCol + frozenCnt - this.frzIdx : frozenCnt));
-            }
+    HeaderRender.prototype.getColSpan = function (colSpan, stackedLockColsCount, columns, tableName, isFrozen) {
+        if (isFrozen) {
+            colSpan = this.getFrozenColSpan(columns, tableName, 0);
         }
         else if (this.parent.lockcolPositionCount) {
             colSpan = !this.lockColsRendered ? stackedLockColsCount : colSpan - stackedLockColsCount;
         }
         return colSpan;
+    };
+    HeaderRender.prototype.getFrozenColSpan = function (columns, tableName, count) {
+        var length = columns.length;
+        for (var i = 0; i < length; i++) {
+            if (columns[i].columns) {
+                count = this.getFrozenColSpan(columns[i].columns, tableName, count);
+            }
+            else if (columns[i].getFreezeTableName() === tableName) {
+                count++;
+            }
+        }
+        return count;
     };
     HeaderRender.prototype.generateRow = function (index) {
         return new Row({});
@@ -4206,9 +4250,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
      * @returns {void}
      */
     HeaderRender.prototype.refreshUI = function () {
-        var frzCols = this.parent.getFrozenColumns();
-        var isVFTable = this.parent.enableColumnVirtualization && frzCols !== 0;
-        var setFrozenTable = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols !== 0;
+        var frzCols = this.parent.isFrozenGrid();
+        var isVFTable = this.parent.enableColumnVirtualization && frzCols;
+        var setFrozenTable = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols;
         var headerDiv = this.getPanel();
         this.toggleStackClass(headerDiv);
         var table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table')
@@ -4257,7 +4301,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
                 }
             }
             if (!frzCols) {
-                this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: this.parent.getFrozenColumns() !== 0 } });
+                this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: frzCols } });
             }
             if (this.parent.enableColumnVirtualization && parentsUntil(table, 'e-movableheader')) {
                 this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false, isXaxis: true } });
@@ -6124,13 +6168,16 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
             this.setColumnWidth(new Column({ width: '30px' }), i);
             i++;
         }
-        if (this.parent.isRowDragable()) {
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() !== 'Right') {
             this.setColumnWidth(new Column({ width: '30px' }), i);
             i++;
         }
         var columns = this.parent.getColumns();
         for (var j = 0; j < columns.length; j++) {
             this.setColumnWidth(columns[j], wFlag && this.parent.enableColumnVirtualization ? undefined : j + i);
+        }
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() === 'Right') {
+            this.setColumnWidth(new Column({ width: '30px' }), columns.length);
         }
         totalColumnsWidth = this.getTableWidth(this.parent.getColumns());
         if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
@@ -6205,9 +6252,14 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         var fWidth = formatUnit(width);
         var headerCol;
         var frzCols = this.parent.getFrozenColumns();
-        frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
+        var isDraggable = this.parent.isRowDragable();
+        frzCols = frzCols && isDraggable ? frzCols + 1 : frzCols;
         var mHdr = this.parent.getHeaderContent().querySelector('.e-movableheader');
         var mCont = this.parent.getContent().querySelector('.e-movablecontent');
+        var freezeLeft = this.parent.getFrozenLeftColumnsCount();
+        var freezeRight = this.parent.getFrozenRightColumnsCount();
+        var movableCount = this.parent.getMovableColumnsCount();
+        var isColFrozen = freezeLeft !== 0 || freezeRight !== 0;
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
             headerCol = mHdr.querySelector('colgroup').children[index - frzCols];
         }
@@ -6215,6 +6267,25 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
             && mHdr.scrollLeft > 0) {
             var colGroup = mHdr.querySelector('colgroup');
             headerCol = colGroup.children[(colGroup.children.length - 1) - index];
+        }
+        else if (isColFrozen) {
+            var target = void 0;
+            if (freezeLeft && !freezeRight) {
+                index = isDraggable ? index - 1 : index;
+                target = index < freezeLeft ? header : mHdr;
+            }
+            else if (!freezeLeft && freezeRight) {
+                target = index >= movableCount ? header : mHdr;
+            }
+            else if (freezeLeft && freezeRight) {
+                index = isDraggable ? index - 1 : index;
+                var frHdr = this.parent.getFrozenRightHeader();
+                target = index < freezeLeft ? header : index < (freezeLeft + movableCount) ? mHdr : frHdr;
+            }
+            headerCol = this.getColumnLevelFrozenColgroup(index, freezeLeft, movableCount, target);
+            if (!headerCol) {
+                return;
+            }
         }
         else {
             headerCol = header.querySelector('colgroup').children[index];
@@ -6236,6 +6307,20 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
                 .querySelector('colgroup');
             contentCol = colGroup.children[(colGroup.children.length - 1) - index];
         }
+        else if (isColFrozen) {
+            var target = void 0;
+            if (freezeLeft && !freezeRight) {
+                target = index < freezeLeft ? content : mCont;
+            }
+            if (!freezeLeft && freezeRight) {
+                target = index >= movableCount ? content : mCont;
+            }
+            if (freezeLeft && freezeRight) {
+                var frCont = this.parent.getContent().querySelector('.e-frozen-right-content');
+                target = index < freezeLeft ? content : index < (freezeLeft + movableCount) ? mCont : frCont;
+            }
+            contentCol = this.getColumnLevelFrozenColgroup(index, freezeLeft, movableCount, target);
+        }
         else {
             contentCol = content.querySelector('colgroup').children[index];
         }
@@ -6256,6 +6341,77 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         }
         if (edit.length && editTableCol.length) {
             editTableCol[index].style.width = fWidth;
+        }
+        if (this.parent.isFrozenGrid()) {
+            this.refreshFrozenScrollbar();
+        }
+    };
+    ColumnWidthService.prototype.getColumnLevelFrozenColgroup = function (index, left, movable, ele) {
+        if (!ele || !ele.querySelector('colgroup')) {
+            return null;
+        }
+        var columns = this.parent.getColumns();
+        var isDrag = this.parent.isRowDragable();
+        var frzMode = this.parent.getFrozenMode();
+        var headerCol;
+        var colGroup = [].slice.call(ele.querySelector('colgroup').children);
+        if (frzMode === 'Right' && isDrag && index === (movable + this.parent.getFrozenRightColumnsCount())) {
+            headerCol = colGroup[colGroup.length - 1];
+        }
+        else if (isDrag && index === -1) {
+            headerCol = colGroup[0];
+        }
+        else if (columns[index].freeze === 'Left') {
+            headerCol = colGroup[isDrag ? (index + 1) : index];
+        }
+        else if (columns[index].freeze === 'Right') {
+            headerCol = colGroup[index - (left + movable)];
+        }
+        else {
+            headerCol = colGroup[index - left];
+        }
+        return headerCol;
+    };
+    ColumnWidthService.prototype.refreshFrozenScrollbar = function () {
+        var args = { cancel: false };
+        this.parent.notify(preventFrozenScrollRefresh, args);
+        if (args.cancel) {
+            return;
+        }
+        var left = this.parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('table');
+        var movable = this.parent.getContent().querySelector('.e-movablecontent').querySelector('table');
+        var right = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
+        if (movable && left) {
+            var leftScrollbar = this.parent.getContent().querySelector('.e-frozenscrollbar');
+            var movableScrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
+            var rightScrollbar = this.parent.getContent().querySelector('.e-frozen-right-scrollbar');
+            var movableChild = this.parent.getContent().querySelector('.e-movablechild');
+            var content = this.parent.getContent();
+            var scrollbarWidth = getScrollBarWidth();
+            var frzHdrWidth = left.offsetWidth;
+            var mvblHdrWidth = movable.offsetWidth;
+            if (this.parent.enableColumnVirtualization) {
+                var placeHolder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
+                if (placeHolder) {
+                    mvblHdrWidth = placeHolder.scrollWidth;
+                }
+            }
+            leftScrollbar.style.width = frzHdrWidth.toString() + 'px';
+            var movableWidth = this.parent.getContent().querySelector('.e-movablecontent').offsetWidth;
+            if (right) {
+                var rightwidth = right.offsetWidth;
+                if (content.firstChild.scrollHeight > content.firstChild.clientHeight) {
+                    rightwidth = right.offsetWidth + scrollbarWidth;
+                }
+                rightScrollbar.style.width = rightwidth.toString() + 'px';
+                movableWidth = movableWidth - rightwidth;
+            }
+            if (this.parent.height !== 'auto' && (this.parent.getFrozenMode() === 'Left' || this.parent.getFrozenColumns())
+                && content.firstChild.scrollHeight >= content.firstChild.clientHeight) {
+                mvblHdrWidth = mvblHdrWidth + scrollbarWidth;
+            }
+            movableScrollbar.style.width = movableWidth.toString() + 'px';
+            movableChild.style.width = mvblHdrWidth.toString() + 'px';
         }
     };
     ColumnWidthService.prototype.getSiblingsHeight = function (element) {
@@ -6286,8 +6442,8 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
             && isNullOrUndefined(column.minWidth) && !this.isWidthUndefined()) {
             column.width = 200;
         }
-        if (this.parent.frozenColumns && isNullOrUndefined(column.width) &&
-            column.index < this.parent.frozenColumns) {
+        if (this.parent.isFrozenGrid() && isNullOrUndefined(column.width) &&
+            (column.getFreezeTableName() === 'frozen-left' || column.getFreezeTableName() === 'frozen-right')) {
             column.width = 200;
         }
         if (!column.width) {
@@ -6320,16 +6476,35 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
     };
     ColumnWidthService.prototype.calcMovableOrFreezeColWidth = function (tableType) {
         var columns = this.parent.getColumns().slice();
+        var left = this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenColumns();
+        var movable = this.parent.getMovableColumnsCount();
+        var right = this.parent.getFrozenRightColumnsCount();
         if (tableType === 'movable') {
-            columns.splice(0, this.parent.getFrozenColumns());
+            if (right) {
+                columns.splice(left + movable, columns.length);
+            }
+            if (left) {
+                columns.splice(0, left);
+            }
         }
-        else if (tableType === 'freeze') {
-            columns.splice(this.parent.getFrozenColumns(), columns.length);
+        else if (tableType === 'freeze-left') {
+            columns.splice(left, columns.length);
+        }
+        else if (tableType === 'freeze-right') {
+            columns.splice(0, left + movable);
         }
         return formatUnit(this.getTableWidth(columns));
     };
-    ColumnWidthService.prototype.setWidthToFrozenTable = function () {
-        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
+    ColumnWidthService.prototype.setWidthToFrozenRightTable = function () {
+        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze-right');
+        freezeWidth = this.isAutoResize() ? '100%' : freezeWidth;
+        var headerTbl = this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('.e-table');
+        var cntTbl = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.e-table');
+        headerTbl.style.width = freezeWidth;
+        cntTbl.style.width = freezeWidth;
+    };
+    ColumnWidthService.prototype.setWidthToFrozenLeftTable = function () {
+        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze-left');
         freezeWidth = this.isAutoResize() ? '100%' : freezeWidth;
         this.parent.getHeaderTable().style.width = freezeWidth;
         this.parent.getContentTable().style.width = freezeWidth;
@@ -6364,9 +6539,14 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
     };
     ColumnWidthService.prototype.setWidthToTable = function () {
         var tWidth = formatUnit(this.getTableWidth(this.parent.getColumns()));
-        if (this.parent.getFrozenColumns()) {
-            this.setWidthToFrozenTable();
+        if (this.parent.isFrozenGrid()) {
+            if (this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()) {
+                this.setWidthToFrozenLeftTable();
+            }
             this.setWidthToMovableTable();
+            if (this.parent.getFrozenRightColumnsCount()) {
+                this.setWidthToFrozenRightTable();
+            }
         }
         else {
             if (this.parent.detailTemplate || this.parent.childGrid) {
@@ -6432,7 +6612,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization) {
             return;
         }
-        this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.frozenColumns !== 0);
+        this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0, this.parent.isFrozenGrid());
         var added = 'addedRecords';
         if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
             || (this.parent.editSettings.mode === 'Batch' && !this.parent.editModule.getBatchChanges()[added].length))) {
@@ -6476,12 +6656,18 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         isContent = isContent && isHeader ? !isContent : isContent;
         var isFrozen = !isNullOrUndefined(closest(e.target, '.e-frozencontent')) ||
             !isNullOrUndefined(closest(e.target, '.e-frozenheader'));
+        var isFrozenRight = false;
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            isFrozenRight = !isNullOrUndefined(closest(e.target, '.e-frozen-right-content')) ||
+                !isNullOrUndefined(closest(e.target, '.e-frozen-right-header'));
+            isFrozen = isFrozen && !isFrozenRight;
+        }
         if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader')) ||
             e.target.classList.contains('e-content') ||
             !isNullOrUndefined(closest(e.target, '.e-unboundcell'))) {
             return;
         }
-        this.setActive(isContent, isFrozen);
+        this.setActive(isContent, isFrozen, isFrozenRight);
         if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader'))) {
             this.clearOutline();
             return;
@@ -6491,7 +6677,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         if (beforeArgs.cancel || closest(e.target, '.e-inline-edit')) {
             return;
         }
-        this.setActive(isContent, isFrozen);
+        this.setActive(isContent, isFrozen, isFrozenRight);
         if (this.getContent()) {
             var returnVal = this.getContent().onClick(e, force);
             if (returnVal === false) {
@@ -6515,7 +6701,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         var swapInfo = this.getContent().jump(e.action, bValue);
         this.swap = swapInfo;
         if (swapInfo.swap) {
-            this.setActive(!swapInfo.toHeader, swapInfo.toFrozen);
+            this.setActive(!swapInfo.toHeader, swapInfo.toFrozen, swapInfo.toFrozenRight);
             this.getContent().matrix.current = this.getContent().getNextCurrent(bValue, swapInfo, this.active, e.action);
             this.prevIndexes = {};
         }
@@ -6594,9 +6780,9 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
     FocusStrategy.prototype.getContent = function () {
         return this.active || this.content;
     };
-    FocusStrategy.prototype.setActive = function (content, isFrozen) {
-        this.active = content ? isFrozen ? this.fContent : this.content :
-            isFrozen ? this.fHeader : this.header;
+    FocusStrategy.prototype.setActive = function (content, isFrozen, isFrozenRight) {
+        this.active = content ? isFrozen ? this.fContent : isFrozenRight ? this.frContent : this.content :
+            isFrozen ? this.fHeader : isFrozenRight ? this.frHeader : this.header;
     };
     FocusStrategy.prototype.setFocusedElement = function (element, e) {
         var _this = this;
@@ -6634,12 +6820,12 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
     };
     /** @hidden */
     FocusStrategy.prototype.focusHeader = function () {
-        this.setActive(false, this.parent.frozenColumns !== 0);
+        this.setActive(false, this.parent.isFrozenGrid());
         this.resetFocus();
     };
     /** @hidden */
     FocusStrategy.prototype.focusContent = function () {
-        this.setActive(true, this.parent.frozenColumns !== 0);
+        this.setActive(true, this.parent.isFrozenGrid());
         this.resetFocus();
     };
     FocusStrategy.prototype.resetFocus = function () {
@@ -6688,17 +6874,24 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             if (content && (e.args && e.args.isFrozen) && !_this.fContent) {
                 _this.fContent = new FixedContentFocus(_this.parent);
             }
+            else if (content && !_this.frContent && (e.args && e.args.renderFrozenRightContent)) {
+                _this.frContent = new FixedRightContentFocus(_this.parent);
+            }
             else if (content && !_this.content) {
                 _this.content = new ContentFocus(_this.parent);
             }
             if (!content && (e.args && e.args.isFrozen) && !_this.fHeader) {
                 _this.fHeader = new FixedHeaderFocus(_this.parent);
             }
+            else if (!content && (e.args && e.args.renderFrozenRightContent) && !_this.frHeader) {
+                _this.frHeader = new FixedRightHeaderFocus(_this.parent);
+            }
             else if (!content && !_this.header) {
                 _this.header = new HeaderFocus(_this.parent);
             }
-            var cFocus = content ? (e.args && e.args.isFrozen) ? _this.fContent : _this.content :
-                (e.args && e.args.isFrozen) ? _this.fHeader : _this.header;
+            var cFocus = content ? (e.args && e.args.isFrozen) ? _this.fContent : (e.args && e.args.renderFrozenRightContent)
+                ? _this.frContent : _this.content : (e.args && e.args.isFrozen) ? _this.fHeader : (e.args && e.args.renderFrozenRightContent)
+                ? _this.frHeader : _this.header;
             var rows = content ? e.rows.slice(_this.parent.frozenRows) : e.rows;
             var updateRow = content ? e.rows.slice(0, _this.parent.frozenRows) : e.rows;
             if (_this.parent.isCollapseStateEnabled() && content) {
@@ -6706,18 +6899,25 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
             }
             var isRowTemplate = !isNullOrUndefined(_this.parent.rowTemplate);
             var matrix = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
-            var frozenColumnsCount = _this.parent.getFrozenColumns();
-            if (e.name === 'batchAdd' && frozenColumnsCount) {
+            if (e.name === 'batchAdd' && _this.parent.isFrozenGrid()) {
                 var mRows = _this.parent.getMovableRowsObject();
                 var newMovableRows = mRows.map(function (row) { return row.clone(); });
                 var newFrozenRows = rows.map(function (row) { return row.clone(); });
                 _this.fContent.matrix.generate(newFrozenRows, _this.fContent.selector, isRowTemplate);
                 _this.content.matrix.generate(newMovableRows, _this.content.selector, isRowTemplate);
+                if (_this.parent.getFrozenMode() === 'Left-Right') {
+                    var frRows = _this.parent.getFrozenRightRowsObject();
+                    var newfrRows = frRows.map(function (row) { return row.clone(); });
+                    _this.frContent.matrix.generate(newfrRows, _this.frContent.selector, isRowTemplate);
+                }
             }
             else {
                 cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
             }
-            cFocus.generateRows(updateRow, { matrix: matrix, handlerInstance: (e.args && e.args.isFrozen) ? _this.fHeader : _this.header });
+            cFocus.generateRows(updateRow, {
+                matrix: matrix, handlerInstance: (e.args && e.args.isFrozen) ? _this.fHeader
+                    : (e.args && e.args.renderFrozenRightContent) ? _this.frHeader : _this.header
+            });
             if (!Browser.isDevice && e && e.args) {
                 if (!_this.focusByClick && e.args.requestType === 'paging') {
                     _this.skipFocus = false;
@@ -6872,14 +7072,14 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
     };
     FocusStrategy.prototype.setActiveByKey = function (action, active) {
         var _this = this;
-        if (this.parent.frozenColumns === 0 && this.parent.frozenRows === 0) {
+        if (!this.parent.isFrozenGrid() && this.parent.frozenRows === 0) {
             return;
         }
         var info;
         var actions = {
             'home': function () { return ({ toHeader: !info.isContent, toFrozen: true }); },
             'end': function () { return ({ toHeader: !info.isContent, toFrozen: false }); },
-            'ctrlHome': function () { return ({ toHeader: true, toFrozen: _this.parent.frozenColumns !== 0 }); },
+            'ctrlHome': function () { return ({ toHeader: true, toFrozen: _this.parent.isFrozenGrid() }); },
             'ctrlEnd': function () { return ({ toHeader: false, toFrozen: false }); }
         };
         if (!(action in actions)) {
@@ -7016,7 +7216,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         };
     }
     ContentFocus.prototype.getTable = function () {
-        return (this.parent.getFrozenColumns() ?
+        return (this.parent.isFrozenGrid() ?
             this.parent.getContent().querySelector('.e-movablecontent .e-table') :
             this.parent.getContentTable());
     };
@@ -7126,14 +7326,19 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
             && !(row.edit === 'delete' && row.isDirty);
     };
     ContentFocus.prototype.jump = function (action, current) {
-        var frozenSwap = this.parent.frozenColumns > 0 &&
+        var frozenSwap = this.parent.getFrozenLeftCount() &&
             ((action === 'leftArrow' || action === 'shiftTab') && current[1] === 0);
+        var right = ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns);
+        var frSwap = this.parent.getFrozenMode() === 'Left-Right' && right;
+        if (this.parent.getFrozenMode() === 'Right') {
+            frozenSwap = right;
+        }
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'shiftEnter';
         if (action === 'tab' && !this.parent.isEdit &&
             current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
             this.matrix.current[0] = this.matrix.current[0] + 1;
             this.matrix.current[1] = -1;
-            frozenSwap = this.parent.frozenColumns > 0;
+            frozenSwap = this.parent.isFrozenGrid();
         }
         if (action === 'shiftTab' && !this.parent.isEdit &&
             current[0] !== 0 && this.matrix.matrix[current[0]].indexOf(1) === current[1]) {
@@ -7148,20 +7353,31 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
             isHeaderFocus = rowIndex > 0;
         }
         var info = {
-            swap: !isHeaderFocus ? ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap : false,
+            swap: !isHeaderFocus ? ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap || frSwap : false,
             toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,
-            toFrozen: frozenSwap
+            toFrozen: frozenSwap,
+            toFrozenRight: frSwap
         };
         return info;
     };
     ContentFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
         if (previous === void 0) { previous = []; }
         var current = [];
-        if (action === 'rightArrow' || action === 'tab') {
+        if (this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === 'Left-Right') {
+            if (action === 'leftArrow' || action === 'shiftTab') {
+                current[0] = previous[0];
+                current[1] = active.matrix.columns + 1;
+            }
+            if (this.parent.getFrozenMode() === 'Left-Right' && (action === 'rightArrow' || action === 'tab')) {
+                current[0] = previous[0];
+                current[1] = -1;
+            }
+        }
+        else if (action === 'rightArrow' || action === 'tab') {
             current[0] = previous[0];
             current[1] = -1;
         }
-        else if (action === 'downArrow' || action === 'enter') {
+        if (action === 'downArrow' || action === 'enter') {
             current[0] = -1;
             current[1] = previous[1];
         }
@@ -7228,7 +7444,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
                 && !cell.classList.contains('e-detailcell') : true;
     };
     ContentFocus.prototype.getGridSeletion = function () {
-        return !isBlazor() && this.parent.allowSelection && this.parent.selectionSettings.mode === 'Column';
+        return !isBlazor() && this.parent.allowSelection && this.parent.selectionSettings.allowColumnSelection;
     };
     return ContentFocus;
 }());
@@ -7241,7 +7457,7 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
         return _super.call(this, parent) || this;
     }
     HeaderFocus.prototype.getTable = function () {
-        return (this.parent.getFrozenColumns() ?
+        return (this.parent.isFrozenGrid() ?
             this.parent.getHeaderContent().querySelector('.e-movableheader .e-table') :
             this.parent.getHeaderTable());
     };
@@ -7281,12 +7497,18 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
             cell.column.type === 'checkbox' || cell.cellType === CellType.StackedHeader;
     };
     HeaderFocus.prototype.jump = function (action, current) {
-        var frozenSwap = this.parent.frozenColumns > 0 &&
+        var frozenSwap = this.parent.getFrozenLeftCount() &&
             (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') && current[1] === 0;
+        var right = (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion())
+            || action === 'tab') && current[1] === this.matrix.columns;
+        var frSwap = this.parent.getFrozenMode() === 'Left-Right' && right;
+        if (this.parent.getFrozenMode() === 'Right') {
+            frozenSwap = right;
+        }
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
         var isLastCell;
         var lastRow;
-        var headerSwap = frozenSwap;
+        var headerSwap = frozenSwap || frSwap;
         var fMatrix = this.parent.focusModule.fHeader && this.parent.focusModule.fHeader.matrix.matrix;
         var isPresent = fMatrix && !isNullOrUndefined(fMatrix[current[0]]);
         if (this.parent.enableHeaderFocus && action === 'tab') {
@@ -7301,28 +7523,40 @@ var HeaderFocus = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.matrix.current[1] = -1;
             }
-            if (this.parent.frozenColumns > 0 && lastRow && isLastCell) {
+            if (this.parent.isFrozenGrid() && lastRow && isLastCell) {
                 frozenSwap = true;
                 headerSwap = false;
             }
         }
         return {
             swap: ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
-                (isPresent && frozenSwap) || (action === 'tab' && lastRow && isLastCell),
+                (isPresent && (frozenSwap || frSwap)) || (action === 'tab' && lastRow && isLastCell),
             toHeader: headerSwap,
-            toFrozen: frozenSwap
+            toFrozen: frozenSwap,
+            toFrozenRight: frSwap
         };
     };
     HeaderFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
         if (previous === void 0) { previous = []; }
         var current1 = [];
-        if (action === 'upArrow' || action === 'shiftEnter') {
-            current1[0] = this.matrix.matrix.length;
-            current1[1] = previous[1];
+        if (this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === 'Left-Right') {
+            if (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') {
+                current1[0] = previous[0];
+                current1[1] = active.matrix.columns + 1;
+            }
+            if (this.parent.getFrozenMode() === 'Left-Right'
+                && (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab')) {
+                current1[0] = previous[0];
+                current1[1] = -1;
+            }
         }
         else if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
             current1[0] = previous[0];
             current1[1] = -1;
+        }
+        if (action === 'upArrow' || action === 'shiftEnter') {
+            current1[0] = this.matrix.matrix.length;
+            current1[1] = previous[1];
         }
         return current1;
     };
@@ -7365,25 +7599,37 @@ var FixedContentFocus = /** @__PURE__ @class */ (function (_super) {
     };
     FixedContentFocus.prototype.jump = function (action, current) {
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        var toHeader = (action === 'upArrow' || enterFrozen) && current[0] === 0;
+        if (this.parent.getFrozenMode() === 'Right') {
+            var swap = toHeader || ((action === 'shiftTab' || action === 'leftArrow') && current[1] === 0);
+            return { swap: swap, toHeader: toHeader, toFrozen: toHeader };
+        }
         return {
-            swap: (action === 'upArrow' || enterFrozen) && current[0] === 0
-                || ((action === 'tab' || action === 'rightArrow') && current[1] === this.matrix.columns),
-            toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,
-            toFrozen: (action === 'upArrow' || enterFrozen) && current[0] === 0
+            swap: toHeader || ((action === 'tab' || action === 'rightArrow') && current[1] === this.matrix.columns),
+            toHeader: toHeader,
+            toFrozen: toHeader
         };
     };
     FixedContentFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
         if (previous === void 0) { previous = []; }
         var current2 = [];
-        if (action === 'tab' && this.parent.enableHeaderFocus) {
-            current2[0] = previous[0];
-            current2[1] = -1;
+        if (this.parent.getFrozenMode() === 'Right') {
+            if (action === 'rightArrow' || action === 'tab') {
+                current2[0] = previous[0];
+                current2[1] = -1;
+            }
         }
-        if (action === 'leftArrow' || action === 'shiftTab') {
-            current2[0] = previous[0];
-            current2[1] = active.matrix.columns + 1;
+        else {
+            if (action === 'tab' && this.parent.enableHeaderFocus) {
+                current2[0] = previous[0];
+                current2[1] = -1;
+            }
+            if (action === 'leftArrow' || action === 'shiftTab') {
+                current2[0] = previous[0];
+                current2[1] = active.matrix.columns + 1;
+            }
         }
-        else if (action === 'downArrow' || action === 'enter') {
+        if (action === 'downArrow' || action === 'enter') {
             current2[0] = -1;
             current2[1] = previous[1];
         }
@@ -7400,6 +7646,14 @@ var FixedHeaderFocus = /** @__PURE__ @class */ (function (_super) {
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
         var hMatrix = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
         var isPresent = hMatrix && !isNullOrUndefined(hMatrix[current[0]]);
+        if (this.parent.getFrozenMode() === 'Right') {
+            var frSwap = (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion())
+                || action === 'shiftTab') && current[1] === 0;
+            var swap = ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
+                (isPresent && frSwap);
+            var toFrozen = (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1;
+            return { swap: swap, toHeader: frSwap, toFrozen: toFrozen };
+        }
         return {
             swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1 || ((action === 'rightArrow' ||
                 (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') &&
@@ -7415,11 +7669,19 @@ var FixedHeaderFocus = /** @__PURE__ @class */ (function (_super) {
     FixedHeaderFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
         if (previous === void 0) { previous = []; }
         var current3 = [];
-        if (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') {
-            current3[0] = previous[0];
-            current3[1] = active.matrix.columns + 1;
+        if (this.parent.getFrozenMode() === 'Right') {
+            if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
+                current3[0] = previous[0];
+                current3[1] = -1;
+            }
         }
-        else if (action === 'upArrow' || action === 'shiftEnter') {
+        else {
+            if (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion()) || action === 'shiftTab') {
+                current3[0] = previous[0];
+                current3[1] = active.matrix.columns + 1;
+            }
+        }
+        if (action === 'upArrow' || action === 'shiftEnter') {
             current3[0] = this.matrix.matrix.length;
             current3[1] = previous[1];
         }
@@ -7452,6 +7714,72 @@ var SearchBox = /** @__PURE__ @class */ (function () {
     };
     return SearchBox;
 }());
+var FixedRightContentFocus = /** @__PURE__ @class */ (function (_super) {
+    __extends$13(FixedRightContentFocus, _super);
+    function FixedRightContentFocus() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    FixedRightContentFocus.prototype.getTable = function () {
+        return this.parent.getContent().querySelector('.e-frozen-right-content .e-table');
+    };
+    FixedRightContentFocus.prototype.jump = function (action, current) {
+        var enterFrozen = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        var toHeader = (action === 'upArrow' || enterFrozen) && current[0] === 0;
+        return {
+            swap: toHeader || ((action === 'shiftTab' || action === 'leftArrow') && current[1] === 0),
+            toHeader: toHeader,
+            toFrozenRight: toHeader
+        };
+    };
+    FixedRightContentFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
+        if (previous === void 0) { previous = []; }
+        var current2 = [];
+        if (action === 'rightArrow' || action === 'tab') {
+            current2[0] = previous[0];
+            current2[1] = -1;
+        }
+        if (action === 'downArrow' || action === 'enter') {
+            current2[0] = -1;
+            current2[1] = previous[1];
+        }
+        return current2;
+    };
+    return FixedRightContentFocus;
+}(ContentFocus));
+var FixedRightHeaderFocus = /** @__PURE__ @class */ (function (_super) {
+    __extends$13(FixedRightHeaderFocus, _super);
+    function FixedRightHeaderFocus() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    FixedRightHeaderFocus.prototype.jump = function (action, current) {
+        var headerMat = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
+        var isPresent = headerMat && !isNullOrUndefined(headerMat[current[0]]);
+        var enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
+        var frozenSwap = (action === 'leftArrow' || (action === 'shiftLeft' && this.getGridSeletion())
+            || action === 'shiftTab') && current[1] === 0;
+        var swap = ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
+            (isPresent && frozenSwap);
+        var toFrozen = (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1;
+        return { swap: swap, toHeader: frozenSwap, toFrozenRight: toFrozen };
+    };
+    FixedRightHeaderFocus.prototype.getTable = function () {
+        return (this.parent.getHeaderContent().querySelector('.e-frozen-right-header .e-table'));
+    };
+    FixedRightHeaderFocus.prototype.getNextCurrent = function (previous, swap, active, action) {
+        if (previous === void 0) { previous = []; }
+        var current3 = [];
+        if (action === 'rightArrow' || (action === 'shiftRight' && this.getGridSeletion()) || action === 'tab') {
+            current3[0] = previous[0];
+            current3[1] = 0;
+        }
+        if (action === 'upArrow' || action === 'shiftEnter') {
+            current3[0] = this.matrix.matrix.length;
+            current3[1] = previous[1];
+        }
+        return current3;
+    };
+    return FixedRightHeaderFocus;
+}(HeaderFocus));
 
 var __extends$14 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -7670,8 +7998,15 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.getSelectedMovableRow = function (index) {
         var gObj = this.parent;
-        if (gObj.getFrozenColumns() && this.parent.getContent().querySelector('.e-movablecontent')) {
+        if (gObj.isFrozenGrid() && this.parent.getContent().querySelector('.e-movablecontent')) {
             return gObj.getMovableRowByIndex(index);
+        }
+        return null;
+    };
+    Selection.prototype.getSelectedFrozenRightRow = function (index) {
+        var gObj = this.parent;
+        if (gObj.isFrozenGrid() && gObj.getFrozenMode() === 'Left-Right' && gObj.getFrozenRightContent()) {
+            return gObj.getFrozenRightRowByIndex(index);
         }
         return null;
     };
@@ -7714,11 +8049,12 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var selectedRow = gObj.getRowByIndex(index);
         var selectedMovableRow = this.getSelectedMovableRow(index);
+        var selectedFrozenRightRow = this.getSelectedFrozenRightRow(index);
         var selectData;
         var isRemoved = false;
         if (gObj.enableVirtualization && index > -1) {
             this.parent.notify(selectVirtualRow, { selectedIndex: index });
-            var frozenData = gObj.getFrozenColumns() ? gObj.contentModule.getRowObjectByIndex(index)
+            var frozenData = gObj.isFrozenGrid() ? gObj.contentModule.getRowObjectByIndex(index)
                 : null;
             if (selectedRow && (gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')) || frozenData)) {
                 selectData = frozenData ? frozenData : gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
@@ -7757,7 +8093,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted,
                     isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             }
             else {
                 args = {
@@ -7810,12 +8146,11 @@ var Selection = /** @__PURE__ @class */ (function () {
         var isRemoved = this.removed;
         var selectedRow = gObj.getRowByIndex(index);
         var selectedMovableRow = this.getSelectedMovableRow(index);
+        var selectedFrozenRightRow = this.getSelectedFrozenRightRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
-                if (gObj.getFrozenColumns()) {
-                    this.updateRowSelection(selectedMovableRow, index);
-                }
                 this.updateRowSelection(selectedRow, index);
+                this.selectMovableRow(selectedMovableRow, selectedFrozenRightRow, index);
             }
             this.selectRowIndex(index);
         }
@@ -7828,7 +8163,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted,
                     isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             }
             else {
                 args = {
@@ -7848,9 +8183,23 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isInteracted = false;
         this.updateRowProps(index);
     };
-    Selection.prototype.addMovableArgs = function (targetObj, mRow) {
-        if (this.parent.getFrozenColumns()) {
+    Selection.prototype.selectMovableRow = function (selectedMovableRow, selectedFrozenRightRow, index) {
+        if (this.parent.isFrozenGrid()) {
+            this.updateRowSelection(selectedMovableRow, index);
+            if (this.parent.getFrozenMode() === 'Left-Right' && selectedFrozenRightRow) {
+                this.updateRowSelection(selectedFrozenRightRow, index);
+            }
+        }
+    };
+    Selection.prototype.addMovableArgs = function (targetObj, mRow, frRow) {
+        if (this.parent.isFrozenGrid()) {
             var mObj = { mRow: mRow, previousMovRow: this.parent.getMovableRows()[this.prevRowIndex] };
+            var frozenRightRow = 'frozenRightRow';
+            var previousFrozenRightRow = 'previousFrozenRightRow';
+            if (this.parent.getFrozenMode() === 'Left-Right' && frRow) {
+                mObj[frozenRightRow] = frRow;
+                mObj[previousFrozenRightRow] = this.parent.getFrozenRightDataRows()[this.prevRowIndex];
+            }
             targetObj = __assign({}, targetObj, mObj);
         }
         return targetObj;
@@ -7878,7 +8227,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var selectedRows = [];
         var foreignKeyData$$1 = [];
         var selectedMovableRow = this.getSelectedMovableRow(rowIndex);
-        var frzCols = gObj.getFrozenColumns();
+        var selectedFrozenRightRow = this.getSelectedFrozenRightRow(rowIndex);
         var can = 'cancel';
         var selectedData = [];
         if (!this.isRowType() || this.isEditing()) {
@@ -7904,7 +8253,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 isInteracted: this.isInteracted, isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                 data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, foreignKeyData: foreignKeyData$$1
             };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
         }
         else {
             args = {
@@ -7921,22 +8270,23 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             _this.clearRow();
             _this.selectRowIndex(rowIndexes.slice(-1)[0]);
+            var selectRowFn = function (index) {
+                _this.updateRowSelection(gObj.getRowByIndex(index), index);
+                if (gObj.isFrozenGrid()) {
+                    var rightEle = _this.parent.getFrozenMode() === 'Left-Right' ? gObj.getFrozenRightRowByIndex(index)
+                        : undefined;
+                    _this.selectMovableRow(gObj.getMovableRowByIndex(index), rightEle, index);
+                }
+                _this.updateRowProps(rowIndex);
+            };
             if (!_this.isSingleSel()) {
                 for (var _i = 0, rowIndexes_1 = rowIndexes; _i < rowIndexes_1.length; _i++) {
                     var rowIdx = rowIndexes_1[_i];
-                    _this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
-                    if (frzCols) {
-                        _this.updateRowSelection(gObj.getMovableRowByIndex(rowIdx), rowIdx);
-                    }
-                    _this.updateRowProps(rowIndex);
+                    selectRowFn(rowIdx);
                 }
             }
             else {
-                _this.updateRowSelection(gObj.getRowByIndex(rowIndex), rowIndex);
-                if (frzCols) {
-                    _this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex);
-                }
-                _this.updateRowProps(rowIndex);
+                selectRowFn(rowIndex);
             }
             var isHybrid = 'isHybrid';
             if (!isBlazor() || _this.parent.isJsComponent || _this.parent[isHybrid]) {
@@ -7946,7 +8296,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted,
                     isHeaderCheckboxClicked: _this.isHeaderCheckboxClicked, foreignKeyData: foreignKeyData$$1
                 };
-                args = _this.addMovableArgs(args, selectedMovableRow);
+                args = _this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             }
             else {
                 args = {
@@ -7967,6 +8317,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @hidden
      */
+    // tslint:disable-next-line:max-func-body-length
     Selection.prototype.addRowsToSelection = function (rowIndexes) {
         var _this = this;
         var gObj = this.parent;
@@ -7978,7 +8329,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             gObj.getRowByIndex(rowIndexes[rowIndexes.length - 1]);
         var selectedMovableRow = !this.isSingleSel() ? this.getSelectedMovableRow(rowIndexes[0]) :
             this.getSelectedMovableRow(rowIndexes[rowIndexes.length - 1]);
-        var frzCols = gObj.getFrozenColumns();
+        var selectedFrozenRightRow = !this.isSingleSel() ? this.getSelectedFrozenRightRow(rowIndexes[0]) :
+            this.getSelectedFrozenRightRow(rowIndexes[rowIndexes.length - 1]);
         if ((!this.isRowType() || this.isEditing()) && !this.selectionSettings.checkboxOnly) {
             return;
         }
@@ -8020,7 +8372,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted,
                         isHeaderCheckboxClicked: this_1.isHeaderCheckboxClicked, rowIndexes: indexes
                     };
-                    args = this_1.addMovableArgs(args, selectedMovableRow);
+                    args = this_1.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
                 }
                 else {
                     args = {
@@ -8040,9 +8392,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         _this.clearRow();
                     }
                     _this.updateRowSelection(selectedRow, rowIndex);
-                    if (frzCols) {
-                        _this.updateRowSelection(selectedMovableRow, rowIndex);
-                    }
+                    _this.selectMovableRow(selectedMovableRow, selectedFrozenRightRow, rowIndex);
                 });
             }
             if (!isUnSelected) {
@@ -8054,7 +8404,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted,
                         isHeaderCheckboxClicked: this_1.isHeaderCheckboxClicked, rowIndexes: indexes
                     };
-                    args = this_1.addMovableArgs(args, selectedMovableRow);
+                    args = this_1.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
                 }
                 else {
                     args = {
@@ -8182,7 +8532,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.selectedRowIndexes.push(startIndex);
         var len = this.selectedRowIndexes.length;
-        if (this.parent.getFrozenColumns() && len > 1) {
+        if (this.parent.isFrozenGrid() && len > 1) {
             if ((this.selectedRowIndexes[len - 2] === this.selectedRowIndexes[len - 1])) {
                 this.selectedRowIndexes.pop();
             }
@@ -8232,6 +8582,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Deselects the currently selected rows.
      * @return {void}
      */
+    // tslint:disable-next-line:max-func-body-length
     Selection.prototype.clearRowSelection = function () {
         var _this = this;
         if (this.isRowSelected) {
@@ -8240,8 +8591,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             var data_1 = [];
             var row_1 = [];
             var mRow_1 = [];
+            var fRightRow_1 = [];
             var rowIndex_1 = [];
-            var frzCols = gObj.getFrozenColumns();
             var foreignKeyData_1 = [];
             var target_1 = this.target;
             var currentViewData = this.parent.getCurrentViewRecords();
@@ -8256,8 +8607,11 @@ var Selection = /** @__PURE__ @class */ (function () {
                     rowIndex_1.push(this.selectedRowIndexes[i]);
                     foreignKeyData_1.push(rowObj.foreignKeyData);
                 }
-                if (frzCols) {
+                if (gObj.isFrozenGrid()) {
                     mRow_1.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
+                    if (gObj.getFrozenMode() === 'Left-Right') {
+                        fRightRow_1.push(gObj.getFrozenRightRows()[this.selectedRowIndexes[i]]);
+                    }
                 }
             }
             if (this.selectionSettings.persistSelection && this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
@@ -8306,14 +8660,24 @@ var Selection = /** @__PURE__ @class */ (function () {
                             movableRow.removeAttribute('aria-selected');
                             _this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
                         }
+                        _this.updateCheckBoxes(movableRow);
                         _this.updatePersistCollection(movableRow, false);
+                    }
+                    var frRow = _this.getSelectedFrozenRightRow(_this.selectedRowIndexes[i]);
+                    if (frRow) {
+                        if (!_this.disableUI) {
+                            frRow.removeAttribute('aria-selected');
+                            _this.addRemoveClassesForRow(frRow, false, true, 'e-selectionbackground', 'e-active');
+                        }
+                        _this.updateCheckBoxes(frRow);
+                        _this.updatePersistCollection(frRow, false);
                     }
                 }
                 _this.selectedRowIndexes = [];
                 _this.selectedRecords = [];
                 _this.isRowSelected = false;
                 _this.selectRowIndex(-1);
-                _this.rowDeselect(rowDeselected, rowIndex_1, data_1, row_1, foreignKeyData_1, target_1, mRow_1);
+                _this.rowDeselect(rowDeselected, rowIndex_1, data_1, row_1, foreignKeyData_1, target_1, mRow_1, undefined, fRightRow_1);
                 if (_this.clearRowCheck) {
                     _this.clearRowCallBack();
                     _this.clearRowCheck = false;
@@ -8322,7 +8686,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         _this.selectRowCheck = false;
                     }
                 }
-            });
+            }, fRightRow_1);
         }
         else {
             if (this.clearRowCheck) {
@@ -8335,7 +8699,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow, rowDeselectCallBack) {
+    Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow, rowDeselectCallBack, frozenRightRow) {
         var _this = this;
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
             var cancl_1 = 'cancel';
@@ -8378,7 +8742,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 rowDeselectObj[rowIndex_2] = rowDeselectObj[rowIndex_2][rowDeselectObj[rowIndex_2].length - 1];
                 rowDeselectObj[data_3] = rowDeselectObj[data_3][rowDeselectObj[data_3].length - 1];
             }
-            this.parent.trigger(type, (!isBlazor() || this.parent.isJsComponent) && this.parent.getFrozenColumns() !== 0 ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj, function (args) {
+            this.parent.trigger(type, (!isBlazor() || this.parent.isJsComponent) && this.parent.isFrozenGrid() ? __assign({}, rowDeselectObj, { mRow: mRow, frozenRightRow: frozenRightRow }) : rowDeselectObj, function (args) {
                 _this.isCancelDeSelect = args[cancl_1];
                 if (!_this.isCancelDeSelect || (!_this.isInteracted && !_this.checkSelectAllClicked)) {
                     _this.updatePersistCollection(row[0], false);
@@ -8410,9 +8774,10 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.getSelectedMovableCell = function (cellIndex) {
         var gObj = this.parent;
-        var frzCols = gObj.getFrozenColumns();
+        var col = gObj.getColumnByIndex(cellIndex.cellIndex);
+        var frzCols = gObj.isFrozenGrid();
         if (frzCols) {
-            if (cellIndex.cellIndex >= frzCols) {
+            if (col.getFreezeTableName() === 'movable') {
                 return gObj.getMovableCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
             }
             return null;
@@ -8687,29 +9052,33 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @hidden
      */
+    // tslint:disable-next-line:max-func-body-length
     Selection.prototype.addCellsToSelection = function (cellIndexes) {
         if (!this.isCellType()) {
             return;
         }
         var gObj = this.parent;
         var selectedCell;
-        var frzCols = gObj.getFrozenColumns();
         var index;
         this.currentIndex = cellIndexes[0].rowIndex;
         var cncl = 'cancel';
         var selectedData = this.getCurrentBatchRecordChanges()[this.currentIndex];
         var isHybrid = 'isHybrid';
+        var left = gObj.getFrozenLeftCount();
+        var movable = gObj.getMovableColumnsCount();
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
         this.hideAutoFill();
+        var col = gObj.getColumnByIndex(cellIndexes[0].cellIndex);
         var rowObj;
-        if (frzCols && cellIndexes[0].cellIndex >= frzCols) {
-            rowObj = gObj.getMovableRowsObject()[cellIndexes[0].rowIndex];
-        }
-        else {
-            rowObj = this.getRowObj(cellIndexes[0].rowIndex);
-        }
+        gridActionHandler(this.parent, function (tableName, rows) {
+            rowObj = rows[cellIndexes[0].rowIndex];
+        }, [
+            !col.getFreezeTableName() || col.getFreezeTableName() === 'frozen-left' ? gObj.getRowsObject() : [],
+            col.getFreezeTableName() === 'movable' ? gObj.getMovableRowsObject() : [],
+            col.getFreezeTableName() === 'frozen-right' ? gObj.getFrozenRightRowsObject() : []
+        ]);
         var foreignKeyData$$1 = [];
         for (var _i = 0, cellIndexes_1 = cellIndexes; _i < cellIndexes_1.length; _i++) {
             var cellIndex = cellIndexes_1[_i];
@@ -8723,8 +9092,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (!selectedCell) {
                 selectedCell = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
             }
-            foreignKeyData$$1.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
-                ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
+            var idx = col.getFreezeTableName() === 'movable' ? cellIndex.cellIndex - left
+                : col.getFreezeTableName() === 'frozen-right' ? cellIndex.cellIndex - (left + movable) : cellIndex.cellIndex;
+            foreignKeyData$$1.push(rowObj.cells[idx].foreignKeyData);
             var args = void 0;
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
                 args = {
@@ -8792,25 +9162,19 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.getColIndex = function (rowIndex, index) {
-        var cells;
-        var frzCols = this.parent.getFrozenColumns();
-        if (frzCols) {
-            if (index >= frzCols) {
-                cells = this.parent.getMovableDataRows()[rowIndex] &&
-                    this.parent.getMovableDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
-            }
-        }
-        if (!cells) {
-            cells = this.parent.getDataRows()[rowIndex] &&
-                this.parent.getDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
-        }
+        var frzCols = this.parent.isFrozenGrid();
+        var col = this.parent.getColumnByIndex(index);
+        var cells = getCellsByTableName(this.parent, col, rowIndex);
         if (cells) {
             for (var m = 0; m < cells.length; m++) {
                 var colIndex = parseInt(cells[m].getAttribute('aria-colindex'), 10);
                 if (colIndex === index) {
                     if (frzCols) {
-                        if (index >= frzCols) {
-                            m += frzCols;
+                        if (col.getFreezeTableName() === 'movable') {
+                            m += this.parent.getFrozenLeftCount();
+                        }
+                        else if (col.getFreezeTableName() === 'frozen-right') {
+                            m += (this.parent.getFrozenLeftColumnsCount() + this.parent.getMovableColumnsCount());
                         }
                     }
                     return m;
@@ -8894,19 +9258,15 @@ var Selection = /** @__PURE__ @class */ (function () {
             var cells = [];
             var foreignKeyData$$1 = [];
             var currentViewData = this.getCurrentBatchRecordChanges();
-            var frzCols = gObj.getFrozenColumns();
+            var frzCols = gObj.isFrozenGrid();
             this.hideAutoFill();
             for (var i = 0, len = rowCell.length; i < len; i++) {
                 data.push(currentViewData[rowCell[i].rowIndex]);
                 var rowObj = this.getRowObj(rowCell[i].rowIndex);
                 for (var j = 0, cLen = rowCell[i].cellIndexes.length; j < cLen; j++) {
                     if (frzCols) {
-                        if (rowCell[i].cellIndexes[j] < frzCols) {
-                            cells.push(gObj.getCellFromIndex(rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
-                        }
-                        else {
-                            cells.push(gObj.getMovableCellFromIndex(rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
-                        }
+                        var col = gObj.getColumnByIndex(rowCell[i].cellIndexes[j]);
+                        cells.push(getCellByColAndRowIndex(this.parent, col, rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
                     }
                     else {
                         if (rowObj.cells) {
@@ -8938,9 +9298,12 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var rows = gObj.getDataRows();
         var mRows;
-        if (gObj.getFrozenColumns()) {
+        if (gObj.isFrozenGrid()) {
             mRows = gObj.getMovableDataRows();
             rows = gObj.addMovableRows(rows, mRows);
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                rows = gObj.addMovableRows(rows, gObj.getFrozenRightDataRows());
+            }
         }
         var cells = [];
         for (var i = 0, len = rows.length; i < len; i++) {
@@ -9037,23 +9400,26 @@ var Selection = /** @__PURE__ @class */ (function () {
         var cells = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground')).
             filter(function (ele) { return ele.style.display === ''; });
         if (cells.length) {
+            var isFrozen = this.parent.isFrozenGrid();
             var start = cells[0];
             var end = cells[cells.length - 1];
             var stOff = start.getBoundingClientRect();
             var endOff = end.getBoundingClientRect();
             var parentOff = start.offsetParent.getBoundingClientRect();
-            var rowHeight = this.isLastRow(end) && (bdrStr === '1' || bdrStr === '2') ? 2 : 0;
+            var rowHeight = this.isLastRow(end) && (bdrStr === '1' || bdrStr === '2' || bdrStr === '5') ? 2 : 0;
             var topOffSet = this.parent.frozenRows && (bdrStr === '1' || bdrStr === '2') &&
                 this.isFirstRow(start) ? 1.5 : 0;
-            var leftOffset = this.parent.getFrozenColumns() && (bdrStr === '2' || bdrStr === '4') &&
-                this.isFirstCell(start) ? 1 : 0;
+            var leftOffset = isFrozen && (bdrStr === '2' || bdrStr === '4') && this.isFirstCell(start) ? 1 : 0;
+            var rightOffset = ((this.parent.getFrozenMode() === 'Right' && (bdrStr === '1' || bdrStr === '3'))
+                || (this.parent.getFrozenMode() === 'Left-Right' && (bdrStr === '5' || bdrStr === '6')))
+                && this.isFirstCell(start) ? 1 : 0;
             if (this.parent.enableRtl) {
                 border.style.right = parentOff.right - stOff.right - leftOffset + 'px';
                 border.style.width = stOff.right - endOff.left + leftOffset + 1 + 'px';
             }
             else {
-                border.style.left = stOff.left - parentOff.left - leftOffset + 'px';
-                border.style.width = endOff.right - stOff.left + leftOffset + 1 + 'px';
+                border.style.left = stOff.left - parentOff.left - leftOffset - rightOffset + 'px';
+                border.style.width = endOff.right - stOff.left + leftOffset - rightOffset + 1 + 'px';
             }
             border.style.top = stOff.top - parentOff.top - topOffSet + 'px';
             border.style.height = endOff.top - stOff.top > 0 ?
@@ -9073,54 +9439,180 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.selectDirection = '';
         this.showHideBorders('');
         this.setBorders(this.parent.getContentTable(), this.bdrElement, '1');
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             this.setBorders(this.parent.contentModule.getMovableContent(), this.mcBdrElement, '2');
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                this.setBorders(this.parent.contentModule.getFrozenRightContent(), this.frcBdrElement, '5');
+            }
         }
         if (this.parent.frozenRows) {
             this.setBorders(this.parent.getHeaderTable(), this.fhBdrElement, '3');
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.setBorders(this.parent.headerModule.getMovableHeader(), this.mhBdrElement, '4');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.setBorders(this.parent.headerModule.getFrozenRightHeader(), this.frhBdrElement, '6');
+                }
             }
         }
         this.applyBorders(this.selectDirection);
     };
-    Selection.prototype.applyBorders = function (str) {
+    Selection.prototype.applyBothFrozenBorders = function (str) {
         var rtl = this.parent.enableRtl;
         switch (str.length) {
-            case 4:
+            case 6:
                 {
                     this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
-                    this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                    this.mcBdrElement.style.borderWidth = '0 0 2px 0';
                     this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
-                    this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                    this.mhBdrElement.style.borderWidth = '2px 0 0 0';
+                    this.frcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                    this.frhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                }
+                break;
+            case 4:
+                {
+                    if (str.includes('1') && str.includes('2') && str.includes('3') && str.includes('4')) {
+                        this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                        this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                        this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                        this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                    }
+                    if (str.includes('2') && str.includes('4') && str.includes('5') && str.includes('6')) {
+                        this.mcBdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                        this.mhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                        this.frcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                        this.frhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                    }
+                }
+                break;
+            case 3:
+                {
+                    this.bdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    this.mcBdrElement.style.borderWidth = '2p 0 2px 0';
+                    this.frcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    if (this.parent.frozenRows) {
+                        this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                        this.mhBdrElement.style.borderWidth = '2px 0 2px 0';
+                        this.frcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    }
                 }
                 break;
             case 2:
                 {
-                    this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 2px 2px 0' : '2px 0 2px 2px' : '0 2px 2px 2px';
-                    if (this.parent.getFrozenColumns()) {
-                        this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 0 2px 2px' : '2px 2px 2px 0' : '0 2px 2px 2px';
-                    }
-                    if (this.parent.frozenRows) {
-                        this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px' : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
-                        if (this.parent.getFrozenColumns()) {
-                            this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px' : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    if (str.includes('1')) {
+                        this.mcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                        if (this.parent.frozenRows) {
+                            this.fhBdrElement.style.borderWidth = '2px 2px 0 2px';
                         }
+                    }
+                    if (str.includes('2')) {
+                        this.bdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                        this.frcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                        if (this.parent.frozenRows) {
+                            this.mhBdrElement.style.borderWidth = '2px 2px 0 2px';
+                        }
+                    }
+                    if (str.includes('3')) {
+                        this.mhBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                        this.bdrElement.style.borderWidth = '0 2px 2px 2px';
+                    }
+                    if (str.includes('4')) {
+                        this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                        this.frhBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                        this.mcBdrElement.style.borderWidth = '0 2px 2px 2px';
+                    }
+                    if (str.includes('5')) {
+                        this.mcBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                        if (this.parent.frozenRows) {
+                            this.frhBdrElement.style.borderWidth = '2px 2px 0 2px';
+                        }
+                    }
+                    if (str.includes('6')) {
+                        this.mhBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                        this.frcBdrElement.style.borderWidth = '0 2px 2px 2px';
                     }
                 }
                 break;
             default:
                 this.bdrElement.style.borderWidth = '2px';
-                if (this.parent.getFrozenColumns()) {
-                    this.mcBdrElement.style.borderWidth = '2px';
-                }
+                this.mcBdrElement.style.borderWidth = '2px';
+                this.frcBdrElement.style.borderWidth = '2px';
                 if (this.parent.frozenRows) {
                     this.fhBdrElement.style.borderWidth = '2px';
-                    if (this.parent.getFrozenColumns()) {
-                        this.mhBdrElement.style.borderWidth = '2px';
-                    }
+                    this.mhBdrElement.style.borderWidth = '2px';
+                    this.frhBdrElement.style.borderWidth = '2px';
                 }
                 break;
+        }
+    };
+    Selection.prototype.applyBorders = function (str) {
+        var rtl = this.parent.enableRtl;
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            this.applyBothFrozenBorders(str);
+        }
+        else {
+            switch (str.length) {
+                case 4:
+                    {
+                        if (this.parent.getFrozenMode() === 'Right') {
+                            this.bdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                            this.mcBdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                            this.fhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                            this.mhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                        }
+                        else {
+                            this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                            this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                            this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                            this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                        }
+                    }
+                    break;
+                case 2:
+                    {
+                        if (this.parent.getFrozenMode() === 'Right') {
+                            this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 0 2px 2px'
+                                : '2px 2px 2px 0' : '0 2px 2px 2px';
+                            this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 2px 2px 0'
+                                : '2px 0 2px 2px' : '0 2px 2px 2px';
+                            if (this.parent.frozenRows) {
+                                this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px'
+                                    : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                                this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px'
+                                    : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                            }
+                        }
+                        else {
+                            this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 2px 2px 0'
+                                : '2px 0 2px 2px' : '0 2px 2px 2px';
+                            if (this.parent.isFrozenGrid()) {
+                                this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 0 2px 2px'
+                                    : '2px 2px 2px 0' : '0 2px 2px 2px';
+                            }
+                            if (this.parent.frozenRows) {
+                                this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px'
+                                    : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                                if (this.parent.isFrozenGrid()) {
+                                    this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px'
+                                        : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                                }
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    this.bdrElement.style.borderWidth = '2px';
+                    if (this.parent.isFrozenGrid()) {
+                        this.mcBdrElement.style.borderWidth = '2px';
+                    }
+                    if (this.parent.frozenRows) {
+                        this.fhBdrElement.style.borderWidth = '2px';
+                        if (this.parent.isFrozenGrid()) {
+                            this.mhBdrElement.style.borderWidth = '2px';
+                        }
+                    }
+                    break;
+            }
         }
     };
     Selection.prototype.createBorders = function () {
@@ -9129,31 +9621,46 @@ var Selection = /** @__PURE__ @class */ (function () {
                 className: 'e-xlsel', id: this.parent.element.id + '_bdr',
                 styles: 'width: 2px; border-width: 0;'
             }));
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.mcBdrElement = this.parent.contentModule.getMovableContent().appendChild(createElement('div', {
                     className: 'e-xlsel', id: this.parent.element.id + '_mcbdr',
                     styles: 'height: 2px; border-width: 0;'
                 }));
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frcBdrElement = this.parent.contentModule.getFrozenRightContent().appendChild(createElement('div', {
+                        className: 'e-xlsel', id: this.parent.element.id + '_frcbdr',
+                        styles: 'height: 2px; border-width: 0;'
+                    }));
+                }
             }
             if (this.parent.frozenRows) {
                 this.fhBdrElement = this.parent.getHeaderTable().parentElement.appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_fhbdr', styles: 'height: 2px;' }));
             }
-            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+            if (this.parent.frozenRows && this.parent.isFrozenGrid()) {
                 this.mhBdrElement = this.parent.headerModule.getMovableHeader().appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_mhbdr', styles: 'height: 2px;' }));
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frhBdrElement = this.parent.headerModule.getFrozenRightHeader().appendChild(createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_frhbdr', styles: 'height: 2px;' }));
+                }
             }
         }
     };
     Selection.prototype.showHideBorders = function (display) {
         if (this.bdrElement) {
             this.bdrElement.style.display = display;
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.mcBdrElement.style.display = display;
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frcBdrElement.style.display = display;
+                }
             }
             if (this.parent.frozenRows) {
                 this.fhBdrElement.style.display = display;
             }
-            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+            if (this.parent.frozenRows && this.parent.isFrozenGrid()) {
                 this.mhBdrElement.style.display = display;
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frhBdrElement.style.display = display;
+                }
             }
         }
     };
@@ -9279,9 +9786,13 @@ var Selection = /** @__PURE__ @class */ (function () {
         return args;
     };
     Selection.prototype.getAutoFillCells = function (rowIndex, startCellIdx) {
-        var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground'));
-        if (this.parent.getFrozenColumns()) {
-            cells = cells.concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground')));
+        var cls = '.e-cellselectionbackground';
+        var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll(cls));
+        if (this.parent.isFrozenGrid()) {
+            cells = cells.concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll(cls)));
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                cells = cells.concat([].slice.call(this.parent.getFrozenRightDataRows()[rowIndex].querySelectorAll(cls)));
+            }
         }
         return cells;
     };
@@ -9448,19 +9959,14 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
             && this.selectedRowCellIndexes.length) {
-            var frzCols = this.parent.getFrozenColumns();
             var index = parseInt(this.target.getAttribute('aria-colindex'), 10);
             var rindex = parseInt(this.target.getAttribute('index'), 10);
             var rowIndex = this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex;
             var cells = this.getAutoFillCells(rowIndex, index).filter(function (ele) { return ele.style.display === ''; });
-            var isFrozenCol = void 0;
-            var isFrozenRow = void 0;
-            if (frzCols && index >= frzCols) {
-                isFrozenCol = true;
-            }
-            if (rindex < this.parent.frozenRows) {
-                isFrozenRow = true;
-            }
+            var col = this.parent.getColumnByIndex(index);
+            var isFrozenCol = col.getFreezeTableName() === 'movable';
+            var isFrozenRow = rindex < this.parent.frozenRows;
+            var isFrozenRight = this.parent.getFrozenMode() === 'Left-Right' && col.getFreezeTableName() === 'frozen-right';
             if (!select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, 'e-table'))) {
                 if (select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
                     select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
@@ -9471,6 +9977,10 @@ var Selection = /** @__PURE__ @class */ (function () {
                     this.parent.contentModule.getMovableContent().appendChild(this.autofill) :
                     !isFrozenCol ? this.parent.getHeaderTable().parentElement.appendChild(this.autofill) :
                         this.parent.headerModule.getMovableHeader().appendChild(this.autofill);
+                if (isFrozenRight) {
+                    isFrozenRow ? this.parent.getFrozenRightHeader().appendChild(this.autofill)
+                        : this.parent.getFrozenRightContent().appendChild(this.autofill);
+                }
             }
             var cell = cells[cells.length - 1];
             if (cell && cell.offsetParent) {
@@ -9705,9 +10215,14 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
         }
     };
-    Selection.prototype.initialEnd = function () {
-        this.parent.off(contentReady, this.initialEnd);
-        this.selectRow(this.parent.selectedRowIndex);
+    Selection.prototype.initialEnd = function (e) {
+        var isFrozen = this.parent.isFrozenGrid();
+        var isLeftRightFrozen = this.parent.getFrozenMode() === 'Left-Right';
+        if (!isFrozen || (isFrozen && (!isLeftRightFrozen && !e.args.isFrozen)
+            || (isLeftRightFrozen && e.args.renderFrozenRightContent))) {
+            this.parent.off(contentReady, this.initialEnd);
+            this.selectRow(this.parent.selectedRowIndex);
+        }
     };
     Selection.prototype.checkBoxSelectionChanged = function () {
         this.parent.off(contentReady, this.checkBoxSelectionChanged);
@@ -10159,7 +10674,8 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.clickHandler = function (e) {
         var target = e.target;
         this.actualTarget = target;
-        if (parentsUntil(target, 'e-row') || parentsUntil(target, 'e-headerchkcelldiv')) {
+        if (parentsUntil(target, 'e-row') || parentsUntil(target, 'e-headerchkcelldiv') ||
+            (this.selectionSettings.allowColumnSelection && target.classList.contains('e-headercell'))) {
             this.isInteracted = true;
         }
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch ||
@@ -10316,8 +10832,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        var clear = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump &&
-            this.selectionSettings.mode !== 'Column') ||
+        var clear = this.parent.isFrozenGrid() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump &&
+            !this.selectionSettings.allowColumnSelection) ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
             (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
@@ -10343,7 +10859,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 prev.rowIndex = prev.rowIndex === 0 || !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex + this.parent.frozenRows : null;
             }
         }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             var cIdx = Number(e.element.getAttribute('aria-colindex'));
             var selectedIndexes = this.parent.getSelectedRowCellIndexes();
             if (selectedIndexes.length && prev.cellIndex === 0) {
@@ -10354,7 +10870,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
             e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&
-            this.selectionSettings.mode !== 'Column') {
+            !this.selectionSettings.allowColumnSelection) {
             return;
         }
         this.preventFocus = true;
@@ -10415,7 +10931,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var uid;
         var index = null;
         var stackedHeader = e.element.querySelector('.e-stackedheadercelldiv');
-        if (this.selectionSettings.mode === 'Column' && parentsUntil(e.element, 'e-columnheader')) {
+        if (this.selectionSettings.allowColumnSelection && parentsUntil(e.element, 'e-columnheader')) {
             this.needColumnSelection = e.container.isHeader ? true : false;
             if (stackedHeader) {
                 if (e.keyArgs.action === 'rightArrow' || e.keyArgs.action === 'leftArrow') {
@@ -10478,7 +10994,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.isCellType()) {
             this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
         }
-        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+        if (this.selectionSettings.allowColumnSelection && this.needColumnSelection) {
             this.selectColumn(cellIndex);
         }
     };
@@ -10507,7 +11023,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.applyRightLeftKey = function (rowIndex, cellIndex) {
         var gObj = this.parent;
-        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+        if (this.selectionSettings.allowColumnSelection && this.needColumnSelection) {
             this.selectColumn(cellIndex);
         }
         else if (this.isCellType()) {
@@ -10548,7 +11064,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.applyShiftLeftRightKey = function (rowIndex, cellIndex) {
         var gObj = this.parent;
         this.isMultiShiftRequest = true;
-        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+        if (this.selectionSettings.allowColumnSelection && this.needColumnSelection) {
             this.selectColumnsByRange(this.prevColIndex, cellIndex);
         }
         else {
@@ -10635,28 +11151,34 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(gObj.getColumns()[index])) {
             return;
         }
-        var selectedCol = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(index).uid);
+        var column = gObj.getColumnByIndex(index);
+        var selectedCol = gObj.getColumnHeaderByUid(column.uid);
         var isColSelected = selectedCol.classList.contains('e-columnselection');
-        if ((gObj.selectionSettings.mode !== 'Column')) {
+        if ((!gObj.selectionSettings.allowColumnSelection)) {
             return;
         }
+        var isMultiColumns = this.selectedColumnsIndexes.length > 1 &&
+            this.selectedColumnsIndexes.indexOf(index) > -1;
         this.clearColDependency();
-        if (!isColSelected || !this.selectionSettings.enableToggle) {
+        if (!isColSelected || !this.selectionSettings.enableToggle || isMultiColumns) {
             var args = {
                 columnIndex: index, headerCell: selectedCol,
+                column: column,
                 cancel: false, target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
             };
             this.onActionBegin(args, columnSelecting);
             if (args.cancel) {
+                this.disableInteracted();
                 return;
             }
-            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected)) {
+            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected) || isMultiColumns) {
                 this.updateColSelection(selectedCol, index);
             }
             var selectedArgs = {
                 columnIndex: index, headerCell: selectedCol,
+                column: column,
                 target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
             };
@@ -10696,19 +11218,21 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (gObj.selectionSettings.type === 'Single') {
             columnIndexes = [columnIndexes[0]];
         }
-        if (gObj.selectionSettings.mode !== 'Column') {
+        if (!gObj.selectionSettings.allowColumnSelection) {
             return;
         }
         this.clearColDependency();
         var selectingArgs = {
             columnIndex: columnIndexes[0], headerCell: selectedCol,
             columnIndexes: columnIndexes,
+            column: gObj.getColumnByIndex(columnIndexes[0]),
             cancel: false, target: this.actualTarget,
             isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
         };
         this.onActionBegin(selectingArgs, columnSelecting);
         if (selectingArgs.cancel) {
+            this.disableInteracted();
             return;
         }
         for (var i = 0, len = columnIndexes.length; i < len; i++) {
@@ -10718,6 +11242,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var selectedArgs = {
             columnIndex: columnIndexes[0], headerCell: selectedCol,
             columnIndexes: columnIndexes,
+            column: gObj.getColumnByIndex(columnIndexes[0]),
             target: this.actualTarget,
             isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
         };
@@ -10740,47 +11265,32 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (gObj.selectionSettings.type === 'Single') {
             this.clearColDependency();
         }
-        if (gObj.selectionSettings.mode !== 'Column') {
+        if (!gObj.selectionSettings.allowColumnSelection) {
             return;
         }
         var rows = !isFreeze ? gObj.getDataRows() : gObj.getMovableRows();
         if (this.selectedColumnsIndexes.indexOf(startIndex) > -1) {
-            var deselectedArgs = {
-                columnIndex: startIndex, headerCell: selectedCol,
-                columnIndexes: this.selectedColumnsIndexes,
-                cancel: false, target: this.actualTarget,
-                isInteracted: this.isInteracted
-            };
-            var isCanceled = this.columnDeselect(deselectedArgs, columnDeselecting);
-            if (isCanceled) {
-                return;
-            }
-            this.selectedColumnsIndexes.splice(this.selectedColumnsIndexes.indexOf(startIndex), 1);
-            addRemoveActiveClasses([newCol], false, 'e-columnselection');
-            var index = isFreeze ? startIndex - frzCols : startIndex;
-            index = index + gObj.getIndentCount();
-            for (var j = 0, len = rows.length; j < len; j++) {
-                addRemoveActiveClasses([rows[j].childNodes[index]], false, 'e-columnselection');
-            }
-            this.columnDeselect(deselectedArgs, columnDeselected);
-            this.parent.getColumns()[startIndex].isSelected = false;
+            this.clearColumnSelection(startIndex);
         }
         else {
             var selectingArgs = {
                 columnIndex: startIndex, headerCell: selectedCol,
                 columnIndexes: this.selectedColumnsIndexes,
+                column: gObj.getColumnByIndex(startIndex),
                 cancel: false, target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
             };
             this.onActionBegin(selectingArgs, columnSelecting);
             if (selectingArgs.cancel) {
+                this.disableInteracted();
                 return;
             }
             this.updateColSelection(newCol, startIndex);
             selectedCol = this.getselectedCols();
             var selectedArgs = {
                 columnIndex: startIndex, headerCell: selectedCol,
+                column: gObj.getColumnByIndex(startIndex),
                 columnIndexes: this.selectedColumnsIndexes,
                 target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
@@ -10792,36 +11302,57 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * Clear the column selection
      */
-    Selection.prototype.clearColumnSelection = function () {
+    Selection.prototype.clearColumnSelection = function (clearIndex) {
         if (this.isColumnSelected) {
             var gObj = this.parent;
-            var frzCols = gObj.getFrozenColumns();
-            var index = this.selectedColumnsIndexes[this.selectedColumnsIndexes.length - 1];
-            var isFreeze = frzCols && index >= frzCols;
-            var selectedCol = !isFreeze ? gObj.getColumnHeaderByIndex(index) :
-                gObj.getHeaderContent().querySelectorAll('.e-headercell')[index];
+            if (!isNullOrUndefined(clearIndex) && this.selectedColumnsIndexes.indexOf(clearIndex) === -1) {
+                return;
+            }
+            var index = !isNullOrUndefined(clearIndex) ? clearIndex :
+                this.selectedColumnsIndexes[this.selectedColumnsIndexes.length - 1];
+            var col = gObj.getColumnByIndex(index);
+            var selectedCol = void 0;
+            var column = gObj.getColumnByIndex(index);
+            if (col.getFreezeTableName() === 'frozen-right') {
+                selectedCol = gObj.getFrozenRightColumnHeaderByIndex(index);
+            }
+            else if (col.getFreezeTableName() === 'movable') {
+                selectedCol = gObj.getMovableColumnHeaderByIndex(index);
+            }
+            else {
+                selectedCol = gObj.getColumnHeaderByUid(column.uid);
+            }
             var deselectedArgs = {
                 columnIndex: index, headerCell: selectedCol,
                 columnIndexes: this.selectedColumnsIndexes,
+                column: column,
                 cancel: false, target: this.actualTarget,
                 isInteracted: this.isInteracted
             };
             var isCanceled = this.columnDeselect(deselectedArgs, columnDeselecting);
             if (isCanceled) {
+                this.disableInteracted();
                 return;
             }
-            var selectedHeader = gObj.getHeaderContent().querySelectorAll('.e-columnselection');
-            var selectedCells = this.getSelectedColumnCells();
+            var selectedHeader = !isNullOrUndefined(clearIndex) ? [selectedCol] :
+                [].slice.call(gObj.getHeaderContent().querySelectorAll('.e-columnselection'));
+            var selectedCells = this.getSelectedColumnCells(clearIndex);
             for (var i = 0, len = selectedHeader.length; i < len; i++) {
                 addRemoveActiveClasses([selectedHeader[i]], false, 'e-columnselection');
             }
             for (var i = 0, len = selectedCells.length; i < len; i++) {
                 addRemoveActiveClasses([selectedCells[i]], false, 'e-columnselection');
             }
-            this.columnDeselect(deselectedArgs, columnDeselected);
-            this.selectedColumnsIndexes = [];
-            this.isColumnSelected = false;
-            this.parent.getColumns().filter(function (col) { return col.isSelected = false; });
+            if (!isNullOrUndefined(clearIndex)) {
+                this.selectedColumnsIndexes.splice(this.selectedColumnsIndexes.indexOf(clearIndex), 1);
+                this.parent.getColumns()[clearIndex].isSelected = false;
+            }
+            else {
+                this.columnDeselect(deselectedArgs, columnDeselected);
+                this.selectedColumnsIndexes = [];
+                this.isColumnSelected = false;
+                this.parent.getColumns().filter(function (col) { return col.isSelected = false; });
+            }
         }
     };
     Selection.prototype.getselectedCols = function () {
@@ -10838,18 +11369,24 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         return selectedCol;
     };
-    Selection.prototype.getSelectedColumnCells = function () {
+    Selection.prototype.getSelectedColumnCells = function (clearIndex) {
         var gObj = this.parent;
         var isRowTemplate = !isNullOrUndefined(this.parent.rowTemplate);
         var rows = isRowTemplate ? gObj.getRows() : gObj.getDataRows();
         var movableRows;
-        if (gObj.getFrozenColumns() && gObj.getContent().querySelector('.e-movablecontent')) {
+        var frRows;
+        if (gObj.isFrozenGrid() && gObj.getContent().querySelector('.e-movablecontent')) {
             movableRows = isRowTemplate ? gObj.getMovableRows() : gObj.getMovableDataRows();
             rows = gObj.addMovableRows(rows, movableRows);
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                frRows = isRowTemplate ? gObj.getFrozenRightRows() : gObj.getFrozenRightDataRows();
+                rows = gObj.addMovableRows(rows, frRows);
+            }
         }
         var seletedcells = [];
+        var selectionString = !isNullOrUndefined(clearIndex) ? '[aria-colindex="' + clearIndex + '"]' : '.e-columnselection';
         for (var i = 0, len = rows.length; i < len; i++) {
-            seletedcells = seletedcells.concat([].slice.call(rows[i].querySelectorAll('.e-columnselection')));
+            seletedcells = seletedcells.concat([].slice.call(rows[i].querySelectorAll(selectionString)));
         }
         return seletedcells;
     };
@@ -10872,14 +11409,25 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(this.parent.getColumns()[startIndex])) {
             return;
         }
-        var frzCols = this.parent.getFrozenColumns();
-        var isFreeze = frzCols && startIndex >= frzCols;
+        var left = this.parent.getFrozenLeftCount();
+        var movable = this.parent.getMovableColumnsCount();
+        var col = this.parent.getColumnByIndex(startIndex);
         var isRowTemplate = !isNullOrUndefined(this.parent.rowTemplate);
-        var rows = !isFreeze ? !isRowTemplate ? this.parent.getDataRows() : this.parent.getRows() :
-            !isRowTemplate ? this.parent.getMovableRows() : this.parent.getMovableRows();
+        var rows;
         this.selectedColumnsIndexes.push(startIndex);
         this.parent.getColumns()[startIndex].isSelected = true;
-        startIndex = isFreeze ? startIndex - frzCols : startIndex + this.parent.getIndentCount();
+        if (col.getFreezeTableName() === 'frozen-right') {
+            startIndex = startIndex - (left + movable);
+            rows = isRowTemplate ? this.parent.getFrozenRightRows() : this.parent.getFrozenRightDataRows();
+        }
+        else if (col.getFreezeTableName() === 'movable') {
+            startIndex = startIndex - left;
+            rows = isRowTemplate ? this.parent.getMovableRows() : this.parent.getMovableDataRows();
+        }
+        else {
+            startIndex = startIndex + this.parent.getIndentCount();
+            rows = isRowTemplate ? this.parent.getRows() : this.parent.getDataRows();
+        }
         addRemoveActiveClasses([selectedCol], true, 'e-columnselection');
         for (var j = 0, len = rows.length; j < len; j++) {
             if (rows[j].classList.contains('e-row')) {
@@ -11242,13 +11790,22 @@ var Scroll = /** @__PURE__ @class */ (function () {
     Scroll.prototype.setHeight = function () {
         var mHdrHeight = 0;
         var content = this.parent.getContent().querySelector('.e-content');
+        var height = this.parent.height;
+        if (this.parent.isFrozenGrid() && this.parent.height !== 'auto' && this.parent.height.toString().indexOf('%') < 0) {
+            height = parseInt(height, 10) - Scroll.getScrollBarWidth();
+        }
         if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
             var tbody = this.parent.getHeaderContent().querySelector('tbody');
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
-            content.style.height = formatUnit(this.parent.height - mHdrHeight);
+            if (tbody && mHdrHeight) {
+                var add = tbody.querySelectorAll('.e-addedrow').length;
+                var height_1 = add * this.parent.getRowHeight();
+                mHdrHeight -= height_1;
+            }
+            content.style.height = formatUnit(height - mHdrHeight);
         }
         else {
-            content.style.height = formatUnit(this.parent.height);
+            content.style.height = formatUnit(height);
         }
         this.ensureOverflow(content);
     };
@@ -11259,7 +11816,8 @@ var Scroll = /** @__PURE__ @class */ (function () {
         var content = this.parent.getHeaderContent();
         var scrollWidth = Scroll.getScrollBarWidth() - this.getThreshold();
         var cssProps = this.getCssProperties();
-        content.querySelector('.e-headercontent').style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
+        var padding = this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenMode() === 'Left-Right' ? '0.5px' : '1px';
+        content.querySelector('.e-headercontent').style[cssProps.border] = scrollWidth > 0 ? padding : '0px';
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     };
     /**
@@ -11326,12 +11884,24 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.parent.off(headerRefreshed, this.setScrollLeft);
     };
     Scroll.prototype.setScrollLeft = function () {
-        if (this.parent.frozenColumns) {
+        if (this.parent.isFrozenGrid()) {
             this.parent.headerModule.getMovableHeader().scrollLeft = this.previousValues.left;
         }
         else {
             this.parent.getHeaderContent().querySelector('.e-headercontent').scrollLeft = this.previousValues.left;
         }
+    };
+    Scroll.prototype.onFrozenContentScroll = function () {
+        var _this = this;
+        return function (e) {
+            if (_this.content.querySelector('tbody') === null || _this.parent.isPreventScrollEvent) {
+                return;
+            }
+            if (!isNullOrUndefined(_this.parent.infiniteScrollModule) && _this.parent.enableInfiniteScrolling) {
+                _this.parent.notify(infiniteScrollHandler, e);
+            }
+            _this.previousValues.top = e.target.scrollTop;
+        };
     };
     Scroll.prototype.onContentScroll = function (scrollTarget) {
         var _this = this;
@@ -11366,40 +11936,26 @@ var Scroll = /** @__PURE__ @class */ (function () {
             _this.parent.notify(scroll, { left: left });
         };
     };
-    Scroll.prototype.onFreezeContentScroll = function (scrollTarget) {
+    Scroll.prototype.onCustomScrollbarScroll = function (mCont, mHdr) {
         var _this = this;
-        var element = scrollTarget;
+        var content = mCont;
+        var header = mHdr;
         return function (e) {
             if (_this.content.querySelector('tbody') === null) {
                 return;
             }
             var target = e.target;
-            var top = target.scrollTop;
-            if (_this.previousValues.top === top) {
+            var left = target.scrollLeft;
+            if (_this.previousValues.left === left) {
                 return;
             }
-            element.scrollTop = top;
-            _this.previousValues.top = top;
+            content.scrollLeft = left;
+            header.scrollLeft = left;
+            _this.previousValues.left = left;
+            _this.parent.notify(scroll, { left: left });
             if (_this.parent.isDestroyed) {
                 return;
             }
-        };
-    };
-    Scroll.prototype.onWheelScroll = function (scrollTarget) {
-        var _this = this;
-        var element = scrollTarget;
-        return function (e) {
-            if (_this.content.querySelector('tbody') === null) {
-                return;
-            }
-            var top = element.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
-            if (_this.previousValues.top === top) {
-                return;
-            }
-            e.preventDefault();
-            _this.parent.getContent().querySelector('.e-frozencontent').scrollTop = top;
-            element.scrollTop = top;
-            _this.previousValues.top = top;
         };
     };
     Scroll.prototype.onTouchScroll = function (scrollTarget) {
@@ -11409,36 +11965,27 @@ var Scroll = /** @__PURE__ @class */ (function () {
             if (e.pointerType === 'mouse') {
                 return;
             }
-            var cont;
-            var mHdr;
+            var isFrozen = _this.parent.isFrozenGrid();
             var pageXY = _this.getPointXY(e);
-            var top = element.scrollTop + (_this.pageXY.y - pageXY.y);
             var left = element.scrollLeft + (_this.pageXY.x - pageXY.x);
-            if (_this.parent.getHeaderContent().contains(e.target)) {
-                mHdr = _this.parent.getFrozenColumns() ?
-                    _this.parent.getHeaderContent().querySelector('.e-movableheader') :
-                    _this.parent.getHeaderContent().querySelector('.e-headercontent');
-                if (_this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
-                    return;
-                }
-                e.preventDefault();
-                mHdr.scrollLeft = left;
-                element.scrollLeft = left;
-                _this.pageXY.x = pageXY.x;
-                _this.previousValues.left = left;
+            var mHdr = isFrozen ?
+                _this.parent.getHeaderContent().querySelector('.e-movableheader') :
+                _this.parent.getHeaderContent().querySelector('.e-headercontent');
+            var mCont = isFrozen ?
+                _this.parent.getContent().querySelector('.e-movablecontent') :
+                _this.parent.getContent().querySelector('.e-content');
+            if (_this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
+                return;
             }
-            else {
-                cont = _this.parent.getContent().querySelector('.e-frozencontent');
-                if (_this.previousValues.top === top && (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)
-                    || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
-                    return;
-                }
-                e.preventDefault();
-                cont.scrollTop = top;
-                element.scrollTop = top;
-                _this.pageXY.y = pageXY.y;
-                _this.previousValues.top = top;
+            e.preventDefault();
+            mHdr.scrollLeft = left;
+            mCont.scrollLeft = left;
+            if (isFrozen) {
+                var scrollBar = _this.parent.getContent().querySelector('.e-movablescrollbar');
+                scrollBar.scrollLeft = left;
             }
+            _this.pageXY.x = pageXY.x;
+            _this.previousValues.left = left;
         };
     };
     Scroll.prototype.setPageXY = function () {
@@ -11465,24 +12012,26 @@ var Scroll = /** @__PURE__ @class */ (function () {
     Scroll.prototype.wireEvents = function () {
         var _this = this;
         if (this.oneTimeReady) {
-            var frzCols = this.parent.getFrozenColumns();
+            var frzCols = this.parent.isFrozenGrid();
             this.content = this.parent.getContent().querySelector('.e-content');
             this.header = this.parent.getHeaderContent().querySelector('.e-headercontent');
             var mCont = this.content.querySelector('.e-movablecontent');
             var fCont = this.content.querySelector('.e-frozencontent');
             var mHdr = this.header.querySelector('.e-movableheader');
+            var mScrollBar = this.parent.getContent().querySelector('.e-movablescrollbar');
             if (this.parent.frozenRows) {
                 EventHandler.add(frzCols ? mHdr : this.header, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(frzCols ? mHdr : this.header, 'touchmove pointermove', this.onTouchScroll(frzCols ? mCont : this.content), this);
             }
-            if (frzCols) {
-                EventHandler.add(mCont, 'scroll', this.onContentScroll(mHdr), this);
-                EventHandler.add(mCont, 'scroll', this.onFreezeContentScroll(fCont), this);
-                EventHandler.add(fCont, 'scroll', this.onFreezeContentScroll(mCont), this);
-                EventHandler.add(mHdr, 'scroll', this.onContentScroll(mCont), this);
-                EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont), this);
-                EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mCont), this);
+            if (this.parent.isFrozenGrid()) {
+                EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
+                EventHandler.add(mCont, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mHdr), this);
+                EventHandler.add(mHdr, 'scroll', this.onCustomScrollbarScroll(mScrollBar, mCont), this);
+                EventHandler.add(this.content, 'scroll', this.onFrozenContentScroll(), this);
+                EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mCont), this);
+                EventHandler.add(mCont, 'touchstart pointerdown', this.setPageXY(), this);
+                EventHandler.add(mCont, 'touchmove pointermove', this.onTouchScroll(mHdr), this);
             }
             else {
                 EventHandler.add(this.content, 'scroll', this.onContentScroll(this.header), this);
@@ -11503,26 +12052,30 @@ var Scroll = /** @__PURE__ @class */ (function () {
             sHeight = table.scrollHeight;
             clientHeight = _this.parent.getContent().clientHeight;
         }, function () {
-            if (!_this.parent.enableVirtualization) {
+            var args = { cancel: false };
+            _this.parent.notify(checkScrollReset, args);
+            if (!_this.parent.enableVirtualization && !_this.parent.enableInfiniteScrolling) {
                 if (sHeight < clientHeight) {
                     addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
-                    if (_this.parent.getFrozenColumns()) {
+                    if (_this.parent.isFrozenGrid()) {
                         addClass(_this.parent.getContent().querySelector('.e-movablecontent').querySelectorAll('tr:last-child td'), 'e-lastrowcell');
                     }
                 }
-                if ((_this.parent.frozenRows > 0 || _this.parent.frozenColumns > 0) && _this.header.querySelector('.e-movableheader')) {
-                    _this.header.querySelector('.e-movableheader').scrollLeft = _this.previousValues.left;
+                if (!args.cancel) {
+                    if ((_this.parent.frozenRows > 0 || _this.parent.isFrozenGrid()) && _this.header.querySelector('.e-movableheader')) {
+                        _this.header.querySelector('.e-movableheader').scrollLeft = _this.previousValues.left;
+                    }
+                    else {
+                        _this.header.scrollLeft = _this.previousValues.left;
+                    }
+                    _this.content.scrollLeft = _this.previousValues.left;
+                    _this.content.scrollTop = _this.previousValues.top;
                 }
-                else {
-                    _this.header.scrollLeft = _this.previousValues.left;
-                }
-                _this.content.scrollLeft = _this.previousValues.left;
-                _this.content.scrollTop = _this.previousValues.top;
             }
             if (!_this.parent.enableColumnVirtualization) {
                 _this.content.scrollLeft = sLeft;
             }
-            if (_this.parent.frozenColumns && _this.header.querySelector('.e-movableheader')) {
+            if (_this.parent.isFrozenGrid() && _this.header.querySelector('.e-movableheader')) {
                 _this.header.querySelector('.e-movableheader').scrollLeft =
                     _this.content.querySelector('.e-movablecontent').scrollLeft;
             }
@@ -11540,15 +12093,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         return css;
     };
     Scroll.prototype.ensureOverflow = function (content) {
-        if (this.parent.getFrozenColumns()) {
-            content.querySelector('.e-movablecontent').style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
-            if (content.querySelector('.e-movablecontent').style.overflowY === 'scroll') {
-                this.setPadding();
-            }
-        }
-        else {
-            content.style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
-        }
+        content.style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
     };
     Scroll.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -11792,9 +12337,13 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         var cols;
         var dataRows = grid.getDataRows();
         var mRows;
-        var isFrozen = this.parent.getFrozenColumns();
+        var frRows;
+        var isFrozen = this.parent.isFrozenGrid();
         if (isFrozen) {
             mRows = grid.getMovableDataRows();
+            if (grid.getFrozenRightColumnsCount()) {
+                frRows = grid.getFrozenRightDataRows();
+            }
         }
         for (var r = 0; r < rows.length; r++) {
             cols = rows[r].split('\t');
@@ -11810,6 +12359,10 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     var mTr = mRows[rIdx];
                     isAvail = !fTr.querySelector('[aria-colindex="' + cIdx + '"]') ?
                         mTr.querySelector('[aria-colindex="' + cIdx + '"]') : true;
+                    if (frRows && !isAvail) {
+                        var frTr = frRows[rIdx];
+                        isAvail = frTr.querySelector('[aria-colindex="' + cIdx + '"]');
+                    }
                 }
                 if (!isAvail) {
                     cIdx++;
@@ -11865,12 +12418,16 @@ var Clipboard = /** @__PURE__ @class */ (function () {
     };
     Clipboard.prototype.setCopyData = function (withHeader) {
         if (window.getSelection().toString() === '') {
-            var isFrozen = this.parent.getFrozenColumns();
+            var isFrozen = this.parent.isFrozenGrid();
             this.clipBoardTextArea.value = this.copyContent = '';
             var mRows = void 0;
+            var frRows = void 0;
             var rows = this.parent.getRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frRows = this.parent.getFrozenRightRows();
+                }
             }
             if (this.parent.selectionSettings.mode !== 'Cell') {
                 var selectedIndexes = this.parent.getSelectedRowIndexes().sort(function (a, b) { return a - b; });
@@ -11889,6 +12446,9 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     var cells = [].slice.call(rows[selectedIndexes[i]].querySelectorAll('.e-rowcell'));
                     if (isFrozen) {
                         cells.push.apply(cells, [].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                        if (frRows) {
+                            cells.push.apply(cells, [].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                        }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);
                 }
@@ -11911,7 +12471,12 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                         var cells = [].slice.call(rows[obj.rowIndexes[i]].
                             querySelectorAll('.e-cellselectionbackground'));
                         if (isFrozen) {
-                            cells.push.apply(cells, [].slice.call(mRows[obj.rowIndexes[i]].querySelectorAll('.e-cellselectionbackground')));
+                            cells.push.apply(cells, [].slice.call(mRows[obj.rowIndexes[i]]
+                                .querySelectorAll('.e-cellselectionbackground')));
+                            if (frRows) {
+                                cells.push.apply(cells, [].slice.call(frRows[obj.rowIndexes[i]]
+                                    .querySelectorAll('.e-cellselectionbackground')));
+                            }
                         }
                         this.getCopyData(cells, false, '\t', withHeader);
                     }
@@ -12603,6 +13168,9 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], SelectionSettings.prototype, "enableToggle", void 0);
+    __decorate$1([
+        Property(false)
+    ], SelectionSettings.prototype, "allowColumnSelection", void 0);
     return SelectionSettings;
 }(ChildProperty));
 /**
@@ -12776,7 +13344,19 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         _this.isPreventScrollEvent = false;
         _this.inViewIndexes = [];
         _this.keyA = false;
+        _this.frozenRightCount = 0;
+        _this.frozenLeftCount = 0;
+        _this.tablesCount = 1;
+        _this.movableCount = 0;
+        _this.visibleFrozenLeft = 0;
+        _this.visibleFrozenRight = 0;
+        _this.visibleMovable = 0;
+        _this.frozenLeftColumns = [];
+        _this.frozenRightColumns = [];
+        _this.movableColumns = [];
         _this.media = {};
+        /** @hidden */
+        _this.tableIndex = 0;
         _this.componentRefresh = Component.prototype.refresh;
         /** @hidden */
         _this.isVirtualAdaptive = false;
@@ -12849,7 +13429,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {ModuleDeclaration[]}
      * @hidden
      */
+    // tslint:disable-next-line:max-func-body-length
     Grid.prototype.requiredModules = function () {
+        this.setFrozenCount();
         var modules = [];
         if (this.isDestroyed) {
             return modules;
@@ -12933,7 +13515,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 args: [this, this.serviceLocator]
             });
         }
-        if (this.getFrozenColumns() || this.frozenRows) {
+        if (this.getFrozenColumns() || this.frozenRows || this.frozenRightCount || this.frozenLeftCount) {
             modules.push({ member: 'freeze', args: [this, this.serviceLocator] });
         }
         if (this.isCommandColumn(this.columns)) {
@@ -13345,9 +13927,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             this.element.style.display = 'none';
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
-        if (this.isAngular) {
-            this.element = null;
-        }
     };
     Grid.prototype.destroyDependentModules = function () {
         var gridElement = this.element;
@@ -13687,6 +14266,31 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * @hidden
      */
+    Grid.prototype.setTablesCount = function () {
+        var frozenCols = this.getFrozenColumns();
+        var frozenLeft = this.getFrozenLeftColumnsCount();
+        var frozenRight = this.getFrozenRightColumnsCount();
+        if (frozenCols && !frozenLeft && !frozenRight) {
+            this.tablesCount = 2;
+        }
+        else if (!frozenCols && (frozenLeft || frozenRight)) {
+            if ((frozenLeft && !frozenRight) || (frozenRight && !frozenLeft)) {
+                this.tablesCount = 2;
+            }
+            else if (frozenLeft && frozenRight) {
+                this.tablesCount = 3;
+            }
+        }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getTablesCount = function () {
+        return this.tablesCount;
+    };
+    /**
+     * @hidden
+     */
     Grid.prototype.updateDefaultCursor = function () {
         var headerCells = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
         var stdHdrCell = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
@@ -13721,18 +14325,72 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 this.columnModel.push(columns[i]);
             }
         }
+        this.updateColumnLevelFrozen();
         this.updateFrozenColumns();
         this.updateLockableColumns();
     };
-    Grid.prototype.updateFrozenColumns = function () {
+    Grid.prototype.updateColumnLevelFrozen = function () {
         var cols = this.columnModel;
+        var leftCols = [];
+        var rightCols = [];
+        var movableCols = [];
+        if (this.frozenLeftCount || this.frozenRightCount) {
+            for (var i = 0, len = cols.length; i < len; i++) {
+                /* tslint:disable-next-line:no-any */
+                var col = cols[i];
+                if (col.freeze === 'Left') {
+                    col.freezeTable = 'frozen-left';
+                    leftCols.push(col);
+                }
+                else if (col.freeze === 'Right') {
+                    col.freezeTable = 'frozen-right';
+                    rightCols.push(col);
+                }
+                else {
+                    col.freezeTable = 'movable';
+                    movableCols.push(col);
+                }
+            }
+            this.columnModel = leftCols.concat(movableCols).concat(rightCols);
+        }
+    };
+    Grid.prototype.updateFrozenColumns = function () {
+        if (this.frozenLeftCount || this.frozenRightCount) {
+            return;
+        }
+        var cols = this.columnModel;
+        var directFrozenCount = this.frozenColumns;
+        var totalFrozenCount = this.getFrozenColumns();
         var count = 0;
         for (var i = 0, len = cols.length; i < len; i++) {
-            if (cols[i].isFrozen) {
+            /* tslint:disable-next-line:no-any */
+            var col = cols[i];
+            if (directFrozenCount) {
+                if (i < directFrozenCount) {
+                    col.freezeTable = 'frozen-left';
+                }
+                else {
+                    col.freezeTable = 'movable';
+                }
+            }
+            if (col.isFrozen && i >= directFrozenCount) {
+                col.freezeTable = 'frozen-left';
                 cols.splice(this.frozenColumns + count, 0, cols.splice(i, 1)[0]);
                 count++;
             }
+            else if (totalFrozenCount && !directFrozenCount) {
+                col.freezeTable = 'movable';
+            }
         }
+    };
+    Grid.prototype.getFrozenLeftCount = function () {
+        return this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
+    };
+    Grid.prototype.isFrozenGrid = function () {
+        return this.getFrozenColumns() !== 0 || this.getFrozenLeftColumnsCount() !== 0 || this.getFrozenRightColumnsCount() !== 0;
+    };
+    Grid.prototype.getFrozenMode = function () {
+        return this.frozenName;
     };
     Grid.prototype.updateLockableColumns = function () {
         var cols = this.columnModel;
@@ -13777,7 +14435,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         var columns = vLen === 0 ? this.columnModel :
             this.columnModel.slice(inview[0], inview[vLen - 1] + 1);
-        if (this.contentModule && this.enableColumnVirtualization && this.getFrozenColumns() && inview.length
+        if (this.contentModule && this.enableColumnVirtualization && this.isFrozenGrid() && inview.length
             && inview[0] > 0) {
             var frozenCols = this.contentModule.ensureFrozenCols(columns);
             columns = frozenCols;
@@ -13962,6 +14620,14 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return this.contentModule.getRowElements();
     };
     /**
+    * Gets a frozen right tables row element by index.
+    * @param  {number} index - Specifies the row index.
+    * @return {Element}
+    */
+    Grid.prototype.getFrozenRightRowByIndex = function (index) {
+        return this.contentModule.getFrozenRightRowByIndex(index);
+    };
+    /**
      * Get a row information based on cell
      * @param {Element}
      * @return RowInfo
@@ -13986,15 +14652,28 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 var row_1 = closest(cell, '.e-row');
                 var rowIndex = parseInt(row_1.getAttribute('aria-rowindex'), 10);
                 var frzCols = this.getFrozenColumns();
-                var isMovable = frzCols ? cellIndex >= frzCols : false;
-                var rows = (isMovable ?
-                    this.contentModule.getMovableRows() : this.contentModule.getRows());
+                var tableName = this.columnModel[cellIndex].getFreezeTableName();
+                var rows = this.contentModule.getRows();
+                var index = cellIndex + this.getIndentCount();
+                if (this.isFrozenGrid()) {
+                    if (tableName === 'frozen-left') {
+                        rows = this.contentModule.getRows();
+                    }
+                    else if (tableName === 'movable') {
+                        index = cellIndex - frzCols - this.frozenLeftCount;
+                        rows = this.contentModule.getMovableRows();
+                    }
+                    else if (tableName === 'frozen-right') {
+                        index = cellIndex - (this.frozenLeftCount + this.movableCount);
+                        rows = this.contentModule.getFrozenRightRows();
+                    }
+                }
                 var rowsObject = rows.filter(function (r) { return r.uid === row_1.getAttribute('data-uid'); });
                 var rowData = {};
                 var column = void 0;
                 if (Object.keys(rowsObject).length) {
                     rowData = rowsObject[0].data;
-                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex + this.getIndentCount()].column;
+                    column = rowsObject[0].cells[index].column;
                 }
                 args = { cell: cell, cellIndex: cellIndex, row: row_1, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
@@ -14009,19 +14688,35 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return this.contentModule.getMovableRowElements();
     };
     /**
+     * Gets the Grid's frozen right content rows from frozen grid.
+     * @return {Element[]}
+     */
+    Grid.prototype.getFrozenRightRows = function () {
+        return this.contentModule.getFrozenRightRowElements();
+    };
+    /**
      * Gets all the Grid's data rows.
      * @return {Element[]}
      */
     Grid.prototype.getDataRows = function () {
+        return this.getAllDataRows();
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getAllDataRows = function (includeAdd) {
         if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) {
             return [];
         }
-        var rows = [].slice.call(this.getContentTable().querySelector('tbody').children);
+        var tbody = this.isFrozenGrid() ? this.getFrozenLeftContentTbody() : this.getContentTable().querySelector('tbody');
+        var rows = [].slice.call(tbody.children);
         if (this.frozenRows) {
-            var freezeRows = [].slice.call(this.getHeaderTable().querySelector('tbody').children);
+            var hdrTbody = this.isFrozenGrid() ? this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
+                : this.getHeaderTable().querySelector('tbody');
+            var freezeRows = [].slice.call(hdrTbody.children);
             rows = this.addMovableRows(freezeRows, rows);
         }
-        var dataRows = this.generateDataRows(rows);
+        var dataRows = this.generateDataRows(rows, includeAdd);
         return dataRows;
     };
     /**
@@ -14033,10 +14728,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         return fRows;
     };
-    Grid.prototype.generateDataRows = function (rows) {
+    Grid.prototype.generateDataRows = function (rows, includAdd) {
         var dRows = [];
         for (var i = 0, len = rows.length; i < len; i++) {
-            if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
+            if (rows[i].classList.contains('e-row') && (!rows[i].classList.contains('e-hiddenrow') || includAdd)) {
                 if (this.isCollapseStateEnabled()) {
                     dRows[parseInt(rows[i].getAttribute("aria-rowindex"))] = rows[i];
                 }
@@ -14052,12 +14747,21 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {Element[]}
      */
     Grid.prototype.getMovableDataRows = function () {
+        return this.getAllMovableDataRows();
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getAllMovableDataRows = function (includeAdd) {
+        if (!this.isFrozenGrid()) {
+            return [];
+        }
         var rows = [].slice.call(this.getContent().querySelector('.e-movablecontent').querySelector('tbody').children);
         if (this.frozenRows) {
             var freezeRows = [].slice.call(this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody').children);
             rows = this.addMovableRows(freezeRows, rows);
         }
-        var dataRows = this.generateDataRows(rows);
+        var dataRows = this.generateDataRows(rows, includeAdd);
         return dataRows;
     };
     /**
@@ -14065,12 +14769,40 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {Element[]}
      */
     Grid.prototype.getFrozenDataRows = function () {
+        return this.getAllFrozenDataRows();
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getAllFrozenDataRows = function (includeAdd) {
         var rows = [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
         if (this.frozenRows) {
             var freezeRows = [].slice.call(this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').children);
             rows = this.addMovableRows(freezeRows, rows);
         }
-        var dataRows = this.generateDataRows(rows);
+        var dataRows = this.generateDataRows(rows, includeAdd);
+        return dataRows;
+    };
+    /**
+     * Gets all the Grid's frozen right table data rows.
+     * @return {Element[]}
+     */
+    Grid.prototype.getFrozenRightDataRows = function () {
+        return this.getAllFrozenRightDataRows();
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getAllFrozenRightDataRows = function (includeAdd) {
+        if (this.getFrozenMode() !== 'Right' && this.getFrozenMode() !== 'Left-Right') {
+            return [];
+        }
+        var rows = [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector('tbody').children);
+        if (this.frozenRows) {
+            var freezeRows = [].slice.call(this.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody').children);
+            rows = this.addMovableRows(freezeRows, rows);
+        }
+        var dataRows = this.generateDataRows(rows, includeAdd);
         return dataRows;
     };
     /**
@@ -14185,10 +14917,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {Element}
      */
     Grid.prototype.getCellFromIndex = function (rowIndex, columnIndex) {
-        var frzCols = this.getFrozenColumns();
-        return frzCols && columnIndex >= frzCols ?
-            this.getMovableDataRows()[rowIndex] && this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - frzCols] :
-            this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
+        var col = this.getColumnByIndex(columnIndex);
+        return getCellByColAndRowIndex(this, col, rowIndex, columnIndex);
     };
     /**
      * Gets a movable table cell by row and column index.
@@ -14197,8 +14927,23 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @return {Element}
      */
     Grid.prototype.getMovableCellFromIndex = function (rowIndex, columnIndex) {
+        if (this.frozenName === 'Left-Right' && columnIndex >= this.movableCount) {
+            return undefined;
+        }
+        var index = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
         return this.getMovableDataRows()[rowIndex] &&
-            this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - this.getFrozenColumns()];
+            this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - index];
+    };
+    /**
+     * Gets a frozen right table cell by row and column index.
+     * @param  {number} rowIndex - Specifies the row index.
+     * @param  {number} columnIndex - Specifies the column index.
+     * @return {Element}
+     */
+    Grid.prototype.getFrozenRightCellFromIndex = function (rowIndex, columnIndex) {
+        var index = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
+        var rows = this.getFrozenRightDataRows();
+        return rows[rowIndex] && rows[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - index];
     };
     /**
      * Gets a column header by column index.
@@ -14209,14 +14954,43 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return this.getHeaderTable().querySelectorAll('.e-headercell')[index];
     };
     /**
+     * Gets a movable column header by column index.
+     * @param  {number} index - Specifies the column index.
+     * @return {Element}
+     */
+    Grid.prototype.getMovableColumnHeaderByIndex = function (index) {
+        var left = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
+        return this.getMovableVirtualHeader().querySelectorAll('.e-headercell')[index - left];
+    };
+    /**
+     * Gets a frozen right column header by column index.
+     * @param  {number} index - Specifies the column index.
+     * @return {Element}
+     */
+    Grid.prototype.getFrozenRightColumnHeaderByIndex = function (index) {
+        var left = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
+        return this.getFrozenRightHeader().querySelectorAll('.e-headercell')[index - left];
+    };
+    /**
+     * Gets a frozen left column header by column index.
+     * @param  {number} index - Specifies the column index.
+     * @return {Element}
+     */
+    Grid.prototype.getFrozenLeftColumnHeaderByIndex = function (index) {
+        return this.getFrozenVirtualHeader().querySelectorAll('.e-headercell')[index];
+    };
+    /**
      * @hidden
      */
-    Grid.prototype.getRowObjectFromUID = function (uid) {
+    Grid.prototype.getRowObjectFromUID = function (uid, isMovable, isFrozenRight) {
         var rows = this.contentModule.getRows();
         var row = this.rowObject(rows, uid);
-        if (this.getFrozenColumns()) {
-            if (!row) {
+        if (this.isFrozenGrid()) {
+            if (!row || isMovable || isFrozenRight) {
                 row = this.rowObject(this.contentModule.getMovableRows(), uid);
+                if ((!row && this.getFrozenMode() === 'Left-Right') || isFrozenRight) {
+                    row = this.rowObject(this.contentModule.getFrozenRightRows(), uid);
+                }
                 return row;
             }
         }
@@ -14245,7 +15019,21 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.getMovableRowsObject = function () {
-        return this.contentModule.getMovableRows();
+        var rows = [];
+        if (this.isFrozenGrid()) {
+            rows = this.contentModule.getMovableRows();
+        }
+        return rows;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenRightRowsObject = function () {
+        var rows = [];
+        if (this.getFrozenMode() === 'Right' || this.getFrozenMode() === 'Left-Right') {
+            rows = this.contentModule.getFrozenRightRows();
+        }
+        return rows;
     };
     /**
      * Gets a column header by column name.
@@ -14547,7 +15335,118 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.getFrozenColumns = function () {
-        return this.frozenColumns + this.getFrozenCount(this.columns, 0);
+        return this.frozenColumns + this.getFrozenCount(this.columns, 0, 0);
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenRightColumnsCount = function () {
+        return this.frozenRightCount;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenLeftColumnsCount = function () {
+        return this.frozenLeftCount;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getMovableColumnsCount = function () {
+        return this.movableCount;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.setFrozenCount = function () {
+        this.frozenLeftCount = this.frozenRightCount = this.movableCount = 0;
+        this.visibleFrozenLeft = this.visibleFrozenRight = this.visibleMovable = 0;
+        this.frozenLeftColumns = [];
+        this.frozenRightColumns = [];
+        this.movableColumns = [];
+        this.splitFrozenCount(this.columns);
+        if (this.frozenColumns && (this.frozenLeftCount || this.frozenRightCount)) {
+            this.setProperties({ frozenColumns: 0 }, true);
+        }
+        this.setTablesCount();
+        if (this.frozenLeftCount && !this.frozenRightCount) {
+            this.frozenName = 'Left';
+        }
+        else if (this.frozenRightCount && !this.frozenLeftCount) {
+            this.frozenName = 'Right';
+        }
+        else if (this.frozenLeftCount && this.frozenRightCount) {
+            this.frozenName = 'Left-Right';
+        }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getVisibleFrozenLeftCount = function () {
+        return this.visibleFrozenLeft;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getVisibleFrozenRightCount = function () {
+        return this.visibleFrozenRight;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getVisibleMovableCount = function () {
+        return this.visibleMovable;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenRightColumns = function () {
+        return this.frozenRightColumns;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getFrozenLeftColumns = function () {
+        return this.frozenLeftColumns;
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getMovableColumns = function () {
+        return this.movableColumns;
+    };
+    Grid.prototype.splitFrozenCount = function (columns) {
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].columns) {
+                this.splitFrozenCount(columns[i].columns);
+            }
+            else {
+                if (columns[i].freeze === 'Right') {
+                    if (columns[i].visible !== false) {
+                        this.visibleFrozenRight++;
+                    }
+                    
+                    this.frozenRightColumns.push(columns[i]);
+                    this.frozenRightCount++;
+                }
+                else if (columns[i].freeze === 'Left') {
+                    if (columns[i].visible !== false) {
+                        this.visibleFrozenLeft++;
+                    }
+                    
+                    this.frozenLeftColumns.push(columns[i]);
+                    this.frozenLeftCount++;
+                }
+                else {
+                    if (columns[i].visible !== false) {
+                        this.visibleMovable++;
+                    }
+                    
+                    this.movableColumns.push(columns[i]);
+                    this.movableCount++;
+                }
+            }
+        }
     };
     /**
      * @hidden
@@ -14564,36 +15463,46 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     Grid.prototype.getVisibleFrozenColumnsCount = function () {
         var visibleFrozenColumns = 0;
-        var col = this.columnModel;
+        var columns = this.columnModel;
         for (var i = 0; i < this.frozenColumns; i++) {
-            if (col[i].visible) {
+            if (columns[i].visible) {
                 visibleFrozenColumns++;
+            }
+        }
+        if (this.frozenLeftCount || this.frozenRightCount) {
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].visible && (columns[i].freeze === 'Left' || columns[i].freeze === 'Right')) {
+                    visibleFrozenColumns++;
+                }
             }
         }
         return visibleFrozenColumns;
     };
     Grid.prototype.getVisibleFrozenCount = function (cols, cnt) {
-        for (var i = 0, len = cols.length; i < len; i++) {
-            if (cols[i].columns) {
-                cnt = this.getVisibleFrozenCount(cols[i].columns, cnt);
-            }
-            else {
-                if (cols[i].isFrozen && cols[i].visible) {
-                    cnt++;
+        if (!this.frozenLeftCount && !this.frozenRightCount) {
+            for (var i = 0, len = cols.length; i < len; i++) {
+                if (cols[i].columns) {
+                    cnt = this.getVisibleFrozenCount(cols[i].columns, cnt);
+                }
+                else {
+                    if (cols[i].isFrozen && cols[i].visible) {
+                        cnt++;
+                    }
                 }
             }
         }
         return cnt;
     };
-    Grid.prototype.getFrozenCount = function (cols, cnt) {
+    Grid.prototype.getFrozenCount = function (cols, cnt, index) {
         for (var i = 0, len = cols.length; i < len; i++) {
             if (cols[i].columns) {
-                cnt = this.getFrozenCount(cols[i].columns, cnt);
+                cnt = this.getFrozenCount(cols[i].columns, cnt, index);
             }
             else {
-                if (cols[i].isFrozen) {
+                if (cols[i].isFrozen && index > this.frozenColumns - 1) {
                     cnt++;
                 }
+                index++;
             }
         }
         return cnt;
@@ -14909,7 +15818,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var headerCol = [].slice.call(this.getHeaderTable().querySelector('colgroup').childNodes);
         var contentCol = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         var perPixel = indentWidth / 30;
-        var i = 0;
+        var i = this.getFrozenMode() === 'Right' ? this.frozenRightCount : 0;
         var parentOffset = this.element.offsetWidth;
         var applyWidth = function (index, width) {
             if (ispercentageWidth(_this)) {
@@ -14956,6 +15865,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             && this.getColumns().filter(function (col) { return (!col.width || col.width === 'auto') && col.minWidth; }).length > 0) {
             var tgridWidth = this.widthService.getTableWidth(this.getColumns());
             this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
+        if (this.isFrozenGrid() && this.widthService) {
+            this.widthService.refreshFrozenScrollbar();
         }
     };
     /**
@@ -15326,7 +16238,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     Grid.prototype.hoverFrozenRows = function (e) {
-        if (this.getFrozenColumns()) {
+        if (this.isFrozenGrid()) {
             var row = parentsUntil(e.target, 'e-row');
             if ([].slice.call(this.element.querySelectorAll('.e-frozenhover')).length && e.type === 'mouseout') {
                 var rows = [].slice.call(this.element.querySelectorAll('.e-frozenhover'));
@@ -15337,11 +16249,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             else if (row) {
                 var rows = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
                 rows.splice(rows.indexOf(row), 1);
-                if (row.getAttribute('aria-selected') != 'true' && rows[0]) {
-                    rows[0].classList.add('e-frozenhover');
-                }
-                else if (rows[0]) {
-                    rows[0].classList.remove('e-frozenhover');
+                for (var i = 0; i < rows.length; i++) {
+                    if (row.getAttribute('aria-selected') != 'true' && rows[i]) {
+                        rows[i].classList.add('e-frozenhover');
+                    }
+                    else if (rows[i]) {
+                        rows[i].classList.remove('e-frozenhover');
+                    }
                 }
             }
         }
@@ -15401,6 +16315,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.element, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
+        /* tslint:disable-next-line:no-any */
         EventHandler.add(window, 'resize', this.resetIndentWidth, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
@@ -15431,6 +16346,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
         EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+        /* tslint:disable-next-line:no-any */
         EventHandler.remove(window, 'resize', this.resetIndentWidth);
     };
     /**
@@ -15620,7 +16536,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.mergePersistGridData = function (persistedData) {
-        var data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        var data = this.getLocalData();
         if (!(isNullOrUndefined(data) || (data === '')) || !isNullOrUndefined(persistedData)) {
             var dataObj = !isNullOrUndefined(persistedData) ? persistedData : JSON.parse(data);
             if (this.enableVirtualization) {
@@ -15780,8 +16696,24 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Refreshes the Grid column changes.
      */
     Grid.prototype.refreshColumns = function () {
-        var fCnt = this.getContent().querySelector('.e-frozencontent');
-        if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+        this.setFrozenCount();
+        var fCnt = this.getContent().querySelector('.e-frozen-left-content');
+        var frCnt = this.getContent().querySelector('.e-frozen-right-content');
+        var isColFrozen = !this.frozenRightCount && !this.frozenLeftCount;
+        var isFrozen = this.getFrozenColumns() !== 0;
+        if (!isFrozen && ((!fCnt && this.frozenLeftCount) || (!frCnt && this.frozenRightCount) || (fCnt && !this.frozenLeftCount)
+            || (frCnt && !this.frozenRightCount))) {
+            this.tableIndex = 0;
+            this.tablesCount = 1;
+            if (this.enableColumnVirtualization) {
+                this.columnModel = [];
+                this.updateColumnModel(this.columns);
+            }
+            this.freezeRefresh();
+        }
+        else if (isColFrozen && ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt))) {
+            this.tableIndex = 0;
+            this.tablesCount = 1;
             if (this.enableColumnVirtualization) {
                 this.columnModel = [];
                 this.updateColumnModel(this.columns);
@@ -15793,16 +16725,25 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             this.updateColumnObject();
             this.checkLockColumns(this.getColumns());
             this.refresh();
-            if (this.getFrozenColumns()) {
+            if (this.isFrozenGrid()) {
                 var mTbl = this.contentModule.getMovableContent().querySelector('.e-table');
                 remove(mTbl.querySelector('colgroup'));
                 var colGroup = ((this.getHeaderContent()
                     .querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true));
                 mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
+                if (this.getFrozenMode() === 'Left-Right') {
+                    var frTbl = this.contentModule.getFrozenRightContent().querySelector('.e-table');
+                    remove(frTbl.querySelector('colgroup'));
+                    var colGrp = ((this.getHeaderContent()
+                        .querySelector('.e-frozen-right-header').querySelector('colgroup')).cloneNode(true));
+                    frTbl.insertBefore(colGrp, frTbl.querySelector('tbody'));
+                }
             }
         }
-        if (this.getFrozenColumns()) {
-            this.headerModule.getMovableHeader().scrollLeft = this.contentModule.getMovableContent().scrollLeft;
+        if (this.isFrozenGrid()) {
+            var left = this.getContent().querySelector('.e-movablescrollbar').scrollLeft;
+            this.headerModule.getMovableHeader().scrollLeft = left;
+            this.contentModule.getMovableContent().scrollLeft = left;
         }
     };
     /**
@@ -16063,16 +17004,19 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      */
     Grid.prototype.hideScroll = function () {
         var content = this.getContent().querySelector('.e-content');
-        var cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
-        var fTable = content.querySelector('.e-frozencontent') ? content.querySelector('.e-frozencontent') : content;
-        if (cTable.scrollHeight <= cTable.clientHeight && fTable.scrollHeight <= fTable.clientHeight) {
+        var scrollBar = this.getContent().querySelector('.e-scrollbar');
+        if (content.scrollHeight <= content.clientHeight) {
             this.scrollModule.removePadding();
-            cTable.style.overflowY = 'auto';
+            content.style.overflowY = 'auto';
         }
-        if (this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth) {
-            cTable.style.overflowX = 'auto';
-            cTable.style.overflowY = 'auto';
-            this.notify(frozenHeight, 0);
+        if (this.isFrozenGrid() && scrollBar) {
+            var mvblScrollBar = this.getContent().querySelector('.e-movablescrollbar');
+            var mvblChild = this.getContent().querySelector('.e-movablechild');
+            scrollBar.style.display = 'flex';
+            if (mvblScrollBar.offsetWidth >= mvblChild.offsetWidth) {
+                scrollBar.style.display = 'none';
+                this.notify(frozenHeight, 0);
+            }
         }
     };
     /**
@@ -16204,16 +17148,25 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.getRowElementByUID = function (uid) {
         var rowEle;
         var rows = [];
-        if (this.getFrozenColumns()) {
+        if (this.isFrozenGrid()) {
             var fRows = [].slice.call(this.getFrozenVirtualContent().querySelector('tbody').children);
             var mRows = [].slice.call(this.getMovableVirtualContent().querySelector('tbody').children);
+            var frozenRigtRows = [];
+            if (this.tablesCount === 3) {
+                frozenRigtRows = [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector('tbody').children);
+            }
             if (this.frozenRows) {
                 rows = [].slice.call(this.getFrozenVirtualHeader().querySelector('tbody').children);
                 rows = rows.concat([].slice.call(this.getMovableVirtualHeader().querySelector('tbody').children));
+                if (this.tablesCount === 3) {
+                    var frHdr = this.getHeaderContent().querySelector('.e-frozen-right-header');
+                    rows = rows.concat([].slice.call(frHdr.querySelector('tbody').children)).concat(frozenRigtRows);
+                }
+                
                 rows = rows.concat(fRows).concat(mRows);
             }
             else {
-                rows = fRows.concat(mRows);
+                rows = fRows.concat(mRows).concat(frozenRigtRows);
             }
         }
         else {
@@ -16542,6 +17495,43 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             height = this.height;
         }
         return height;
+    };
+    /** @hidden */
+    Grid.prototype.getFrozenRightContent = function () {
+        return this.getContent().querySelector('.e-frozen-right-content');
+    };
+    /** @hidden */
+    Grid.prototype.getFrozenRightHeader = function () {
+        return this.getHeaderContent().querySelector('.e-frozen-right-header');
+    };
+    /** @hidden */
+    Grid.prototype.getMovableHeaderTbody = function () {
+        return this.getMovableVirtualHeader().querySelector('tbody');
+    };
+    /** @hidden */
+    Grid.prototype.getMovableContentTbody = function () {
+        return this.getMovableVirtualContent().querySelector('tbody');
+    };
+    /** @hidden */
+    Grid.prototype.getFrozenHeaderTbody = function () {
+        return this.getFrozenVirtualHeader().querySelector('tbody');
+    };
+    /** @hidden */
+    Grid.prototype.getFrozenLeftContentTbody = function () {
+        return this.getFrozenVirtualContent().querySelector('tbody');
+    };
+    /** @hidden */
+    Grid.prototype.getFrozenRightHeaderTbody = function () {
+        return this.getFrozenRightHeader().querySelector('tbody');
+    };
+    /** @hidden */
+    Grid.prototype.getFrozenRightContentTbody = function () {
+        var cnt = this.getFrozenRightContent();
+        var tbody;
+        if (cnt) {
+            tbody = this.getFrozenRightContent().querySelector('tbody');
+        }
+        return tbody;
     };
     var Grid_1;
     __decorate$1([
@@ -17053,6 +18043,12 @@ var Print = /** @__PURE__ @class */ (function () {
         });
         document.body.appendChild(element);
         var printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
+        if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
+            for (var i = 0; i < printGrid.columns.length; i++) {
+                printGrid.columns[i] = extend({}, printGrid.columns[i]);
+                printGrid.columns[i].freeze = undefined;
+            }
+        }
         /* tslint:disable-next-line:no-any */
         if (this.parent.isAngular) {
             /* tslint:disable-next-line:no-any */
@@ -17652,6 +18648,20 @@ function getRowHeight(element) {
     return rowHeight;
 }
 /** @hidden */
+var actualRowHeight;
+/** @hidden */
+function getActualRowHeight(element) {
+    if (actualRowHeight !== undefined) {
+        return rowHeight;
+    }
+    var table = createElement('table', { className: 'e-table', styles: 'visibility: hidden' });
+    table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
+    element.appendChild(table);
+    var rect = table.querySelector('tr').getBoundingClientRect();
+    element.removeChild(table);
+    return rect.height;
+}
+/** @hidden */
 function isComplexField(field) {
     return field.split('.').length > 1;
 }
@@ -18020,10 +19030,11 @@ function getPrintGridModel(gObj, hierarchyPrintMode) {
     if (!gObj) {
         return printGridModel;
     }
+    var isFrozen = gObj.isFrozenGrid() && !gObj.getFrozenColumns();
     for (var _i = 0, _a = Print.printGridProp; _i < _a.length; _i++) {
         var key = _a[_i];
         if (key === 'columns') {
-            printGridModel[key] = getActualPropFromColl(gObj[key]);
+            printGridModel[key] = getActualPropFromColl(isFrozen ? gObj.getColumns() : gObj[key]);
         }
         else if (key === 'allowPaging') {
             printGridModel[key] = gObj.printMode === 'CurrentPage';
@@ -18253,16 +19264,203 @@ function compareChanges(gObj, changes, type, keyField) {
 }
 /** @hidden */
 function setRowElements(gObj) {
-    if (gObj.getFrozenColumns()) {
+    if (gObj.isFrozenGrid()) {
         (gObj).contentModule.rowElements =
             [].slice.call(gObj.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
+        var cls = gObj.getFrozenMode() === 'Left-Right' ? '.e-frozen-left-header .e-row, .e-frozen-left-content .e-row'
+            : '.e-frozenheader .e-row, .e-frozencontent .e-row';
         (gObj).contentModule.freezeRowElements =
-            [].slice.call(gObj.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
+            [].slice.call(gObj.element.querySelectorAll(cls));
+        if (gObj.getFrozenMode() === 'Left-Right') {
+            gObj.contentModule.frozenRightRowElements =
+                [].slice.call(gObj.element.querySelectorAll('.e-frozen-right-header .e-row, .e-frozen-right-content .e-row'));
+        }
     }
     else {
         (gObj).contentModule.rowElements =
             [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
     }
+}
+/** @hidden */
+function getCurrentTableIndex(gObj) {
+    if (gObj.tableIndex === gObj.getTablesCount()) {
+        gObj.tableIndex = 0;
+    }
+    return ++gObj.tableIndex;
+}
+/** @hidden */
+function getFrozenTableName(gObj, index) {
+    var frozenCols = gObj.getFrozenColumns();
+    var frozenLeft = gObj.getFrozenLeftColumnsCount();
+    var frozenRight = gObj.getFrozenRightColumnsCount();
+    var tableName;
+    if (frozenCols && !frozenLeft && !frozenRight) {
+        tableName = getFreezeTableName(gObj, index);
+    }
+    else if (!frozenCols && (frozenLeft || frozenRight)) {
+        tableName = getColumnLevelFreezeTableName(gObj, index);
+    }
+    return tableName;
+}
+/** @hidden */
+function getFreezeTableName(gObj, index) {
+    var tableIndex = isNullOrUndefined(index) ? getCurrentTableIndex(gObj) : index;
+    var tableName;
+    if (tableIndex === 1) {
+        tableName = 'frozen-left';
+    }
+    else if (tableIndex === 2) {
+        tableName = 'movable';
+    }
+    return tableName;
+}
+/** @hidden */
+function getColumnLevelFreezeTableName(gObj, index) {
+    var frozenLeft = gObj.getFrozenLeftColumnsCount();
+    var frozenRight = gObj.getFrozenRightColumnsCount();
+    var tableIndex = isNullOrUndefined(index) ? getCurrentTableIndex(gObj) : index;
+    var tableName;
+    if (frozenLeft && !frozenRight) {
+        if (tableIndex === 1) {
+            tableName = 'frozen-left';
+        }
+        else if (tableIndex === 2) {
+            tableName = 'movable';
+        }
+    }
+    else if (frozenRight && !frozenLeft) {
+        if (tableIndex === 1) {
+            tableName = 'frozen-right';
+        }
+        else if (tableIndex === 2) {
+            tableName = 'movable';
+        }
+    }
+    else {
+        if (tableIndex === 1) {
+            tableName = 'frozen-left';
+        }
+        else if (tableIndex === 2) {
+            tableName = 'movable';
+        }
+        else if (tableIndex === 3) {
+            tableName = 'frozen-right';
+        }
+    }
+    return tableName;
+}
+/** @hidden */
+function splitFrozenRowObjectCells(gObj, cells, tableName) {
+    var left = gObj.getFrozenLeftCount();
+    var movable = gObj.getMovableColumnsCount();
+    var right = gObj.getFrozenRightColumnsCount();
+    var frozenMode = gObj.getFrozenMode();
+    var drag = gObj.isRowDragable() ? 1 : 0;
+    var rightIndex = frozenMode === 'Right' ? left + movable : left + movable + drag;
+    var mvblIndex = frozenMode === 'Right' ? left : left + drag;
+    var mvblEndIdx = frozenMode === 'Right' ? cells.length - right - drag
+        : right ? cells.length - right : cells.length;
+    if (tableName === 'frozen-left') {
+        cells = cells.slice(0, left ? left + drag : cells.length);
+    }
+    else if (tableName === 'frozen-right') {
+        cells = cells.slice(rightIndex, cells.length);
+    }
+    else if (tableName === 'movable') {
+        cells = cells.slice(mvblIndex, mvblEndIdx);
+    }
+    return cells;
+}
+/** @hidden */
+function gridActionHandler(gObj, callBack, rows, force) {
+    if (rows[0].length || force) {
+        callBack('frozen-left', rows[0]);
+    }
+    if (gObj.isFrozenGrid() && (rows[1].length || force)) {
+        callBack('movable', rows[1]);
+    }
+    if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
+        callBack('frozen-right', rows[2]);
+    }
+}
+/** @hidden */
+function getGridRowObjects(gObj) {
+    return [gObj.getFrozenMode() !== 'Right' ? gObj.getRowsObject() : [], gObj.getMovableRowsObject(), gObj.getFrozenRightRowsObject()];
+}
+/** @hidden */
+function getGridRowElements(gObj) {
+    return [
+        gObj.getFrozenMode() !== 'Right' ? gObj.getAllDataRows(true) : [],
+        gObj.getAllMovableDataRows(true), gObj.getAllFrozenRightDataRows(true)
+    ];
+}
+/** @hidden */
+function sliceElements(row, start, end) {
+    var cells = row.children;
+    var len = cells.length;
+    var k = 0;
+    for (var i = 0; i < len; i++, k++) {
+        if (i >= start && i < end) {
+            continue;
+        }
+        row.removeChild(row.children[k]);
+        k--;
+    }
+}
+/** @hidden */
+function getCellsByTableName(gObj, col, rowIndex) {
+    if (col.getFreezeTableName() === 'movable') {
+        return [].slice.call(gObj.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+    }
+    else if (col.getFreezeTableName() === 'frozen-right') {
+        return [].slice.call(gObj.getFrozenRightDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+    }
+    else {
+        return [].slice.call(gObj.getDataRows()[rowIndex].querySelectorAll('.e-rowcell'));
+    }
+}
+/** @hidden */
+function getCellByColAndRowIndex(gObj, col, rowIndex, index) {
+    var left = gObj.getFrozenLeftCount();
+    var movable = gObj.getMovableColumnsCount();
+    index = col.getFreezeTableName() === 'movable' ? index - left : col.getFreezeTableName() === 'frozen-right'
+        ? index - (left + movable) : index;
+    return getCellsByTableName(gObj, col, rowIndex)[index];
+}
+/** @hidden */
+function setValidationRuels(col, index, rules, mRules, frRules, len) {
+    if (col.getFreezeTableName() === 'frozen-left' || (!index && col.getFreezeTableName() === 'frozen-right') || len === 1) {
+        rules[getComplexFieldID(col.field)] = col.validationRules;
+    }
+    else if (col.getFreezeTableName() === 'movable' || !col.getFreezeTableName()) {
+        mRules[getComplexFieldID(col.field)] = col.validationRules;
+    }
+    else if (col.getFreezeTableName() === 'frozen-right') {
+        frRules[getComplexFieldID(col.field)] = col.validationRules;
+    }
+}
+/** @hidden */
+function getMovableTbody(gObj) {
+    var tbody;
+    if (gObj.isFrozenGrid()) {
+        tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getMovableHeaderTbody()
+            : gObj.getMovableContentTbody();
+    }
+    return tbody;
+}
+/** @hidden */
+function getFrozenRightTbody(gObj) {
+    var tbody;
+    if (gObj.getFrozenMode() === 'Left-Right') {
+        tbody = gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top' ? gObj.getFrozenRightHeaderTbody()
+            : gObj.getFrozenRightContentTbody();
+    }
+    return tbody;
+}
+/** @hidden */
+// tslint:disable-next-line:no-any
+function reorderArrayValues(arr, from, to) {
+    arr.splice(to, 0, arr.splice(from, 1)[0]);
 }
 
 /* tslint:disable-next-line:max-line-length */
@@ -19307,7 +20505,8 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         }
         var ul = this.parent.createElement('ul');
         var icon = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
-        if (this.parent.allowSorting) {
+        // tslint:disable-next-line:no-any
+        if (this.parent.allowSorting && this.parent.getModuleName() === 'grid') {
             var hdrele = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
             var colIsSort = this.parent.getColumnByField(eleOptions.field).allowSorting;
             var isAsc = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
@@ -20353,7 +21552,7 @@ var Sort = /** @__PURE__ @class */ (function () {
             !e.target.classList.contains('e-columnmenu') &&
             !e.target.classList.contains('e-filtermenudiv') &&
             !parentsUntil(e.target, 'e-stackedheadercell') &&
-            !(gObj.allowSelection && gObj.selectionSettings.mode === 'Column' &&
+            !(gObj.allowSelection && gObj.selectionSettings.allowColumnSelection &&
                 e.target.classList.contains('e-headercell'))) {
             var gObj_1 = this.parent;
             var colObj = gObj_1.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
@@ -20369,10 +21568,11 @@ var Sort = /** @__PURE__ @class */ (function () {
         if (target) {
             target.classList.remove('e-resized');
         }
-        if (e.target.classList.contains('e-excel-ascending') ||
-            e.target.classList.contains('e-excel-descending')) {
+        if (parentsUntil(e.target, 'e-excel-ascending') ||
+            parentsUntil(e.target, 'e-excel-descending')) {
             var colUid = closest(e.target, '.e-filter-popup').getAttribute('uid');
-            var direction = e.target.classList.contains('e-excel-ascending') ? 'Ascending' : 'Descending';
+            var direction = isNullOrUndefined(parentsUntil(e.target, 'e-excel-descending')) ?
+                'Ascending' : 'Descending';
             this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
         }
     };
@@ -20837,7 +22037,9 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
         else {
             this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
                     pagerObj.currentPage, pagerObj.totalPages || 0, pagerObj.totalRecordsCount || 0]) + ' ';
-            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel(pagerObj.totalRecordsCount <= 1 ? 'totalItemInfo' : 'totalItemsInfo'), [pagerObj.totalRecordsCount || 0, pagerObj.totalRecordsCount ? (pagerObj.pageSize * (pagerObj.currentPage - 1)) + 1 : 0,
+                pagerObj.pageSize * pagerObj.currentPage > pagerObj.totalRecordsCount ? pagerObj.totalRecordsCount :
+                    pagerObj.pageSize * pagerObj.currentPage]);
         }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     };
@@ -22840,7 +24042,8 @@ var Filter = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Filter.prototype.render = function (e) {
-        if (DataUtil.getObject('args.isFrozen', e)) {
+        if (DataUtil.getObject('args.isFrozen', e) || (this.parent.getFrozenMode() === 'Left-Right' &&
+            DataUtil.getObject('args.renderFrozenRightContent', e))) {
             return;
         }
         var gObj = this.parent;
@@ -22860,7 +24063,13 @@ var Filter = /** @__PURE__ @class */ (function () {
                 rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar' });
                 row = this.generateRow();
                 row.data = this.values;
-                this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                if (gObj.getFrozenMode() === 'Right') {
+                    var thead = gObj.getFrozenRightHeader().querySelector('thead');
+                    thead.appendChild(rowRenderer.element);
+                }
+                else {
+                    this.parent.getHeaderContent().querySelector('thead').appendChild(rowRenderer.element);
+                }
                 var rowdrag = this.parent.element.querySelector('.e-rowdragheader');
                 this.element = rowRenderer.render(row, gObj.getColumns(), null, null, rowRenderer.element);
                 var detail = this.element.querySelector('.e-detailheadercell');
@@ -22908,7 +24117,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (this.element) {
             remove(this.element);
             var filterBarElement = this.parent.getHeaderContent().querySelector('.e-filterbar');
-            if (this.parent.getFrozenColumns() && filterBarElement) {
+            if (this.parent.isFrozenGrid() && filterBarElement) {
                 remove(filterBarElement);
             }
         }
@@ -23568,7 +24777,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     Filter.prototype.onTimerTick = function () {
         var selector = '[id=\'' + this.column.field + '_filterBarcell\']';
         var filterElement = this.element.querySelector(selector);
-        if (!filterElement && this.parent.getFrozenColumns()) {
+        if (!filterElement && this.parent.isFrozenGrid()) {
             filterElement = this.parent.getHeaderContent().querySelector(selector);
         }
         var filterValue;
@@ -23789,7 +24998,7 @@ var Filter = /** @__PURE__ @class */ (function () {
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
-            if (target.classList.contains('e-excel-ascending') || target.classList.contains('e-excel-descending')) {
+            if (parentsUntil(target, 'e-excel-ascending') || parentsUntil(target, 'e-excel-descending')) {
                 this.filterModule.closeDialog(target);
             }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
@@ -23973,12 +25182,14 @@ var Resize = /** @__PURE__ @class */ (function () {
         var contentTextClone;
         var footerTextClone;
         var columnIndexByField = this.parent.getColumnIndexByField(fName);
-        var frzCols = gObj.getFrozenColumns();
+        var left = gObj.getFrozenColumns() || gObj.getFrozenLeftColumnsCount();
+        var movable = gObj.getMovableColumnsCount();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
         }
-        if (frzCols) {
-            if (index < frzCols) {
+        if (gObj.isFrozenGrid()) {
+            var col = gObj.getColumnByField(fName);
+            if (col.getFreezeTableName() === 'frozen-left') {
                 headerTable = gObj.getHeaderTable();
                 contentTable = gObj.getContentTable();
                 headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
@@ -23987,14 +25198,24 @@ var Resize = /** @__PURE__ @class */ (function () {
                     footerTextClone = footerTable.querySelectorAll("td:nth-child(" + (columnIndex + 1) + ")");
                 }
             }
-            else {
+            else if (col.getFreezeTableName() === 'movable') {
                 headerTable = gObj.getHeaderContent().querySelector('.e-movableheader').children[0];
                 contentTable = gObj.getContent().querySelector('.e-movablecontent').children[0];
                 headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
-                contentTextClone = contentTable.querySelectorAll("td:nth-child(" + ((columnIndex - frzCols) + 1) + ")");
+                contentTextClone = contentTable.querySelectorAll("td:nth-child(" + ((columnIndex - left) + 1) + ")");
                 if (footerTable) {
                     footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
-                    footerTextClone = footerTable.querySelectorAll("td:nth-child(" + ((columnIndex - frzCols) + 1) + ")");
+                    footerTextClone = footerTable.querySelectorAll("td:nth-child(" + ((columnIndex - left) + 1) + ")");
+                }
+            }
+            else if (col.getFreezeTableName() === 'frozen-right') {
+                headerTable = gObj.getHeaderContent().querySelector('.e-frozen-right-header').children[0];
+                contentTable = gObj.getContent().querySelector('.e-frozen-right-content').children[0];
+                headerTextClone = headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true);
+                contentTextClone = contentTable.querySelectorAll("td:nth-child(" + ((columnIndex - (left + movable)) + 1) + ")");
+                if (footerTable) {
+                    footerTable = gObj.getFooterContent().querySelector('.e-movablefootercontent').children[0];
+                    footerTextClone = footerTable.querySelectorAll("td:nth-child(" + ((columnIndex - (left + movable)) + 1) + ")");
                 }
             }
         }
@@ -24053,7 +25274,7 @@ var Resize = /** @__PURE__ @class */ (function () {
             }
         }
         var calcTableWidth = tWidth + indentWidth;
-        if (tWidth > 0 && !gObj.getFrozenColumns()) {
+        if (tWidth > 0 && !gObj.isFrozenGrid()) {
             if (this.parent.detailTemplate || this.parent.childGrid) {
                 this.widthService.setColumnWidth(new Column({ width: '30px' }));
             }
@@ -24188,7 +25409,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         EventHandler.remove(this.parent.getHeaderContent(), dblclick, this.callAutoFit);
     };
     Resize.prototype.getResizeHandlers = function () {
-        return this.parent.getFrozenColumns() ?
+        return this.parent.isFrozenGrid() ?
             [].slice.call(this.parent.getHeaderContent().querySelectorAll('.' + resizeClassList.root))
             : [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.root));
     };
@@ -24228,26 +25449,45 @@ var Resize = /** @__PURE__ @class */ (function () {
                 this.refreshStackedColumnWidth();
                 this.element = e.target;
                 if (this.parent.getVisibleFrozenColumns()) {
-                    var mtbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-                    var ftbody = this.parent.getContent().querySelector('.e-frozencontent').querySelector('tbody');
-                    var mtr = mtbody.querySelectorAll('tr');
-                    var ftr = ftbody.querySelectorAll('tr');
+                    var mtbody = this.parent.getMovableContentTbody();
+                    var ftbody = this.parent.getFrozenLeftContentTbody();
+                    var frtbody = this.parent.getFrozenRightContentTbody();
+                    var mtr = [].slice.call(mtbody.querySelectorAll('tr'));
+                    var ftr = [].slice.call(ftbody.querySelectorAll('tr'));
+                    var frTr = [];
+                    if (this.parent.getFrozenMode() === 'Left-Right' && frtbody) {
+                        frTr = [].slice.call(frtbody.querySelectorAll('tr'));
+                    }
+                    var _loop_1 = function (i) {
+                        gridActionHandler(this_1.parent, function (tableName, row) {
+                            if (_this.parent.rowHeight) {
+                                row[i].style.height = _this.parent.rowHeight + 'px';
+                            }
+                            else {
+                                row[i].style.removeProperty('height');
+                            }
+                        }, [ftr, mtr, frTr]);
+                    };
+                    var this_1 = this;
                     for (var i = 0; i < mtr.length; i++) {
-                        if (this.parent.rowHeight) {
-                            mtr[i].style.height = this.parent.rowHeight + 'px';
-                            ftr[i].style.height = this.parent.rowHeight + 'px';
-                        }
-                        else {
-                            mtr[i].style.removeProperty('height');
-                            ftr[i].style.removeProperty('height');
-                        }
+                        _loop_1(i);
                     }
                 }
                 this.parentElementWidth = this.parent.element.getBoundingClientRect().width;
                 this.appendHelper();
                 this.column = this.getTargetColumn(e);
                 this.pageX = this.getPointX(e);
-                if (this.parent.enableRtl) {
+                if (this.column.getFreezeTableName() === 'frozen-right') {
+                    if (this.parent.enableRtl) {
+                        this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
+                            - parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString());
+                    }
+                    else {
+                        this.minMove = parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString())
+                            - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
+                    }
+                }
+                else if (this.parent.enableRtl) {
                     this.minMove = parseFloat(this.column.width.toString())
                         - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
                 }
@@ -24335,13 +25575,25 @@ var Resize = /** @__PURE__ @class */ (function () {
         }
         var pageX = this.getPointX(e);
         var mousemove = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
+        if (this.column.getFreezeTableName() === 'frozen-right') {
+            mousemove = this.parent.enableRtl ? (pageX - this.pageX) : (this.pageX - pageX);
+        }
         var colData = this.getColData(this.column, mousemove);
         if (!colData.width) {
             colData.width = closest(this.element, 'th').offsetWidth;
         }
         var width = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
         this.parent.log('resize_min_max', { column: this.column, width: width });
-        if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
+        if (this.column.getFreezeTableName() === 'frozen-right') {
+            if ((this.parent.enableRtl && this.minMove >= pageX) || (!this.parent.enableRtl && this.minMove <= pageX)) {
+                width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
+                this.pageX = pageX = this.minMove;
+            }
+        }
+        if ((this.column.getFreezeTableName() !== 'frozen-right'
+            && ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)))
+            || (this.column.getFreezeTableName() === 'frozen-right' && ((this.parent.enableRtl && this.minMove >= pageX)
+                || (!this.parent.enableRtl && this.minMove <= pageX)))) {
             width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 10;
             this.pageX = pageX = this.minMove;
         }
@@ -24436,7 +25688,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         else {
             this.isFrozenColResized = false;
         }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             this.parent.notify(freezeRender, { case: 'textwrap' });
         }
         if (this.parent.allowTextWrap) {
@@ -24518,28 +25770,37 @@ var Resize = /** @__PURE__ @class */ (function () {
         this.setHelperHeight();
     };
     Resize.prototype.setHelperHeight = function () {
-        var height = this.parent.getContent().offsetHeight - this.getScrollBarWidth();
+        var isFrozen = this.parent.isFrozenGrid();
+        var height = isFrozen ? this.parent.getContent().querySelector('.e-content').offsetHeight
+            : this.parent.getContent().offsetHeight - this.getScrollBarWidth();
         var rect = closest(this.element, resizeClassList.header);
         var tr = [].slice.call(this.parent.getHeaderContent().querySelectorAll('tr'));
-        var frzCols = this.parent.getFrozenColumns();
-        if (frzCols) {
-            if (rect.parentElement.children.length !== frzCols) {
-                tr.splice(0, tr.length / 2);
+        var right = this.parent.getFrozenRightColumnsCount();
+        if (isFrozen) {
+            if (parentsUntil(rect, 'e-movableheader')) {
+                tr = [].slice.call(this.parent.getHeaderContent().querySelector('.e-movableheader').querySelectorAll('tr'));
+            }
+            else if (right && parentsUntil(rect, 'e-frozen-right-header')) {
+                tr = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelectorAll('tr'));
             }
             else {
-                tr.splice(tr.length / 2, tr.length / 2);
+                tr = [].slice.call(this.parent.getHeaderContent().querySelector('.e-frozen-left-header').querySelectorAll('tr'));
             }
         }
         for (var i = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
             height += tr[i].offsetHeight;
         }
         var pos = this.calcPos(rect);
-        pos.left += (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2);
+        if (parentsUntil(rect, 'e-frozen-right-header')) {
+            pos.left += (this.parent.enableRtl ? rect.offsetWidth - 2 : 0 - 1);
+        }
+        else {
+            pos.left += (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2);
+        }
         this.helper.style.cssText = 'height: ' + height + 'px; top: ' + pos.top + 'px; left:' + Math.floor(pos.left) + 'px;';
     };
     Resize.prototype.getScrollBarWidth = function (height) {
-        var ele = this.parent.getFrozenColumns() ? this.parent.getContent().querySelector('.e-movablecontent')
-            : this.parent.getContent().firstChild;
+        var ele = this.parent.getContent().firstChild;
         return (ele.scrollHeight > ele.clientHeight && height) ||
             ele.scrollWidth > ele.clientWidth ? getScrollBarWidth() : 0;
     };
@@ -24554,12 +25815,18 @@ var Resize = /** @__PURE__ @class */ (function () {
     };
     Resize.prototype.updateHelper = function () {
         var rect = closest(this.element, resizeClassList.header);
-        var left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2));
+        var left;
+        if (parentsUntil(rect, 'e-frozen-right-header')) {
+            left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? rect.offsetWidth - 2 : 0 - 1));
+        }
+        else {
+            left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2));
+        }
         var borderWidth = 2; // to maintain the helper inside of grid element.
         if (left > this.parentElementWidth) {
             left = this.parentElementWidth - borderWidth;
         }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             var table = closest(rect, '.e-table');
             var fLeft = table.offsetLeft;
             if (left < fLeft) {
@@ -24639,13 +25906,14 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var col = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
         var bool = col ? !col.lockColumn : true;
         return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
-            || (this.parent.getFrozenColumns()
+            || (this.parent.isFrozenGrid()
                 && Array.prototype.indexOf.call(closest(srcElem, 'thead').children, srcElem.parentElement)
                     === Array.prototype.indexOf.call(closest(destElem, 'thead').children, destElem.parentElement)))
             && this.targetParentContainerIndex(srcElem, destElem) > -1 && bool;
     };
     Reorder.prototype.chkDropAllCols = function (srcElem, destElem) {
         var isFound;
+        var cols = this.parent.columns;
         var headers = this.getHeaderCells();
         var header;
         while (!isFound && headers.length > 0) {
@@ -24676,14 +25944,20 @@ var Reorder = /** @__PURE__ @class */ (function () {
     Reorder.prototype.getColumnsModel = function (cols) {
         var columnModel = [];
         var subCols = [];
-        for (var i = 0, len = cols.length; i < len; i++) {
-            columnModel.push(cols[i]);
-            if (cols[i].columns) {
-                subCols = subCols.concat(cols[i].columns);
-            }
+        var isFrozen = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid();
+        if (isFrozen) {
+            return this.parent.getColumns();
         }
-        if (subCols.length) {
-            columnModel = columnModel.concat(this.getColumnsModel(subCols));
+        else {
+            for (var i = 0, len = cols.length; i < len; i++) {
+                columnModel.push(cols[i]);
+                if (cols[i].columns) {
+                    subCols = subCols.concat(cols[i].columns);
+                }
+            }
+            if (subCols.length) {
+                columnModel = columnModel.concat(this.getColumnsModel(subCols));
+            }
         }
         return columnModel;
     };
@@ -24729,6 +26003,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
                 var newIndex = this.targetParentContainerIndex(this.element, destElem);
                 var uid = this.element.firstElementChild.getAttribute('e-mappinguid');
                 this.destElement = destElem;
+                this.parent.notify(setReorderDestinationElement, { ele: destElem });
                 if (uid) {
                     this.moveColumns(newIndex, this.parent.getColumnByUid(uid));
                 }
@@ -24751,10 +26026,11 @@ var Reorder = /** @__PURE__ @class */ (function () {
             gObj.notify(preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
             return;
         }
+        var isFrozen = !gObj.getFrozenColumns() && gObj.isFrozenGrid();
         var parent = this.getColParent(column, this.parent.columns);
-        var cols = parent ? parent.columns : this.parent.columns;
+        var cols = parent ? parent.columns : isFrozen ? this.parent.getColumns() : this.parent.columns;
         var srcIdx = inArray(column, cols);
-        if (((this.parent.getFrozenColumns() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn) {
+        if (((this.parent.isFrozenGrid() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn) {
             for (var i = 0; i < cols.length; i++) {
                 if (cols[i].field === column.field) {
                     srcIdx = i;
@@ -24782,6 +26058,11 @@ var Reorder = /** @__PURE__ @class */ (function () {
             return;
         }
         cols.splice(destIndex, 0, cols.splice(srcIdx, 1)[0]);
+        var args = { column: column, destIndex: destIndex, columns: cols, parent: parent, cancel: false };
+        gObj.notify(refreshFrozenColumns, args);
+        if (args.cancel) {
+            return;
+        }
         gObj.getColumns(true);
         gObj.notify(columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
         if (preventRefresh !== false) {
@@ -24791,8 +26072,9 @@ var Reorder = /** @__PURE__ @class */ (function () {
         }
     };
     Reorder.prototype.targetParentContainerIndex = function (srcElem, destElem) {
+        var isFrozen = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid();
+        var cols = isFrozen ? this.parent.getColumns() : this.parent.columns;
         var headers = this.getHeaderCells();
-        var cols = this.parent.columns;
         var flatColumns = this.getColumnsModel(cols);
         var parent = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
         cols = parent ? parent.columns : cols;
@@ -25040,7 +26322,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         }
         var closest$$1 = closest(target, '.e-headercell:not(.e-stackedHeaderCell)');
         var cloneElement = gObj.element.querySelector('.e-cloneproperties');
-        var content = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        var content = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
         var isLeft = this.x > getPosition(e.event).x + content.scrollLeft;
         removeClass(gObj.getHeaderTable().querySelectorAll('.e-reorderindicate'), ['e-reorderindicate']);
         this.setDisplay('none');
@@ -25062,14 +26344,31 @@ var Reorder = /** @__PURE__ @class */ (function () {
     };
     Reorder.prototype.updateScrollPostion = function (e) {
         var _this = this;
-        var frzCols = this.parent.getFrozenColumns();
         var x = getPosition(e).x;
         var cliRect = this.parent.element.getBoundingClientRect();
-        var cliRectBaseLeft = frzCols ? this.parent.element.querySelector('.e-movableheader')
-            .getBoundingClientRect().left : cliRect.left;
         var cliRectBaseRight = cliRect.right;
-        var scrollElem = frzCols ? this.parent.getContent().querySelector('.e-movablecontent')
-            : this.parent.getContent().firstElementChild;
+        if (this.parent.isFrozenGrid()) {
+            this.updateFrozenScrollPosition(x, cliRect);
+        }
+        else {
+            var cliRectBaseLeft = cliRect.left;
+            var scrollElem_1 = this.parent.getContent().firstElementChild;
+            if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
+                this.timer = window.setInterval(function () { _this.setScrollLeft(scrollElem_1, true); }, 50);
+            }
+            else if (x < cliRectBaseRight && x > cliRectBaseRight - 35) {
+                this.timer = window.setInterval(function () { _this.setScrollLeft(scrollElem_1, false); }, 50);
+            }
+        }
+    };
+    Reorder.prototype.updateFrozenScrollPosition = function (x, cliRect) {
+        var _this = this;
+        var scrollElem = this.parent.getContent().querySelector('.e-movablecontent');
+        var mhdrCliRect = this.parent.element.querySelector('.e-movableheader').getBoundingClientRect();
+        var left = this.parent.getFrozenLeftCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        var cliRectBaseRight = right ? mhdrCliRect.right : cliRect.right;
+        var cliRectBaseLeft = left ? mhdrCliRect.left : cliRect.left;
         if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
             this.timer = window.setInterval(function () { _this.setScrollLeft(scrollElem, true); }, 50);
         }
@@ -25093,13 +26392,23 @@ var Reorder = /** @__PURE__ @class */ (function () {
         if ((isLeft && cliRect.left < cliRectBase.left) || (!isLeft && cliRect.right > cliRectBase.right)) {
             return;
         }
-        if (this.parent.getFrozenColumns() && target.classList.contains('e-headercell')) {
+        if (this.parent.isFrozenGrid() && target.classList.contains('e-headercell')) {
+            var left = this.parent.getFrozenLeftCount();
+            var right = this.parent.getFrozenRightColumnsCount();
+            var dropEle = this.element.querySelector('.e-headercelldiv');
+            var dropCol = dropEle ? this.parent.getColumnByUid(dropEle.getAttribute('data-uid')) : null;
             var col = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
             var fhdrWidth = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
             var mhdrRight = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
-            if (col && this.parent.getNormalizedColumnIndex(col.uid) >= this.parent.getFrozenColumns()
-                && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
-                return;
+            if (col) {
+                if (left && !right && this.parent.getNormalizedColumnIndex(col.uid) >= left
+                    && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
+                    return;
+                }
+                if (!left && right && dropCol && dropCol.getFreezeTableName() !== col.getFreezeTableName()
+                    && (!isLeft && Math.round(cliRect.right) < fhdrWidth)) {
+                    return;
+                }
             }
         }
         this.upArrow.style.top = cliRect.top + cliRect.height - cliRectBase.top + 'px';
@@ -25115,7 +26424,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
-        var content = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        var content = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
         this.x = getPosition(e.event).x + content.scrollLeft;
         gObj.trigger(columnDragStart, {
             target: target, draggableType: 'headercell', column: e.column
@@ -25183,11 +26492,14 @@ var RowDD = /** @__PURE__ @class */ (function () {
                 gObj.selectRow(parseInt(_this.draggable.currentStateTarget.parentElement.getAttribute('aria-rowindex'), 10));
             }
             _this.startedRow = closest(target, 'tr').cloneNode(true);
-            var frzCols = _this.parent.getFrozenColumns();
+            var frzCols = _this.parent.isFrozenGrid();
             if (frzCols) {
-                var rowIndex = parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10);
-                _this.startedRow.innerHTML = _this.parent.getRows()[rowIndex].innerHTML +
-                    _this.parent.getMovableRows()[rowIndex].innerHTML;
+                var rowIndex_1 = parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10);
+                var rows = getGridRowElements(_this.parent);
+                _this.startedRow.innerHTML = '';
+                gridActionHandler(_this.parent, function (freezeTable, rows) {
+                    _this.startedRow.innerHTML += rows[rowIndex_1].innerHTML;
+                }, rows);
             }
             _this.processArgs(target);
             var args = {
@@ -25572,6 +26884,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
         }
         if (this.selectedRowColls.length > 0) {
             this.parent.selectRows(this.selectedRowColls);
+            this.selectedRowColls = [];
         }
     };
     RowDD.prototype.currentViewData = function () {
@@ -25668,12 +26981,10 @@ var RowDD = /** @__PURE__ @class */ (function () {
     };
     RowDD.prototype.updateScrollPostion = function (e, target) {
         var _this = this;
-        var frzCols = this.parent.getFrozenColumns();
         var y = getPosition(e).y;
         var cliRect = this.parent.getContent().getBoundingClientRect();
         var rowHeight = this.parent.getRowHeight() - 15;
-        var scrollElem = frzCols ? this.parent.getContent().querySelector('.e-movablecontent')
-            : this.parent.getContent().firstElementChild;
+        var scrollElem = this.parent.getContent().firstElementChild;
         if (cliRect.top + rowHeight >= y) {
             var scrollPixel_1 = -(this.parent.getRowHeight());
             this.isOverflowBorder = false;
@@ -25706,7 +27017,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
         if (parentsUntil(element, 'e-grid') &&
             parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id) {
             removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop'), ['e-dragborder']);
-            var rowElement = [];
+            var rowElement_1 = [];
             var targetRowIndex = parseInt(targetRow.getAttribute('aria-rowindex'), 10);
             if (targetRow && targetRowIndex === 0) {
                 var div = this.parent.createElement('div', { className: 'e-firstrow-dragborder' });
@@ -25719,20 +27030,22 @@ var RowDD = /** @__PURE__ @class */ (function () {
             }
             else if (targetRow && parseInt(startedRow.getAttribute('aria-rowindex'), 10) > targetRowIndex) {
                 element = this.parent.getRowByIndex(targetRowIndex - 1);
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                rowElement_1 = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             }
             else {
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                rowElement_1 = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
             }
-            var frzCols = this.parent.getFrozenColumns();
+            var frzCols = this.parent.isFrozenGrid();
             if (targetRow && targetRowIndex !== 0 && frzCols) {
-                var rowIndex = parseInt(element.getAttribute('aria-rowindex'), 10);
-                var selector = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
-                rowElement = [].slice.call(this.parent.getRows()[rowIndex].querySelectorAll(selector)).
-                    concat([].slice.call(this.parent.getMovableRows()[rowIndex].querySelectorAll(selector)));
+                var rowIndex_2 = parseInt(element.getAttribute('aria-rowindex'), 10);
+                var selector_1 = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
+                rowElement_1 = [];
+                gridActionHandler(this.parent, function (tableName, rows) {
+                    rowElement_1 = rowElement_1.concat([].slice.call(rows[rowIndex_2].querySelectorAll(selector_1)));
+                }, getGridRowElements(this.parent));
             }
-            if (rowElement.length > 0) {
-                addRemoveActiveClasses(rowElement, true, 'e-dragborder');
+            if (rowElement_1.length > 0) {
+                addRemoveActiveClasses(rowElement_1, true, 'e-dragborder');
             }
         }
     };
@@ -25761,13 +27074,15 @@ var RowDD = /** @__PURE__ @class */ (function () {
             return row.querySelector('td.e-dragborder');
         })[0];
         if (element) {
-            var rowElement = [].slice.call(element.querySelectorAll('.e-dragborder'));
-            if (this.parent.getFrozenColumns()) {
-                var rowIndex = parseInt(element.getAttribute('aria-rowindex'), 10);
-                rowElement = [].slice.call(this.parent.getRows()[rowIndex].querySelectorAll('.e-dragborder')).
-                    concat([].slice.call(this.parent.getMovableRows()[rowIndex].querySelectorAll('.e-dragborder')));
+            var rowElement_2 = [].slice.call(element.querySelectorAll('.e-dragborder'));
+            if (this.parent.isFrozenGrid()) {
+                var rowIndex_3 = parseInt(element.getAttribute('aria-rowindex'), 10);
+                rowElement_2 = [];
+                gridActionHandler(this.parent, function (tableName, rows) {
+                    rowElement_2 = rowElement_2.concat([].slice.call(rows[rowIndex_3].querySelectorAll('.e-dragborder')));
+                }, getGridRowElements(this.parent));
             }
-            addRemoveActiveClasses(rowElement, false, 'e-dragborder');
+            addRemoveActiveClasses(rowElement_2, false, 'e-dragborder');
         }
     };
     RowDD.prototype.getElementFromPosition = function (element, event) {
@@ -27725,14 +29040,21 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
         var div = this.parent.createElement('div', { className: 'e-gridfooter' });
         var innerDiv = this.parent.createElement('div', { className: 'e-summarycontent' });
         var movableContent = innerDiv;
-        if (this.parent.getFrozenColumns()) {
-            var fDiv = this.parent.createElement('div', { className: 'e-frozenfootercontent' });
+        if (this.parent.isFrozenGrid()) {
+            var fDiv = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-left-footercontent' });
             var mDiv = this.parent.createElement('div', { className: 'e-movablefootercontent' });
-            innerDiv.appendChild(fDiv);
+            var frDiv = this.parent.createElement('div', { className: 'e-frozenfootercontent e-frozen-right-footercontent' });
+            if (this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()) {
+                innerDiv.appendChild(fDiv);
+                this.frozenContent = fDiv;
+            }
             innerDiv.appendChild(mDiv);
-            this.frozenContent = fDiv;
             this.movableContent = mDiv;
             movableContent = mDiv;
+            if (this.parent.getFrozenRightColumnsCount()) {
+                innerDiv.appendChild(frDiv);
+                this.frozenRightContent = frDiv;
+            }
         }
         if (Browser.isDevice) {
             movableContent.style.overflowX = 'scroll';
@@ -27750,15 +29072,26 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
      * The function is used to render grid footer table
      */
     FooterRenderer.prototype.renderTable = function () {
-        var contentDiv = this.getPanel();
+        var frzCols = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
         var innerDiv = this.createContentTable('_footer_table');
         var table = innerDiv.querySelector('.e-table');
         var tFoot = this.parent.createElement('tfoot');
         table.appendChild(tFoot);
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             var freezeTable = table.cloneNode(true);
-            this.frozenContent.appendChild(freezeTable);
-            this.freezeTable = freezeTable;
+            var frTable = table.cloneNode(true);
+            if (frzCols) {
+                this.frozenContent.appendChild(freezeTable);
+                this.freezeTable = freezeTable;
+            }
+            if (this.parent.getFrozenRightColumnsCount()) {
+                remove(frTable.querySelector('colgroup'));
+                var hdr = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
+                var frCol = (hdr.querySelector('colgroup').cloneNode(true));
+                frTable.insertBefore(frCol, frTable.querySelector('tbody'));
+                this.frozenRightContent.appendChild(frTable);
+                this.frTable = frTable;
+            }
             this.movableContent.appendChild(table);
             remove(table.querySelector('colgroup'));
             var colGroup = ((this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true));
@@ -27789,42 +29122,75 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
         this.aggregates = !isNullOrUndefined(e) ? e : this.aggregates;
     };
     FooterRenderer.prototype.refresh = function (e) {
-        if (this.parent.getFrozenColumns()) {
+        var frzCols = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+        var movable = this.parent.getMovableColumnsCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        if (this.parent.isFrozenGrid()) {
             remove(this.getPanel());
             this.renderPanel();
             this.renderTable();
-            this.freezeTable.tFoot.innerHTML = '';
-            this.renderSummaryContent(e, this.freezeTable, 0, this.parent.getFrozenColumns());
+            if (frzCols) {
+                this.freezeTable.tFoot.innerHTML = '';
+                this.renderSummaryContent(e, this.freezeTable, 0, frzCols);
+            }
         }
         this.getTable().tFoot.innerHTML = '';
-        this.renderSummaryContent(e, this.getTable(), this.parent.getFrozenColumns());
-        // check freeze content have no row case
-        if (this.parent.getFrozenColumns()) {
-            var frozenCnt = [].slice.call(this.parent.element.querySelector('.e-frozenfootercontent')
-                .querySelectorAll('.e-summaryrow'));
-            var movableCnt = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
-                .querySelectorAll('.e-summaryrow'));
-            for (var i = 0; i < frozenCnt.length; i++) {
-                var frozenHeight$$1 = frozenCnt[i].getBoundingClientRect().height;
-                var movableHeight = movableCnt[i].getBoundingClientRect().height;
-                if (frozenHeight$$1 < movableHeight) {
-                    frozenCnt[i].classList.remove('e-hide');
-                    frozenCnt[i].style.height = movableHeight + 'px';
-                }
-                else if (frozenHeight$$1 > movableHeight) {
-                    movableCnt[i].classList.remove('e-hide');
-                    movableCnt[i].style.height = frozenHeight$$1 + 'px';
+        this.renderSummaryContent(e, this.getTable(), frzCols, right ? frzCols + movable : undefined);
+        if (this.parent.getFrozenRightColumnsCount()) {
+            this.frTable.tFoot.innerHTML = '';
+            this.renderSummaryContent(e, this.frTable, frzCols + movable, frzCols + movable + right);
+            var movableLastCell = [].slice.call(this.getTable().querySelectorAll('.e-lastsummarycell'));
+            if (movableLastCell.length) {
+                for (var i = 0; i < movableLastCell.length; i++) {
+                    movableLastCell[i].style.borderRight = '0px';
                 }
             }
-            var frozenDiv = this.frozenContent;
-            if (!frozenDiv.offsetHeight) {
-                frozenDiv.style.height = this.getTable().offsetHeight + 'px';
+        }
+        // check freeze content have no row case
+        if (this.parent.isFrozenGrid()) {
+            var movableCnt = [].slice.call(this.parent.element.querySelector('.e-movablefootercontent')
+                .querySelectorAll('.e-summaryrow'));
+            var frozenCnt = void 0;
+            if (frzCols) {
+                frozenCnt = [].slice.call(this.parent.element.querySelector('.e-frozen-left-footercontent')
+                    .querySelectorAll('.e-summaryrow'));
+                this.refreshHeight(frozenCnt, movableCnt);
+                var frozenDiv = this.frozenContent;
+                if (!frozenDiv.offsetHeight) {
+                    frozenDiv.style.height = this.getTable().offsetHeight + 'px';
+                }
+            }
+            if (right) {
+                var frCnt = [].slice.call(this.parent.element.querySelector('.e-frozen-right-footercontent')
+                    .querySelectorAll('.e-summaryrow'));
+                this.refreshHeight(frCnt, movableCnt);
+                if (frozenCnt) {
+                    this.refreshHeight(frCnt, frozenCnt);
+                }
+                var frDiv = this.frTable;
+                if (!frDiv.offsetHeight) {
+                    frDiv.style.height = this.getTable().offsetHeight + 'px';
+                }
             }
             if (this.parent.allowResizing) {
                 this.updateFooterTableWidth(this.getTable());
             }
         }
         this.onScroll();
+    };
+    FooterRenderer.prototype.refreshHeight = function (frozenCnt, movableCnt) {
+        for (var i = 0; i < frozenCnt.length; i++) {
+            var frozenHeight$$1 = frozenCnt[i].getBoundingClientRect().height;
+            var movableHeight = movableCnt[i].getBoundingClientRect().height;
+            if (frozenHeight$$1 < movableHeight) {
+                frozenCnt[i].classList.remove('e-hide');
+                frozenCnt[i].style.height = movableHeight + 'px';
+            }
+            else if (frozenHeight$$1 > movableHeight) {
+                movableCnt[i].classList.remove('e-hide');
+                movableCnt[i].style.height = frozenHeight$$1 + 'px';
+            }
+        }
     };
     FooterRenderer.prototype.refreshCol = function () {
         // frozen table 
@@ -27851,7 +29217,7 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     FooterRenderer.prototype.onScroll = function (e) {
         if (e === void 0) { e = {
-            left: this.parent.getFrozenColumns() ? this.parent.getContent().querySelector('.e-movablecontent').scrollLeft :
+            left: this.parent.isFrozenGrid() ? this.parent.getContent().querySelector('.e-movablecontent').scrollLeft :
                 this.parent.getContent().firstChild.scrollLeft
         }; }
         this.getTable().parentElement.scrollLeft = e.left;
@@ -28195,7 +29561,7 @@ function summaryIterator(aggregates, callback) {
  * @hidden
  */
 var InterSectionObserver = /** @__PURE__ @class */ (function () {
-    function InterSectionObserver(element, options) {
+    function InterSectionObserver(element, options, movableEle) {
         var _this = this;
         this.fromWheel = false;
         this.touchMove = false;
@@ -28220,6 +29586,10 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
             'right': {
                 check: function (rect, info) {
                     var right = rect.right;
+                    if (_this.movableEle) {
+                        info.entered = right < _this.movableContainerRect.right;
+                        return right - _this.movableContainerRect.width <= _this.movableContainerRect.right;
+                    }
                     info.entered = right < _this.containerRect.right;
                     return right - _this.containerRect.width <= _this.containerRect.right;
                 }, axis: 'X'
@@ -28228,44 +29598,60 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 check: function (rect, info) {
                     var left = rect.left;
                     info.entered = left > 0;
+                    if (_this.movableEle) {
+                        return left + _this.movableContainerRect.width >= _this.movableContainerRect.left;
+                    }
                     return left + _this.containerRect.width >= _this.containerRect.left;
                 }, axis: 'X'
             }
         };
         this.element = element;
         this.options = options;
+        this.movableEle = movableEle;
     }
     InterSectionObserver.prototype.observe = function (callback, onEnterCallback) {
         var _this = this;
         this.containerRect = this.options.container.getBoundingClientRect();
         EventHandler.add(this.options.container, 'wheel', function () { return _this.fromWheel = true; }, this);
         EventHandler.add(this.options.container, 'scroll', this.virtualScrollHandler(callback, onEnterCallback), this);
+        if (this.options.movableContainer) {
+            this.movableContainerRect = this.options.movableContainer.getBoundingClientRect();
+            EventHandler.add(this.options.scrollbar, 'wheel', function () { return _this.fromWheel = true; }, this);
+            EventHandler.add(this.options.scrollbar, 'scroll', this.virtualScrollHandler(callback, onEnterCallback), this);
+        }
     };
     InterSectionObserver.prototype.check = function (direction) {
         var info = this.sentinelInfo[direction];
+        if (this.movableContainerRect && (direction === 'left' || direction === 'right')) {
+            return info.check(this.movableEle.getBoundingClientRect(), info);
+        }
         return info.check(this.element.getBoundingClientRect(), info);
     };
     InterSectionObserver.prototype.virtualScrollHandler = function (callback, onEnterCallback) {
         var _this = this;
         var delay = Browser.info.name === 'chrome' ? 200 : 100;
-        var prevTop = 0;
-        var prevLeft = 0;
         var debounced100 = debounce(callback, delay);
         var debounced50 = debounce(callback, 50);
+        this.options.prevTop = this.options.prevLeft = 0;
         return function (e) {
-            var top = e.target.scrollTop;
-            var left = e.target.scrollLeft;
-            var direction = prevTop < top ? 'down' : 'up';
-            direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
-            prevTop = top;
-            prevLeft = left;
+            var top = _this.options.movableContainer ? _this.options.container.scrollTop : e.target.scrollTop;
+            var left = _this.options.movableContainer ? _this.options.scrollbar.scrollLeft : e.target.scrollLeft;
+            var direction = _this.options.prevTop < top ? 'down' : 'up';
+            direction = _this.options.prevLeft === left ? direction : _this.options.prevLeft < left ? 'right' : 'left';
+            _this.options.prevTop = top;
+            _this.options.prevLeft = left;
             var current = _this.sentinelInfo[direction];
             if (_this.options.axes.indexOf(current.axis) === -1) {
                 return;
             }
             var check = _this.check(direction);
             if (current.entered) {
-                onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
+                if (_this.movableEle && (direction === 'right' || direction === 'left')) {
+                    onEnterCallback(_this.movableEle, current, direction, { top: top, left: left }, _this.fromWheel, check);
+                }
+                else {
+                    onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
+                }
             }
             if (check) {
                 var fn = debounced100;
@@ -28292,6 +29678,8 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     function VirtualRowModelGenerator(parent) {
         this.cOffsets = {};
         this.cache = {};
+        this.movableCache = {};
+        this.frozenRightCache = {};
         this.rowCache = {};
         this.data = {};
         this.groups = {};
@@ -28299,15 +29687,20 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
         this.model = this.parent.pageSettings;
         this.rowModelGenerator = this.parent.allowGrouping ? new GroupModelGenerator(this.parent) : new RowModelGenerator(this.parent);
     }
-    VirtualRowModelGenerator.prototype.generateRows = function (data, notifyArgs) {
-        var info = notifyArgs.virtualInfo = notifyArgs.virtualInfo || this.getData();
+    // tslint:disable-next-line:max-func-body-length
+    VirtualRowModelGenerator.prototype.generateRows = function (data, e) {
+        var isFrozen = this.parent.isFrozenGrid();
+        var info = e.virtualInfo = e.virtualInfo || this.getData();
         var xAxis = info.sentinelInfo && info.sentinelInfo.axis === 'X';
         var page = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         var result = [];
         var center = ~~(this.model.pageSize / 2);
         var indexes = this.getBlockIndexes(page);
         var loadedBlocks = [];
-        this.checkAndResetCache(notifyArgs.requestType);
+        if ((isFrozen && (this.parent.getTablesCount() === 2 && !e.renderMovableContent)
+            || this.parent.getTablesCount() === 3 && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
+            this.checkAndResetCache(e.requestType);
+        }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
             return result = this.parent.vcRows;
         }
@@ -28316,13 +29709,19 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
                 if (this.isBlockAvailable(info.blockIndexes[i])) {
                     this.cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[i]]);
                 }
+                if ((e.renderMovableContent && this.isMovableBlockAvailable(info.blockIndexes[i]))
+                    || (e.renderFrozenRightContent && this.isFrozenRightBlockAvailable(info.blockIndexes[i]))) {
+                    var cache = e.renderMovableContent
+                        ? this.movableCache : this.frozenRightCache;
+                    cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(cache[info.blockIndexes[i]]);
+                }
             }
         }
         if (isBlazor() && this.parent.isServerRendered) {
             var virtualStartIdx = 'virtualStartIndex';
             var startIndex = 'startIndex';
             var endIndex = 'endIndex';
-            if (!notifyArgs[virtualStartIdx] && Object.keys(this.rowCache).length === 0) {
+            if (!e[virtualStartIdx] && Object.keys(this.rowCache).length === 0) {
                 for (var i = 0; i < data.length; i++) {
                     var args = [];
                     args.push(data[i]);
@@ -28334,8 +29733,8 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
                     j++;
                 }
             }
-            else if (notifyArgs[virtualStartIdx]) {
-                var virtualStartIndex = notifyArgs[startIndex];
+            else if (e[virtualStartIdx]) {
+                var virtualStartIndex = e[startIndex];
                 var cacheindex = [];
                 for (var i = 0; i < Object.keys(this.rowCache).length; i++) {
                     cacheindex.push(Number(Object.keys(this.rowCache)[i]));
@@ -28350,9 +29749,9 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
                     virtualStartIndex++;
                 }
             }
-            if (!isNullOrUndefined(notifyArgs[virtualStartIdx])) {
+            if (!isNullOrUndefined(e[virtualStartIdx])) {
                 var j = 0;
-                for (var i = notifyArgs[startIndex]; i < notifyArgs[endIndex]; i++) {
+                for (var i = e[startIndex]; i < e[endIndex]; i++) {
                     result[j] = this.rowCache[i];
                     j++;
                 }
@@ -28392,7 +29791,33 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
                 if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
                     this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
                 }
-                result.push.apply(result, this.cache[values[i]]);
+                if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[i]))
+                    || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
+                    var cache = e.renderMovableContent
+                        ? this.movableCache : this.frozenRightCache;
+                    var rows = this.rowModelGenerator.generateRows(data, {
+                        virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                    });
+                    var median = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
+                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
+                        cache[indexes[0]] = rows.slice(0, median);
+                    }
+                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
+                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
+                        cache[indexes[1]] = rows.slice(median);
+                    }
+                }
+                if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
+                    result.push.apply(result, this.cache[values[i]]);
+                }
+                else {
+                    var cache = e.renderMovableContent
+                        ? this.movableCache : this.frozenRightCache;
+                    if (cache[values[i]]) {
+                        result.push.apply(result, cache[values[i]]);
+                    }
+                }
                 if (this.isBlockAvailable(values[i])) {
                     loadedBlocks.push(values[i]);
                 }
@@ -28403,6 +29828,12 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
             var grouping = 'records';
             if (this.parent.allowGrouping) {
                 this.parent.currentViewData[grouping] = result.map(function (m) { return m.data; });
+            }
+            else if (isFrozen) {
+                if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
+                    || this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenColumns())) || e.renderFrozenRightContent) {
+                    this.parent.currentViewData = result.map(function (m) { return m.data; });
+                }
             }
             else {
                 this.parent.currentViewData = result.map(function (m) { return m.data; });
@@ -28418,6 +29849,12 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     };
     VirtualRowModelGenerator.prototype.isBlockAvailable = function (value) {
         return value in this.cache;
+    };
+    VirtualRowModelGenerator.prototype.isMovableBlockAvailable = function (value) {
+        return value in this.movableCache;
+    };
+    VirtualRowModelGenerator.prototype.isFrozenRightBlockAvailable = function (value) {
+        return value in this.frozenRightCache;
     };
     VirtualRowModelGenerator.prototype.getData = function () {
         return {
@@ -28437,7 +29874,7 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     VirtualRowModelGenerator.prototype.getColumnIndexes = function (content) {
         var _this = this;
         if (content === void 0) { content = this.parent.getHeaderContent().querySelector('.e-headercontent'); }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             content = content.querySelector('.e-movableheader');
         }
         var indexes = [];
@@ -28481,6 +29918,8 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
             this.cache = {};
             this.data = {};
             this.groups = {};
+            this.movableCache = {};
+            this.frozenRightCache = {};
         }
         return clear;
     };
@@ -28578,6 +30017,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.preStartIndex = 0;
         _this.preventEvent = false;
         _this.actions = ['filtering', 'searching', 'grouping', 'ungrouping'];
+        /** @hidden */
         _this.offsets = {};
         _this.tmpOffsets = {};
         /** @hidden */
@@ -28591,9 +30031,11 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.isCancel = false;
         _this.requestTypes = ['beginEdit', 'cancel', 'delete', 'add', 'save'];
         _this.isNormaledit = _this.parent.editSettings.mode === 'Normal';
+        /** @hidden */
         _this.virtualData = {};
         _this.emptyRowData = {};
         _this.vfColIndex = [];
+        _this.frzIdx = 1;
         _this.locator = locator;
         _this.eventListener('on');
         _this.parent.on(columnVisibilityChanged, _this.setVisible, _this);
@@ -28605,19 +30047,12 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.content = this.getPanel().querySelector('.e-content');
-        var minHeight = this.parent.height;
-        if (this.parent.getFrozenColumns() && this.parent.height.toString().indexOf('%') < 0) {
-            minHeight = parseInt(this.parent.height, 10) - getScrollBarWidth();
-        }
-        this.virtualEle.renderWrapper(minHeight);
+        this.virtualEle.renderWrapper(this.parent.height);
         this.virtualEle.renderPlaceHolder();
-        if (!this.parent.getFrozenColumns()) {
-            this.virtualEle.wrapper.style.position = 'absolute';
-        }
+        this.virtualEle.wrapper.style.position = 'absolute';
         var debounceEvent = (this.parent.dataSource instanceof DataManager && !this.parent.dataSource.dataSource.offline);
-        var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() : this.content;
         var opt = {
-            container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
+            container: this.content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
         this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
@@ -28625,16 +30060,6 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.renderEmpty = function (tbody) {
         this.getTable().appendChild(tbody);
         this.virtualEle.adjustTable(0, 0);
-    };
-    VirtualContentRenderer.prototype.refreshMvTbalTransform = function () {
-        var mCont = this.parent.getMovableVirtualContent();
-        var fCont = this.parent.getFrozenVirtualContent();
-        var mContTV = getTransformValues(mCont.firstElementChild);
-        var fContTV = getTransformValues(fCont.firstElementChild);
-        var top = mCont.scrollTop;
-        if (top > 0 && mContTV.height !== fContTV.height) {
-            mCont.firstElementChild.style.transform = "translate(" + mContTV.width + "px, " + fContTV.height + "px)";
-        }
     };
     VirtualContentRenderer.prototype.scrollListener = function (scrollArgs) {
         this.scrollAfterEdit();
@@ -28650,9 +30075,6 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
-        }
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && scrollArgs.sentinel.axis === 'X') {
-            this.refreshMvTbalTransform();
         }
         var info = scrollArgs.sentinel;
         var pStartIndex = this.preStartIndex;
@@ -28701,21 +30123,6 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.parent.pageSettings.currentPage === viewInfo.currentPage) {
             this.parent.notify('refresh-virtual-indices', { requestType: 'virtualscroll', virtualStartIndex: viewInfo.startIndex,
                 virtualEndIndex: viewInfo.endIndex, axis: 'Y', RHeight: this.parent.getRowHeight() });
-        }
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            var lastPage = Math.ceil(this.getTotalBlocks() / 2);
-            if (this.parent.pageSettings.currentPage === lastPage && scrollArgs.sentinel.axis === 'Y') {
-                this.rndrCount++;
-            }
-            if (scrollArgs.sentinel.axis === 'Y') {
-                if (this.parent.pageSettings.currentPage === lastPage && this.rndrCount > 1) {
-                    this.rndrCount = 0;
-                    return;
-                }
-                else if (this.parent.pageSettings.currentPage !== lastPage && this.parent.pageSettings.currentPage !== lastPage - 1) {
-                    this.rndrCount = 0;
-                }
-            }
         }
         if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
             this.requestType = 'virtualscroll';
@@ -28826,7 +30233,8 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var old = index;
         var max = Math.max;
         var indexes = info.direction === 'down' ? [max(index, 1), ++index, ++index] : [max(index - 1, 1), index, index + 1];
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()) {
+            // To avoid frozen content white space issue
             if (info.sentinelInfo.axis === 'X' || (info.sentinelInfo.axis === 'Y' && (info.page === this.prevInfo.page))) {
                 indexes = this.prevInfo.blockIndexes;
             }
@@ -28853,38 +30261,20 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         return indexes;
     };
-    /**
-     * @hidden
-     */
-    VirtualContentRenderer.prototype.vfTblTransform = function (info, left, top, e, cOffset, translate) {
-        var lastPage = Math.ceil(this.getTotalBlocks() / 2);
-        var isLastPage = lastPage === this.parent.pageSettings.currentPage && this.parent.enableColumnVirtualization;
-        var wrappers = [].slice.call(this.parent.getContent().querySelectorAll('.e-virtualtable'));
-        for (var i = 0; i < wrappers.length; i++) {
-            if (i === 0 && e.requestType === 'virtualscroll' && info.sentinelInfo.axis === 'X') {
-                continue;
-            }
-            if (lastPage !== this.parent.pageSettings.currentPage && this.parent.enableColumnVirtualization
-                && (left > 0 || (top > 0 && left === 0))) {
-                continue;
-            }
-            var cOff = isLastPage && i === 0 ? 0 : cOffset;
-            this.virtualEle.wrapper = wrappers[i];
-            this.virtualEle.adjustTable(cOff, translate);
-        }
-    };
     // tslint:disable-next-line:max-func-body-length
     VirtualContentRenderer.prototype.appendContent = function (target, newChild, e) {
         var _this = this;
         // currentInfo value will be used if there are multiple dom updates happened due to mousewheel
-        var colVFtable = this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() !== 0;
+        var isFrozen = this.parent.isFrozenGrid();
+        var frzCols = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+        var colVFtable = this.parent.enableColumnVirtualization && isFrozen;
         this.checkFirstBlockColIndexes(e);
         var info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
             this.currentInfo.page !== e.virtualInfo.page ? this.currentInfo : e.virtualInfo;
         this.prevInfo = this.prevInfo || e.virtualInfo;
         var cBlock = (info.columnIndexes[0]) - 1;
-        if (colVFtable && info.columnIndexes[0] === this.parent.getFrozenColumns()) {
-            cBlock = (info.columnIndexes[0] - this.parent.getFrozenColumns()) - 1;
+        if (colVFtable && info.columnIndexes[0] === frzCols) {
+            cBlock = (info.columnIndexes[0] - frzCols) - 1;
         }
         var cOffset = this.getColumnOffset(cBlock);
         var width;
@@ -28897,38 +30287,49 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
-        var translate = 0;
-        if (this.parent.getFrozenColumns()) {
-            var mCont = this.parent.getMovableVirtualContent();
-            var left = mCont.scrollLeft;
-            var top_1 = mCont.scrollTop;
-            translate = this.getTranslateY(mCont.scrollTop, vHeight, info);
-            this.vfTblTransform(info, left, top_1, e, cOffset, translate);
-        }
-        else {
-            if (!this.requestTypes.some(function (value) { return value === _this.requestType; })) {
-                translate = this.getTranslateY(this.content.scrollTop, vHeight, info);
-                this.virtualEle.adjustTable(cOffset, translate);
+        if (!this.requestTypes.some(function (value) { return value === _this.requestType; })) {
+            var translate = this.getTranslateY(this.content.scrollTop, vHeight, info);
+            this.virtualEle.adjustTable(colVFtable ? 0 : cOffset, translate);
+            if (colVFtable) {
+                this.virtualEle.adjustMovableTable(cOffset, 0);
             }
         }
-        if (this.parent.enableColumnVirtualization && !this.parent.getFrozenColumns()) {
-            this.header.virtualEle.adjustTable(cOffset, 0);
+        if (this.parent.enableColumnVirtualization) {
+            this.header.virtualEle.adjustTable(colVFtable ? 0 : cOffset, 0);
+            if (colVFtable) {
+                this.header.virtualEle.adjustMovableTable(cOffset, 0);
+            }
         }
         if (this.parent.enableColumnVirtualization) {
             var cIndex = info.columnIndexes;
             width = this.getColumnOffset(cIndex[cIndex.length - 1]) - this.getColumnOffset(cIndex[0] - 1) + '';
-            this.header.virtualEle.setWrapperWidth(width);
+            if (colVFtable) {
+                this.header.virtualEle.setMovableWrapperWidth(width);
+            }
+            else {
+                this.header.virtualEle.setWrapperWidth(width);
+            }
         }
-        this.virtualEle.setWrapperWidth(width, Browser.isIE || Browser.info.name === 'edge');
+        if (colVFtable) {
+            this.virtualEle.setMovableWrapperWidth(width, Browser.isIE || Browser.info.name === 'edge');
+        }
+        else {
+            this.virtualEle.setWrapperWidth(width, Browser.isIE || Browser.info.name === 'edge');
+        }
         if (!isNullOrUndefined(target.parentNode)) {
             remove(target);
         }
         var tbody;
-        if (this.parent.getFrozenColumns() && !e.renderMovableContent) {
-            tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
-        }
-        else if (this.parent.getFrozenColumns() && e.renderMovableContent) {
-            tbody = this.parent.getMovableVirtualContent().querySelector('tbody');
+        if (isFrozen) {
+            if (e.renderFrozenRightContent) {
+                tbody = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+            }
+            else if (!e.renderMovableContent) {
+                tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
+            }
+            else if (e.renderMovableContent) {
+                tbody = this.parent.getMovableVirtualContent().querySelector('tbody');
+            }
         }
         else {
             tbody = this.parent.element.querySelector('.e-content').querySelector('tbody');
@@ -28950,13 +30351,19 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 target.children[0].remove();
             }
         }
-        if (this.parent.getFrozenColumns()) {
-            if (!e.renderMovableContent) {
+        if (isFrozen) {
+            if (e.renderFrozenRightContent) {
+                this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.e-table').appendChild(target);
+                this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
+            }
+            else if (!e.renderMovableContent) {
                 this.parent.getFrozenVirtualContent().querySelector('.e-table').appendChild(target);
             }
-            else {
+            else if (e.renderMovableContent) {
                 this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(target);
-                this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
+                if (this.parent.getFrozenMode() !== 'Left-Right') {
+                    this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
+                }
             }
             if (this.vfColIndex.length) {
                 e.virtualInfo.columnIndexes = info.columnIndexes = extend([], this.vfColIndex);
@@ -28990,23 +30397,20 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.isBottom = true;
             this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 2];
         }
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
-            && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
-            this.refreshMvTbalTransform();
-        }
         if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.parent.notify(autoCol, {});
         }
         this.focusCell(e);
-        this.restoreEdit();
-        this.restoreAdd();
+        this.restoreEdit(e);
+        this.restoreAdd(e);
     };
     VirtualContentRenderer.prototype.checkFirstBlockColIndexes = function (e) {
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && e.virtualInfo.columnIndexes[0] === 0) {
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid() && e.virtualInfo.columnIndexes[0] === 0) {
             var indexes = [];
-            if (!e.renderMovableContent && e.virtualInfo.columnIndexes.length > this.parent.getFrozenColumns()) {
+            var frozenCols = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount();
+            if (!e.renderMovableContent && e.virtualInfo.columnIndexes.length > frozenCols) {
                 this.vfColIndex = e.virtualInfo.columnIndexes;
-                for (var i = 0; i < this.parent.getFrozenColumns(); i++) {
+                for (var i = 0; i < frozenCols; i++) {
                     indexes.push(i);
                 }
                 e.virtualInfo.columnIndexes = indexes;
@@ -29016,7 +30420,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                     this.vfColIndex = extend([], e.virtualInfo.columnIndexes);
                 }
                 e.virtualInfo.columnIndexes = extend([], this.vfColIndex);
-                e.virtualInfo.columnIndexes.splice(0, this.parent.getFrozenColumns());
+                e.virtualInfo.columnIndexes.splice(0, frozenCols);
             }
         }
     };
@@ -29031,13 +30435,19 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
         this.activeKey = this.empty;
     };
-    VirtualContentRenderer.prototype.restoreEdit = function () {
+    VirtualContentRenderer.prototype.restoreEdit = function (e) {
         if (this.isNormaledit) {
-            if (this.parent.editSettings.allowEditing && this.parent.editModule && !isNullOrUndefined(this.editedRowIndex)) {
+            var left = this.parent.getFrozenColumns();
+            var isFrozen = e && this.parent.isFrozenGrid();
+            var table = this.parent.getFrozenMode();
+            var trigger = e && (left || table === 'Left' || table === 'Right' ? e.renderMovableContent
+                : e.renderFrozenRightContent);
+            if ((!isFrozen || (isFrozen && trigger)) && this.parent.editSettings.allowEditing
+                && this.parent.editModule && !isNullOrUndefined(this.editedRowIndex)) {
                 var row = this.getRowByIndex(this.editedRowIndex);
                 if (Object.keys(this.virtualData).length && row && !this.content.querySelector('.e-editedrow')) {
-                    var top_2 = row.getBoundingClientRect().top;
-                    if (top_2 < this.content.offsetHeight && top_2 > this.parent.getRowHeight()) {
+                    var top_1 = row.getBoundingClientRect().top;
+                    if (top_1 < this.content.offsetHeight && top_1 > this.parent.getRowHeight()) {
                         this.parent.isEdit = false;
                         this.parent.editModule.startEdit(row);
                     }
@@ -29047,15 +30457,30 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                     this.virtualData = this.getVirtualEditedData(rowData);
                 }
             }
-            this.restoreAdd();
+            this.restoreAdd(e);
         }
     };
     VirtualContentRenderer.prototype.getVirtualEditedData = function (rowData) {
-        var editForm = this.content.querySelector('.e-gridform');
-        return this.parent.editModule.getCurrentEditedData(editForm, rowData);
+        var editForms = [].slice.call(this.parent.element.querySelectorAll('.e-gridform'));
+        var isFrozen = this.parent.isFrozenGrid();
+        var data = this.parent.editModule.getCurrentEditedData(editForms[0], rowData);
+        if (isFrozen) {
+            if (this.parent.getTablesCount() === 2) {
+                data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
+            }
+            if (this.parent.getTablesCount() === 3) {
+                data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
+                data = this.parent.editModule.getCurrentEditedData(editForms[2], rowData);
+            }
+        }
+        return data;
     };
-    VirtualContentRenderer.prototype.restoreAdd = function () {
-        if (this.isNormaledit && this.isAdd && !this.content.querySelector('.e-addedrow')) {
+    VirtualContentRenderer.prototype.restoreAdd = function (e) {
+        var left = this.parent.getFrozenColumns();
+        var isFrozen = e && this.parent.isFrozenGrid();
+        var table = this.parent.getFrozenMode();
+        var trigger = e && (left || table === 'Left' || table === 'Right' ? e.renderMovableContent : e.renderFrozenRightContent);
+        if ((!isFrozen || (isFrozen && trigger)) && this.isNormaledit && this.isAdd && !this.parent.element.querySelector('.e-addedrow')) {
             var isTop = this.parent.editSettings.newRowPosition === 'Top' && this.content.scrollTop < this.parent.getRowHeight();
             var isBottom = this.parent.editSettings.newRowPosition === 'Bottom'
                 && this.parent.pageSettings.currentPage === this.maxPage;
@@ -29075,10 +30500,6 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             .some(function (value) { return e.requestType === value; })) {
             this.refreshOffsets();
         }
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            var hdrTbls = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-table'));
-            this.header.virtualEle.table = hdrTbls[1];
-        }
         this.setVirtualHeight();
         this.resetScrollPosition(e.requestType);
     };
@@ -29086,16 +30507,11 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.setVirtualHeight = function (height) {
         var width = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             var virtualHeightTemp = (this.parent.pageSettings.currentPage === 1 && Object.keys(this.offsets).length <= 2) ?
                 this.offsets[1] : this.offsets[this.getTotalBlocks() - 2];
-            var scrollableElementHeight = this.parent.getMovableVirtualContent().clientHeight;
+            var scrollableElementHeight = this.content.clientHeight;
             virtualHeightTemp = virtualHeightTemp > scrollableElementHeight ? virtualHeightTemp : 0;
-            var fTblWidth = this.parent.enableColumnVirtualization ? 'auto' : width;
-            this.virtualEle.placeholder = this.parent.getFrozenVirtualContent().querySelector('.e-virtualtrack');
-            // To overcome the white space issue in last page (instead of position absolute)
-            this.virtualEle.setVirtualHeight(virtualHeightTemp, fTblWidth);
-            this.virtualEle.placeholder = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
             // To overcome the white space issue in last page (instead of position absolute)
             this.virtualEle.setVirtualHeight(virtualHeightTemp, width);
         }
@@ -29106,6 +30522,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);
+            if (this.parent.isFrozenGrid()) {
+                this.virtualEle.setMovableVirtualHeight(1, width);
+                this.header.virtualEle.setMovableVirtualHeight(1, width);
+            }
         }
     };
     VirtualContentRenderer.prototype.getPageFromTop = function (sTop, info) {
@@ -29157,6 +30577,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             if (Browser.isIE && !isWheel && check && !_this.preventEvent) {
                 _this.parent.showSpinner();
             }
+            var colVFtable = _this.parent.enableColumnVirtualization && _this.parent.isFrozenGrid();
             var xAxis = current.axis === 'X';
             var top = _this.prevInfo.offsets ? _this.prevInfo.offsets.top : null;
             var height = _this.content.getBoundingClientRect().height;
@@ -29165,27 +30586,23 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             if (isBlazor() && _this.parent.isServerRendered && _this.currentInfo && _this.currentInfo.startIndex && xAxis) {
                 y = _this.currentInfo.startIndex * _this.parent.getRowHeight();
             }
-            _this.virtualEle.adjustTable(x, Math.min(y, _this.offsets[_this.maxBlock]));
+            _this.virtualEle.adjustTable(colVFtable ? 0 : x, Math.min(y, _this.offsets[_this.maxBlock]));
+            if (colVFtable) {
+                _this.virtualEle.adjustMovableTable(x, 0);
+            }
             if (isBlazor() && _this.parent.isServerRendered && xAxis) {
                 _this.parent.notify('setcolumnstyles', { refresh: true });
             }
-            if (_this.parent.getFrozenColumns() && !xAxis) {
-                var left = _this.parent.getMovableVirtualContent().scrollLeft;
-                if (_this.parent.enableColumnVirtualization && left > 0) {
-                    var fvTable = _this.parent.getFrozenVirtualContent().querySelector('.e-virtualtable');
-                    fvTable.style.transform = "translate(" + 0 + "px, " + Math.min(y, _this.offsets[_this.maxBlock]) + "px)";
-                }
-                else {
-                    var fvTable = _this.parent.getFrozenVirtualContent().querySelector('.e-virtualtable');
-                    fvTable.style.transform = "translate(" + x + "px, " + Math.min(y, _this.offsets[_this.maxBlock]) + "px)";
-                }
-            }
             if (_this.parent.enableColumnVirtualization && (!isBlazor() || (isBlazor() && !_this.parent.isServerRendered))) {
-                _this.header.virtualEle.adjustTable(x, 0);
+                _this.header.virtualEle.adjustTable(colVFtable ? 0 : x, 0);
+                if (colVFtable) {
+                    _this.header.virtualEle.adjustMovableTable(x, 0);
+                }
             }
         };
     };
     VirtualContentRenderer.prototype.dataBound = function () {
+        this.parent.notify(refreshVirtualFrozenHeight, {});
         if (this.isSelection && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
             this.parent.selectRow(this.selectedRowIndex);
         }
@@ -29234,6 +30651,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         };
         this.parent.on(contentReady, fn, this);
     };
+    /** @hidden */
     VirtualContentRenderer.prototype.getVirtualData = function (data) {
         data.virtualData = this.virtualData;
         data.isAdd = this.isAdd;
@@ -29262,6 +30680,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.actionBegin = function (args) {
         if (args.requestType !== 'virtualscroll') {
             this.requestType = args.requestType;
+        }
+        if (!args.cancel) {
+            this.parent.notify(refreshVirtualFrozenRows, args);
         }
     };
     VirtualContentRenderer.prototype.virtualCellFocus = function (e) {
@@ -29309,6 +30730,12 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var block = Math.ceil((this.editedRowIndex + 1) / this.getBlockSize());
         var index = this.editedRowIndex - ((block - 1) * this.getBlockSize());
         this.vgenerator.cache[block][index].data = data;
+        if (this.vgenerator.movableCache[block]) {
+            this.vgenerator.movableCache[block][index].data = data;
+        }
+        if (this.vgenerator.frozenRightCache[block]) {
+            this.vgenerator.frozenRightCache[block][index].data = data;
+        }
     };
     VirtualContentRenderer.prototype.actionComplete = function (args) {
         if (args.requestType === 'delete' || args.requestType === 'save' || args.requestType === 'cancel') {
@@ -29339,9 +30766,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.scrollAfterEdit = function () {
         if (this.parent.editModule && this.parent.editSettings.allowEditing && this.isNormaledit) {
-            if (this.content.querySelector('.e-gridform')) {
-                var editForm = this.content.querySelector('.e-editedrow');
-                var addForm = this.content.querySelector('.e-addedrow');
+            if (this.parent.element.querySelector('.e-gridform')) {
+                var editForm = this.parent.element.querySelector('.e-editedrow');
+                var addForm = this.parent.element.querySelector('.e-addedrow');
                 if (editForm || addForm) {
                     var rowData = editForm ? extend({}, this.getRowObjectByIndex(this.editedRowIndex))
                         : extend({}, this.emptyRowData);
@@ -29407,9 +30834,8 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.resetScrollPosition = function (action) {
         if (this.actions.some(function (value) { return value === action; })) {
-            var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() : this.content;
-            this.preventEvent = content.scrollTop !== 0;
-            content.scrollTop = 0;
+            this.preventEvent = this.content.scrollTop !== 0;
+            this.content.scrollTop = 0;
         }
         if (action !== 'virtualscroll') {
             this.isAdd = false;
@@ -29431,16 +30857,25 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.getMovableVirtualRowByIndex = function (index) {
         return this.getRowCollection(index, true);
     };
-    VirtualContentRenderer.prototype.getRowCollection = function (index, isMovable, isRowObject) {
+    VirtualContentRenderer.prototype.getFrozenRightVirtualRowByIndex = function (index) {
+        return this.getRowCollection(index, false, false, true);
+    };
+    VirtualContentRenderer.prototype.getRowCollection = function (index, isMovable, isRowObject, isFrozenRight) {
         var prev = this.prevInfo.blockIndexes;
         var startIdx = (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) ?
             (prev[0] - 1) * this.getBlockSize() : this.startIndex;
         var rowCollection = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
+        rowCollection = isFrozenRight ? this.parent.getFrozenRightDataRows() : rowCollection;
         var collection = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         var selectedRow = collection[index - startIdx];
-        if (!isRowObject && this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
-            selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
-                : rowCollection[(index - startIdx) + this.parent.frozenRows];
+        if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+            if (!isRowObject) {
+                selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
+                    : rowCollection[(index - startIdx) + this.parent.frozenRows];
+            }
+            else {
+                selectedRow = index <= this.parent.frozenRows ? this.parent.getRowsObject()[index].data : selectedRow;
+            }
         }
         return selectedRow;
     };
@@ -29572,21 +31007,30 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
             && !this.requestTypes.some(function (value) { return value === _this.requestType; }) && !this.parent.selectionModule.isInteracted) {
-            var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-                : this.parent.getContent().firstElementChild;
             var selectedRow = this.parent.getRowByIndex(args.selectedIndex);
             var rowHeight = this.parent.getRowHeight();
-            var eleOffsHeight = ele.offsetHeight;
-            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
+            var eleOffsHeight = this.content.offsetHeight;
+            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, this.content, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
                 var scrollTop = (args.selectedIndex + 1) * rowHeight;
                 if (!isNullOrUndefined(scrollTop)) {
-                    ele.scrollTop = scrollTop;
+                    this.content.scrollTop = scrollTop;
                 }
             }
         }
-        this.requestType = this.empty;
+        if (this.parent.isFrozenGrid() && this.requestType) {
+            if (this.parent.getTablesCount() === this.frzIdx) {
+                this.requestType = this.empty;
+                this.frzIdx = 1;
+            }
+            else {
+                this.frzIdx++;
+            }
+        }
+        else {
+            this.requestType = this.empty;
+        }
     };
     VirtualContentRenderer.prototype.isRowInView = function (index, selectedRow, ele, eleOffsHeight, rowHeight) {
         if (isBlazor()) {
@@ -29612,6 +31056,7 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
     function VirtualHeaderRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.virtualEle = new VirtualElementHandler();
+        _this.isMovable = false;
         _this.gen = new VirtualRowModelGenerator(_this.parent);
         _this.parent.on(columnVisibilityChanged, _this.setVisible, _this);
         _this.parent.on(refreshVirtualBlock, function (e) { return e.virtualInfo.sentinelInfo.axis === 'X' ? _this.refreshUI() : null; }, _this);
@@ -29629,16 +31074,21 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.getPanel().querySelector('.e-headercontent');
-        if (!this.parent.getFrozenColumns()) {
-            this.virtualEle.content.style.position = 'relative';
-        }
+        this.virtualEle.content.style.position = 'relative';
         this.virtualEle.renderWrapper();
         this.virtualEle.renderPlaceHolder('absolute');
     };
     VirtualHeaderRenderer.prototype.appendContent = function (table) {
-        this.virtualEle.wrapper.appendChild(table);
+        if (!this.isMovable) {
+            this.virtualEle.wrapper.appendChild(table);
+        }
+        else {
+            this.virtualEle.movableWrapper.appendChild(table);
+            this.isMovable = false;
+        }
     };
     VirtualHeaderRenderer.prototype.refreshUI = function () {
+        this.isMovable = this.parent.isFrozenGrid();
         this.setFrozenTable(this.parent.getMovableVirtualContent());
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().querySelector('.e-headercontent')));
@@ -29704,16 +31154,16 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VirtualHeaderRenderer.prototype.setFrozenTable = function (content) {
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization
+        if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization
             && this.parent.contentModule.isXaxis()) {
             this.parent.contentModule
                 .setTable(content.querySelector('.e-table'));
         }
     };
     VirtualHeaderRenderer.prototype.setDisplayNone = function (col, displayVal) {
-        var frozenCols = this.parent.getFrozenColumns();
+        var frozenCols = this.parent.isFrozenGrid();
         var table = this.getTable();
-        if (frozenCols && col.index >= frozenCols) {
+        if (frozenCols && col.getFreezeTableName() === 'movable') {
             table = this.parent.getMovableVirtualHeader().querySelector('.e-table');
         }
         for (var _i = 0, _a = [].slice.apply(table.querySelectorAll('th.e-headercell')); _i < _a.length; _i++) {
@@ -29760,8 +31210,34 @@ var VirtualElementHandler = /** @__PURE__ @class */ (function () {
         }
         this.content.appendChild(this.placeholder);
     };
+    VirtualElementHandler.prototype.renderFrozenWrapper = function (height) {
+        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: "min-height:" + formatUnit(height) + "; display: flex" });
+        this.content.appendChild(this.wrapper);
+    };
+    VirtualElementHandler.prototype.renderFrozenPlaceHolder = function () {
+        this.placeholder = createElement('div', { className: 'e-virtualtrack' });
+        this.content.appendChild(this.placeholder);
+    };
+    VirtualElementHandler.prototype.renderMovableWrapper = function (height) {
+        this.movableWrapper = createElement('div', { className: 'e-virtualtable', styles: "min-height:" + formatUnit(height) });
+        this.movableContent.appendChild(this.movableWrapper);
+    };
+    VirtualElementHandler.prototype.renderMovablePlaceHolder = function () {
+        this.movablePlaceholder = createElement('div', { className: 'e-virtualtrack' });
+        this.movableContent.appendChild(this.movablePlaceholder);
+    };
     VirtualElementHandler.prototype.adjustTable = function (xValue, yValue) {
         this.wrapper.style.transform = "translate(" + xValue + "px, " + yValue + "px)";
+    };
+    VirtualElementHandler.prototype.adjustMovableTable = function (xValue, yValue) {
+        this.movableWrapper.style.transform = "translate(" + xValue + "px, " + yValue + "px)";
+    };
+    VirtualElementHandler.prototype.setMovableWrapperWidth = function (width, full) {
+        this.movableWrapper.style.width = width ? width + "px" : full ? '100%' : '';
+    };
+    VirtualElementHandler.prototype.setMovableVirtualHeight = function (height, width) {
+        this.movablePlaceholder.style.height = height + "px";
+        this.movablePlaceholder.style.width = width;
     };
     VirtualElementHandler.prototype.setWrapperWidth = function (width, full) {
         this.wrapper.style.width = width ? width + "px" : full ? '100%' : '';
@@ -29791,7 +31267,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
     VirtualScroll.prototype.instantiateRenderer = function () {
         this.parent.log(['limitation', 'virtual_height'], 'virtualization');
         var renderer = this.locator.getService('rendererFactory');
-        if (!this.parent.getFrozenColumns()) {
+        if (!this.parent.isFrozenGrid()) {
             if (this.parent.enableColumnVirtualization) {
                 renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
             }
@@ -29850,10 +31326,11 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
     }
     InlineEditRender.prototype.addNew = function (elements, args) {
         this.isEdit = false;
-        var mTbody;
         var tbody;
+        var mTbody = getMovableTbody(this.parent);
+        var frTbody = getFrozenRightTbody(this.parent);
         if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
-            tbody = this.parent.getHeaderContent().querySelector('tbody');
+            tbody = this.parent.getHeaderTable().querySelector('tbody');
         }
         else {
             tbody = this.parent.getContentTable().querySelector('tbody');
@@ -29862,29 +31339,48 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         if (tbody.querySelector('.e-emptyrow')) {
             var emptyRow = tbody.querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 var moveTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
                 (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    var frTbody_1 = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+                    (frTbody_1.firstElementChild).parentNode.removeChild(frTbody_1.firstElementChild);
+                }
             }
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
         this.parent.editModule.checkLastRow(args.row, args);
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             var mEle = this.renderMovableform(args.row, args);
-            if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
-                mTbody = this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
-            }
-            else {
-                mTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-            }
             this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mEle, mTbody.firstChild) : mTbody.appendChild(mEle);
             args.row.querySelector('.e-normaledit').setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
             mEle.setAttribute('colspan', '' + (this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns()));
+            if (frTbody) {
+                var frEle = this.renderFrozenRightForm(args.row, args);
+                this.parent.editSettings.newRowPosition === 'Top' ? frTbody.insertBefore(frEle, frTbody.firstChild)
+                    : frTbody.appendChild(frEle);
+                var colSpan = this.parent.getVisibleFrozenColumns() - this.parent.getFrozenRightColumnsCount();
+                args.row.querySelector('.e-normaledit').setAttribute('colspan', colSpan + '');
+                frEle.querySelector('.e-normaledit').setAttribute('colspan', '' + this.parent.getFrozenRightColumnsCount());
+            }
             if (this.parent.height === 'auto') {
                 this.parent.notify(frozenHeight, {});
             }
         }
+    };
+    InlineEditRender.prototype.renderFrozenRightForm = function (ele, args) {
+        var frEle = ele.cloneNode(true);
+        var form = args.frozenRightForm = frEle.querySelector('form');
+        if (this.parent.editSettings.template) {
+            form.innerHTML = '';
+            this.appendChildren(form, args.rowData, false);
+            return frEle;
+        }
+        this.renderRightFrozen(ele, frEle);
+        frEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
+            .querySelector('.e-frozen-right-header').querySelector('colgroup').innerHTML;
+        return frEle;
     };
     InlineEditRender.prototype.renderMovableform = function (ele, args) {
         var mEle = ele.cloneNode(true);
@@ -29901,35 +31397,37 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
     };
     InlineEditRender.prototype.updateFreezeEdit = function (row, td) {
         td = td.concat([].slice.call(this.getFreezeRow(row).querySelectorAll('td.e-rowcell')));
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            td = td.concat([].slice.call(this.getFreezeRightRow(row).querySelectorAll('td.e-rowcell')));
+        }
         return td;
     };
+    InlineEditRender.prototype.getFreezeRightRow = function (row) {
+        var idx = parseInt(row.getAttribute('aria-rowindex'), 10);
+        var fCont = this.parent.getFrozenLeftContentTbody();
+        var fHdr = this.parent.getFrozenHeaderTbody();
+        var frHdr = this.parent.getFrozenRightHeaderTbody();
+        var frCont = this.parent.getFrozenRightContentTbody();
+        if (fCont.contains(row) || fHdr.contains(row)) {
+            return this.parent.getFrozenRightRowByIndex(idx);
+        }
+        else if (frCont.contains(row) || frHdr.contains(row)) {
+            return this.parent.getRowByIndex(idx);
+        }
+        return row;
+    };
     InlineEditRender.prototype.getFreezeRow = function (row) {
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             var idx = parseInt(row.getAttribute('aria-rowindex'), 10);
-            var fCont = this.parent.getContent().querySelector('.e-frozencontent').querySelector('tbody');
-            var mCont = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-            var fHdr = this.parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody');
-            var mHdr = this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
-            if (this.parent.frozenRows && idx >= this.parent.frozenRows) {
-                idx -= this.parent.frozenRows;
+            var fCont = this.parent.getFrozenLeftContentTbody();
+            var mCont = this.parent.getMovableContentTbody();
+            var fHdr = this.parent.getFrozenHeaderTbody();
+            var mHdr = this.parent.getMovableHeaderTbody();
+            if (fCont.contains(row) || fHdr.contains(row)) {
+                return this.parent.getMovableRowByIndex(idx);
             }
-            if (fCont.contains(row)) {
-                if (this.parent.infiniteScrollSettings.enableCache) {
-                    return this.parent.getMovableRowByIndex(idx);
-                }
-                return mCont.children[idx];
-            }
-            else if (mCont.contains(row)) {
-                if (this.parent.infiniteScrollSettings.enableCache) {
-                    return this.parent.getRowByIndex(idx);
-                }
-                return fCont.children[idx];
-            }
-            else if (fHdr.contains(row)) {
-                return mHdr.children[idx];
-            }
-            else if (mHdr.contains(row)) {
-                return fHdr.children[idx];
+            else if (mCont.contains(row) || mHdr.contains(row)) {
+                return this.parent.getRowByIndex(idx);
             }
         }
         return row;
@@ -29937,11 +31435,14 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
     InlineEditRender.prototype.update = function (elements, args) {
         this.isEdit = true;
         var cloneRow = 'cloneRow';
-        if (closest(args.row, '.e-movablecontent')) {
+        if (closest(args.row, '.e-movablecontent') || closest(args.row, '.e-movableheader')) {
             args.row = this.getFreezeRow(args.row);
             if (isBlazor() && this.parent.isServerRendered) {
                 args[cloneRow] = args.row.cloneNode(true);
             }
+        }
+        if (closest(args.row, '.e-frozen-right-content') || closest(args.row, '.e-frozen-right-header')) {
+            args.row = this.getFreezeRightRow(args.row);
         }
         if (isBlazor() && this.parent.isServerRendered) {
             args.row.parentNode.insertBefore(args[cloneRow], args.row);
@@ -29970,7 +31471,7 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         var frozen = 'frozen';
         var cloneFrozen = 'cloneFrozen';
         var idx = parseInt(row.getAttribute('aria-rowindex'), 10);
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             if (idx < this.parent.frozenRows) {
                 cont = this.parent.getHeaderContent();
                 fCls = '.e-frozenheader';
@@ -29980,12 +31481,13 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
                 fCls = '.e-frozencontent';
             }
             var mTd = td.cloneNode(true);
+            var frTd = td.cloneNode(true);
             var form = args.movableForm = mTd.querySelector('form');
             if (this.parent.editSettings.template) {
-                form.innerHTML = '';
-                this.appendChildren(form, args.rowData, false);
+                this.refreshEditForm(form, args.rowData);
             }
             var fRows = void 0;
+            var frRows = void 0;
             if (cont.querySelector(fCls).contains(row)) {
                 fRows = this.parent.getMovableRowByIndex(idx);
                 if (isBlazor() && this.parent.isServerRendered) {
@@ -29997,6 +31499,12 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     this.updateFrozenCont(fRows, td, mTd);
+                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                        args.frozenRightForm = frTd.querySelector('form');
+                        this.refreshEditForm(args.frozenRightForm, args.rowData);
+                        frRows = this.parent.getFrozenRightRowByIndex(idx);
+                        this.updateFrozenRightCont(frRows, td, frTd);
+                    }
                 }
             }
             else {
@@ -30010,6 +31518,12 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     this.updateFrozenCont(fRows, mTd, td);
+                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                        args.frozenRightForm = frTd.querySelector('form');
+                        this.refreshEditForm(args.frozenRightForm, args.rowData);
+                        frRows = this.parent.getFrozenRightRowByIndex(idx);
+                        this.updateFrozenRightCont(frRows, frTd, td);
+                    }
                 }
             }
             if (isBlazor() && this.parent.isServerRendered) {
@@ -30019,9 +31533,30 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
             else {
                 fRows.appendChild(mTd);
                 fRows.classList.add('e-editedrow');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frRows.appendChild(frTd);
+                    frRows.classList.add('e-editedrow');
+                    alignFrozenEditForm(args.frozenRightForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
+                }
             }
             alignFrozenEditForm(args.movableForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
         }
+    };
+    InlineEditRender.prototype.refreshEditForm = function (form, data) {
+        if (this.parent.editSettings.template) {
+            form.innerHTML = '';
+            this.appendChildren(form, data, false);
+        }
+    };
+    InlineEditRender.prototype.updateFrozenRightCont = function (row, ele, frEle) {
+        row.innerHTML = '';
+        if (!this.parent.editSettings.template) {
+            this.renderRightFrozen(ele, frEle);
+            frEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
+                .querySelector('.e-frozen-right-header').querySelector('colgroup').innerHTML;
+        }
+        ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() - this.parent.getFrozenRightColumnsCount() + '');
+        frEle.setAttribute('colspan', this.parent.getFrozenRightColumnsCount() + '');
     };
     InlineEditRender.prototype.updateFrozenCont = function (row, ele, mEle) {
         row.innerHTML = '';
@@ -30033,11 +31568,27 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
         mEle.setAttribute('colspan', this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns() + '');
     };
+    InlineEditRender.prototype.renderRightFrozen = function (ele, frEle) {
+        frEle.querySelector('tr').innerHTML = '';
+        var cols = this.parent.getColumns();
+        var k = 0;
+        for (var i = 0; i < cols.length; i++, k++) {
+            if (cols[i].getFreezeTableName() === 'frozen-right') {
+                var index = k - this.parent.getMovableColumnsCount();
+                frEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[index]));
+                k--;
+            }
+        }
+    };
     InlineEditRender.prototype.renderMovable = function (ele, mEle) {
-        var frzCols = this.parent.getFrozenColumns();
         mEle.querySelector('tr').innerHTML = '';
-        for (var i = frzCols; i < this.parent.getColumns().length; i++) {
-            mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[frzCols]));
+        var cols = this.parent.getColumns();
+        var k = 0;
+        for (var i = 0; i < cols.length; i++, k++) {
+            if (cols[i].getFreezeTableName() === 'movable') {
+                mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[k]));
+                k--;
+            }
         }
     };
     InlineEditRender.prototype.getEditElement = function (elements, isEdit, tdElement, args, isFrozen) {
@@ -30379,18 +31930,26 @@ var EditRender = /** @__PURE__ @class */ (function () {
         var cell;
         var value;
         var fForm;
-        var frzCols = gObj.getFrozenColumns();
+        var frForm;
+        var frzCols = gObj.isFrozenGrid();
+        var index = gObj.getFrozenMode() === 'Right' && gObj.editSettings.mode === 'Normal' ? 1 : 0;
         var form = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
-            gObj.element.querySelector('.e-gridform');
+            gObj.element.querySelectorAll('.e-gridform')[index];
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             var rowIndex = parseInt(args.row.getAttribute('aria-rowindex'), 10);
             if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
                 || rowIndex < gObj.frozenRows)) {
                 fForm = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frForm = args.frozenRightForm;
+                }
             }
             else {
                 fForm = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frForm = args.frozenRightForm;
+                }
             }
         }
         var cols = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() : [gObj.getColumnByField(args.columnName)];
@@ -30414,8 +31973,11 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 continue;
             }
             value = (col.valueAccessor(col.field, args.rowData, col));
-            if (frzCols && cols.indexOf(col) >= frzCols && gObj.editSettings.mode === 'Normal') {
+            if (col.getFreezeTableName() === 'movable' && gObj.editSettings.mode === 'Normal') {
                 cell = fForm.querySelector('[e-mappinguid=' + col.uid + ']');
+            }
+            else if (frForm && col.getFreezeTableName() === 'frozen-right' && gObj.editSettings.mode === 'Normal') {
+                cell = frForm.querySelector('[e-mappinguid=' + col.uid + ']');
             }
             else {
                 cell = form.querySelector('[e-mappinguid=' + col.uid + ']');
@@ -30441,15 +32003,23 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (frzCols !== 0 && !this.parent.allowTextWrap && ((args.requestType === 'add') || args.requestType === 'beginEdit')
+        if (frzCols && !this.parent.allowTextWrap && ((args.requestType === 'add') || args.requestType === 'beginEdit')
             && this.parent.editSettings.mode !== 'Dialog' && !isNullOrUndefined(form) && !isNullOrUndefined(fForm)) {
             var mTdElement = (fForm.querySelector('tr').children[0]);
             var fTdElement = (form.querySelector('tr').children[0]);
             if (fTdElement.offsetHeight > mTdElement.offsetHeight) {
                 mTdElement.style.height = fTdElement.offsetHeight + 'px';
+                if (frForm) {
+                    var frTdElement = fForm.querySelector('tr').children[0];
+                    frTdElement.style.height = fTdElement.offsetHeight + 'px';
+                }
             }
             else {
                 fTdElement.style.height = mTdElement.offsetHeight + 'px';
+                if (frForm) {
+                    var frTdElement = fForm.querySelector('tr').children[0];
+                    frTdElement.style.height = mTdElement.offsetHeight + 'px';
+                }
             }
         }
     };
@@ -31000,7 +32570,8 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var form1 = gObj.editModule.formObj.validate();
         var form2 = gObj.editModule.mFormObj ? gObj.editModule.mFormObj.validate() : true;
-        return (form1 && form2);
+        var form3 = gObj.editModule.frFormObj ? gObj.editModule.frFormObj.validate() : true;
+        return (form1 && form2 && form3);
     };
     NormalEdit.prototype.endEdit = function () {
         var gObj = this.parent;
@@ -31012,9 +32583,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             requestType: 'save', type: actionBegin, data: editedData, cancel: false,
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
+        var index = gObj.getFrozenMode() === 'Right' ? 1 : 0;
         var isDlg = gObj.editSettings.mode === 'Dialog';
         var dlgWrapper = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
-        var dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
+        var dlgForm = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelectorAll('.e-gridform')[index];
         var data = { virtualData: {}, isAdd: false };
         this.parent.notify(getVirtualData, data);
         if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
@@ -31026,17 +32598,26 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         else {
             editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
         }
-        if (gObj.getFrozenColumns() && gObj.editSettings.mode === 'Normal') {
-            var mForm = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
-            if (gObj.frozenRows && mForm) {
-                editedData = gObj.editModule.getCurrentEditedData(mForm, editedData);
+        if (gObj.isFrozenGrid() && gObj.editSettings.mode === 'Normal') {
+            var mhdrFrm = gObj.getMovableVirtualHeader().querySelector('.e-gridform');
+            var mCntFrm = gObj.getMovableVirtualContent().querySelector('.e-gridform');
+            var mvblEle = [mhdrFrm || mCntFrm];
+            var frHdrFrm = void 0;
+            var frCntFrm = void 0;
+            var frEle = [];
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                frHdrFrm = gObj.getFrozenRightHeader().querySelector('.e-gridform');
+                frCntFrm = gObj.getFrozenRightContent().querySelector('.e-gridform');
+                frEle = [frHdrFrm || frCntFrm];
             }
-            else {
-                var form = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
-                if (form) {
-                    editedData = gObj.editModule.getCurrentEditedData(form, editedData);
+            gridActionHandler(this.parent, function (tableName, elements) {
+                for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+                    var ele = elements_1[_i];
+                    if (ele) {
+                        editedData = gObj.editModule.getCurrentEditedData(ele, editedData);
+                    }
                 }
-            }
+            }, [[], mvblEle, frEle]);
         }
         if (isBlazor()) {
             var form = 'form';
@@ -31170,7 +32751,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             this.cloneRow = null;
             this.originalRow.classList.remove('e-hiddenrow');
         }
-        if (this.parent.getFrozenColumns() && this.cloneFrozen) {
+        if (this.parent.isFrozenGrid() && this.cloneFrozen) {
             this.cloneFrozen.remove();
             this.frozen.classList.remove('e-hiddenrow');
         }
@@ -31205,7 +32786,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         return refresh;
     };
     NormalEdit.prototype.refreshRow = function (data) {
-        var frzCols = this.parent.getFrozenColumns();
+        var frzCols = this.parent.isFrozenGrid();
         var row = new RowRenderer(this.serviceLocator, null, this.parent);
         var rowObj = this.parent.getRowObjectFromUID(this.uid);
         if (rowObj) {
@@ -31215,29 +32796,17 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             if (this.needRefresh()) {
                 row.refresh(rowObj, this.parent.getColumns(), true);
             }
-            if (frzCols) {
-                var uid = void 0;
-                var tr = this.parent.element.querySelector('[data-uid=' + rowObj.uid + ']');
-                if ((parentsUntil(tr, 'e-frozencontent')) || (parentsUntil(tr, 'e-frozenheader'))) {
-                    if (this.parent.infiniteScrollSettings.enableCache) {
-                        uid = this.parent.getMovableRowByIndex(rowObj.index).getAttribute('data-uid');
-                    }
-                    else {
-                        uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
-                    }
-                }
-                else {
-                    if (this.parent.infiniteScrollSettings.enableCache) {
-                        uid = this.parent.getRowByIndex(rowObj.index).getAttribute('data-uid');
-                    }
-                    else {
-                        uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+            var tr = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + rowObj.index + '"]'));
+            if (frzCols && tr.length) {
+                for (var i = 0; i < tr.length; i++) {
+                    var rowUid = tr[i].getAttribute('data-uid');
+                    if (rowUid !== this.uid) {
+                        rowObj = this.parent.getRowObjectFromUID(rowUid);
+                        rowObj.changes = data;
+                        row.refresh(rowObj, this.parent.getColumns(), true);
+                        this.parent.editModule.checkLastRow(tr[i]);
                     }
                 }
-                rowObj = this.parent.getRowObjectFromUID(uid);
-                rowObj.changes = data;
-                row.refresh(rowObj, this.parent.columns, true);
-                this.parent.editModule.checkLastRow(tr);
             }
         }
     };
@@ -31386,25 +32955,13 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     };
     NormalEdit.prototype.stopEditStatus = function () {
         var gObj = this.parent;
-        var elem = gObj.element.querySelector('.e-addedrow');
-        var mElem;
-        var editMElem;
-        if (gObj.getFrozenColumns()) {
-            mElem = gObj.element.querySelectorAll('.e-addedrow')[1];
-            editMElem = gObj.element.querySelectorAll('.e-editedrow')[1];
-            if (mElem) {
-                remove(mElem);
-            }
-            if (editMElem) {
-                editMElem.classList.remove('e-editedrow');
-            }
+        var addElements = [].slice.call(gObj.element.querySelectorAll('.e-addedrow'));
+        var editElements = [].slice.call(gObj.element.querySelectorAll('.e-editedrow'));
+        for (var i = 0; i < addElements.length; i++) {
+            remove(addElements[i]);
         }
-        if (elem) {
-            remove(elem);
-        }
-        elem = gObj.element.querySelector('.e-editedrow');
-        if (elem) {
-            elem.classList.remove('e-editedrow');
+        for (var i = 0; i < editElements.length; i++) {
+            editElements[i].classList.remove('e-editedrow');
         }
     };
     /**
@@ -31595,7 +33152,8 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
     };
     BatchEdit.prototype.onCellFocused = function (e) {
-        var frzCols = this.parent.getFrozenColumns();
+        var frzCols = this.parent.getFrozenLeftCount();
+        var frzRightCols = this.parent.getFrozenRightColumnsCount();
         var mCont = this.parent.getContent().querySelector('.e-movablecontent');
         var mHdr = this.parent.getHeaderContent().querySelector('.e-movableheader');
         var clear = (!e.container.isContent || !e.container.isDataCell) && !(this.parent.frozenRows && e.container.isHeader);
@@ -31608,6 +33166,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         var _a = e.container.indexes, rowIndex = _a[0], cellIndex = _a[1];
         if (frzCols && (mCont.contains(e.element) || (this.parent.frozenRows && mHdr.contains(e.element)))) {
             cellIndex += frzCols;
+        }
+        if (frzRightCols) {
+            var frHdr = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
+            var frCont = this.parent.getContent().querySelector('.e-frozen-right-content');
+            if (frCont.contains(e.element) || (this.parent.frozenRows && frHdr.contains(e.element))) {
+                cellIndex += (frzCols + this.parent.getMovableColumnsCount());
+            }
         }
         if (this.parent.frozenRows && e.container.isContent) {
             rowIndex += this.parent.frozenRows;
@@ -31650,15 +33215,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     BatchEdit.prototype.closeEdit = function () {
+        var _this = this;
         var gObj = this.parent;
         var rows = this.parent.getRowsObject();
         var argument = { cancel: false, batchChanges: this.getBatchChanges() };
         gObj.notify(beforeBatchCancel, argument);
         if (argument.cancel) {
             return;
-        }
-        if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2 && !(isBlazor() && gObj.isServerRendered)) {
-            rows.push.apply(rows, this.parent.getMovableRowsObject());
         }
         var cols = this.parent.getColumns();
         if (isBlazor()) {
@@ -31669,79 +33232,30 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        var rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
-        var tr;
-        var mTr;
-        var movObj;
         if (gObj.isEdit) {
             this.saveCell(true);
         }
         this.isAdded = false;
         gObj.clearSelection();
-        for (var i = 0; i < rows.length; i++) {
-            if (rows[i].isDirty) {
-                if (gObj.frozenColumns) {
-                    movObj = gObj.getMovableRowsObject()[rows[i].index];
-                    movObj.isDirty = true;
+        var allRows = getGridRowObjects(this.parent);
+        var _loop_1 = function (i) {
+            var isInsert = false;
+            var isDirty = rows[i].isDirty;
+            gridActionHandler(this_1.parent, function (tableName, rows) {
+                isInsert = _this.removeBatchElementChanges(rows[i], isDirty);
+                if (isInsert) {
+                    rows.splice(i, 1);
                 }
-                tr = gObj.getContentTable().querySelector('[data-uid=' + rows[i].uid + ']');
-                if (gObj.frozenRows && !tr) {
-                    tr = gObj.getHeaderContent().querySelector('[data-uid=' + rows[i].uid + ']');
-                }
-                if (gObj.frozenColumns) {
-                    if (gObj.frozenRows) {
-                        mTr = gObj.getHeaderContent().querySelector('.e-movableheader')
-                            .querySelector('[data-uid=' + rows[i].uid + ']');
-                        if (!mTr) {
-                            mTr = gObj.getContent().querySelector('.e-movablecontent')
-                                .querySelector('[data-uid=' + rows[i].uid + ']');
-                        }
-                    }
-                    else {
-                        mTr = gObj.getContent().querySelector('.e-movablecontent')
-                            .querySelector('[data-uid=' + rows[i].uid + ']');
-                    }
-                }
-                if (tr || mTr) {
-                    if (tr && tr.classList.contains('e-insertedrow') || mTr && mTr.classList.contains('e-insertedrow')) {
-                        if (tr) {
-                            remove(tr);
-                        }
-                        if (mTr && (gObj.frozenColumns || gObj.frozenRows)) {
-                            remove(mTr);
-                        }
-                        this.removeRowObjectFromUID(rows[i].uid);
-                        i--;
-                    }
-                    else {
-                        refreshForeignData(rows[i], this.parent.getForeignKeyColumns(), rows[i].data);
-                        delete rows[i].changes;
-                        delete rows[i].edit;
-                        rows[i].isDirty = false;
-                        var ftr = mTr ? mTr : tr;
-                        if (isBlazor() && gObj.isServerRendered) {
-                            if (gObj.getFrozenColumns()) {
-                                this.removeHideAndSelection(mTr);
-                            }
-                            this.removeHideAndSelection(tr);
-                            this.closeForm();
-                        }
-                        else {
-                            classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
-                            rowRenderer.refresh(rows[i], gObj.getColumns(), false);
-                        }
-                    }
-                    if (this.parent.aggregates.length > 0) {
-                        var type = 'type';
-                        var editType = [];
-                        editType[type] = 'cancel';
-                        this.parent.notify(refreshFooterRenderer, editType);
-                        if (this.parent.groupSettings.columns.length > 0) {
-                            this.parent.notify(groupAggregates, editType);
-                        }
-                    }
-                }
+            }, allRows);
+            if (isInsert) {
+                i--;
             }
+            out_i_1 = i;
+        };
+        var this_1 = this, out_i_1;
+        for (var i = 0; i < rows.length; i++) {
+            _loop_1(i);
+            i = out_i_1;
         }
         if (isBlazor() && gObj.isServerRendered) {
             gObj.selectRow(gObj.selectionModule.prevRowIndex);
@@ -31762,9 +33276,45 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.notify(tooltipDestroy, {});
         args = { requestType: 'batchCancel', rows: this.parent.getRowsObject() };
         gObj.trigger(batchCancel, args);
-        if (gObj.frozenColumns) {
-            rows.splice(this.parent.getMovableRowsObject().length, rows.length);
+    };
+    BatchEdit.prototype.removeBatchElementChanges = function (row, isDirty) {
+        var gObj = this.parent;
+        var rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
+        var isInstertedRemoved = false;
+        if (isDirty) {
+            row.isDirty = isDirty;
+            var tr = gObj.getRowElementByUID(row.uid);
+            if (tr) {
+                if (tr.classList.contains('e-insertedrow')) {
+                    remove(tr);
+                    isInstertedRemoved = true;
+                }
+                else {
+                    refreshForeignData(row, this.parent.getForeignKeyColumns(), row.data);
+                    delete row.changes;
+                    delete row.edit;
+                    row.isDirty = false;
+                    if (isBlazor() && gObj.isServerRendered) {
+                        this.removeHideAndSelection(tr);
+                        this.closeForm();
+                    }
+                    else {
+                        classList(tr, [], ['e-hiddenrow', 'e-updatedtd']);
+                        rowRenderer.refresh(row, gObj.getColumns(), false);
+                    }
+                }
+                if (this.parent.aggregates.length > 0) {
+                    var type = 'type';
+                    var editType = [];
+                    editType[type] = 'cancel';
+                    this.parent.notify(refreshFooterRenderer, editType);
+                    if (this.parent.groupSettings.columns.length > 0) {
+                        this.parent.notify(groupAggregates, editType);
+                    }
+                }
+            }
         }
+        return isInstertedRemoved;
     };
     BatchEdit.prototype.removeHideAndSelection = function (tr) {
         if (tr.classList.contains('e-hiddenrow')) {
@@ -31910,23 +33460,21 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 break;
             }
         }
-        rows.splice(i, 1);
+        gridActionHandler(this.parent, function (tableName, rows) {
+            rows.splice(i, 1);
+        }, getGridRowObjects(this.parent));
     };
     /**
      * @hidden
      */
     BatchEdit.prototype.addRowObject = function (row) {
-        var isTop = this.parent.editSettings.newRowPosition === 'Top';
-        var frozenColumnsCount = this.parent.getFrozenColumns();
-        if (frozenColumnsCount) {
-            var mRow = this.parent.getMovableRowsObject();
-            var mEle = row.clone();
-            mEle.cells = mEle.cells.slice(frozenColumnsCount);
-            row.cells = row.cells.slice(0, frozenColumnsCount);
-            isTop ? mRow.unshift(mEle) : mRow.push(mEle);
-        }
-        isTop ? this.parent.getRowsObject().unshift(row) :
-            this.parent.getRowsObject().push(row);
+        var gObj = this.parent;
+        var isTop = gObj.editSettings.newRowPosition === 'Top';
+        gridActionHandler(this.parent, function (tableName, rows) {
+            var rowClone = row.clone();
+            rowClone.cells = splitFrozenRowObjectCells(gObj, rowClone.cells, tableName);
+            isTop ? rows.unshift(rowClone) : rows.push(rowClone);
+        }, getGridRowObjects(this.parent), true);
     };
     // tslint:disable-next-line:max-func-body-length
     BatchEdit.prototype.bulkDelete = function (fieldname, data) {
@@ -31953,6 +33501,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 return;
             }
         }
+        // tslint:disable-next-line:max-func-body-length
         gObj.trigger(beforeBatchDelete, args, function (beforeBatchDeleteArgs) {
             if (beforeBatchDeleteArgs.cancel) {
                 return;
@@ -31961,17 +33510,14 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             gObj.clearSelection();
             beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
                 beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
-            if (_this.parent.getFrozenColumns()) {
+            if (_this.parent.isFrozenGrid()) {
                 if (data) {
                     index = parseInt(beforeBatchDeleteArgs.row.getAttribute('aria-rowindex'), 10);
-                    selectedRows = [beforeBatchDeleteArgs.row];
-                    if (parentsUntil(beforeBatchDeleteArgs.row, 'e-frozencontent')
-                        || parentsUntil(beforeBatchDeleteArgs.row, 'e-frozenheader')) {
-                        selectedRows = selectedRows.concat(gObj.getMovableRowByIndex(index));
-                    }
-                    else if (parentsUntil(beforeBatchDeleteArgs.row, 'e-movablecontent')
-                        || (parentsUntil(beforeBatchDeleteArgs.row, 'e-movableheader'))) {
-                        selectedRows = selectedRows.concat(gObj.getFrozenRowByIndex(index));
+                    selectedRows = [];
+                    selectedRows.push(gObj.getRowByIndex(index));
+                    selectedRows.push(gObj.getMovableRowByIndex(index));
+                    if (gObj.getFrozenMode() === 'Left-Right') {
+                        selectedRows.push(gObj.getFrozenRightRowByIndex(index));
                     }
                 }
                 for (var i = 0; i < selectedRows.length; i++) {
@@ -31986,22 +33532,20 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                         rowObj.edit = 'delete';
                         classList(selectedRows[i], ['e-hiddenrow', 'e-updatedtd'], []);
                         if (gObj.frozenRows && index < gObj.frozenRows && gObj.getMovableDataRows().length >= gObj.frozenRows) {
-                            gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
-                                .appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
-                            gObj.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
-                                .appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                            gObj.getMovableHeaderTbody().appendChild(gObj.getMovableRowByIndex(gObj.frozenRows - 1));
+                            gObj.getFrozenHeaderTbody().appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                            if (gObj.getFrozenMode() === 'Left-Right') {
+                                gObj.getFrozenRightHeaderTbody().appendChild(gObj.getFrozenRightRowByIndex(gObj.frozenRows - 1));
+                            }
                         }
                         if (gObj.frozenRows && index < gObj.frozenRows && gObj.getDataRows().length >= gObj.frozenRows) {
-                            gObj.getHeaderContent().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
+                            gObj.getHeaderTable().querySelector('tbody').appendChild(gObj.getRowByIndex(gObj.frozenRows - 1));
                         }
                     }
                     delete selectedRows[i];
                 }
-                var fCont = gObj.getContent().querySelector('.e-frozencontent');
-                var mCont = gObj.getContent().querySelector('.e-movablecontent');
-                fCont.style.height = mCont.offsetHeight - getScrollBarWidth() + 'px';
             }
-            else if (!_this.parent.getFrozenColumns() && (selectedRows.length === 1 || data)) {
+            else if (!_this.parent.isFrozenGrid() && (selectedRows.length === 1 || data)) {
                 var uid = beforeBatchDeleteArgs.row.getAttribute('data-uid');
                 uid = data && _this.parent.editModule.deleteRowUid ? uid = _this.parent.editModule.deleteRowUid : uid;
                 if (beforeBatchDeleteArgs.row.classList.contains('e-insertedrow')) {
@@ -32048,46 +33592,33 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         });
     };
     BatchEdit.prototype.refreshRowIdx = function () {
-        var rows = [];
-        var mRows = [];
-        var nonMovableRows = [];
-        var frzCols = this.parent.getFrozenColumns();
-        if (this.parent.frozenRows) {
-            rows = [].slice.call(this.parent.getHeaderTable().querySelector('tbody').children);
-            if (frzCols) {
-                mRows = [].slice.call(this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody').children);
-                for (var i = 0; i < mRows.length; i++) {
-                    nonMovableRows[i] = this.parent.createElement('tr', { className: 'emptynonmv' });
-                }
-            }
-        }
-        if (frzCols) {
-            mRows = mRows.concat([].slice.call(this.parent.getContentTable().querySelector('tbody').children));
-            nonMovableRows = nonMovableRows.concat([].slice.call(this.parent.element.querySelector('.e-movablecontent').querySelector('tbody').children));
-        }
-        rows = rows.concat([].slice.call(this.parent.getContentTable().querySelector('tbody').children));
-        for (var i = 0, j = 0, len = rows.length; i < len; i++) {
+        var gObj = this.parent;
+        var rows = gObj.getAllDataRows(true);
+        var dataRows = getGridRowElements(this.parent);
+        var _loop_2 = function (i, j, len) {
             if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
-                rows[i].setAttribute('aria-rowindex', j.toString());
-                if (frzCols) {
-                    mRows[i].setAttribute('aria-rowindex', j.toString());
-                    if (nonMovableRows[i].classList.contains('e-row')) {
-                        nonMovableRows[i].setAttribute('aria-rowindex', j.toString());
-                    }
-                }
+                gridActionHandler(this_2.parent, function (tableName, rowElements) {
+                    rowElements[i].setAttribute('aria-rowindex', j.toString());
+                }, dataRows);
                 j++;
             }
             else {
-                rows[i].removeAttribute('aria-rowindex');
-                if (frzCols) {
-                    mRows[i].removeAttribute('aria-rowindex');
-                }
+                gridActionHandler(this_2.parent, function (tableName, rowElements) {
+                    rowElements[i].removeAttribute('aria-rowindex');
+                }, dataRows);
             }
+            out_j_1 = j;
+        };
+        var this_2 = this, out_j_1;
+        for (var i = 0, j = 0, len = rows.length; i < len; i++) {
+            _loop_2(i, j, len);
+            j = out_j_1;
         }
     };
     BatchEdit.prototype.getIndexFromData = function (data) {
         return inArray(data, this.parent.getCurrentViewRecords());
     };
+    // tslint:disable-next-line:max-func-body-length
     BatchEdit.prototype.bulkAddRow = function (data) {
         var _this = this;
         var gObj = this.parent;
@@ -32115,7 +33646,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             _this.isAdded = true;
             gObj.clearSelection();
             var mTr;
-            var mTbody;
+            var frTr;
             var row = new RowRenderer(_this.serviceLocator, null, _this.parent);
             var model = new RowModelGenerator(_this.parent);
             var modelData = model.generateRows([beforeBatchAddArgs.defaultData]);
@@ -32131,30 +33662,19 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             if (tbody.querySelector('.e-emptyrow')) {
                 var emptyRow = tbody.querySelector('.e-emptyrow');
                 emptyRow.parentNode.removeChild(emptyRow);
-                if (_this.parent.getFrozenColumns()) {
-                    var moveTbody = _this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-                    (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
-                }
+                _this.removeFrozenTbody();
             }
-            if (gObj.getFrozenColumns()) {
-                mTr = _this.renderMovable(tr);
-                if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-                    mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
-                }
-                else {
-                    mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
-                }
-                _this.parent.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
-                addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
-                if (_this.parent.height === 'auto') {
-                    _this.parent.notify(frozenHeight, {});
-                }
+            if (gObj.isFrozenGrid()) {
+                frTr = tr.cloneNode(true);
+                mTr = _this.renderMovable(tr, frTr);
+                tr = gObj.getFrozenMode() === 'Right' ? frTr : tr;
+                _this.renderFrozenAddRow(tr, mTr, frTr);
             }
             if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
-                tbody = gObj.getHeaderContent().querySelector('tbody');
+                tbody = gObj.getHeaderTable().querySelector('tbody');
             }
             else {
-                tbody = gObj.getContent().querySelector('tbody');
+                tbody = gObj.getContentTable().querySelector('tbody');
             }
             _this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
             addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
@@ -32164,7 +33684,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             _this.addRowObject(modelData[0]);
             _this.refreshRowIdx();
             _this.focus.forgetPrevious();
-            gObj.notify(batchAdd, { rows: _this.parent.getRowsObject(), args: { isFrozen: _this.parent.getFrozenColumns() } });
+            gObj.notify(batchAdd, { rows: _this.parent.getRowsObject(), args: { isFrozen: _this.parent.isFrozenGrid() } });
             var changes = _this.getBatchChanges();
             var addedRecords = 'addedRecords';
             var dRecords = 'deletedRecords';
@@ -32184,7 +33704,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
             };
             gObj.trigger(batchAdd, args1);
-            if (gObj.getFrozenColumns()) {
+            if (gObj.isFrozenGrid()) {
                 alignFrozenEditForm(mTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
             }
             if (isBlazor()) {
@@ -32193,14 +33713,41 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             }
         });
     };
-    BatchEdit.prototype.renderMovable = function (ele) {
+    BatchEdit.prototype.renderFrozenAddRow = function (tr, mTr, frTr) {
+        var gObj = this.parent;
+        var mTbody = getMovableTbody(this.parent);
+        var frTbody = getFrozenRightTbody(this.parent);
+        gObj.editSettings.newRowPosition === 'Top' ? mTbody.insertBefore(mTr, mTbody.firstChild) : mTbody.appendChild(mTr);
+        addClass(mTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+        if (frTbody && frTr) {
+            gObj.editSettings.newRowPosition === 'Top' ? frTbody.insertBefore(frTr, frTbody.firstChild)
+                : frTbody.appendChild(frTr);
+            addClass(frTr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
+            alignFrozenEditForm(frTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
+        }
+        if (gObj.height === 'auto') {
+            gObj.notify(frozenHeight, {});
+        }
+    };
+    BatchEdit.prototype.removeFrozenTbody = function () {
+        var gObj = this.parent;
+        if (gObj.isFrozenGrid()) {
+            var moveTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            (moveTbody.firstElementChild).parentNode.removeChild(moveTbody.firstElementChild);
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                var frTbody = gObj.getContent().querySelector('.e-frozen-right-content').querySelector('tbody');
+                (frTbody.firstElementChild).parentNode.removeChild(frTbody.firstElementChild);
+            }
+        }
+    };
+    BatchEdit.prototype.renderMovable = function (ele, rightEle) {
         var mEle = ele.cloneNode(true);
-        for (var i = 0; i < this.parent.getFrozenColumns(); i++) {
-            mEle.removeChild(mEle.children[0]);
-        }
-        for (var i = this.parent.getFrozenColumns(), len = ele.childElementCount; i < len; i++) {
-            ele.removeChild(ele.children[ele.childElementCount - 1]);
-        }
+        var movable = this.parent.getMovableColumnsCount();
+        var left = this.parent.getFrozenLeftCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        sliceElements(ele, 0, left);
+        sliceElements(mEle, left, right ? mEle.children.length - right : mEle.children.length);
+        sliceElements(rightEle, left + movable, rightEle.children.length);
         return mEle;
     };
     BatchEdit.prototype.findNextEditableCell = function (columnIndex, isAdd, isValOnly) {
@@ -32272,14 +33819,12 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             return;
         }
         var row;
-        var rowData;
         var mRowData;
-        var colIdx = gObj.getColumnIndexByField(field);
-        var frzCols = gObj.getFrozenColumns();
-        if (frzCols && colIdx >= frzCols) {
-            row = gObj.getMovableDataRows()[index];
-            mRowData = this.parent.getRowObjectFromUID(this.parent.getMovableDataRows()[index].getAttribute('data-uid'));
-            rowData = mRowData.changes ? extend({}, {}, mRowData.changes, true) : extend({}, {}, this.getDataByIndex(index), true);
+        var rowData = extend({}, {}, this.getDataByIndex(index), true);
+        if (col.getFreezeTableName() === 'movable' || col.getFreezeTableName() === 'frozen-right') {
+            row = col.getFreezeTableName() === 'movable' ? gObj.getMovableDataRows()[index] : gObj.getFrozenRightDataRows()[index];
+            mRowData = this.parent.getRowObjectFromUID(row.getAttribute('data-uid'));
+            rowData = mRowData.changes ? extend({}, {}, mRowData.changes, true) : rowData;
         }
         else {
             row = gObj.getDataRows()[index];
@@ -32358,16 +33903,14 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         });
     };
     BatchEdit.prototype.updateCell = function (rowIndex, field, value) {
-        var col = this.parent.getColumnByField(field);
-        var index = this.parent.getColumnIndexByField(field);
+        var gObj = this.parent;
+        var col = gObj.getColumnByField(field);
+        var index = gObj.getColumnIndexByField(field);
         if (col && !col.isPrimaryKey) {
-            var td = this.parent.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[index];
-            if (this.parent.getFrozenColumns()) {
-                var cells = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')).concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')));
-                td = cells[index];
-            }
-            var rowObj = parentsUntil(td, 'e-movablecontent') ? this.parent.getMovableRowsObject()[rowIndex] :
-                this.parent.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
+            var td = getCellByColAndRowIndex(this.parent, col, rowIndex, index);
+            var rowObj = col.getFreezeTableName() === 'movable' ? this.parent.getMovableRowsObject()[rowIndex] :
+                col.getFreezeTableName() === 'frozen-right' ? gObj.getFrozenRightRowsObject()[rowIndex]
+                    : gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             this.refreshTD(td, col, rowObj, value);
             this.parent.trigger(queryCellInfo, {
                 cell: td, column: col, data: rowObj.changes
@@ -32376,7 +33919,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     };
     BatchEdit.prototype.setChanges = function (rowObj, field, value, td) {
         var currentRowObj;
-        if (!this.parent.getFrozenColumns()) {
+        if (!this.parent.isFrozenGrid()) {
             if (!rowObj.changes) {
                 rowObj.changes = extend({}, {}, rowObj.data, true);
             }
@@ -32412,6 +33955,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 movableRowObject.isDirty = true;
                 currentRowObj.isDirty = true;
             }
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                var frRowObject = this.parent.getFrozenRightRowsObject()[rowIndex];
+                frRowObject.changes = extend({}, {}, currentRowObj.changes, true);
+                if (rowObj.data[field] !== value) {
+                    frRowObject.isDirty = true;
+                }
+            }
         }
     };
     BatchEdit.prototype.updateRow = function (index, data) {
@@ -32436,10 +33986,11 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         var rowcell;
         value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value) : value;
         this.setChanges(rowObj, column.field, value, td);
-        var frzCols = this.parent.getFrozenColumns();
+        var frzCols = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()
+            || this.parent.getFrozenRightColumnsCount();
         frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
-        if (frzCols && this.getCellIdx(column.uid) >= frzCols && this.parent.getColumns().length === rowObj.cells.length) {
+        if (frzCols && column.getFreezeTableName() === 'movable' && this.parent.getColumns().length === rowObj.cells.length) {
             rowcell = rowObj.cells.slice(frzCols, rowObj.cells.length);
         }
         else {
@@ -32451,7 +34002,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             parentElement = td.parentElement;
             cellIndex = td.cellIndex;
         }
-        cell.refreshTD(td, rowcell[this.getCellIdx(column.uid) - (this.getCellIdx(column.uid) >= frzCols ? frzCols : 0)], rowObj.changes, { 'index': this.getCellIdx(column.uid) });
+        var index = 0;
+        if (frzCols) {
+            index = column.getFreezeTableName() === 'movable' && this.parent.getFrozenMode() !== 'Right'
+                ? frzCols : column.getFreezeTableName() === 'frozen-right'
+                ? this.parent.getFrozenLeftColumnsCount() + this.parent.getMovableColumnsCount() : index;
+        }
+        cell.refreshTD(td, rowcell[this.getCellIdx(column.uid) - index], rowObj.changes, { 'index': this.getCellIdx(column.uid) });
         if (this.parent.isReact) {
             this.newReactTd = parentElement.cells[cellIndex];
             parentElement.cells[cellIndex].classList.add('e-updatedtd');
@@ -32591,8 +34148,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 _this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[_this.cellDetails.rowIndex], cellSaveArgs.value);
             }
             else {
-                var rowObj = parentsUntil(cellSaveArgs.cell, 'e-movablecontent') ?
-                    gObj.getMovableRowsObject()[_this.cellDetails.rowIndex] : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+                var rowObj = parentsUntil(cellSaveArgs.cell, 'e-movablecontent')
+                    || parentsUntil(cellSaveArgs.cell, 'e-movableheader') ? gObj.getRowObjectFromUID(tr.getAttribute('data-uid'), true)
+                    : gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+                if (gObj.getFrozenMode() === 'Left-Right' && (parentsUntil(cellSaveArgs.cell, 'e-frozen-right-header')
+                    || parentsUntil(cellSaveArgs.cell, 'e-frozen-right-content'))) {
+                    rowObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'), false, true);
+                }
                 _this.refreshTD(cellSaveArgs.cell, column, rowObj, cellSaveArgs.value);
                 if (_this.parent.isReact) {
                     cellSaveArgs.cell = _this.newReactTd;
@@ -32617,7 +34179,8 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                             classList.remove('e-selectionbackground', 'e-active');
                     }
                     _this.cloneCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index]
-                        .replaceWith(_this.originalCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs.columnObject.index]);
+                        .replaceWith(_this.originalCell["" + parseInt(tr.getAttribute('aria-rowindex'), 10) + cellSaveArgs
+                        .columnObject.index]);
                 }
             }
             if (isNullOrUndefined(isEscapeCellEdit)) {
@@ -33368,6 +34931,11 @@ var Edit = /** @__PURE__ @class */ (function () {
             this.closeEdit();
         }
         else {
+            var editRow = this.parent.element.querySelector('.e-editedrow');
+            if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
+                && parseInt(parentsUntil(editRow, 'e-row').getAttribute('aria-rowindex'), 10) < this.parent.frozenRows) {
+                return;
+            }
             var restrictedRequestTypes = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'save', 'infiniteScroll'];
             if (this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && restrictedRequestTypes.indexOf(e.requestType) === -1 && !e.cancel) {
@@ -33512,13 +35080,17 @@ var Edit = /** @__PURE__ @class */ (function () {
      */
     Edit.prototype.applyFormValidation = function (cols) {
         var gObj = this.parent;
-        var frzCols = gObj.getFrozenColumns();
+        var frzCols = gObj.isFrozenGrid();
+        var isInline = this.parent.editSettings.mode === 'Normal';
+        var idx = this.parent.getFrozenMode() === 'Right' && isInline ? 1 : 0;
         var form = this.parent.editSettings.mode !== 'Dialog' ?
-            gObj.element.querySelector('.e-gridform') :
+            gObj.element.querySelectorAll('.e-gridform')[idx] :
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document);
-        var mForm = gObj.element.querySelectorAll('.e-gridform')[1];
+        var index = this.parent.getFrozenMode() === 'Right' && isInline ? 0 : 1;
+        var mForm = gObj.element.querySelectorAll('.e-gridform')[index];
         var rules = {};
         var mRules = {};
+        var frRules = {};
         cols = cols ? cols : gObj.getColumns();
         for (var i = 0; i < cols.length; i++) {
             if (!cols[i].visible) {
@@ -33527,18 +35099,19 @@ var Edit = /** @__PURE__ @class */ (function () {
             if (isBlazor() && cols[i].editTemplate) {
                 continue;
             }
-            if (i < frzCols && cols[i].validationRules) {
-                rules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
-            }
-            else if (i >= frzCols && cols[i].validationRules) {
-                mRules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
+            if (cols[i].validationRules) {
+                setValidationRuels(cols[i], index, rules, mRules, frRules, cols.length);
             }
         }
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {
             this.parent.editModule.mFormObj = this.createFormObj(mForm, mRules);
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                var frForm = gObj.element.querySelectorAll('.e-gridform')[2];
+                this.parent.editModule.frFormObj = this.createFormObj(frForm, frRules);
+            }
         }
         else {
-            rules = extend(rules, mRules);
+            rules = extend(rules, mRules, frRules);
         }
         if (isBlazor() && this.parent.editSettings.template) {
             this.parent.editModule.formObj = this.createFormObj(form, {});
@@ -33604,8 +35177,13 @@ var Edit = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     Edit.prototype.createTooltip = function (element, error, name, display) {
+        var column = this.parent.getColumnByField(name);
+        var formObj = this.parent.getFrozenMode() === 'Left-Right' && this.parent.editSettings.mode === 'Normal'
+            && column.getFreezeTableName() === 'frozen-right' ? this.frFormObj.element : this.formObj.element;
         var gcontent = this.parent.getContent().firstElementChild;
-        if (this.parent.getFrozenColumns()) {
+        var frzCols = this.parent.getFrozenColumns() || this.parent.getFrozenLeftColumnsCount()
+            || this.parent.getFrozenRightColumnsCount();
+        if (frzCols) {
             gcontent = this.parent.getMovableVirtualContent();
         }
         var isScroll = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
@@ -33628,8 +35206,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
         if (isInline) {
             if (this.parent.frozenRows) {
-                var fHeraderRows = this.parent.getFrozenColumns() ?
-                    this.parent.getFrozenVirtualHeader().querySelector('tbody').children
+                var fHeraderRows = frzCols ? this.parent.getFrozenVirtualHeader().querySelector('tbody').children
                     : this.parent.getHeaderTable().querySelector('tbody').children;
                 isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
                 isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
@@ -33654,7 +35231,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             id: name + '_Error',
             styles: 'display:' + display + ';top:' +
                 ((isFHdr ? inputClient.top + inputClient.height : inputClient.bottom - client.top
-                    - (this.parent.getFrozenColumns() ? fCont.scrollTop : 0)) + table.scrollTop + 9) + 'px;left:' +
+                    - (frzCols ? fCont.scrollTop : 0)) + table.scrollTop + 9) + 'px;left:' +
                 (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
                 'max-width:' + inputClient.width + 'px;text-align:center;'
         });
@@ -33676,15 +35253,15 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        if ((this.parent.getFrozenColumns() || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
+        if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             var getEditCell = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') : closest(element, '.e-table');
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
                 (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))
-                || (this.parent.frozenRows && !this.parent.getFrozenColumns())) {
-                this.formObj.element.appendChild(div);
+                || (this.parent.frozenRows && !frzCols)) {
+                formObj.appendChild(div);
             }
             else {
                 this.mFormObj.element.appendChild(div);
@@ -33701,20 +35278,19 @@ var Edit = /** @__PURE__ @class */ (function () {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-        if ((this.parent.getFrozenColumns() || this.parent.frozenRows)
-            && (this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Batch')) {
+        if ((frzCols || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
         }
         else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
         }
-        if (isInline && !isScroll && !this.parent.allowPaging || this.parent.getFrozenColumns() || this.parent.frozenRows) {
+        if (isInline && !isScroll && !this.parent.allowPaging || frzCols || this.parent.frozenRows) {
             gcontent.style.position = 'static';
             var pos = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            if (isScroll && !this.parent.getFrozenColumns() && this.parent.height !== 'auto' && !this.parent.frozenRows
+            if (isScroll && !frzCols && this.parent.height !== 'auto' && !this.parent.frozenRows
                 && !this.parent.enableVirtualization) {
                 var scrollWidth = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
                 div.style.bottom = (this.parent.height - gcontent.querySelector('table').offsetHeight
@@ -35108,6 +36684,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
     };
     ExcelExport.prototype.processGridExport = function (gObj, exportProperties, r) {
         var excelRows = [];
+        var isFrozen = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.theme)) {
             this.theme = exportProperties.theme;
         }
@@ -35117,7 +36694,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         var helper = new ExportHelper(gObj);
         var gColumns = isExportColumns(exportProperties) ?
             prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
-            helper.getGridExportColumns(gObj.columns);
+            helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns);
         var headerRow = helper.getHeaders(gColumns, this.includeHiddenColumn);
         var groupIndent = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
@@ -35936,6 +37513,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     };
     PdfExport.prototype.processGridExport = function (gObj, returnType, pdfExportProperties) {
         var allowHorizontalOverflow = true;
+        var isFrozen = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
             if (isBlazor() && !isNullOrUndefined(this.gridTheme)) {
@@ -35948,7 +37526,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var dataSource = this.processExportProperties(pdfExportProperties, returnType.result);
         var columns = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
-            helper.getGridExportColumns(gObj.columns);
+            helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns);
         columns = columns.filter(function (columns) { return isNullOrUndefined(columns.commands); });
         var isGrouping = false;
         if (gObj.groupSettings.columns.length) {
@@ -37693,7 +39271,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         return target && parentsUntil(target, 'e-grid') === this.parent.element;
     };
     ContextMenu$$1.prototype.ensureFrozenHeader = function (targetElement) {
-        return (this.parent.getFrozenColumns() || this.parent.frozenRows)
+        return (this.parent.isFrozenGrid() || this.parent.frozenRows)
             && closest(targetElement, menuClass.header) ? true : false;
     };
     ContextMenu$$1.prototype.ensureDisabledStatus = function (item) {
@@ -37944,32 +39522,26 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
  */
 var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
     function FreezeRowModelGenerator(parent) {
-        this.isFrzLoad = 1;
         this.parent = parent;
         this.rowModelGenerator = new RowModelGenerator(this.parent);
     }
     FreezeRowModelGenerator.prototype.generateRows = function (data, notifyArgs, virtualRows) {
         var frzCols = this.parent.getFrozenColumns();
+        var tableName = getFrozenTableName(this.parent);
         frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
-        if (this.isFrzLoad % 2 !== 0 && notifyArgs.requestType === 'virtualscroll' && notifyArgs.virtualInfo.sentinelInfo.axis === 'X') {
-            this.isFrzLoad++;
-            return null;
+        if (notifyArgs.requestType === 'virtualscroll' && notifyArgs.virtualInfo.sentinelInfo.axis === 'X') {
+            if (tableName !== 'movable') {
+                return null;
+            }
         }
-        var row = this.parent.enableVirtualization ? virtualRows
+        var row = this.parent.enableVirtualization && !notifyArgs.isFrozenRowsRender ? virtualRows
             : this.rowModelGenerator.generateRows(data, notifyArgs);
         if (isBlazor() && !this.parent.isJsComponent) {
             return row;
         }
         for (var i = 0, len = row.length; i < len; i++) {
-            if (this.isFrzLoad % 2 === 0) {
-                row[i].cells = row[i].cells.slice(frzCols, row[i].cells.length);
-            }
-            else {
-                row[i].isFreezeRow = true;
-                row[i].cells = row[i].cells.slice(0, frzCols);
-            }
+            row[i].cells = splitFrozenRowObjectCells(this.parent, row[i].cells, tableName);
         }
-        this.isFrzLoad++;
         return row;
     };
     return FreezeRowModelGenerator;
@@ -37995,14 +39567,60 @@ var __extends$27 = (undefined && undefined.__extends) || (function () {
 var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     __extends$27(FreezeContentRender, _super);
     function FreezeContentRender(parent, locator) {
-        return _super.call(this, parent, locator) || this;
+        var _this = _super.call(this, parent, locator) || this;
+        _this.isInitialRender = true;
+        _this.widthService = locator.getService('widthService');
+        _this.addEventListener();
+        return _this;
     }
+    FreezeContentRender.prototype.addEventListener = function () {
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
+        this.parent.addEventListener(batchAdd, this.batchAdd.bind(this));
+        this.parent.on(batchCancel, this.batchAdd.bind(this));
+        this.parent.addEventListener(batchDelete, this.batchAdd.bind(this));
+        this.parent.on(setHeightToFrozenElement, this.refreshScrollOffset);
+        this.parent.on(columnVisibilityChanged, this.widthService.refreshFrozenScrollbar, this);
+    };
+    FreezeContentRender.prototype.batchAdd = function (args) {
+        var isAdd = args.name !== 'batchCancel'
+            && !(this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top');
+        if (this.parent.height !== 'auto' && (isAdd || args.name === 'batchCancel' || args.name === 'batchDelete')) {
+            this.refreshScrollOffset();
+            var height = this.getTable().offsetHeight;
+            if (args.name === 'add' && this.parent.editSettings.newRowPosition === 'Bottom') {
+                this.parent.getContent().firstChild.scroll(0, height);
+            }
+        }
+    };
+    FreezeContentRender.prototype.setHeightToContent = function (height) {
+        this.getFrozenContent().style.height = height.toString() + 'px';
+        this.getMovableContent().style.height = height.toString() + 'px';
+    };
+    FreezeContentRender.prototype.actionComplete = function (args) {
+        if (this.parent.editSettings.mode !== 'Dialog' && (args.requestType === 'add' || (args.requestType === 'cancel'
+            && args.row.classList.contains('e-addedrow')))
+            && (!this.parent.frozenRows || this.parent.editSettings.newRowPosition === 'Bottom') && this.parent.height !== 'auto') {
+            this.refreshScrollOffset();
+            var height = this.getTable().offsetHeight;
+            if (args.requestType === 'add' && this.parent.editSettings.newRowPosition === 'Bottom') {
+                this.parent.getContent().firstChild.scroll(0, height);
+            }
+        }
+    };
+    FreezeContentRender.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.removeEventListener(actionComplete, this.actionComplete);
+        this.parent.removeEventListener(batchAdd, this.batchAdd);
+        this.parent.off(columnVisibilityChanged, this.widthService.refreshFrozenScrollbar);
+    };
     FreezeContentRender.prototype.renderPanel = function () {
         _super.prototype.renderPanel.call(this);
         var fDiv = this.parent.element.querySelector('.e-frozencontent');
         var mDiv = this.parent.element.querySelector('.e-movablecontent');
         if (isNullOrUndefined(fDiv)) {
-            fDiv = this.parent.createElement('div', { className: 'e-frozencontent' });
+            fDiv = this.parent.createElement('div', { className: 'e-frozencontent e-frozen-left-content' });
             mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
             this.getPanel().querySelector('.e-content').appendChild(fDiv);
             this.getPanel().querySelector('.e-content').appendChild(mDiv);
@@ -38010,25 +39628,32 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
         this.setFrozenContent(fDiv);
         this.setMovableContent(mDiv);
     };
+    FreezeContentRender.prototype.renderFrozenRigthPanel = function () {
+        _super.prototype.renderPanel.call(this);
+    };
     FreezeContentRender.prototype.renderEmpty = function (tbody) {
         if (isBlazor() && !this.parent.isJsComponent) {
             return;
         }
         _super.prototype.renderEmpty.call(this, tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
-        this.parent.getContent().querySelector('.e-frozencontent').style.height =
-            this.parent.getContent().querySelector('.e-movablecontent').offsetHeight - getScrollBarWidth() + 'px';
         addClass([this.getMovableContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
-        this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenColumns();
+        this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenLeftCount();
         this.getFrozenContent().style.borderRightWidth = '0px';
         if (this.parent.frozenRows) {
             this.parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').innerHTML = '';
             this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody').innerHTML = '';
         }
     };
+    FreezeContentRender.prototype.renderFrozenRightEmpty = function (tbody) {
+        _super.prototype.renderEmpty.call(this, tbody);
+    };
     FreezeContentRender.prototype.setFrozenContent = function (ele) {
         this.frozenContent = ele;
     };
+    /**
+     * @hidden
+     */
     FreezeContentRender.prototype.setMovableContent = function (ele) {
         this.movableContent = ele;
     };
@@ -38040,6 +39665,9 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     };
     FreezeContentRender.prototype.getModelGenerator = function () {
         return new FreezeRowModelGenerator(this.parent);
+    };
+    FreezeContentRender.prototype.renderFrozenRightTable = function () {
+        _super.prototype.renderTable.call(this);
     };
     FreezeContentRender.prototype.renderTable = function () {
         var mTbl;
@@ -38063,6 +39691,164 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
         }
         var colGroup = ((this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true));
         mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
+        var style = this.parent.enableVirtualization ? '' : 'flex';
+        this.getPanel().firstChild.style.display = style;
+        this.renderHorizontalScrollbar('e-frozenscrollbar e-frozen-left-scrollbar', this.getScrollbarDisplay());
+    };
+    FreezeContentRender.prototype.getScrollbarDisplay = function () {
+        var frozenDisplay = '';
+        if ((this.parent.getFrozenColumns() && !this.parent.getVisibleFrozenColumns())
+            || (this.parent.getFrozenLeftColumnsCount() && !this.parent.getVisibleFrozenLeftCount())) {
+            frozenDisplay = 'none';
+        }
+        return frozenDisplay;
+    };
+    FreezeContentRender.prototype.renderHorizontalScrollbar = function (className, display, isRight) {
+        var left = this.parent.createElement('div', { className: className, styles: 'display:' + display });
+        var movable = this.parent.createElement('div', { className: 'e-movablescrollbar' });
+        var child = this.parent.createElement('div', { className: 'e-movablechild' });
+        var scrollbarHeight = getScrollBarWidth().toString();
+        this.setScrollbarHeight(movable, scrollbarHeight);
+        this.setScrollbarHeight(child, scrollbarHeight);
+        movable.appendChild(child);
+        this.appendScrollbar(left, movable, isRight);
+    };
+    FreezeContentRender.prototype.appendScrollbar = function (frozen, movable, isRight) {
+        var parent = this.parent.createElement('div', { className: 'e-scrollbar', styles: 'display: flex' });
+        parent.appendChild(frozen);
+        parent.appendChild(movable);
+        this.parent.getContent().appendChild(parent);
+    };
+    FreezeContentRender.prototype.setScrollbarHeight = function (ele, height) {
+        ele.style.minHeight = height + 'px';
+        ele.style.maxHeight = height + 'px';
+    };
+    /**
+     * @hidden
+     */
+    FreezeContentRender.prototype.setIsFrozen = function (args, tableName) {
+        args.isFrozen = !args.isFrozen;
+    };
+    /**
+     * @hidden
+     */
+    FreezeContentRender.prototype.setTbody = function (modelData, args) {
+        var tableName;
+        if (isNullOrUndefined(modelData[0].cells[0])) {
+            this.getMovableContent().querySelector('tbody').innerHTML = '';
+        }
+        var cell = modelData[0].cells[0];
+        var idx = cell.index;
+        if (isUndefined(idx) && this.parent.isRowDragable()) {
+            cell = modelData[0].cells[1];
+            idx = cell.index;
+        }
+        if (idx === 0) {
+            this.getPanel().firstChild.style.overflowX = 'hidden';
+        }
+        if (this.parent.enableColumnVirtualization && args.renderMovableContent
+            && args.requestType === 'virtualscroll' && this.getMovableContent().scrollLeft > 0 && args.virtualInfo.columnIndexes[0] !== 0) {
+            idx = this.parent.getFrozenColumns();
+        }
+        if (cell && cell.column) {
+            tableName = cell.column.getFreezeTableName();
+        }
+        this.setIdx(idx);
+        return tableName;
+    };
+    /**
+     * @hidden
+     */
+    FreezeContentRender.prototype.splitRows = function (tableName) {
+        if (tableName === 'frozen-left') {
+            this.freezeRows = this.rows;
+            this.freezeRowElements = this.rowElements;
+        }
+        else {
+            this.movableRows = this.rows;
+        }
+    };
+    /**
+     * @hidden
+     */
+    FreezeContentRender.prototype.renderNextFrozentPart = function (args, tableName) {
+        var isVFTable = this.parent.enableVirtualization;
+        if (tableName === 'frozen-left') {
+            if (isVFTable) {
+                args.renderMovableContent = true;
+            }
+            this.refreshContentRows(extend({}, args));
+        }
+    };
+    FreezeContentRender.prototype.appendContent = function (tbody, frag, args, tableName) {
+        if (this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate)) {
+            tbody = frag;
+        }
+        else {
+            tbody.appendChild(frag);
+        }
+        if (tableName === 'frozen-left') {
+            this.isLoaded = false;
+            this.getFrozenContent().querySelector('table').appendChild(tbody);
+        }
+        else {
+            this.refreshTbody(tbody);
+            this.isLoaded = true;
+            this.getMovableContent().querySelector('table').appendChild(tbody);
+            this.refreshHeight();
+            this.refreshScrollOffset();
+            this.widthService.refreshFrozenScrollbar();
+        }
+        if (this.isInitialRender) {
+            this.parent.scrollModule.setHeight();
+            this.isInitialRender = false;
+        }
+    };
+    FreezeContentRender.prototype.refreshScrollOffset = function () {
+        if (this.parent.height !== 'auto') {
+            var height = this.getTable().offsetHeight + 1;
+            this.setHeightToContent(height);
+        }
+        this.parent.notify(refreshFrozenHeight, {});
+    };
+    /**
+     * @hidden
+     */
+    FreezeContentRender.prototype.getFrozenHeader = function (tableName) {
+        if (tableName === 'frozen-left') {
+            return this.parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody');
+        }
+        else {
+            return this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+        }
+    };
+    FreezeContentRender.prototype.refreshTbody = function (tbody) {
+        if (tbody.childElementCount < 1) {
+            tbody.appendChild(this.parent.createElement('tr').appendChild(this.parent.createElement('td')));
+        }
+    };
+    FreezeContentRender.prototype.refreshHeight = function () {
+        if (!this.parent.allowTextWrap) {
+            this.parent.notify(freezeRender, { case: 'refreshHeight' });
+        }
+        this.getFrozenContent().style.borderRightWidth = '1px';
+    };
+    FreezeContentRender.prototype.setIdx = function (idx) {
+        this.idx = idx;
+    };
+    FreezeContentRender.prototype.getIdx = function () {
+        return this.idx;
+    };
+    /**
+     * @hidden
+     */
+    FreezeContentRender.prototype.getTbody = function (tableName) {
+        if (tableName === 'frozen-left') {
+            return this.getTable().querySelector('tbody');
+        }
+        else {
+            return this.getMovableContent().querySelector('tbody');
+        }
     };
     return FreezeContentRender;
 }(ContentRender));
@@ -38105,13 +39891,19 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         var mDiv = this.parent.element.querySelector('.e-movableheader');
         _super.prototype.renderPanel.call(this);
         if (isNullOrUndefined(fDiv)) {
-            fDiv = this.parent.createElement('div', { className: 'e-frozenheader' });
+            fDiv = this.parent.createElement('div', { className: 'e-frozenheader e-frozen-left-header' });
             mDiv = this.parent.createElement('div', { className: 'e-movableheader' });
             this.getPanel().querySelector('.e-headercontent').appendChild(fDiv);
             this.getPanel().querySelector('.e-headercontent').appendChild(mDiv);
         }
         this.setFrozenHeader(fDiv);
         this.setMovableHeader(mDiv);
+    };
+    FreezeRender.prototype.renderFrozenRightPanel = function () {
+        _super.prototype.renderPanel.call(this);
+    };
+    FreezeRender.prototype.renderFrozenRightTable = function () {
+        _super.prototype.renderTable.call(this);
     };
     FreezeRender.prototype.refreshUI = function () {
         if (!(isBlazor() && this.parent.isServerRendered) || this.parent.frozenRows === 0) {
@@ -38142,19 +39934,17 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         if (!isBlazor() || this.parent.frozenRows === 0) {
             renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns(), this.parent);
         }
+        this.widthService.refreshFrozenScrollbar();
         this.initializeHeaderDrag();
         this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     };
+    FreezeRender.prototype.refreshFrozenLeftUI = function () {
+        _super.prototype.refreshUI.call(this);
+    };
     FreezeRender.prototype.rfshMovable = function () {
-        if (this.parent.enableColumnVirtualization) {
-            this.parent.getFrozenVirtualHeader().querySelector('.e-virtualtable').appendChild(this.getTable());
-            this.parent.getMovableVirtualHeader().querySelector('.e-virtualtable').appendChild(this.createTable());
-        }
-        else {
-            if (!isBlazor() || this.parent.frozenRows === 0) {
-                this.getFrozenHeader().appendChild(this.getTable());
-                this.getMovableHeader().appendChild(this.createTable());
-            }
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            this.getFrozenHeader().appendChild(this.getTable());
+            this.getMovableHeader().appendChild(this.createTable());
         }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
@@ -38162,7 +39952,7 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
     FreezeRender.prototype.addMovableFirstCls = function () {
         if (this.parent.getVisibleFrozenColumns()) {
             var movablefirstcell = this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('.e-columnheader');
-            var len = this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('.e-columnheader').length;
+            var len = movablefirstcell.length;
             for (var i = 0; i < len; i++) {
                 var cells = 'cells';
                 var element = movablefirstcell[i][cells][0];
@@ -38196,45 +39986,49 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (obj.case === 'textwrap' || obj.case === 'refreshHeight') {
-            var fRows = void 0;
-            var mRows = void 0;
-            var fHdr = this.getFrozenHeader();
-            var mHdr = this.getMovableHeader();
-            var cont = this.parent.getContent();
-            var wrapMode = this.parent.textWrapSettings.wrapMode;
-            var hdrClassList = this.parent.getHeaderContent().querySelector('.e-headercontent').classList;
-            if (obj.case === 'textwrap') {
-                if (wrapMode !== 'Header' || obj.isModeChg) {
-                    fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr');
-                    mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr');
-                    this.setWrapHeight(fRows, mRows, obj.isModeChg, true);
-                }
-                if (wrapMode === 'Content' && this.parent.allowTextWrap) {
-                    hdrClassList.add('e-wrap');
-                }
-                else {
-                    hdrClassList.remove('e-wrap');
-                }
-                if (wrapMode === 'Both' || obj.isModeChg) {
-                    fRows = fHdr.querySelectorAll('tr');
-                    mRows = mHdr.querySelectorAll('tr');
-                }
-                else {
-                    fRows = fHdr.querySelector(wrapMode === 'Content' ?
-                        'tbody' : 'thead').querySelectorAll('tr');
-                    mRows = mHdr.querySelector(wrapMode === 'Content' ?
-                        'tbody' : 'thead').querySelectorAll('tr');
-                }
-                if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
-                    this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
-                }
-                this.refreshStackedHdrHgt();
+            this.refreshHeight(obj);
+            this.parent.contentModule.refreshScrollOffset();
+        }
+    };
+    FreezeRender.prototype.refreshHeight = function (obj) {
+        var fRows;
+        var mRows;
+        var fHdr = this.getFrozenHeader();
+        var mHdr = this.getMovableHeader();
+        var cont = this.parent.getContent();
+        var wrapMode = this.parent.textWrapSettings.wrapMode;
+        var hdrClassList = this.parent.getHeaderContent().querySelector('.e-headercontent').classList;
+        if (obj.case === 'textwrap') {
+            if (wrapMode !== 'Header' || obj.isModeChg) {
+                fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr');
+                mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr');
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, true);
             }
-            else if (obj.case === 'refreshHeight') {
-                this.setWrapHeight(cont.querySelector('.e-frozencontent').querySelectorAll('tr'), cont.querySelector('.e-movablecontent').querySelectorAll('tr'), obj.isModeChg);
-                if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
-                    this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
-                }
+            if (wrapMode === 'Content' && this.parent.allowTextWrap) {
+                hdrClassList.add('e-wrap');
+            }
+            else {
+                hdrClassList.remove('e-wrap');
+            }
+            if (wrapMode === 'Both' || obj.isModeChg) {
+                fRows = fHdr.querySelectorAll('tr');
+                mRows = mHdr.querySelectorAll('tr');
+            }
+            else {
+                mRows = mHdr.querySelector(wrapMode === 'Content' ?
+                    'tbody' : 'thead').querySelectorAll('tr');
+                fRows = fHdr.querySelector(wrapMode === 'Content' ?
+                    'tbody' : 'thead').querySelectorAll('tr');
+            }
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            }
+            this.refreshStackedHdrHgt();
+        }
+        else if (obj.case === 'refreshHeight') {
+            this.setWrapHeight(cont.querySelector('.e-frozencontent').querySelectorAll('tr'), cont.querySelector('.e-movablecontent').querySelectorAll('tr'), obj.isModeChg);
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
             }
         }
     };
@@ -38354,6 +40148,9 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
     FreezeRender.prototype.setFrozenHeader = function (ele) {
         this.frozenHeader = ele;
     };
+    /**
+     * @hidden
+     */
     FreezeRender.prototype.setMovableHeader = function (ele) {
         this.movableHeader = ele;
     };
@@ -38371,16 +40168,881 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         remove(this.getMovableHeader().querySelector('colgroup'));
         mTable.insertBefore(renderMovable(this.getFrozenHeader().querySelector('colgroup'), this.parent.getFrozenColumns(), this.parent), mTable.querySelector('thead'));
     };
-    FreezeRender.prototype.filterRenderer = function (ele, frozenColumn) {
+    FreezeRender.prototype.filterRenderer = function (ele, frozenColumn, total) {
         var clone = ele.cloneNode(true);
         clone.innerHTML = '';
-        for (var i = frozenColumn; i < this.parent.getColumns().length; i++) {
+        var end = total ? total : this.parent.getColumns().length;
+        for (var i = frozenColumn; i < end; i++) {
             clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
         }
         return clone;
     };
     return FreezeRender;
 }(HeaderRender));
+
+var __extends$29 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/**
+ * ColumnFreezeHeaderRenderer is used to freeze the columns header at right and left
+ * @hidden
+ */
+var ColumnFreezeHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$29(ColumnFreezeHeaderRenderer, _super);
+    function ColumnFreezeHeaderRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        _this.addEventListener();
+        return _this;
+    }
+    ColumnFreezeHeaderRenderer.prototype.addEventListener = function () {
+        this.parent.on(freezeRender, this.refreshFreeze, this);
+        this.parent.on(refreshFrozenColumns, this.refreshFrozenColumns, this);
+        this.parent.on(setReorderDestinationElement, this.setReorderElement, this);
+        this.parent.on(columnVisibilityChanged, this.setVisible, this);
+    };
+    ColumnFreezeHeaderRenderer.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(freezeRender, this.refreshFreeze);
+        this.parent.off(refreshFrozenColumns, this.refreshFrozenColumns);
+        this.parent.off(setReorderDestinationElement, this.setReorderElement);
+        this.parent.off(columnVisibilityChanged, this.setVisible);
+    };
+    ColumnFreezeHeaderRenderer.prototype.setReorderElement = function (args) {
+        this.destEle = args.ele;
+    };
+    ColumnFreezeHeaderRenderer.prototype.refreshFrozenColumns = function (args) {
+        if (!args.parent) {
+            this.parent.setProperties({ columns: args.columns }, true);
+        }
+        var isFrozenLeft = parentsUntil(this.destEle, 'e-frozen-left-header');
+        var isFrozenRight = parentsUntil(this.destEle, 'e-frozen-right-header');
+        var left = this.parent.getFrozenLeftColumnsCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        args.column.freeze = null;
+        if (isFrozenLeft) {
+            args.column.freeze = 'Left';
+        }
+        else if (isFrozenRight) {
+            args.column.freeze = 'Right';
+        }
+        this.parent.setFrozenCount();
+        args.cancel = left !== this.parent.getFrozenLeftColumnsCount() || right !== this.parent.getFrozenRightColumnsCount();
+        if (args.cancel) {
+            this.parent.refreshColumns();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.setWrapHeight = function (fRows, mRows, isModeChg, isContReset, isStackedHdr, frRows) {
+        var fRowHgt;
+        var mRowHgt;
+        var frRowHgt;
+        var isWrap = this.parent.allowTextWrap;
+        var tBody = this.parent.getHeaderContent().querySelector('tbody');
+        var wrapMode = this.parent.textWrapSettings.wrapMode;
+        var tHead = this.parent.getHeaderContent().querySelector('thead');
+        var height = [];
+        var width = [];
+        var rightHeight = [];
+        for (var i = 0, len = fRows.length; i < len; i++) { //separate loop for performance issue 
+            if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
+                if (frRows) {
+                    rightHeight[i] = frRows[i].getBoundingClientRect().height;
+                }
+                width[i] = mRows[i].getBoundingClientRect().height;
+                height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
+            }
+        }
+        for (var i = 0, len = fRows.length; i < len; i++) {
+            if (isModeChg && (((wrapMode === 'Content' && tHead.contains(fRows[i]))
+                || (wrapMode === 'Header' && tBody.contains(fRows[i]))) || (wrapMode === 'Header' && isContReset)) || isStackedHdr) {
+                if (frRows[i]) {
+                    frRows[i].style.height = null;
+                }
+                fRows[i].style.height = null;
+                mRows[i].style.height = null;
+            }
+            fRowHgt = height[i];
+            mRowHgt = width[i];
+            frRowHgt = rightHeight[i] ? rightHeight[i] : 0;
+            var maxHeight = Math.max(fRowHgt, mRowHgt, frRowHgt);
+            if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < maxHeight) ||
+                (!isWrap && fRowHgt < maxHeight) || (this.parent.allowResizing && this.parent.resizeModule &&
+                this.parent.resizeModule.isFrozenColResized === false))) {
+                fRows[i].style.height = maxHeight + 'px';
+            }
+            if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && maxHeight > mRowHgt) ||
+                (!isWrap && maxHeight > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                this.parent.resizeModule.isFrozenColResized === true))) {
+                mRows[i].style.height = maxHeight + 'px';
+            }
+            if (frRows && !isNullOrUndefined(frRows[i]) && frRows[i].childElementCount && ((isWrap && maxHeight > frRowHgt) ||
+                (!isWrap && maxHeight > frRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
+                this.parent.resizeModule.isFrozenColResized === true))) {
+                frRows[i].style.height = maxHeight + 'px';
+            }
+        }
+        if (isWrap) {
+            this.setFrozenHeight();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.refreshHeight = function (obj) {
+        var isLeftRight = this.parent.getFrozenMode() === 'Left-Right';
+        var fRows;
+        var frRows;
+        var mRows;
+        var frHdr = this.getFrozenRightHeader();
+        var fHdr = this.parent.getHeaderContent().querySelector('.e-frozenheader');
+        var cont = this.parent.getContent();
+        var mHdr = this.getMovableHeader();
+        var hdrClassList = this.parent.getHeaderContent().querySelector('.e-headercontent').classList;
+        var wrapMode = this.parent.textWrapSettings.wrapMode;
+        if (obj.case === 'textwrap') {
+            if (wrapMode !== 'Header' || obj.isModeChg) {
+                if (isLeftRight) {
+                    frRows = cont.querySelector('.e-frozen-right-content').querySelectorAll('tr');
+                }
+                mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr');
+                fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr');
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, true, false, frRows);
+            }
+            if (wrapMode === 'Content' && this.parent.allowTextWrap) {
+                hdrClassList.add('e-wrap');
+            }
+            else {
+                hdrClassList.remove('e-wrap');
+            }
+            if (wrapMode === 'Both' || obj.isModeChg) {
+                if (isLeftRight) {
+                    frRows = frHdr.querySelectorAll('tr');
+                }
+                fRows = fHdr.querySelectorAll('tr');
+                mRows = mHdr.querySelectorAll('tr');
+            }
+            else {
+                if (isLeftRight) {
+                    frRows = frHdr.querySelector(wrapMode === 'Content' ?
+                        'tbody' : 'thead').querySelectorAll('tr');
+                }
+                fRows = fHdr.querySelector(wrapMode === 'Content' ?
+                    'tbody' : 'thead').querySelectorAll('tr');
+                mRows = mHdr.querySelector(wrapMode === 'Content' ?
+                    'tbody' : 'thead').querySelectorAll('tr');
+            }
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1, frRows);
+            }
+            this.refreshStackedHdrHgt();
+        }
+        else if (obj.case === 'refreshHeight') {
+            mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr');
+            fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr');
+            if (isLeftRight) {
+                frRows = cont.querySelector('.e-frozen-right-content').querySelectorAll('tr');
+            }
+            this.setWrapHeight(fRows, mRows, obj.isModeChg, false, false, frRows);
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                if (isLeftRight) {
+                    frRows = frHdr.querySelectorAll('tr');
+                }
+                fRows = fHdr.querySelectorAll('tr');
+                mRows = mHdr.querySelectorAll('tr');
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, false, frRows);
+            }
+        }
+    };
+    /**
+     * Function to hide header table column based on visible property
+     * @param  {Column[]} columns?
+     */
+    ColumnFreezeHeaderRenderer.prototype.setVisible = function (columns) {
+        var gObj = this.parent;
+        var displayVal;
+        var idx;
+        var left = this.parent.getFrozenLeftColumnsCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        var movable = this.parent.getMovableColumnsCount();
+        for (var c = 0, clen = columns.length; c < clen; c++) {
+            var column = columns[c];
+            idx = gObj.getNormalizedColumnIndex(column.uid);
+            displayVal = column.visible ? '' : 'none';
+            if (column.freeze === 'Left' || column.freeze === 'Right') {
+                if (left && !right) {
+                    var leftColGrp = gObj.getHeaderContent().querySelector('.e-frozen-left-header').querySelector('colgroup');
+                    setStyleAttribute(leftColGrp.children[idx], { 'display': displayVal });
+                }
+                else if (!left && right) {
+                    var rightColGrp = gObj.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('colgroup');
+                    setStyleAttribute(rightColGrp.children[idx - movable], { 'display': displayVal });
+                }
+            }
+            else {
+                var mTblColGrp = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
+                setStyleAttribute(mTblColGrp.children[idx - left], { 'display': displayVal });
+            }
+        }
+        this.refreshUI();
+    };
+    ColumnFreezeHeaderRenderer.prototype.filterRenderer = function (ele, frozenColumn, total) {
+        return _super.prototype.filterRenderer.call(this, ele, frozenColumn, total);
+    };
+    ColumnFreezeHeaderRenderer.prototype.refreshUI = function () {
+        var frTbody;
+        var tbody = this.getMovableHeader().querySelector('tbody');
+        remove(this.getMovableHeader().querySelector('table'));
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            frTbody = this.getFrozenRightHeader().querySelector('tbody');
+            remove(this.getFrozenRightHeader().querySelector('table'));
+        }
+        _super.prototype.refreshFrozenLeftUI.call(this);
+        this.rfshMovable();
+        this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
+        if (frTbody) {
+            this.getFrozenRightHeader().querySelector('tbody').innerHTML = frTbody.innerHTML;
+        }
+        this.updateColgroup();
+        this.widthService.setWidthToColumns();
+        this.parent.notify(colGroupRefresh, {});
+        if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
+            wrap([].slice.call(this.getMovableHeader().querySelectorAll('tr.e-columnheader')), true);
+        }
+        this.parent.updateDefaultCursor();
+        var mTbl = this.parent.getContent().querySelector('.e-movablecontent').querySelector('.e-table');
+        remove(mTbl.querySelector('colgroup'));
+        var mColGroup = (this.getMovableHeader().querySelector('colgroup').cloneNode(true));
+        mTbl.insertBefore(mColGroup, mTbl.querySelector('tbody'));
+        if (frTbody) {
+            var frtbl = this.parent.getContent().querySelector('.e-frozen-right-content').querySelector('.e-table');
+            remove(frtbl.querySelector('colgroup'));
+            var frtblColGroup = (this.getFrozenRightHeader().querySelector('colgroup').cloneNode(true));
+            frtbl.insertBefore(frtblColGroup, frtbl.querySelector('tbody'));
+        }
+        this.widthService.refreshFrozenScrollbar();
+        this.initializeHeaderDrag();
+        this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
+    };
+    ColumnFreezeHeaderRenderer.prototype.refreshFreeze = function (obj) {
+        var left = this.parent.getFrozenLeftColumnsCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        var movable = this.parent.getMovableColumnsCount();
+        if (obj.case === 'filter') {
+            var filterRow = this.getTable().querySelector('.e-filterbar');
+            if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
+                var index = left ? left : 0;
+                var total = left ? (left + movable) : left + movable;
+                this.getMovableHeader().querySelector('thead')
+                    .appendChild(this.filterRenderer(filterRow, index, total));
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    var ele = [].slice.call(this.getMovableHeader().
+                        querySelectorAll('thead .e-filterbarcell .e-input'));
+                    this.getFrozenRightHeader().querySelector('thead').appendChild(this.filterRenderer(filterRow, left, left + right));
+                    this.adjudtFilterBarCell(ele);
+                }
+                var elements = [].slice.call(this.getMovableHeader().
+                    querySelectorAll('thead .e-filterbarcell .e-input'));
+                this.adjudtFilterBarCell(elements);
+            }
+        }
+        else if (obj.case === 'textwrap' || obj.case === 'refreshHeight') {
+            this.refreshHeight(obj);
+            this.parent.contentModule.refreshScrollOffset();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.updateFrozenColGroup = function (cols, colGroup) {
+        if (cols && cols.visible === false) {
+            setStyleAttribute(colGroup, { 'display': 'none' });
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.adjudtFilterBarCell = function (elements) {
+        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+            var elem = elements_1[_i];
+            var args = {
+                element: elem, floatLabelType: 'Never',
+                properties: {
+                    enableRtl: this.parent.enableRtl, showClearButton: true
+                }
+            };
+            Input.bindInitialEvent(args);
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.renderPanel = function () {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.renderPanel.call(this);
+            if (this.parent.getFrozenRightColumnsCount()) {
+                this.renderLeftWithRightFrozenPanel();
+            }
+        }
+        else {
+            this.renderRightFrozenPanelAlone();
+        }
+        this.getPanel().firstChild.style.display = 'flex';
+        this.getMovableHeader().style.flex = '1';
+    };
+    ColumnFreezeHeaderRenderer.prototype.renderTable = function () {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.renderTable.call(this);
+        }
+        else {
+            this.renderFrozenRightTableAlone();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.rfshMovable = function () {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.rfshMovable.call(this);
+            if (this.parent.getFrozenRightColumnsCount()) {
+                var rows = this.rows;
+                this.getFrozenRightHeader().appendChild(this.createTable());
+                this.refreshStackedHdrHgt();
+                this.parent.notify(headerRefreshed, { rows: this.rows, args: { renderFrozenRightContent: true } });
+                this.rows = rows;
+            }
+        }
+        else {
+            this.getFrozenRightHeader().appendChild(this.getTable());
+            this.getMovableHeader().appendChild(this.createTable());
+            this.refreshStackedHdrHgt();
+            this.addMovableFirstCls();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.refreshStackedHdrHgt = function () {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.refreshStackedHdrHgt.call(this);
+            if (this.parent.getFrozenRightColumnsCount()) {
+                this.refreshFrozenRightStackedHdrHgt();
+            }
+        }
+        else {
+            this.refreshFrozenRightStackedHdrHgt();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.refreshFrozenRightStackedHdrHgt = function () {
+        var fRowSpan;
+        var mRowSpan;
+        var frTr = this.getFrozenRightHeader().querySelectorAll('.e-columnheader');
+        var mTr = this.getMovableHeader().querySelectorAll('.e-columnheader');
+        for (var i = 0, len = frTr.length; i < len; i++) {
+            fRowSpan = this.getRowSpan(frTr[i]);
+            mRowSpan = this.getRowSpan(mTr[i]);
+            if (fRowSpan.min > 1) {
+                this.updateStackedHdrRowHgt(i, fRowSpan.max, frTr[i], mTr);
+            }
+        }
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeHeaderRenderer.prototype.updateColgroup = function () {
+        this.updateMovableColGroup();
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            this.updateFrozenLeftColGroup();
+        }
+        if (this.parent.getFrozenRightColumnsCount()) {
+            this.updateFrozenRightColGroup();
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.renderRightFrozenPanelAlone = function () {
+        var mDiv = this.parent.element.querySelector('.e-movableheader');
+        var fRightDiv = this.parent.element.querySelector('.e-frozen-right-header');
+        _super.prototype.renderFrozenRightPanel.call(this);
+        if (isNullOrUndefined(fRightDiv)) {
+            mDiv = this.parent.createElement('div', { className: 'e-movableheader' });
+            fRightDiv = this.parent.createElement('div', { className: 'e-frozenheader e-frozen-right-header' });
+            this.getPanel().querySelector('.e-headercontent').appendChild(mDiv);
+            this.getPanel().querySelector('.e-headercontent').appendChild(fRightDiv);
+        }
+        _super.prototype.setMovableHeader.call(this, mDiv);
+        this.setFrozenRightHeader(fRightDiv);
+    };
+    ColumnFreezeHeaderRenderer.prototype.renderLeftWithRightFrozenPanel = function () {
+        var fRightDiv = this.parent.element.querySelector('.e-frozen-right-header');
+        _super.prototype.renderFrozenRightPanel.call(this);
+        if (isNullOrUndefined(fRightDiv)) {
+            fRightDiv = this.parent.createElement('div', { className: 'e-frozenheader e-frozen-right-header' });
+            this.getPanel().querySelector('.e-headercontent').appendChild(fRightDiv);
+        }
+        this.setFrozenRightHeader(fRightDiv);
+    };
+    ColumnFreezeHeaderRenderer.prototype.renderFrozenRightTableAlone = function () {
+        _super.prototype.renderFrozenRightTable.call(this);
+        this.rfshMovable();
+        this.updateColgroup();
+        this.initializeHeaderDrag();
+        this.initializeHeaderDrop();
+        this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
+    };
+    ColumnFreezeHeaderRenderer.prototype.updateFrozenLeftColGroup = function () {
+        var leftColGroup = this.getFrozenHeader().querySelector('colgroup').children;
+        var start = this.parent.isRowDragable() ? 1 : 0;
+        var count = this.parent.isRowDragable() ? this.parent.getFrozenLeftColumnsCount() + 1
+            : this.parent.getFrozenLeftColumnsCount();
+        for (var i = start; i < leftColGroup.length; i++) {
+            if (i >= count) {
+                remove(leftColGroup[i]);
+                i--;
+            }
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.updateMovableColGroup = function () {
+        var movableColGroup = this.getMovableHeader().querySelector('colgroup').children;
+        if (this.parent.isRowDragable()) {
+            remove(movableColGroup[0]);
+        }
+        var length = movableColGroup.length;
+        var left = this.parent.getFrozenLeftColumnsCount();
+        var movable = this.parent.getMovableColumnsCount();
+        var k = 0;
+        for (var i = 0; i < length; i++, k++) {
+            if (i < left || i >= left + movable) {
+                remove(movableColGroup[k]);
+                k--;
+            }
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.updateFrozenRightColGroup = function () {
+        var isDraggable = this.parent.isRowDragable();
+        var rightColumns = this.parent.getFrozenRightColumns();
+        var rightColGroup = this.getFrozenRightHeader().querySelector('colgroup').children;
+        if (this.parent.getFrozenMode() === 'Left-Right' && isDraggable) {
+            remove(rightColGroup[0]);
+        }
+        var length = rightColGroup.length;
+        var left = this.parent.getFrozenLeftColumnsCount();
+        var movable = this.parent.getMovableColumnsCount();
+        var k = 0;
+        for (var i = 0; i < length; i++) {
+            if (i < left + movable) {
+                remove(rightColGroup[0]);
+            }
+            else {
+                this.updateFrozenColGroup(rightColumns[k], rightColGroup[k]);
+                k++;
+            }
+        }
+    };
+    ColumnFreezeHeaderRenderer.prototype.setFrozenRightHeader = function (ele) {
+        this.frozenRightHeader = ele;
+    };
+    ColumnFreezeHeaderRenderer.prototype.getFrozenRightHeader = function () {
+        return this.frozenRightHeader;
+    };
+    return ColumnFreezeHeaderRenderer;
+}(FreezeRender));
+/**
+ * ColumnFreezeContentRenderer is used to freeze the columns content at right and left
+ * @hidden
+ */
+var ColumnFreezeContentRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$29(ColumnFreezeContentRenderer, _super);
+    function ColumnFreezeContentRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        _this.frzCount = 0;
+        _this.isColGroupRefresh = false;
+        _this.widthService = locator.getService('widthService');
+        return _this;
+    }
+    ColumnFreezeContentRenderer.prototype.renderPanel = function () {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.renderPanel.call(this);
+            if (this.parent.getFrozenRightColumnsCount()) {
+                this.renderFrozenLeftWithRightPanel();
+            }
+        }
+        else {
+            this.renderFrozenRightPanelAlone();
+        }
+        var display = this.parent.enableVirtualization ? '' : 'flex';
+        this.getPanel().firstChild.style.display = display;
+    };
+    ColumnFreezeContentRenderer.prototype.renderTable = function () {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.renderTable.call(this);
+            if (this.parent.getFrozenRightColumnsCount()) {
+                this.renderFrozenLeftWithRightTable();
+                var display = !this.parent.getVisibleFrozenRightCount() ? 'none' : '';
+                this.renderHorizontalScrollbar('e-frozenscrollbar e-frozen-right-scrollbar', display, true);
+            }
+        }
+        else {
+            this.renderFrozenRightTableAlone();
+            var display = !this.parent.getVisibleFrozenRightCount() ? 'none' : '';
+            this.renderHorizontalScrollbar('e-frozenscrollbar e-frozen-right-scrollbar', display);
+        }
+        this.getMovableContent().style.flex = '1';
+    };
+    ColumnFreezeContentRenderer.prototype.appendScrollbar = function (frozen, movable, isRight) {
+        var parent = this.parent.createElement('div', { className: 'e-scrollbar', styles: 'display: flex' });
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            if (!isRight) {
+                parent.appendChild(frozen);
+                parent.appendChild(movable);
+            }
+            else {
+                this.parent.getContent().querySelector('.e-scrollbar').appendChild(frozen);
+                return;
+            }
+        }
+        else {
+            parent.appendChild(movable);
+            parent.appendChild(frozen);
+        }
+        this.parent.getContent().appendChild(parent);
+    };
+    ColumnFreezeContentRenderer.prototype.renderFrozenRightPanelAlone = function () {
+        this.renderFrozenRigthPanel();
+        var mDiv = this.parent.element.querySelector('.e-movablecontent');
+        var fRightContent = this.parent.element.querySelector('.e-frozen-right-content');
+        if (isNullOrUndefined(fRightContent)) {
+            mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
+            fRightContent = this.parent.createElement('div', { className: 'e-frozencontent e-frozen-right-content' });
+            this.getPanel().querySelector('.e-content').appendChild(mDiv);
+            this.getPanel().querySelector('.e-content').appendChild(fRightContent);
+        }
+        _super.prototype.setMovableContent.call(this, mDiv);
+        this.setFrozenRightContent(fRightContent);
+    };
+    ColumnFreezeContentRenderer.prototype.renderFrozenLeftWithRightPanel = function () {
+        this.renderFrozenRigthPanel();
+        var fRightContent = this.parent.element.querySelector('.e-frozen-right-content');
+        if (isNullOrUndefined(fRightContent)) {
+            fRightContent = this.parent.createElement('div', { className: 'e-frozencontent e-frozen-right-content' });
+            this.getPanel().querySelector('.e-content').appendChild(fRightContent);
+        }
+        this.setFrozenRightContent(fRightContent);
+    };
+    ColumnFreezeContentRenderer.prototype.renderFrozenRightTableAlone = function () {
+        var mTbl;
+        if (this.getFrozenRightContent().querySelector('.e-table') == null) {
+            _super.prototype.renderFrozenRightTable.call(this);
+            this.getFrozenRightContent().appendChild(this.getTable());
+            mTbl = this.getTable().cloneNode(true);
+            this.getMovableContent().appendChild(mTbl);
+        }
+        else {
+            if (this.parent.frozenRows) {
+                this.parent.getHeaderContent().classList.add('e-frozenhdrcont');
+            }
+            this.setTable(this.getFrozenRightContent().querySelector('.e-table'));
+            this.setColGroup(this.getFrozenRightHeaderColGroup());
+            mTbl = this.getMovableContent().querySelector('.e-table');
+            this.getFrozenRightContent().querySelector('.e-table').appendChild(this.getColGroup());
+        }
+        if (this.getMovableContent().querySelector('colgroup')) {
+            remove(this.getMovableContent().querySelector('colgroup'));
+        }
+        var colgroup = ((this.parent.getHeaderContent().querySelector('.e-movableheader')
+            .querySelector('colgroup')).cloneNode(true));
+        mTbl.insertBefore(colgroup, mTbl.querySelector('tbody'));
+    };
+    ColumnFreezeContentRenderer.prototype.renderFrozenLeftWithRightTable = function () {
+        var frozenRight = this.getTable().cloneNode(true);
+        this.getFrozenRightContent().appendChild(frozenRight);
+        var oldColGroup = this.getFrozenRightContent().querySelector('colgroup');
+        if (oldColGroup) {
+            remove(oldColGroup);
+        }
+        var rightTable = this.getFrozenRightContent().querySelector('.e-table');
+        rightTable.insertBefore(this.getFrozenRightHeaderColGroup(), rightTable.querySelector('tbody'));
+    };
+    ColumnFreezeContentRenderer.prototype.renderFrozenRightEmptyRowAlone = function (tbody) {
+        _super.prototype.renderFrozenRightEmpty.call(this, tbody);
+        this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
+        addClass([this.parent.getMovableContentTbody().querySelector('tr')], ['e-emptyrow']);
+        this.getFrozenRightContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenRightColumnsCount();
+        if (this.parent.frozenRows) {
+            this.parent.getFrozenRightHeaderTbody().innerHTML = '';
+            this.parent.getMovableHeaderTbody().innerHTML = '';
+        }
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeContentRenderer.prototype.getFrozenHeader = function (tableName) {
+        if (tableName === 'frozen-left') {
+            return this.parent.getHeaderContent().querySelector('.e-frozen-left-header').querySelector('tbody');
+        }
+        else if (tableName === 'movable') {
+            return this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
+        }
+        else {
+            return this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody');
+        }
+    };
+    ColumnFreezeContentRenderer.prototype.renderFrozenLeftWithRightEmptyRow = function () {
+        this.getFrozenRightContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
+        addClass([this.getFrozenRightContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
+        if (this.parent.frozenRows) {
+            this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody').innerHTML = '';
+        }
+    };
+    ColumnFreezeContentRenderer.prototype.setFrozenRightContent = function (ele) {
+        this.frozenRigthContent = ele;
+    };
+    ColumnFreezeContentRenderer.prototype.getFrozenRightContent = function () {
+        return this.frozenRigthContent;
+    };
+    ColumnFreezeContentRenderer.prototype.getHeaderColGroup = function () {
+        var colGroup = this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true);
+        if (!this.parent.getFrozenLeftColumnsCount()) {
+            var right = this.getFrozenRightHeaderColGroup();
+            colGroup = right && this.frzCount ? right.cloneNode(true) : colGroup;
+            this.frzCount++;
+            this.isColGroupRefresh = true;
+        }
+        return colGroup;
+    };
+    ColumnFreezeContentRenderer.prototype.getFrozenRightHeaderColGroup = function () {
+        var col = this.parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('colgroup');
+        if (!col) {
+            col = this.parent.getHeaderContent().querySelector('colgroup');
+        }
+        return col.cloneNode(true);
+    };
+    ColumnFreezeContentRenderer.prototype.setColGroup = function (colGroup) {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            return _super.prototype.setColGroup.call(this, colGroup);
+        }
+        else {
+            colGroup = !this.isColGroupRefresh ? this.getFrozenRightHeaderColGroup() : colGroup;
+            if (!isNullOrUndefined(colGroup)) {
+                colGroup.id = 'content-' + colGroup.id;
+            }
+            this.isColGroupRefresh = false;
+            if (this.frzCount === 2) {
+                this.frzCount = 0;
+            }
+            return this.colgroup = colGroup;
+        }
+    };
+    ColumnFreezeContentRenderer.prototype.renderEmpty = function (tbody) {
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            _super.prototype.renderEmpty.call(this, tbody);
+            if (this.parent.getFrozenRightColumnsCount()) {
+                this.renderFrozenLeftWithRightEmptyRow();
+            }
+        }
+        else {
+            this.renderFrozenRightEmptyRowAlone(tbody);
+        }
+    };
+    ColumnFreezeContentRenderer.prototype.setHeightToContent = function (height) {
+        if (this.parent.getFrozenRightColumnsCount()) {
+            this.getFrozenRightContent().style.height = height.toString() + 'px';
+        }
+        if (this.parent.getFrozenLeftColumnsCount()) {
+            this.getFrozenContent().style.height = height.toString() + 'px';
+        }
+        this.getMovableContent().style.height = height.toString() + 'px';
+    };
+    ColumnFreezeContentRenderer.prototype.actionComplete = function (args) {
+        _super.prototype.actionComplete.call(this, args);
+    };
+    ColumnFreezeContentRenderer.prototype.batchAdd = function (args) {
+        _super.prototype.batchAdd.call(this, args);
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeContentRenderer.prototype.getTbody = function (tableName) {
+        var tbody;
+        if (tableName === 'frozen-left') {
+            tbody = this.parent.getFrozenLeftContentTbody();
+        }
+        else if (tableName === 'movable') {
+            tbody = this.parent.getMovableContentTbody();
+        }
+        else if (tableName === 'frozen-right') {
+            tbody = this.parent.getFrozenRightContentTbody();
+        }
+        return tbody;
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeContentRenderer.prototype.setIsFrozen = function (args, tableName) {
+        args.isFrozen = (tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right'
+            && tableName === 'frozen-right'));
+        args.renderFrozenRightContent = this.parent.getFrozenMode() === 'Left-Right' && tableName === 'frozen-right';
+        args.renderMovableContent = tableName === 'movable';
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeContentRenderer.prototype.appendContent = function (tbody, frag, args, tableName) {
+        if (!isNullOrUndefined(this.parent.rowTemplate) && this.parent.isReact) {
+            tbody = frag;
+        }
+        else {
+            tbody.appendChild(frag);
+        }
+        if (this.parent.getFrozenMode() === 'Left') {
+            if (tableName === 'frozen-left') {
+                this.isLoaded = false;
+                this.getFrozenContent().querySelector('table').appendChild(tbody);
+                this.refreshContentRows(extend({}, args));
+            }
+            else {
+                this.refreshTbody(tbody);
+                this.isLoaded = true;
+                this.getMovableContent().querySelector('table').appendChild(tbody);
+                this.refreshHeight();
+                this.refreshScrollOffset();
+            }
+        }
+        else if (this.parent.getFrozenMode() === 'Right') {
+            if (tableName === 'movable') {
+                this.refreshTbody(tbody);
+                this.isLoaded = true;
+                this.getMovableContent().querySelector('table').appendChild(tbody);
+                this.refreshHeight();
+                this.refreshScrollOffset();
+            }
+            else {
+                this.isLoaded = false;
+                this.getFrozenRightContent().querySelector('table').appendChild(tbody);
+                this.refreshContentRows(extend({}, args));
+            }
+        }
+        else if (this.parent.getFrozenMode() === 'Left-Right') {
+            if (tableName === 'frozen-left') {
+                this.isLoaded = false;
+                this.getFrozenContent().querySelector('table').appendChild(tbody);
+                this.refreshContentRows(extend({}, args));
+            }
+            else if (tableName === 'movable') {
+                this.refreshTbody(tbody);
+                this.isLoaded = false;
+                this.getMovableContent().querySelector('table').appendChild(tbody);
+                this.refreshContentRows(extend({}, args));
+            }
+            else {
+                this.isLoaded = true;
+                this.getFrozenRightContent().querySelector('table').appendChild(tbody);
+                this.refreshHeight();
+                this.refreshScrollOffset();
+            }
+        }
+        if (this.isInitialRender) {
+            this.parent.scrollModule.setHeight();
+            this.isInitialRender = false;
+        }
+        this.widthService.refreshFrozenScrollbar();
+    };
+    ColumnFreezeContentRenderer.prototype.refreshHeight = function () {
+        if (!this.parent.allowTextWrap) {
+            this.parent.notify(freezeRender, { case: 'refreshHeight' });
+        }
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeContentRenderer.prototype.splitRows = function (tableName) {
+        var left = this.parent.getFrozenLeftColumnsCount();
+        var right = this.parent.getFrozenRightColumnsCount();
+        if (left && !right) {
+            if (tableName === 'frozen-left') {
+                this.freezeRows = this.rows;
+                this.freezeRowElements = this.rowElements;
+            }
+            else {
+                this.movableRows = this.rows;
+            }
+        }
+        else if (!left && right) {
+            if (tableName === 'movable') {
+                this.movableRows = this.rows;
+            }
+            else {
+                this.freezeRows = this.rows;
+                this.freezeRowElements = this.rowElements;
+            }
+        }
+        else if (left && right) {
+            if (tableName === 'frozen-left') {
+                this.freezeRows = this.rows;
+                this.freezeRowElements = this.rowElements;
+            }
+            else if (tableName === 'movable') {
+                this.movableRows = this.rows;
+                this.movableRowElements = this.rowElements;
+            }
+            else {
+                this.frozenRightRows = this.rows;
+                this.frozenRightRowElements = this.rowElements;
+            }
+        }
+    };
+    /**
+     * Get the Freeze pane movable content table data row elements
+     * @return {Element}
+     */
+    ColumnFreezeContentRenderer.prototype.getMovableRowElements = function () {
+        if (this.parent.getTablesCount() === 2) {
+            return this.rowElements;
+        }
+        else {
+            return this.movableRowElements;
+        }
+    };
+    /**
+     * Get the Freeze pane frozen right content table data row elements
+     * @return {Element}
+     */
+    ColumnFreezeContentRenderer.prototype.getFrozenRightRowElements = function () {
+        if (this.parent.getTablesCount() === 2) {
+            return this.freezeRowElements;
+        }
+        else {
+            return this.frozenRightRowElements;
+        }
+    };
+    /**
+     * Get the frozen right row collection in the Freeze pane Grid.
+     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
+     */
+    ColumnFreezeContentRenderer.prototype.getFrozenRightRows = function () {
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            if (this.parent.enableInfiniteScrolling) {
+                return this.rightFreezeRows;
+            }
+            return this.frozenRightRows;
+        }
+        else {
+            return this.getRows();
+        }
+    };
+    /**
+     * @hidden
+     */
+    ColumnFreezeContentRenderer.prototype.getFrozenRightRowByIndex = function (index) {
+        return this.parent.getFrozenRightDataRows()[index];
+    };
+    /**
+     * Get the Row collection in the Grid.
+     * @returns {Row[] | HTMLCollectionOf<HTMLTableRowElement>}
+     */
+    ColumnFreezeContentRenderer.prototype.getRows = function () {
+        var infiniteRows = this.getInfiniteRows();
+        return infiniteRows.length ? infiniteRows : this.freezeRows;
+    };
+    /**
+     * Get the content table data row elements
+     * @return {Element}
+     */
+    ColumnFreezeContentRenderer.prototype.getRowElements = function () {
+        return this.freezeRowElements;
+    };
+    return ColumnFreezeContentRenderer;
+}(FreezeContentRender));
 
 var __extends$28 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -38396,58 +41058,104 @@ var __extends$28 = (undefined && undefined.__extends) || (function () {
     };
 })();
 /**
- * VirtualFreezeRenderer is used to render the virtual table within the frozen table
+ * VirtualFreezeRenderer is used to render the virtual table within the frozen and movable content table
  * @hidden
  */
 var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$28(VirtualFreezeRenderer, _super);
     function VirtualFreezeRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
-        _this.frzeeLoad = 1;
+        /** @hidden */
+        _this.frzRows = [];
+        /** @hidden */
+        _this.mvblRows = [];
+        /** @hidden */
+        _this.frRows = [];
         _this.serviceLoc = locator;
+        _this.eventListener('on');
+        _this.rowModelGenerator = new RowModelGenerator(_this.parent);
         return _this;
     }
+    VirtualFreezeRenderer.prototype.eventListener = function (action) {
+        this.parent[action](getVirtualData, this.getVirtualData, this);
+        this.parent[action](setFreezeSelection, this.setFreezeSelection, this);
+        this.parent[action](refreshVirtualFrozenRows, this.refreshVirtualFrozenRows, this);
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
+    };
+    VirtualFreezeRenderer.prototype.actionComplete = function (args) {
+        if (args.requestType === 'delete' && this.parent.frozenRows) {
+            for (var i = 0; i < this.parent.frozenRows; i++) {
+                setCache(this, i);
+            }
+        }
+    };
+    VirtualFreezeRenderer.prototype.refreshVirtualFrozenRows = function (args) {
+        var _this = this;
+        var gObj = this.parent;
+        if (args.requestType === 'delete' && gObj.frozenRows) {
+            args.isFrozenRowsRender = true;
+            var selectedIdx_1 = gObj.getSelectedRowIndexes();
+            var query = gObj.renderModule.data.generateQuery(true).clone();
+            query.page(1, gObj.pageSettings.pageSize);
+            gObj.renderModule.data.getData({}, query).then(function (e) {
+                renderFrozenRows(args, e.result, selectedIdx_1, gObj, _this.rowModelGenerator, _this.serviceLoc, _this.virtualRenderer, _this);
+            });
+        }
+    };
+    VirtualFreezeRenderer.prototype.getVirtualData = function (data) {
+        this.virtualRenderer.getVirtualData(data);
+    };
+    VirtualFreezeRenderer.prototype.setFreezeSelection = function (args) {
+        setFreezeSelection$1(args, this.virtualRenderer);
+    };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.renderTable = function () {
         this.freezeRowGenerator = new FreezeRowModelGenerator(this.parent);
         this.virtualRenderer = new VirtualContentRenderer(this.parent, this.serviceLoc);
+        this.virtualRenderer.header = this.serviceLoc.getService('rendererFactory')
+            .getRenderer(RenderType.Header).virtualHdrRenderer;
+        _super.prototype.renderTable.call(this);
         this.virtualRenderer.setPanel(this.parent.getContent());
-        this.virtualRenderer.renderTable();
-        var virtualTable = this.parent.getContent().querySelector('.e-virtualtable');
-        var virtualTrack = this.parent.getContent().querySelector('.e-virtualtrack');
-        virtualTrack.style.position = '';
-        this.getFrozenContent().appendChild(virtualTable);
-        this.getFrozenContent().appendChild(virtualTrack);
-        var mTbl = virtualTable.cloneNode(true);
-        var mTblT = virtualTrack.cloneNode(true);
-        this.getMovableContent().appendChild(mTbl);
-        this.getMovableContent().appendChild(mTblT);
-        remove(this.getMovableContent().querySelector('colgroup'));
-        var colGroup = this.parent.getMovableVirtualHeader().querySelector('colgroup')
-            .cloneNode(true);
-        mTbl.firstElementChild.insertBefore(colGroup, mTbl.firstElementChild.querySelector('tbody'));
-        this.setTable(this.parent.element.querySelector('.e-frozencontent').querySelector('.e-table'));
+        this.scrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
+        var frzCont = this.getFrozenContent();
+        var movableCont = this.getMovableContent();
+        var minHeight = this.parent.height;
+        this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = this.getPanel().querySelector('.e-content');
+        this.virtualRenderer.virtualEle.content.style.overflowX = 'hidden';
+        this.virtualRenderer.virtualEle.renderFrozenWrapper(minHeight);
+        this.virtualRenderer.virtualEle.renderFrozenPlaceHolder();
+        if (this.parent.enableColumnVirtualization) {
+            this.virtualRenderer.virtualEle.movableContent = this.virtualRenderer.movableContent
+                = this.getPanel().querySelector('.e-movablecontent');
+            this.virtualRenderer.virtualEle.renderMovableWrapper(minHeight);
+            this.virtualRenderer.virtualEle.renderMovablePlaceHolder();
+            var tbl = movableCont.querySelector('table');
+            this.virtualRenderer.virtualEle.movableTable = tbl;
+            this.virtualRenderer.virtualEle.movableWrapper.appendChild(tbl);
+            movableCont.appendChild(this.virtualRenderer.virtualEle.movableWrapper);
+            movableCont.appendChild(this.virtualRenderer.virtualEle.movablePlaceholder);
+        }
+        this.virtualRenderer.virtualEle.wrapper.appendChild(frzCont);
+        this.virtualRenderer.virtualEle.wrapper.appendChild(movableCont);
+        this.virtualRenderer.virtualEle.table = this.getTable();
+        setDebounce(this.parent, this.virtualRenderer, this.scrollbar, this.getMovableContent());
     };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.appendContent = function (target, newChild, e) {
-        this.virtualRenderer.appendContent(target, newChild, e);
+        appendContent(this.virtualRenderer, this.widthService, target, newChild, e);
     };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.generateRows = function (data, notifyArgs) {
-        var virtualRows = this.virtualRenderer.vgenerator.generateRows(data, notifyArgs);
-        var arr = [];
-        arr = virtualRows.map(function (row) { return extend({}, row); });
         if (!this.firstPageRecords) {
             this.firstPageRecords = data;
         }
-        var rows = this.freezeRowGenerator.generateRows(data, notifyArgs, arr);
-        return rows;
+        return generateRows(this.virtualRenderer, data, notifyArgs, this.freezeRowGenerator, this.parent);
     };
     /**
      * @hidden
@@ -38461,87 +41169,45 @@ var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualFreezeRenderer.prototype.getMovableRowByIndex = function (index) {
         return this.virtualRenderer.getMovableVirtualRowByIndex(index);
     };
+    VirtualFreezeRenderer.prototype.collectRows = function (tableName) {
+        return collectRows(tableName, this.virtualRenderer, this.parent);
+    };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.getMovableRows = function () {
-        return this.virtualRenderer.vgenerator.getRows();
+        return this.collectRows('movable');
     };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.getRows = function () {
-        return this.getMovableRows();
+        return this.collectRows('frozen-left');
     };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.getColGroup = function () {
-        var mCol = this.parent.getMovableVirtualContent().querySelector('colgroup');
-        var fCol = this.parent.getFrozenVirtualContent().querySelector('colgroup');
-        var colGroup = this.isXaxis() ? mCol : fCol;
-        return colGroup;
+        var mCol = this.parent.getMovableVirtualContent();
+        return this.isXaxis() ? mCol.querySelector('colgroup') : this.colgroup;
     };
     /**
      * @hidden
      */
     VirtualFreezeRenderer.prototype.getReorderedFrozenRows = function (args) {
-        var rows;
-        var bIndex = args.virtualInfo.blockIndexes;
-        var colIndex = args.virtualInfo.columnIndexes;
-        var page = args.virtualInfo.page;
-        args.virtualInfo.blockIndexes = [1, 2];
-        args.virtualInfo.page = 1;
-        if (!args.renderMovableContent) {
-            args.virtualInfo.columnIndexes = [];
-        }
-        var virtualRows = this.virtualRenderer.vgenerator.generateRows(this.firstPageRecords, args);
-        rows = this.splitReorderedRows(virtualRows);
-        args.virtualInfo.blockIndexes = bIndex;
-        args.virtualInfo.columnIndexes = colIndex;
-        args.virtualInfo.page = page;
-        return rows.splice(0, this.parent.frozenRows);
-    };
-    VirtualFreezeRenderer.prototype.splitReorderedRows = function (rows) {
-        var frzCols = this.parent.getFrozenColumns();
-        for (var i = 0, len = rows.length; i < len; i++) {
-            if (this.frzeeLoad % 2 === 0) {
-                rows[i].cells = rows[i].cells.slice(frzCols, rows[i].cells.length);
-            }
-            else {
-                rows[i].isFreezeRow = true;
-                rows[i].cells = rows[i].cells.slice(0, frzCols);
-            }
-        }
-        this.frzeeLoad++;
-        return rows;
+        return getReorderedFrozenRows(args, this.virtualRenderer, this.parent, this.freezeRowGenerator, this.firstPageRecords);
     };
     VirtualFreezeRenderer.prototype.isXaxis = function () {
-        var value = false;
-        if (this.virtualRenderer) {
-            value = this.virtualRenderer.requestType === 'virtualscroll'
-                && this.virtualRenderer.currentInfo.sentinelInfo.axis === 'X';
-        }
-        return value;
+        return isXaxis(this.virtualRenderer);
     };
     VirtualFreezeRenderer.prototype.getHeaderCells = function () {
-        var content = this.isXaxis() ? this.parent.getMovableVirtualHeader() : this.parent.getHeaderContent();
-        return content ? [].slice.call(content.querySelectorAll('.e-headercell:not(.e-stackedheadercell)')) : [];
+        return getHeaderCells(this.virtualRenderer, this.parent);
     };
     VirtualFreezeRenderer.prototype.getVirtualFreezeHeader = function () {
-        var headerTable;
-        if (this.isXaxis()) {
-            headerTable = this.parent.getMovableVirtualHeader().querySelector('.e-table');
-        }
-        else {
-            headerTable = this.parent.getFrozenVirtualHeader().querySelector('.e-table');
-        }
-        return headerTable;
+        return getVirtualFreezeHeader(this.virtualRenderer, this.parent);
     };
     VirtualFreezeRenderer.prototype.ensureFrozenCols = function (columns) {
-        var frozenCols = this.parent.columns.slice(0, this.parent.getFrozenColumns());
-        columns = frozenCols.concat(columns);
-        return columns;
+        return ensureFrozenCols(columns, this.parent);
     };
     /**
      * @hidden
@@ -38549,8 +41215,20 @@ var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualFreezeRenderer.prototype.getRowObjectByIndex = function (index) {
         return this.virtualRenderer.getRowObjectByIndex(index);
     };
+    /**
+     * Set the header colgroup element
+     * @param {Element} colgroup
+     * @returns {Element}
+     */
+    VirtualFreezeRenderer.prototype.setColGroup = function (colGroup) {
+        return setColGroup(colGroup, this.virtualRenderer, this);
+    };
     return VirtualFreezeRenderer;
 }(FreezeContentRender));
+/**
+ * VirtualFreezeHdrRenderer is used to render the virtual table within the frozen and movable header table
+ * @hidden
+ */
 var VirtualFreezeHdrRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$28(VirtualFreezeHdrRenderer, _super);
     function VirtualFreezeHdrRenderer(parent, locator) {
@@ -38563,37 +41241,460 @@ var VirtualFreezeHdrRenderer = /** @__PURE__ @class */ (function (_super) {
      */
     VirtualFreezeHdrRenderer.prototype.renderTable = function () {
         this.virtualHdrRenderer = new VirtualHeaderRenderer(this.parent, this.serviceLoc);
-        this.virtualEle = this.virtualHdrRenderer.virtualEle;
+        this.virtualHdrRenderer.gen.refreshColOffsets();
+        this.parent.setColumnIndexesInView(this.virtualHdrRenderer.gen.getColumnIndexes(this.getPanel()
+            .querySelector('.e-headercontent')));
+        this.virtualHdrRenderer.virtualEle.content = this.getPanel().querySelector('.e-headercontent');
+        this.virtualHdrRenderer.virtualEle.renderFrozenWrapper();
+        this.virtualHdrRenderer.virtualEle.renderFrozenPlaceHolder();
+        if (this.parent.enableColumnVirtualization) {
+            this.virtualHdrRenderer.virtualEle.movableContent = this.getPanel().querySelector('.e-movableheader');
+            this.virtualHdrRenderer.virtualEle.renderMovableWrapper();
+            this.virtualHdrRenderer.virtualEle.renderMovablePlaceHolder();
+        }
+        _super.prototype.renderTable.call(this);
         this.virtualHdrRenderer.setPanel(this.parent.getHeaderContent());
-        this.virtualHdrRenderer.renderTable();
-        this.rfhMovable();
-        this.updateColgroup();
-        this.initializeHeaderDrag();
-        this.initializeHeaderDrop();
-        this.setTable(this.parent.element.querySelector('.e-frozenheader').querySelector('.e-table'));
-        this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     };
-    VirtualFreezeHdrRenderer.prototype.rfhMovable = function () {
-        var fvTbl = this.parent.getHeaderContent().querySelector('.e-virtualtable');
-        var fvTck = this.parent.getHeaderContent().querySelector('.e-virtualtrack');
-        this.getFrozenHeader().appendChild(fvTbl);
-        this.getFrozenHeader().appendChild(fvTck);
-        this.virtualHdrRenderer.virtualEle.table = this.createTable();
-        this.virtualHdrRenderer.virtualEle.renderWrapper();
-        this.virtualHdrRenderer.virtualEle.renderPlaceHolder();
-        var mvTbl = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-virtualtable'));
-        var mvTck = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-virtualtrack'));
-        this.getMovableHeader().appendChild(mvTbl[1]);
-        this.getMovableHeader().appendChild(mvTck[1]);
+    VirtualFreezeHdrRenderer.prototype.rfshMovable = function () {
+        this.getFrozenHeader().appendChild(this.getTable());
+        this.virtualHdrRenderer.virtualEle.wrapper.appendChild(this.getFrozenHeader());
+        if (this.parent.enableColumnVirtualization) {
+            this.virtualHdrRenderer.virtualEle.movableWrapper.appendChild(this.createTable());
+        }
+        else {
+            this.getMovableHeader().appendChild(this.createTable());
+        }
+        this.virtualHdrRenderer.virtualEle.wrapper.appendChild(this.getMovableHeader());
+    };
+    return VirtualFreezeHdrRenderer;
+}(FreezeRender));
+/** @hidden */
+function renderFrozenRows(args, data, selectedIdx, parent, rowModelGenerator, locator, virtualRenderer, instance) {
+    parent.clearSelection();
+    args.startIndex = 0;
+    var rowRenderer = new RowRenderer(locator, null, parent);
+    var rows = rowModelGenerator.generateRows(data, args);
+    if (args.renderMovableContent) {
+        virtualRenderer.vgenerator.movableCache[1] = rows;
+        rows = parent.getMovableRowsObject();
+    }
+    else if (!args.renderFrozenRightContent && !args.renderMovableContent) {
+        virtualRenderer.vgenerator.cache[1] = rows;
+        rows = parent.getRowsObject();
+    }
+    else if (args.renderFrozenRightContent) {
+        virtualRenderer.vgenerator.frozenRightCache[1] = rows;
+        rows = parent.getFrozenRightRowsObject();
+    }
+    var hdr = !args.renderMovableContent && !args.renderFrozenRightContent
+        ? parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody') : args.renderMovableContent
+        ? parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody')
+        : parent.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody');
+    hdr.innerHTML = '';
+    for (var i = 0; i < parent.frozenRows; i++) {
+        hdr.appendChild(rowRenderer.render(rows[i], parent.getColumns()));
+        if (selectedIdx.indexOf(i) > -1) {
+            rows[i].isSelected = true;
+            for (var k = 0; k < rows[i].cells.length; k++) {
+                rows[i].cells[k].isSelected = true;
+            }
+        }
+    }
+    if (args.renderMovableContent) {
+        instance.mvblRows = virtualRenderer.vgenerator.movableCache[1];
+    }
+    else if (!args.renderMovableContent && !args.renderFrozenRightContent) {
+        instance.frzRows = virtualRenderer.vgenerator.cache[1];
+    }
+    else if (args.renderFrozenRightContent) {
+        instance.frRows = virtualRenderer.vgenerator.frozenRightCache[1];
+    }
+    args.renderMovableContent = !args.renderMovableContent && !args.renderFrozenRightContent;
+    args.renderFrozenRightContent = parent.getFrozenMode() === 'Left-Right'
+        && !args.renderMovableContent && !args.renderFrozenRightContent;
+    if (args.renderMovableContent || args.renderFrozenRightContent) {
+        renderFrozenRows(args, data, selectedIdx, parent, rowModelGenerator, locator, virtualRenderer, instance);
+        if (!args.renderMovableContent && !args.renderFrozenRightContent) {
+            args.isFrozenRowsRender = false;
+        }
+    }
+}
+/** @hidden */
+function splitCells(data, tableName, parent) {
+    var rows = [];
+    for (var i = 0; i < data.length; i++) {
+        rows.push(extend({}, data[i]));
+        rows[i].cells = splitFrozenRowObjectCells(parent, rows[i].cells, tableName);
+    }
+    return rows;
+}
+/** @hidden */
+function collectRows(tableName, virtualRenderer, parent) {
+    var rows = [];
+    var cache;
+    if (tableName === 'frozen-left') {
+        cache = virtualRenderer.vgenerator.cache;
+    }
+    else if (tableName === 'movable') {
+        cache = virtualRenderer.vgenerator.movableCache;
+    }
+    else if (tableName === 'frozen-right') {
+        cache = parent.getFrozenMode() === 'Right' ? virtualRenderer.vgenerator.cache : virtualRenderer.vgenerator.frozenRightCache;
+    }
+    var keys = Object.keys(cache);
+    for (var i = 0; i < keys.length; i++) {
+        rows = rows.concat(splitCells(cache[keys[i]], tableName, parent));
+    }
+    return rows;
+}
+/** @hidden */
+function setFreezeSelection$1(args, virtualRenderer) {
+    var leftKeys = Object.keys(virtualRenderer.vgenerator.cache);
+    var movableKeys = Object.keys(virtualRenderer.vgenerator.movableCache);
+    var rightKeys = Object.keys(virtualRenderer.vgenerator.frozenRightCache);
+    for (var i = 0; i < leftKeys.length; i++) {
+        selectFreezeRows(args, virtualRenderer.vgenerator.cache[leftKeys[i]]);
+    }
+    for (var i = 0; i < movableKeys.length; i++) {
+        selectFreezeRows(args, virtualRenderer.vgenerator.movableCache[movableKeys[i]]);
+    }
+    for (var i = 0; i < rightKeys.length; i++) {
+        selectFreezeRows(args, virtualRenderer.vgenerator.frozenRightCache[rightKeys[i]]);
+    }
+}
+/** @hidden */
+function selectFreezeRows(args, cache) {
+    var rows = cache.filter(function (row) { return args.clearAll || args.uid === row.uid; });
+    for (var j = 0; j < rows.length; j++) {
+        rows[j].isSelected = args.set;
+        var cells = rows[j].cells;
+        for (var k = 0; k < cells.length; k++) {
+            cells[k].isSelected = args.set;
+        }
+    }
+}
+/** @hidden */
+function appendContent(virtualRenderer, widthService, target, newChild, e) {
+    virtualRenderer.appendContent(target, newChild, e);
+    widthService.refreshFrozenScrollbar();
+}
+/** @hidden */
+function generateRows(virtualRenderer, data, notifyArgs, freezeRowGenerator, parent) {
+    var virtualRows = virtualRenderer.vgenerator.generateRows(data, notifyArgs);
+    var arr = [];
+    arr = virtualRows.map(function (row) { return extend({}, row); });
+    var rows = freezeRowGenerator.generateRows(data, notifyArgs, arr);
+    if (parent.frozenRows && notifyArgs.requestType === 'delete' && parent.pageSettings.currentPage === 1) {
+        rows = rows.slice(parent.frozenRows);
+    }
+    return rows;
+}
+/** @hidden */
+function getReorderedFrozenRows(args, virtualRenderer, parent, freezeRowGenerator, firstPageRecords) {
+    var rows;
+    var bIndex = args.virtualInfo.blockIndexes;
+    var colIndex = args.virtualInfo.columnIndexes;
+    var page = args.virtualInfo.page;
+    args.virtualInfo.blockIndexes = [1, 2];
+    args.virtualInfo.page = 1;
+    if (!args.renderMovableContent) {
+        args.virtualInfo.columnIndexes = [];
+    }
+    var virtualRows = virtualRenderer.vgenerator.generateRows(firstPageRecords, args);
+    rows = splitReorderedRows(virtualRows, parent, freezeRowGenerator);
+    args.virtualInfo.blockIndexes = bIndex;
+    args.virtualInfo.columnIndexes = colIndex;
+    args.virtualInfo.page = page;
+    return rows.splice(0, parent.frozenRows);
+}
+/** @hidden */
+function splitReorderedRows(rows, parent, freezeRowGenerator) {
+    var tableName = getFrozenTableName(parent, parent.tableIndex);
+    for (var i = 0, len = rows.length; i < len; i++) {
+        rows[i].cells = splitFrozenRowObjectCells(parent, rows[i].cells, tableName);
+    }
+    return rows;
+}
+/** @hidden */
+function isXaxis(virtualRenderer) {
+    var value = false;
+    if (virtualRenderer) {
+        value = virtualRenderer.requestType === 'virtualscroll'
+            && virtualRenderer.currentInfo.sentinelInfo.axis === 'X';
+    }
+    return value;
+}
+/** @hidden */
+function getHeaderCells(virtualRenderer, parent) {
+    var content = isXaxis(virtualRenderer) ? parent.getMovableVirtualHeader() : parent.getHeaderContent();
+    return content ? [].slice.call(content.querySelectorAll('.e-headercell:not(.e-stackedheadercell)')) : [];
+}
+/** @hidden */
+function getVirtualFreezeHeader(virtualRenderer, parent) {
+    var headerTable;
+    if (isXaxis(virtualRenderer)) {
+        headerTable = parent.getMovableVirtualHeader().querySelector('.e-table');
+    }
+    else {
+        headerTable = parent.getFrozenVirtualHeader().querySelector('.e-table');
+    }
+    return headerTable;
+}
+/** @hidden */
+function ensureFrozenCols(columns, parent) {
+    var frozenCols = parent.columns.slice(0, parent.getFrozenColumns());
+    columns = frozenCols.concat(columns);
+    return columns;
+}
+/** @hidden */
+function setColGroup(colGroup, virtualRenderer, instance) {
+    if (!isXaxis(virtualRenderer)) {
+        if (!isNullOrUndefined(colGroup)) {
+            colGroup.id = 'content-' + colGroup.id;
+        }
+        instance.colgroup = colGroup;
+    }
+    return instance.colgroup;
+}
+/** @hidden */
+function setCache(instance, index) {
+    if (instance.virtualRenderer.vgenerator.cache[1]) {
+        instance.virtualRenderer.vgenerator.cache[1][index] = instance.frzRows[index];
+    }
+    else {
+        instance.virtualRenderer.vgenerator.cache[1] = instance.frzRows;
+    }
+    if (instance.virtualRenderer.vgenerator.movableCache[1]) {
+        instance.virtualRenderer.vgenerator.movableCache[1][index] = instance.mvblRows[index];
+    }
+    else {
+        instance.virtualRenderer.vgenerator.movableCache[1] = instance.mvblRows;
+    }
+}
+/** @hidden */
+function setDebounce(parent, virtualRenderer, scrollbar, mCont) {
+    var debounceEvent = (parent.dataSource instanceof DataManager && !parent.dataSource.dataSource.offline);
+    var opt = {
+        container: virtualRenderer.content, pageHeight: virtualRenderer.getBlockHeight() * 2, debounceEvent: debounceEvent,
+        axes: parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y'], scrollbar: scrollbar,
+        movableContainer: mCont
+    };
+    virtualRenderer.observer = new InterSectionObserver(virtualRenderer.virtualEle.wrapper, opt, virtualRenderer.virtualEle.movableWrapper);
+}
+/**
+ * ColumnVirtualFreezeRenderer is used to render the virtual table within the frozen and movable content table
+ * @hidden
+ */
+var ColumnVirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
+    __extends$28(ColumnVirtualFreezeRenderer, _super);
+    function ColumnVirtualFreezeRenderer(parent, locator) {
+        var _this = _super.call(this, parent, locator) || this;
+        /** @hidden */
+        _this.frRows = [];
+        /** @hidden */
+        _this.frzRows = [];
+        /** @hidden */
+        _this.mvblRows = [];
+        _this.serviceLoc = locator;
+        _this.eventListener('on');
+        _this.rowModelGenerator = new RowModelGenerator(_this.parent);
+        return _this;
+    }
+    ColumnVirtualFreezeRenderer.prototype.actionComplete = function (args) {
+        if (args.requestType === 'delete' && this.parent.frozenRows) {
+            for (var i = 0; i < this.parent.frozenRows; i++) {
+                if (this.virtualRenderer.vgenerator.frozenRightCache[1]) {
+                    this.virtualRenderer.vgenerator.frozenRightCache[1][i] = this.frRows.length ? this.frRows[i] : this.frzRows[i];
+                }
+                else {
+                    this.virtualRenderer.vgenerator.frozenRightCache[1] = this.frRows.length ? this.frRows : this.frzRows;
+                    break;
+                }
+                setCache(this, i);
+            }
+        }
+    };
+    ColumnVirtualFreezeRenderer.prototype.eventListener = function (action) {
+        this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
+        this.parent[action](refreshVirtualFrozenRows, this.refreshVirtualFrozenRows, this);
+        this.parent[action](getVirtualData, this.getVirtualData, this);
+        this.parent[action](setFreezeSelection, this.setFreezeSelection, this);
+    };
+    ColumnVirtualFreezeRenderer.prototype.refreshVirtualFrozenRows = function (args) {
+        var _this = this;
+        if (args.requestType === 'delete' && this.parent.frozenRows) {
+            args.isFrozenRowsRender = true;
+            var query = this.parent.renderModule.data.generateQuery(true).clone();
+            query.page(1, this.parent.pageSettings.pageSize);
+            var selectedIdx_2 = this.parent.getSelectedRowIndexes();
+            this.parent.renderModule.data.getData({}, query).then(function (e) {
+                renderFrozenRows(args, e.result, selectedIdx_2, _this.parent, _this.rowModelGenerator, _this.serviceLoc, _this.virtualRenderer, _this);
+            });
+        }
+    };
+    ColumnVirtualFreezeRenderer.prototype.setFreezeSelection = function (args) {
+        setFreezeSelection$1(args, this.virtualRenderer);
+    };
+    ColumnVirtualFreezeRenderer.prototype.getVirtualData = function (data) {
+        this.virtualRenderer.getVirtualData(data);
+    };
+    ColumnVirtualFreezeRenderer.prototype.renderNextFrozentPart = function (e) {
+        if (this.parent.getFrozenMode() === 'Left' || this.parent.getFrozenMode() === 'Right') {
+            if (this.parent.tableIndex === 1) {
+                e.renderMovableContent = true;
+                this.refreshContentRows(extend({}, e));
+            }
+        }
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            if (this.parent.tableIndex === 1 || this.parent.tableIndex === 2) {
+                e.renderMovableContent = this.parent.tableIndex === 1;
+                e.renderFrozenRightContent = this.parent.tableIndex === 2;
+                this.refreshContentRows(extend({}, e));
+            }
+        }
     };
     /**
      * @hidden
      */
-    VirtualFreezeHdrRenderer.prototype.getTable = function () {
-        return this.virtualHdrRenderer.getTable();
+    ColumnVirtualFreezeRenderer.prototype.renderTable = function () {
+        this.virtualRenderer = new VirtualContentRenderer(this.parent, this.serviceLoc);
+        this.virtualRenderer.header = this.serviceLoc.getService('rendererFactory')
+            .getRenderer(RenderType.Header).virtualHdrRenderer;
+        this.freezeRowGenerator = new FreezeRowModelGenerator(this.parent);
+        _super.prototype.renderTable.call(this);
+        this.virtualRenderer.setPanel(this.parent.getContent());
+        this.scrollbar = this.parent.getContent().querySelector('.e-movablescrollbar');
+        var frozenRightCont = this.getFrozenRightContent();
+        var frzCont = this.getFrozenContent();
+        var movableCont = this.getMovableContent();
+        if (this.parent.getFrozenMode() === 'Right') {
+            frzCont = frozenRightCont;
+        }
+        this.virtualRenderer.virtualEle.content = this.virtualRenderer.content = this.getPanel().querySelector('.e-content');
+        this.virtualRenderer.virtualEle.content.style.overflowX = 'hidden';
+        var minHeight = this.parent.height;
+        this.virtualRenderer.virtualEle.renderFrozenWrapper(minHeight);
+        this.virtualRenderer.virtualEle.renderFrozenPlaceHolder();
+        this.renderVirtualFrozenLeft(frzCont, movableCont);
+        this.renderVirtualFrozenRight(frzCont, movableCont);
+        this.renderVirtualFrozenLeftRight(frzCont, movableCont, frozenRightCont);
+        this.virtualRenderer.virtualEle.table = this.getTable();
+        setDebounce(this.parent, this.virtualRenderer, this.scrollbar, this.getMovableContent());
     };
-    return VirtualFreezeHdrRenderer;
-}(FreezeRender));
+    ColumnVirtualFreezeRenderer.prototype.renderVirtualFrozenLeft = function (frzCont, movableCont) {
+        if (this.parent.getFrozenMode() === 'Left') {
+            this.virtualRenderer.virtualEle.wrapper.appendChild(frzCont);
+            this.virtualRenderer.virtualEle.wrapper.appendChild(movableCont);
+        }
+    };
+    ColumnVirtualFreezeRenderer.prototype.renderVirtualFrozenRight = function (frzCont, movableCont) {
+        if (this.parent.getFrozenMode() === 'Right') {
+            this.virtualRenderer.virtualEle.wrapper.appendChild(movableCont);
+            this.virtualRenderer.virtualEle.wrapper.appendChild(frzCont);
+        }
+    };
+    ColumnVirtualFreezeRenderer.prototype.renderVirtualFrozenLeftRight = function (frzCont, movableCont, frozenRightCont) {
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            this.virtualRenderer.virtualEle.wrapper.appendChild(frzCont);
+            this.virtualRenderer.virtualEle.wrapper.appendChild(movableCont);
+            this.virtualRenderer.virtualEle.wrapper.appendChild(frozenRightCont);
+        }
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.appendContent = function (target, newChild, e) {
+        appendContent(this.virtualRenderer, this.widthService, target, newChild, e);
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.generateRows = function (data, e) {
+        if (!this.firstPageRecords) {
+            this.firstPageRecords = data;
+        }
+        return generateRows(this.virtualRenderer, data, e, this.freezeRowGenerator, this.parent);
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getRowByIndex = function (index) {
+        return this.virtualRenderer.getRowByIndex(index);
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getFrozenRightRowByIndex = function (index) {
+        return this.virtualRenderer.getFrozenRightVirtualRowByIndex(index);
+    };
+    ColumnVirtualFreezeRenderer.prototype.collectRows = function (tableName) {
+        return collectRows(tableName, this.virtualRenderer, this.parent);
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getMovableRowByIndex = function (index) {
+        return this.virtualRenderer.getMovableVirtualRowByIndex(index);
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getFrozenRightRows = function () {
+        return this.collectRows('frozen-right');
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getMovableRows = function () {
+        return this.collectRows('movable');
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getColGroup = function () {
+        var mCol = this.parent.getMovableVirtualContent();
+        return isXaxis(this.virtualRenderer) ? mCol.querySelector('colgroup') : this.colgroup;
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getRows = function () {
+        return this.collectRows(this.parent.getFrozenMode() === 'Right' ? 'frozen-right' : 'frozen-left');
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getReorderedFrozenRows = function (args) {
+        return getReorderedFrozenRows(args, this.virtualRenderer, this.parent, this.freezeRowGenerator, this.firstPageRecords);
+    };
+    ColumnVirtualFreezeRenderer.prototype.getHeaderCells = function () {
+        return getHeaderCells(this.virtualRenderer, this.parent);
+    };
+    ColumnVirtualFreezeRenderer.prototype.isXaxis = function () {
+        return isXaxis(this.virtualRenderer);
+    };
+    ColumnVirtualFreezeRenderer.prototype.getVirtualFreezeHeader = function () {
+        return getVirtualFreezeHeader(this.virtualRenderer, this.parent);
+    };
+    /**
+     * @hidden
+     */
+    ColumnVirtualFreezeRenderer.prototype.getRowObjectByIndex = function (index) {
+        return this.virtualRenderer.getRowObjectByIndex(index);
+    };
+    ColumnVirtualFreezeRenderer.prototype.ensureFrozenCols = function (columns) {
+        return ensureFrozenCols(columns, this.parent);
+    };
+    /**
+     * Set the header colgroup element
+     * @param {Element} colgroup
+     * @returns {Element}
+     */
+    ColumnVirtualFreezeRenderer.prototype.setColGroup = function (colGroup) {
+        return setColGroup(colGroup, this.virtualRenderer, this);
+    };
+    return ColumnVirtualFreezeRenderer;
+}(ColumnFreezeContentRenderer));
 
 /**
  * `Freeze` module is used to handle Frozen rows and columns.
@@ -38624,6 +41725,12 @@ var Freeze = /** @__PURE__ @class */ (function () {
             this.parent.enableVirtualization ?
                 renderer.addRenderer(RenderType.Content, new VirtualFreezeRenderer(this.parent, this.locator))
                 : renderer.addRenderer(RenderType.Content, new FreezeContentRender(this.parent, this.locator));
+        }
+        if (this.parent.getFrozenLeftColumnsCount() || this.parent.getFrozenRightColumnsCount()) {
+            renderer.addRenderer(RenderType.Header, new ColumnFreezeHeaderRenderer(this.parent, this.locator));
+            this.parent.enableVirtualization
+                ? renderer.addRenderer(RenderType.Content, new ColumnVirtualFreezeRenderer(this.parent, this.locator))
+                : renderer.addRenderer(RenderType.Content, new ColumnFreezeContentRenderer(this.parent, this.locator));
         }
     };
     Freeze.prototype.removeEventListener = function () {
@@ -38992,7 +42099,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
-        if (!this.parent.getFrozenColumns()) {
+        if (!this.parent.isFrozenGrid()) {
             this.parent.notify(restoreFocus, {});
         }
     };
@@ -39204,7 +42311,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     return ColumnMenu;
 }());
 
-var __extends$29 = (undefined && undefined.__extends) || (function () {
+var __extends$30 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -39221,7 +42328,7 @@ var __extends$29 = (undefined && undefined.__extends) || (function () {
  * `ForeignKey` module is used to handle foreign key column's actions.
  */
 var ForeignKey = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ForeignKey, _super);
+    __extends$30(ForeignKey, _super);
     function ForeignKey(parent, serviceLocator) {
         var _this = _super.call(this, parent, serviceLocator) || this;
         _this.parent = parent;
@@ -39820,11 +42927,13 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.isNormaledit = false;
         this.isInfiniteScroll = false;
         this.isLastPage = false;
+        this.isInitialRender = true;
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.isNormaledit = this.parent.editSettings.mode === 'Normal';
         this.addEventListener();
-        this.rowModelGenerator = this.parent.getFrozenColumns() ? new FreezeRowModelGenerator(this.parent)
+        this.widthService = serviceLocator.getService('widthService');
+        this.rowModelGenerator = this.parent.isFrozenGrid() ? new FreezeRowModelGenerator(this.parent)
             : new RowModelGenerator(this.parent);
     }
     InfiniteScroll.prototype.getModuleName = function () {
@@ -39854,6 +42963,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.parent.on(infiniteEditHandler, this.infiniteEditHandler, this);
         this.parent.on(virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(modelChanged, this.modelChanged, this);
+        this.parent.on(deleteComplete, this.deleteComplate, this);
         this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
     };
@@ -39886,6 +42996,11 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.parent.off(modelChanged, this.modelChanged);
         this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.removeEventListener(actionComplete, this.actionComplete.bind(this));
+    };
+    InfiniteScroll.prototype.deleteComplate = function () {
+        if (this.parent.isFrozenGrid() && !this.parent.infiniteScrollSettings.enableCache) {
+            this.parent.contentModule.refreshScrollOffset();
+        }
     };
     InfiniteScroll.prototype.modelChanged = function (args) {
         if (args.requestType !== 'infiniteScroll' && (args.requestType === 'delete' || this.requestType === 'add')) {
@@ -39926,7 +43041,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     InfiniteScroll.prototype.infiniteEditHandler = function (args) {
         if (!this.parent.infiniteScrollSettings.enableCache && (args.e.requestType === 'delete'
             || (args.e.requestType === 'save' && this.requestType === 'add'))) {
-            var frozenCols = this.parent.getFrozenColumns();
+            var frozenCols = this.parent.isFrozenGrid();
             var rowElms = this.parent.getRows();
             var rows = this.parent.getRowsObject();
             if (this.ensureRowAvailability(rows, args.result[0])) {
@@ -39934,6 +43049,10 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
                 if (frozenCols) {
                     var rows_1 = this.parent.getMovableRowsObject();
                     this.resetRowIndex(rows_1, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
+                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                        var frRows = this.parent.getFrozenRightRowsObject();
+                        this.resetRowIndex(frRows, args.e, this.parent.getFrozenRightRows(), this.requestType === 'add');
+                    }
                 }
                 if (!this.isLastPage) {
                     this.createRow(rows, args);
@@ -39948,6 +43067,11 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
                             var movableRows = this.parent.getMovableDataRows();
                             remove(movableRows[this.parent.frozenRows]);
                             this.createRow([this.parent.getMovableRowsObject()[this.parent.frozenRows - 1]], args, true, true);
+                            if (this.parent.getFrozenMode() === 'Left-Right') {
+                                var rightRows = this.parent.getFrozenRightDataRows();
+                                remove(rightRows[this.parent.frozenRows]);
+                                this.createRow([this.parent.getFrozenRightRowsObject()[this.parent.frozenRows - 1]], args, false, true, true);
+                            }
                         }
                         setRowElements(this.parent);
                     }
@@ -39957,17 +43081,26 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
             this.requestType === 'delete' ? this.parent.notify(deleteComplete, args.e)
                 : this.parent.notify(saveComplete, args.e);
         }
+        this.parent.notify(freezeRender, { case: 'refreshHeight' });
     };
-    InfiniteScroll.prototype.createRow = function (rows, args, isMovable, isFrozenRows) {
+    InfiniteScroll.prototype.createRow = function (rows, args, isMovable, isFrozenRows, isFrozenRight) {
         var row = !isFrozenRows ? this.generateRows(args.result, args.e) : rows;
         var rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
-        var tbody = !this.parent.getFrozenColumns() ? this.parent.getContent().querySelector('tbody') : isMovable
-            ? this.parent.getMovableVirtualContent().querySelector('tbody') : this.parent.getFrozenVirtualContent().querySelector('tbody');
+        var tbody;
+        if (isFrozenRight) {
+            tbody = this.parent.element.querySelector('.e-frozen-right-content').querySelector('tbody');
+        }
+        else {
+            tbody = !this.parent.isFrozenGrid() ? this.parent.getContent().querySelector('tbody') : isMovable
+                ? this.parent.getMovableVirtualContent().querySelector('tbody')
+                : this.parent.getFrozenVirtualContent().querySelector('tbody');
+        }
         if (this.parent.frozenRows) {
             tbody = isFrozenRows && this.requestType !== 'add' || !isFrozenRows && this.requestType === 'add'
-                ? !this.parent.getFrozenColumns() ? this.parent.getHeaderContent().querySelector('tbody')
+                ? !this.parent.isFrozenGrid() ? this.parent.getHeaderContent().querySelector('tbody')
                     : isMovable ? this.parent.getMovableVirtualHeader().querySelector('tbody')
-                        : this.parent.getFrozenVirtualHeader().querySelector('tbody') : tbody;
+                        : isFrozenRight ? this.parent.element.querySelector('.e-frozen-right-header').querySelector('tbody')
+                            : this.parent.getFrozenVirtualHeader().querySelector('tbody') : tbody;
         }
         for (var i = row.length - 1; i >= 0; i--) {
             if (this.requestType === 'delete') {
@@ -39979,16 +43112,26 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         }
         if (!isFrozenRows && this.parent.frozenRows
             && (this.parent.selectionModule.index < this.parent.frozenRows || this.requestType === 'add')) {
-            var rowElems = isMovable ? this.parent.getMovableDataRows() : this.parent.getRows();
-            var index = isMovable && this.requestType === 'add' ? this.parent.frozenRows : this.parent.frozenRows - 1;
+            var rowElems = isMovable ? this.parent.getMovableDataRows() : isFrozenRight ? this.parent.getFrozenRightDataRows()
+                : this.parent.getRows();
+            var index = (isMovable || isFrozenRight) && this.requestType === 'add'
+                ? this.parent.frozenRows : this.parent.frozenRows - 1;
             remove(rowElems[index]);
-            this.createRow([rows[this.parent.frozenRows - 1]], args, isMovable, true);
+            this.createRow([rows[this.parent.frozenRows - 1]], args, isMovable, true, isFrozenRight);
         }
         if (!this.parent.infiniteScrollSettings.enableCache && !isFrozenRows) {
-            if (!this.parent.getFrozenColumns() || isMovable) {
+            if (isFrozenRight) {
+                setRowElements(this.parent);
+                this.parent.contentModule.rightFreezeRows = this.requestType === 'add'
+                    ? row.concat(rows) : rows.concat(row);
+            }
+            else if (!this.parent.isFrozenGrid() || isMovable) {
                 setRowElements(this.parent);
                 this.parent.contentModule.visibleRows = this.requestType === 'add'
                     ? row.concat(rows) : rows.concat(row);
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.createRow(this.parent.getFrozenRightRowsObject(), args, false, false, true);
+                }
             }
             else {
                 this.parent.contentModule.visibleFrozenRows = this.requestType === 'add'
@@ -40038,7 +43181,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.setDisplayNone = function (args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
-            var frozenCols = this.parent.getFrozenColumns();
+            var frozenCols = this.parent.isFrozenGrid();
             var keys = frozenCols ? Object.keys(this.infiniteFrozenCache) : Object.keys(this.infiniteCache);
             for (var i = 1; i <= keys.length; i++) {
                 var cache = frozenCols ? args.isFreeze ? this.infiniteFrozenCache[i][0]
@@ -40080,6 +43223,10 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     InfiniteScroll.prototype.actionBegin = function (args) {
         if (args.requestType === 'add' || args.requestType === 'delete') {
             this.requestType = args.requestType;
+        }
+        if (this.parent.isFrozenGrid() && !args.cancel && args.requestType === 'searching'
+            || args.requestType === 'sorting' || args.requestType === 'filtering') {
+            this.isInitialRender = true;
         }
     };
     InfiniteScroll.prototype.actionComplete = function (args) {
@@ -40128,11 +43275,9 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         this.restoreInfiniteEdit();
         this.restoreInfiniteAdd();
         var targetEle = e.target;
-        var isInfinite = targetEle.classList.contains('e-content')
-            || targetEle.classList.contains('e-movablecontent');
+        var isInfinite = targetEle.classList.contains('e-content');
         if (isInfinite && this.parent.enableInfiniteScrolling) {
-            var scrollEle = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-                : this.parent.getContent().firstElementChild;
+            var scrollEle = this.parent.getContent().firstElementChild;
             this.prevScrollTop = scrollEle.scrollTop;
             var rows = this.parent.getRows();
             var index = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10) + 1;
@@ -40302,15 +43447,14 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
             var rowData = editForm ? extend({}, this.getEditedRowObject().data)
                 : extend({}, this.emptyRowData);
             this.virtualInfiniteData = this.parent.editModule.getCurrentEditedData(gridForm, rowData);
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.virtualInfiniteData = this.parent.editModule
                     .getCurrentEditedData(this.parent.getMovableVirtualContent().querySelector('.e-gridform'), rowData);
             }
         }
     };
     InfiniteScroll.prototype.restoreInfiniteEdit = function () {
-        var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-            : this.parent.getContent().firstElementChild;
+        var content = this.parent.getContent().firstElementChild;
         var frozenEdit = this.parent.frozenRows ? this.editRowIndex >= this.parent.frozenRows : true;
         if (this.isNormaledit && this.parent.infiniteScrollSettings.enableCache && frozenEdit) {
             if (this.parent.editSettings.allowEditing && !isNullOrUndefined(this.editRowIndex)) {
@@ -40326,8 +43470,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         }
     };
     InfiniteScroll.prototype.restoreInfiniteAdd = function () {
-        var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-            : this.parent.getContent().firstElementChild;
+        var content = this.parent.getContent().firstElementChild;
         if (this.parent.getRowByIndex(0) && this.isNormaledit && this.parent.infiniteScrollSettings.enableCache
             && this.isAdd && !content.querySelector('.e-addedrow')) {
             var isTop = content.scrollTop < this.parent.getRowHeight();
@@ -40339,11 +43482,11 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.appendInfiniteRows = function (e) {
         var target = document.activeElement;
-        var frozenCols = this.parent.getFrozenColumns();
-        var scrollEle = frozenCols ? this.parent.getMovableVirtualContent()
-            : this.parent.getContent().firstElementChild;
+        var frozenCols = this.parent.isFrozenGrid();
+        var scrollEle = this.parent.getContent().firstElementChild;
         var isInfiniteScroll = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
-        if ((isInfiniteScroll && !e.args.isFrozen) || !isInfiniteScroll) {
+        var isMovable = this.parent.getFrozenMode() === 'Left-Right' && e.tableName === 'movable';
+        if ((isInfiniteScroll && !e.args.isFrozen && !isMovable) || !isInfiniteScroll) {
             if (isInfiniteScroll && e.args.direction === 'up') {
                 e.tbody.insertBefore(e.frag, e.tbody.firstElementChild);
             }
@@ -40356,30 +43499,56 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         }
         else {
             if (isInfiniteScroll) {
-                if (e.args.isFrozen) {
+                if (e.tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right' && e.tableName === 'frozen-right')) {
                     this.frozenFrag = e.frag;
+                }
+                else if (this.parent.getFrozenMode() === 'Left-Right' && e.tableName === 'movable') {
+                    this.movableFrag = e.frag;
                 }
                 else {
                     var tbody = this.parent.getFrozenVirtualContent().querySelector('tbody');
                     e.args.direction === 'up' ? tbody.insertBefore(this.frozenFrag, tbody.firstElementChild)
                         : tbody.appendChild(this.frozenFrag);
-                    this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
+                    if (e.tableName === 'frozen-right') {
+                        this.parent.getMovableVirtualContent().querySelector('tbody').appendChild(this.movableFrag);
+                        this.parent.element.querySelector('.e-frozen-right-content').querySelector('tbody').appendChild(e.frag);
+                    }
+                    else {
+                        this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
+                    }
+                    this.parent.contentModule.refreshScrollOffset();
                 }
             }
             else {
-                var table = e.args.isFrozen ? this.parent.getFrozenVirtualContent().querySelector('.e-table')
-                    : this.parent.getMovableVirtualContent().querySelector('.e-table');
+                var table = void 0;
+                if (e.tableName === 'frozen-left') {
+                    table = this.parent.getFrozenVirtualContent().querySelector('.e-table');
+                }
+                else if (e.tableName === 'movable') {
+                    table = this.parent.getMovableVirtualContent().querySelector('.e-table');
+                    if (this.parent.getFrozenMode() !== 'Left-Right') {
+                        this.parent.contentModule.refreshScrollOffset();
+                    }
+                }
+                else {
+                    table = this.parent.element.querySelector('.e-frozen-right-content').querySelector('.e-table');
+                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                        this.parent.contentModule.refreshScrollOffset();
+                    }
+                }
                 table.appendChild(e.tbody);
+                this.widthService.refreshFrozenScrollbar();
             }
+        }
+        if (this.isInitialRender && !e.args.isFrozen) {
+            this.isInitialRender = false;
+            this.parent.scrollModule.setHeight();
         }
         if (!e.args.isFrozen) {
             this.rowTop = !this.rowTop ? this.parent.getRows()[0].getBoundingClientRect().top : this.rowTop;
             if (isInfiniteScroll) {
                 if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
                     scrollEle.scrollTop = this.top;
-                    if (frozenCols) {
-                        this.parent.getFrozenVirtualContent().scrollTop = this.top;
-                    }
                 }
                 setRowElements(this.parent);
                 this.selectNewRow(e.tbody, e.args.startIndex);
@@ -40388,18 +43557,6 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
             this.restoreInfiniteAdd();
         }
         this.isInfiniteScroll = false;
-    };
-    InfiniteScroll.prototype.setRowElements = function () {
-        if (this.parent.getFrozenColumns()) {
-            this.parent.contentModule.rowElements =
-                [].slice.call(this.parent.element.querySelectorAll('.e-movableheader .e-row, .e-movablecontent .e-row'));
-            this.parent.contentModule.freezeRowElements =
-                [].slice.call(this.parent.element.querySelectorAll('.e-frozenheader .e-row, .e-frozencontent .e-row'));
-        }
-        else {
-            this.parent.contentModule.rowElements =
-                [].slice.call(this.parent.element.querySelectorAll('.e-row:not(.e-addedrow)'));
-        }
     };
     InfiniteScroll.prototype.selectNewRow = function (tbody, startIndex) {
         var _this = this;
@@ -40452,8 +43609,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.calculateScrollTop = function (args) {
         var top = 0;
-        var scrollCnt = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-            : this.parent.getContent().firstElementChild;
+        var scrollCnt = this.parent.getContent().firstElementChild;
         if (args.direction === 'down') {
             if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !this.isInitialCollapse) {
                 top = this.captionRowHeight();
@@ -40499,7 +43655,9 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         return rows.length * this.parent.getRowHeight();
     };
     InfiniteScroll.prototype.removeTopRows = function (rows, maxIndx) {
-        var frozeCols = this.parent.getFrozenColumns();
+        var frozeCols = this.parent.isFrozenGrid();
+        var frRows = this.parent.getFrozenMode() === 'Left-Right'
+            ? [].slice.call(this.parent.element.querySelector('.e-frozen-right-content').querySelectorAll('.e-row')) : null;
         var movableRows = frozeCols ?
             [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row')) : null;
         for (var i = 0; i <= maxIndx; i++) {
@@ -40511,13 +43669,18 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
             if (movableRows) {
                 remove(movableRows[i]);
             }
+            if (frRows) {
+                remove(frRows[i]);
+            }
         }
     };
     InfiniteScroll.prototype.removeBottomRows = function (rows, maxIndx, args) {
         var cnt = 0;
-        var frozeCols = this.parent.getFrozenColumns();
+        var frozeCols = this.parent.isFrozenGrid();
         var movableRows = frozeCols ?
             [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('.e-row')) : null;
+        var frRows = this.parent.getFrozenMode() === 'Left-Right' ?
+            [].slice.call(this.parent.element.querySelector('.e-frozen-right-content').querySelectorAll('.e-row')) : null;
         var pageSize = this.parent.pageSettings.pageSize;
         if (!frozeCols && this.infiniteCache[args.prevPage].length < pageSize) {
             cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
@@ -40530,6 +43693,9 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
             remove(rows[i]);
             if (movableRows) {
                 remove(movableRows[i]);
+            }
+            if (frRows) {
+                remove(frRows[i]);
             }
         }
     };
@@ -40564,8 +43730,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         var isInfiniteScroll = this.parent.enableInfiniteScrolling && args.requestType !== 'infiniteScroll';
         if (!this.initialRender && !isNullOrUndefined(this.parent.infiniteScrollModule) && isInfiniteScroll) {
             if (this.actions.some(function (value) { return value === args.requestType; }) || isDataModified) {
-                var scrollEle = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-                    : this.parent.getContent().firstElementChild;
+                var scrollEle = this.parent.getContent().firstElementChild;
                 this.initialRender = true;
                 scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
@@ -40584,7 +43749,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     };
     InfiniteScroll.prototype.setCache = function (e) {
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
-            var frozeCols = this.parent.getFrozenColumns();
+            var frozeCols = this.parent.isFrozenGrid();
             var idx = e.args.isFrozen ? 1 : 0;
             var isEdit = e.args.requestType !== 'infiniteScroll'
                 && (this.requestType === 'delete' || this.requestType === 'add');
@@ -40614,7 +43779,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
         }
     };
     InfiniteScroll.prototype.setInitialCache = function (data, args, isEdit) {
-        var frozenCols = this.parent.getFrozenColumns();
+        var frozenCols = this.parent.isFrozenGrid();
         var idx = args.isFrozen ? 1 : 0;
         var k = !isEdit ? 1 : this.firstBlock;
         for (var i = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
@@ -40674,7 +43839,7 @@ var InfiniteScroll = /** @__PURE__ @class */ (function () {
     return InfiniteScroll;
 }());
 
-var __extends$30 = (undefined && undefined.__extends) || (function () {
+var __extends$31 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -40692,7 +43857,7 @@ var __extends$30 = (undefined && undefined.__extends) || (function () {
  * @hidden
  */
 var GroupLazyLoadRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$30(GroupLazyLoadRenderer, _super);
+    __extends$31(GroupLazyLoadRenderer, _super);
     function GroupLazyLoadRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.childCount = 0;
@@ -42212,5 +45377,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnSelecting, columnSelected, columnDeselecting, columnDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, beforeRefreshOnDataChange, immutableBatchCancel, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, getActualRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, getCurrentTableIndex, getFrozenTableName, getFreezeTableName, getColumnLevelFreezeTableName, splitFrozenRowObjectCells, gridActionHandler, getGridRowObjects, getGridRowElements, sliceElements, getCellsByTableName, getCellByColAndRowIndex, setValidationRuels, getMovableTbody, getFrozenRightTbody, reorderArrayValues, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnSelecting, columnSelected, columnDeselecting, columnDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, refreshFrozenColumns, setReorderDestinationElement, refreshVirtualFrozenHeight, setFreezeSelection, setInfiniteFrozenHeight, setInfiniteColFrozenHeight, beforeRefreshOnDataChange, immutableBatchCancel, refreshVirtualFrozenRows, checkScrollReset, refreshFrozenHeight, setHeightToFrozenElement, preventFrozenScrollRefresh, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, ColumnFreezeHeaderRenderer, ColumnFreezeContentRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

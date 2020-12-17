@@ -3878,6 +3878,24 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
         destroy(rteObj);
     });
 });
+describe('Value property when xhtml is enabled', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({ enableXhtml: true, 
+            value: `<!-- sit amet --><div><!-- sit amet --><p>ad<br/><hr/>asd</p></div>`
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it("value property checking when xhtml is enabled", function () {
+        expect(rteObj.value).toBe('<div><p>ad<br/></p><hr/>asd<p></p></div>');
+        rteObj.value = '<p>value changeded <br/></p>';
+        rteObj.dataBind();
+        expect(rteObj.value).toBe("<div><p>value changeded <br/></p></div>");
+    });
+});
 describe('XHTML validation', function () {
     let rteObj: any;
     beforeAll(function (done) {

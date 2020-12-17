@@ -81,5 +81,8 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     if (context.allowImage) {
         modules.push({ member: 'workbookImage', args: [context] });
     }
+    if (context.allowChart) {
+        modules.push({ member: 'workbookChart', args: [context] });
+    }
     return modules;
 }

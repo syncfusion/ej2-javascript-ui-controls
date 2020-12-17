@@ -61,4 +61,22 @@ export interface ColumnsModel {
      */
     showAddButton?: boolean;
 
+    /**
+     * Enable or disable column drag
+     * @default true
+     */
+    allowDrag?: boolean;
+
+    /**
+     * Enable or disable column drop
+     * @default true
+     */
+    allowDrop?: boolean;
+
+    /**
+     * Defines the column transition
+     * @default []
+     */
+    transitionColumns?: string[];
+
 }

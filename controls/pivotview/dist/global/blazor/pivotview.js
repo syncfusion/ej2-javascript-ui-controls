@@ -6038,6 +6038,10 @@ var VIRTUALTRACK_DIV = 'e-virtualtrack';
 /** @hidden */
 var MOVABLECONTENT_DIV = 'e-movablecontent';
 /** @hidden */
+var MOVABLESCROLL_DIV = 'e-movablescrollbar';
+/** @hidden */
+var MOVABLECHILD_DIV = 'e-movablechild';
+/** @hidden */
 var FROZENCONTENT_DIV = 'e-frozencontent';
 /** @hidden */
 var MOVABLEHEADER_DIV = 'e-movableheader';
@@ -6714,6 +6718,13 @@ var Render = /** @class */ (function () {
                     this.frameDataSource('value')
             }, true);
             /* tslint:enable */
+            if (this.parent.grid.height == 'auto') {
+                var mCntHeight = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).offsetHeight;
+                var dataHeight = this.parent.grid.dataSource.length * this.parent.gridSettings.rowHeight;
+                if (mCntHeight < dataHeight) {
+                    this.parent.grid.contentModule.setHeightToContent(dataHeight);
+                }
+            }
             this.parent.grid.notify('datasource-modified', {});
             if (this.parent.isScrolling) {
                 this.parent.resizeInfo = {};
@@ -6763,7 +6774,7 @@ var Render = /** @class */ (function () {
             sf.base.setStyleAttribute(mHdr.querySelector('.e-table'), {
                 transform: (mCont.querySelector('.e-table').style.transform).split(',')[0] + ',' + 0 + 'px)'
             });
-            mHdr.scrollLeft = mCont.scrollLeft;
+            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft;
         }
     };
     /** @hidden */
@@ -6927,7 +6938,7 @@ var Render = /** @class */ (function () {
             }
             this.parent.gridHeaderCellInfo = [];
         }
-        if (this.parent.element.querySelector('.e-firstcell')) {
+        if (this.parent.element.querySelector('.e-firstcell') && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.columns.length > 0)) {
             if (this.parent.enableRtl) {
                 this.parent.element.querySelector('.e-firstcell').style.borderRight = 'none';
             }
@@ -6941,9 +6952,6 @@ var Render = /** @class */ (function () {
         /* tslint:disable-next-line */
         if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
-        }
-        if (this.parent.currentView !== 'Chart') {
-            this.parent.grid.hideScroll();
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
@@ -8178,10 +8186,10 @@ var Render = /** @class */ (function () {
                     var tableWidth = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV + ' .' + TABLE).offsetWidth;
                     var contentWidth = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).offsetWidth;
                     var horizontalOverflow = contentWidth < tableWidth;
-                    var verticalOverflow = contentHeight < tableHeight;
+                    //let verticalOverflow: boolean = contentHeight < tableHeight;
                     var commonOverflow = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow) {
+                        !commonOverflow) {
                         this.parent.grid.height = 'auto';
                     }
                     else {
@@ -9986,7 +9994,7 @@ var FilterDialog = /** @class */ (function () {
             items.push({ id: levels[i].id, text: levels[i].name });
         }
         this.dropMenu = new sf.splitbuttons.DropDownButton({
-            cssClass: 'e-level-drop',
+            cssClass: 'e-level-drop e-caret-hide',
             items: items, iconCss: 'e-icons e-dropdown-icon',
             disabled: (levelCount === levels.length),
             beforeOpen: function (args) {
@@ -12968,15 +12976,21 @@ var VirtualScroll$1 = /** @class */ (function () {
             sf.base.EventHandler.clearEvents(mCont);
             sf.base.EventHandler.clearEvents(fCont);
             if (this.engineModule) {
-                sf.base.EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
-                sf.base.EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
-                sf.base.EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
-                sf.base.EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
-                sf.base.EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
-                sf.base.EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                sf.base.EventHandler.add(mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV), 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
+                sf.base.EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
+                sf.base.EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                // EventHandler.add(fCont.parentElement, 'wheel', this.onWheelScroll(mCont, fCont), this);
+                // EventHandler.add(fCont.parentElement, 'touchstart pointerdown', this.setPageXY(), this);
+                // EventHandler.add(fCont.parentElement, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
                 sf.base.EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
                 sf.base.EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
             }
+            this.parent.grid.on('check-scroll-reset', function (args) {
+                args.cancel = true;
+            });
+            this.parent.grid.on('prevent-frozen-scroll-refresh', function (args) {
+                args.cancel = true;
+            });
             this.parent.grid.isPreventScrollEvent = true;
         }
     };
@@ -12984,13 +12998,11 @@ var VirtualScroll$1 = /** @class */ (function () {
         var _this = this;
         var element = mCont;
         return function (e) {
-            var top = element.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
+            var top = element.parentElement.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
             if (_this.frozenPreviousValues.top === top) {
                 return;
             }
             e.preventDefault();
-            fCont.scrollTop = top;
-            element.scrollTop = top;
             _this.frozenPreviousValues.top = top;
             _this.eventType = e.type;
         };
@@ -13015,14 +13027,13 @@ var VirtualScroll$1 = /** @class */ (function () {
                 return;
             }
             var pageXY = _this.getPointXY(e);
-            var top = element.scrollTop + (_this.pageXY.y - pageXY.y);
-            var left = element.scrollLeft + (_this.pageXY.x - pageXY.x);
+            var top = element.parentElement.scrollTop + (_this.pageXY.y - pageXY.y);
+            var left = element.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft + (_this.pageXY.x - pageXY.x);
             if (_this.parent.element.querySelector('.' + HEADERCONTENT).contains(e.target)) {
                 if (_this.frozenPreviousValues.left === left || left < 0) {
                     return;
                 }
                 mHdr.scrollLeft = left;
-                element.scrollLeft = left;
                 _this.pageXY.x = pageXY.x;
                 _this.frozenPreviousValues.left = left;
             }
@@ -13030,8 +13041,6 @@ var VirtualScroll$1 = /** @class */ (function () {
                 if (_this.frozenPreviousValues.top === top || top < 0) {
                     return;
                 }
-                fCont.scrollTop = top;
-                element.scrollTop = top;
                 _this.pageXY.y = pageXY.y;
                 _this.frozenPreviousValues.top = top;
             }
@@ -13053,7 +13062,7 @@ var VirtualScroll$1 = /** @class */ (function () {
                 var section = Math.ceil(top / exactSize_1);
                 if ((this.parent.scrollPosObject.vertical === section ||
                     engine.pageSettings.rowSize >= engine.rowCount)) {
-                    this.parent.hideWaitingPopup();
+                    // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.showWaitingPopup();
@@ -13113,7 +13122,7 @@ var VirtualScroll$1 = /** @class */ (function () {
                     colValues_1 * this.parent.gridSettings.columnWidth);
                 var section = Math.ceil(left / exactSize_2);
                 if (this.parent.scrollPosObject.horizontal === section) {
-                    this.parent.hideWaitingPopup();
+                    // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.showWaitingPopup();
@@ -13181,7 +13190,7 @@ var VirtualScroll$1 = /** @class */ (function () {
     VirtualScroll$$1.prototype.common = function (mHdr, mCont, fCont) {
         var _this = this;
         return function (e) {
-            _this.update(mHdr, mCont, mCont.scrollTop * _this.parent.verticalScrollScale, mCont.scrollLeft * _this.parent.horizontalScrollScale, e);
+            _this.update(mHdr, mCont, mCont.parentElement.scrollTop * _this.parent.verticalScrollScale, mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * _this.parent.horizontalScrollScale, e);
         };
     };
     VirtualScroll$$1.prototype.onHorizondalScroll = function (mHdr, mCont, fCont) {
@@ -13189,24 +13198,23 @@ var VirtualScroll$1 = /** @class */ (function () {
         /* tslint:disable-next-line */
         var timeOutObj;
         return function (e) {
-            var left = mCont.scrollLeft * _this.parent.horizontalScrollScale;
+            var left = mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * _this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || _this.eventType === 'wheel' || _this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* tslint:disable */
                 timeOutObj = setTimeout(function () {
-                    left = e.type === 'touchmove' ? mCont.scrollLeft : left;
-                    _this.update(mHdr, mCont, mCont.scrollTop * _this.parent.verticalScrollScale, left, e);
+                    left = e.type === 'touchmove' ? mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft : left;
+                    _this.update(mHdr, mCont, mCont.parentElement.scrollTop * _this.parent.verticalScrollScale, left, e);
                 }, 300);
             }
             if (_this.previousValues.left === left) {
-                fCont.scrollTop = mCont.scrollTop;
                 return;
             }
             _this.parent.scrollDirection = _this.direction = 'horizondal';
-            var horiOffset = -((left - _this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
+            var horiOffset = -((left - _this.parent.scrollPosObject.horizontalSection - mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft));
             var vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',').length > 1 ?
                 mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim() : "0px)";
-            if (mCont.scrollLeft < _this.parent.scrollerBrowserLimit) {
+            if (mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft < _this.parent.scrollerBrowserLimit) {
                 sf.base.setStyleAttribute(mCont.querySelector('.e-table'), {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
@@ -13232,9 +13240,8 @@ var VirtualScroll$1 = /** @class */ (function () {
                 else {
                     excessMove = -_this.parent.scrollPosObject.horizontalSection;
                 }
-                horiOffset = -((left - (_this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.scrollLeft));
-                var vWidth = (_this.parent.gridSettings.columnWidth * _this.engineModule.columnCount
-                    - _this.parent.grid.columns[0].width);
+                horiOffset = -((left - (_this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft));
+                var vWidth = (_this.parent.gridSettings.columnWidth * _this.engineModule.columnCount);
                 if (vWidth > _this.parent.scrollerBrowserLimit) {
                     _this.parent.horizontalScrollScale = vWidth / _this.parent.scrollerBrowserLimit;
                     vWidth = _this.parent.scrollerBrowserLimit;
@@ -13254,18 +13261,18 @@ var VirtualScroll$1 = /** @class */ (function () {
             _this.previousValues.left = left;
             _this.frozenPreviousValues.left = left;
             _this.eventType = '';
-            mHdr.scrollLeft = mCont.scrollLeft;
+            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft;
         };
     };
     VirtualScroll$$1.prototype.onVerticalScroll = function (fCont, mCont) {
         var _this = this;
         var timeOutObj;
         return function (e) {
-            var top = mCont.scrollTop * _this.parent.verticalScrollScale;
+            var top = mCont.parentElement.scrollTop * _this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || _this.eventType === 'wheel' || _this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(function () {
-                    _this.update(null, mCont, mCont.scrollTop * _this.parent.verticalScrollScale, mCont.scrollLeft * _this.parent.horizontalScrollScale, e);
+                    _this.update(null, mCont, mCont.parentElement.scrollTop * _this.parent.verticalScrollScale, mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * _this.parent.horizontalScrollScale, e);
                 }, 300);
             }
             /* tslint:enable */
@@ -13273,9 +13280,12 @@ var VirtualScroll$1 = /** @class */ (function () {
                 return;
             }
             _this.parent.scrollDirection = _this.direction = 'vertical';
-            var vertiOffset = -((top - _this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
+            var vertiOffset = -((top - _this.parent.scrollPosObject.verticalSection - mCont.parentElement.scrollTop));
             var horiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[0].trim();
-            if (mCont.scrollTop < _this.parent.scrollerBrowserLimit) {
+            if (vertiOffset > _this.parent.virtualDiv.clientHeight) {
+                vertiOffset = _this.parent.virtualDiv.clientHeight;
+            }
+            if (mCont.parentElement.scrollTop < _this.parent.scrollerBrowserLimit) {
                 sf.base.setStyleAttribute(fCont.querySelector('.e-table'), {
                     transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
                 });
@@ -13284,15 +13294,15 @@ var VirtualScroll$1 = /** @class */ (function () {
                 });
             }
             var excessMove = _this.parent.scrollPosObject.verticalSection > top ?
-                -(_this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.clientHeight) -
+                -(_this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.parentElement.clientHeight) -
                 (_this.parent.scrollPosObject.verticalSection + fCont.querySelector('.e-table').offsetHeight));
             var notLastPage = Math.ceil(_this.parent.scrollPosObject.verticalSection / _this.parent.verticalScrollScale) <
                 _this.parent.scrollerBrowserLimit;
             if (_this.parent.scrollPosObject.verticalSection > top ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
-                if (top > fCont.clientHeight) {
+                if (top > fCont.parentElement.clientHeight) {
                     if (_this.parent.scrollPosObject.top < 1) {
-                        _this.parent.scrollPosObject.top = fCont.clientHeight;
+                        _this.parent.scrollPosObject.top = fCont.parentElement.clientHeight;
                     }
                     _this.parent.scrollPosObject.top = _this.parent.scrollPosObject.top - 50;
                     excessMove = _this.parent.scrollPosObject.verticalSection > top ?
@@ -13302,7 +13312,7 @@ var VirtualScroll$1 = /** @class */ (function () {
                     excessMove = -_this.parent.scrollPosObject.verticalSection;
                 }
                 var movableTable = _this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.e-table');
-                vertiOffset = -((top - (_this.parent.scrollPosObject.verticalSection + excessMove) - mCont.scrollTop));
+                vertiOffset = -((top - (_this.parent.scrollPosObject.verticalSection + excessMove) - mCont.parentElement.scrollTop));
                 var vHeight = (_this.parent.gridSettings.rowHeight * _this.engineModule.rowCount + 0.1
                     - movableTable.clientHeight);
                 if (vHeight > _this.parent.scrollerBrowserLimit) {
@@ -13312,6 +13322,9 @@ var VirtualScroll$1 = /** @class */ (function () {
                 if (vertiOffset > vHeight && vertiOffset > top) {
                     vertiOffset = top;
                     excessMove = 0;
+                }
+                if (vertiOffset > _this.parent.virtualDiv.clientHeight) {
+                    vertiOffset = _this.parent.virtualDiv.clientHeight;
                 }
                 sf.base.setStyleAttribute(fCont.querySelector('.e-table'), {
                     transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
@@ -13324,8 +13337,6 @@ var VirtualScroll$1 = /** @class */ (function () {
             _this.previousValues.top = top;
             _this.frozenPreviousValues.top = top;
             _this.eventType = '';
-            fCont.scrollTop = mCont.scrollTop;
-            mCont.scrollTop = fCont.scrollTop;
         };
     };
     /**
@@ -14306,7 +14317,7 @@ var PivotChart = /** @class */ (function () {
         var columnHeader = (this.parent.chartSettings.columnHeader && this.parent.chartSettings.columnHeader !== '') ?
             this.parent.chartSettings.columnHeader.split(delimiter).join(' - ') : '';
         var chartType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
-        if (this.accumulationType.indexOf(chartType) > -1) {
+        if (this.accumulationType.indexOf(chartType) > -1 && columnKeys.length > 0) {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             var currentSeries = {};
             currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) : currentSeries;
@@ -14635,6 +14646,12 @@ var PivotChart = /** @class */ (function () {
                 }
             }
             this.parent.chart.refresh();
+            if ((this.accumulationType.indexOf(type) > -1) && this.parent.chart.getModuleName() === 'accumulationchart' && (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0)) {
+                this.parent.hideWaitingPopup();
+                if (this.parent.pivotFieldListModule) {
+                    sf.popups.hideSpinner(this.parent.pivotFieldListModule.fieldListSpinnerElement);
+                }
+            }
         }
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultiAxis) {
             this.parent.chart.appendTo('#' + this.parent.element.id + '_chartInner');
@@ -19129,7 +19146,8 @@ var OlapEngine = /** @class */ (function () {
                         this.tupColumnInfo[coll.ordinal].allStartPos === 1 : this.tupColumnInfo[coll.ordinal].allStartPos === 0;
                     if (isGrandTotal ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) : true) {
                         this.frameCommonColumnLoop(coll.members, coll.ordinal, position, maxLevel, minLevel, allType);
-                        if (this.tupColumnInfo[coll.ordinal].showTotals) {
+                        var attrDrill = this.checkAttributeDrill(this.tupColumnInfo[coll.ordinal].drillInfo, 'columns');
+                        if (this.tupColumnInfo[coll.ordinal].showTotals || attrDrill) {
                             position++;
                         }
                     }
@@ -19318,7 +19336,8 @@ var OlapEngine = /** @class */ (function () {
                 memberPos++;
             }
         }
-        if (this.tupColumnInfo[tupPos].showTotals) {
+        var attrDrill = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
+        if (this.tupColumnInfo[tupPos].showTotals || attrDrill) {
             var memPos = 0;
             var spanMemPos = 0;
             var colMembers = {};
@@ -19872,6 +19891,7 @@ var OlapEngine = /** @class */ (function () {
                 var rowflag = false;
                 var tupColInfo = this.tupColumnInfo[currCell.ordinal];
                 var isSubTot = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
+                var attrDrill = this.checkAttributeDrill(tupColInfo.drillInfo, 'columns');
                 if (nextRowCell && nextColCell && ((currCell.memberType === 2 || currCell.level === -1) ?
                     (nextColCell.actualText === currCell.actualText) :
                     ((currCell.memberType === 3 && currCell.actualText === nextColCell.actualText) ||
@@ -19893,7 +19913,9 @@ var OlapEngine = /** @class */ (function () {
                 }
                 if (currCell.memberType === 2) {
                     if (isSubTot) {
-                        currCell.type = 'sum';
+                        if (!attrDrill) {
+                            currCell.type = 'sum';
+                        }
                         /* tslint:disable-next-line:max-line-length */
                         //currCell.formattedText = (this.pivotValues[tupColInfo.allStartPos - 1] as IAxisSet[])[colPos].formattedText + ' Total';
                         currCell.formattedText = 'Total';
@@ -20006,6 +20028,7 @@ var OlapEngine = /** @class */ (function () {
                         var value = '0';
                         var measureName = this.getUniqueName(measure);
                         var showTotals = true;
+                        var attrDrill = (this.fieldList[columns[0].hierarchy] && this.fieldList[columns[0].hierarchy].isHierarchy && columns[0].isDrilled);
                         if (this.tupRowInfo[rowOrdinal]) {
                             showTotals = this.tupRowInfo[rowOrdinal].showTotals;
                         }
@@ -20013,10 +20036,10 @@ var OlapEngine = /** @class */ (function () {
                             showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
                         }
                         valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                        formattedText = !showTotals ? '' :
+                        formattedText = (!showTotals && attrDrill) ? '' :
                             ((!sf.base.isNullOrUndefined(valElement) && !sf.base.isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
                                 valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
-                        value = !showTotals ? '0' :
+                        value = (!showTotals && attrDrill) ? '0' :
                             ((!sf.base.isNullOrUndefined(valElement) && !sf.base.isNullOrUndefined(valElement.querySelector('Value'))) ?
                                 valElement.querySelector('Value').textContent : null);
                         formattedText = showTotals && !sf.base.isNullOrUndefined(value) ?
@@ -22441,6 +22464,7 @@ var PivotView = /** @class */ (function (_super) {
         this.pivotRefresh = sf.base.Component.prototype.refresh;
         this.isScrolling = false;
         this.allowServerDataBinding = false;
+        this.isStaticRefresh = false;
         this.setProperties({ pivotValues: [] }, true);
         /* tslint:disable-next-line:no-any */
         delete this.bulkChanges.pivotValues;
@@ -23913,8 +23937,7 @@ var PivotView = /** @class */ (function (_super) {
                     this.verticalScrollScale = vHeight / this.scrollerBrowserLimit;
                     vHeight = this.scrollerBrowserLimit;
                 }
-                var vWidth = (this.gridSettings.columnWidth * engine.columnCount
-                    - this.grid.columns[0].width);
+                var vWidth = this.gridSettings.columnWidth * engine.columnCount;
                 if (vWidth > this.scrollerBrowserLimit) {
                     this.horizontalScrollScale = vWidth / this.scrollerBrowserLimit;
                     vWidth = this.scrollerBrowserLimit;
@@ -23929,13 +23952,13 @@ var PivotView = /** @class */ (function (_super) {
                 var mCnt = this.element.querySelector('.' + MOVABLECONTENT_DIV);
                 var fCnt = this.element.querySelector('.' + FROZENCONTENT_DIV);
                 var mHdr = this.element.querySelector('.' + MOVABLEHEADER_DIV);
-                var verOffset = (mCnt.scrollTop > this.scrollerBrowserLimit) ?
+                var verOffset = (mCnt.parentElement.scrollTop > this.scrollerBrowserLimit) ?
                     mCnt.querySelector('.' + TABLE).style.transform.split(',')[1].trim() :
-                    -(((mCnt.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.scrollTop)) + 'px)';
-                var horiOffset = (mCnt.scrollLeft > this.scrollerBrowserLimit) ?
+                    -(((mCnt.parentElement.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.parentElement.scrollTop)) + 'px)';
+                var horiOffset = (mCnt.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft > this.scrollerBrowserLimit) ?
                     (mCnt.querySelector('.' + TABLE).style.transform.split(',')[0].trim() + ',') :
-                    'translate(' + -(((mCnt.scrollLeft * this.horizontalScrollScale) -
-                        this.scrollPosObject.horizontalSection - mCnt.scrollLeft)) + 'px,';
+                    'translate(' + -(((mCnt.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * this.horizontalScrollScale) -
+                        this.scrollPosObject.horizontalSection - mCnt.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft)) + 'px,';
                 sf.base.setStyleAttribute(fCnt.querySelector('.e-table'), {
                     transform: 'translate(' + 0 + 'px,' + verOffset
                 });
@@ -23945,6 +23968,16 @@ var PivotView = /** @class */ (function (_super) {
                 sf.base.setStyleAttribute(mHdr.querySelector('.e-table'), {
                     transform: horiOffset + 0 + 'px)'
                 });
+                this.grid.element.querySelector('.' + MOVABLECHILD_DIV).style.width = vWidth + 'px';
+                if (this.grid.height !== 'auto') {
+                    this.grid.contentModule.setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);
+                }
+                else {
+                    this.grid.contentModule.setHeightToContent(this.element.querySelector('.' + FROZENCONTENT_DIV + ' .' + TABLE).offsetHeight);
+                }
+            }
+            if (this.currentView !== 'Chart') {
+                this.grid.hideScroll();
             }
             if (this.showGroupingBar) {
                 this.element.style.minWidth = '400px';
@@ -24860,11 +24893,15 @@ var PivotView = /** @class */ (function (_super) {
             this.grid.isStringTemplate = true;
             this.grid.appendTo('#' + this.element.id + '_grid');
             /* tslint:disable-next-line:no-any */
+            this.grid.on('refresh-frozen-height', function () {
+                if (!_this_1.enableVirtualization) {
+                    _this_1.grid.contentModule.setHeightToContent(_this_1.grid.contentModule.getTable().offsetHeight);
+                }
+            });
             this.grid.off('data-ready', this.grid.dataReady);
             this.grid.on('data-ready', function () {
                 _this_1.grid.scrollModule.setWidth();
                 _this_1.grid.scrollModule.setHeight();
-                _this_1.grid.element.querySelector('.e-movablecontent').style.overflowY = 'auto';
             });
         }
     };
@@ -28342,7 +28379,12 @@ var PivotButton = /** @class */ (function () {
     PivotButton.prototype.updateFiltering = function (args) {
         /* tslint:disable */
         var pivotObj = this.parent.pivotGridModule ? this.parent.pivotGridModule : this.parent;
-        pivotObj.showWaitingPopup();
+        if (pivotObj.getModuleName() === 'pivotfieldlist') {
+            sf.popups.showSpinner(pivotObj.fieldListSpinnerElement);
+        }
+        else {
+            pivotObj.showWaitingPopup();
+        }
         pivotObj.mouseEventArgs = args;
         pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
             this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
@@ -28393,7 +28435,12 @@ var PivotButton = /** @class */ (function () {
             // this.parent.pivotCommon.filterDialog.allMemberSelect.nodeChecked = this.nodeStateModified.bind(this);
             this.bindDialogEvents();
         }
-        pivotObj.hideWaitingPopup();
+        if (pivotObj.getModuleName() === 'pivotfieldlist') {
+            sf.popups.hideSpinner(pivotObj.fieldListSpinnerElement);
+        }
+        else {
+            pivotObj.hideWaitingPopup();
+        }
     };
     PivotButton.prototype.bindDialogEvents = function () {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {
@@ -32428,7 +32475,8 @@ var FieldList = /** @class */ (function () {
                 ';display:none'
         });
         var containerWrapper = sf.base.createElement('div', {
-            id: this.parent.element.id + 'containerwrapper'
+            id: this.parent.element.id + 'containerwrapper',
+            styles: 'height:' + this.parent.element.parentElement.getBoundingClientRect().height + 'px'
         });
         this.parent.element.parentElement.appendChild(containerWrapper);
         containerWrapper.appendChild(this.element);

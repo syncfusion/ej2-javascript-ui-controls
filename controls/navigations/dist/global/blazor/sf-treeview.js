@@ -68,6 +68,7 @@ var SfTreeView = /** @class */ (function () {
         this.isHelperElement = true;
         this.mouseDownStatus = false;
         this.preventExpand = false;
+        this.keyBoardAction = false;
         this.element = element;
         this.element.blazor__instance = this;
         this.dotNetRef = dotnetRef;
@@ -856,7 +857,11 @@ var SfTreeView = /** @class */ (function () {
         if (currLi && currLi.classList.contains(PROCESS)) {
             sf.base.removeClass([currLi], PROCESS);
         }
-        this.dotNetRef.invokeMethodAsync('TriggerNodeExpandingEvent', this.expandArgs, isLoaded);
+        var level;
+        if (currLi) {
+            level = parseInt(currLi.getAttribute('aria-level'), 10);
+        }
+        this.dotNetRef.invokeMethodAsync('TriggerNodeExpandingEvent', this.expandArgs, isLoaded, level);
     };
     SfTreeView.prototype.collapseAction = function (currLi, e) {
         this.expandArgs = this.getExpandEvent(currLi, e);
@@ -993,11 +998,6 @@ var SfTreeView = /** @class */ (function () {
                 }
             });
         }
-        else if (li.querySelector(".e-icon-expandable")) {
-            var icon = sf.base.select('div.' + ICON, li);
-            sf.base.removeClass([icon], EXPANDABLE);
-            sf.base.addClass([icon], COLLAPSIBLE);
-        }
     };
     SfTreeView.prototype.setHeight = function (currli, ul) {
         ul.style.display = BLOCK;
@@ -1018,12 +1018,9 @@ var SfTreeView = /** @class */ (function () {
         li.style.height = EMPTY;
         this.expandArgs = this.getExpandEvent(li, null);
         var icon = sf.base.select('div.' + ICON, li);
-        var _this = this;
-        setTimeout(function () {
-            sf.base.removeClass([icon], COLLAPSIBLE);
-            sf.base.addClass([icon], EXPANDABLE);
-            _this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', _this.expandArgs);
-        }, 100);
+        sf.base.removeClass([icon], COLLAPSIBLE);
+        sf.base.addClass([icon], EXPANDABLE);
+        this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', this.expandArgs);
     };
     SfTreeView.prototype.preventContextMenu = function (e) {
         e.preventDefault();
@@ -1487,16 +1484,18 @@ var SfTreeView = /** @class */ (function () {
         var focusedNode;
         var nodeElement = this.element.querySelector('[data-uid="' + nodeId + '"]');
         focusedNode = sf.base.isNullOrUndefined(nodeElement) ? this.getFocusedNode() : nodeElement;
-        switch (this.keyAction.action) {
+        switch (e.action) {
             case 'space':
                 if (this.options.showCheckBox) {
                     this.checkNode(this.keyAction);
                 }
                 break;
             case 'moveRight':
+                this.keyBoardAction = true;
                 this.openNode(!this.options.enableRtl, this.keyAction);
                 break;
             case 'moveLeft':
+                this.keyBoardAction = true;
                 this.openNode(this.options.enableRtl, this.keyAction);
                 break;
             case 'shiftDown':
@@ -1545,6 +1544,13 @@ var SfTreeView = /** @class */ (function () {
                 }
                 break;
         }
+        var _this = this;
+        setTimeout(function () {
+            if (_this.keyBoardAction) {
+                _this.setHover(focusedNode);
+                _this.keyBoardAction = false;
+            }
+        }, 100);
     };
     return SfTreeView;
 }());

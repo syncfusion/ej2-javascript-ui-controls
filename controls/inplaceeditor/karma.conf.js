@@ -14,58 +14,28 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             "test-main.js",
-            {
-                pattern: "src/**/*.js",
-                included: false
-            },
-            {
-                pattern: "spec/**/*.spec.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-base/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-data/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-inputs/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-lists/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-popups/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js",
-                included: false
-            },
-            {
-                pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js",
-                included: false
-            }
+            { pattern: "src/**/*.js", included: false },
+            { pattern: "spec/**/*.spec.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-inputs/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-popups/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-layouts/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-excel-export/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-filemanager/**/*.js", included: false }
             // Add dependent package's script files here
         ],
 

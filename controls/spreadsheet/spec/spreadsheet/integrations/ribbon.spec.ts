@@ -122,89 +122,89 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(instance.getCell(0, 0).style.textDecoration).toEqual('none');
         });
 
-        // it('Cut testing', (done: Function) => {
-        //     helper.click('_bold');
-        //     helper.click('_italic');
-        //     helper.click('_underline');
-        //     helper.click('_cut');
-        //     setTimeout(() => {
-        //         helper.invoke('selectRange', ['K1']);
-        //         helper.triggerKeyNativeEvent(86, true);
-        //         let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('Item Name');
-        //         expect(cell.style.fontWeight).toEqual('bold');
-        //         expect(cell.style.fontStyle).toEqual('italic');
-        //         expect(cell.style.textDecoration).toEqual('underline');
-        //         //undo testing
-        //         helper.click('_undo');
-        //         cell = getCell(0, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('');
-        //         expect(cell.style).toBeNull();
-        //         done();
-        //     }, 100);
-        // });
+        it('Cut testing', (done: Function) => {
+            helper.click('_bold');
+            helper.click('_italic');
+            helper.click('_underline');
+            helper.click('_cut');
+            setTimeout(() => {
+                helper.invoke('selectRange', ['K1']);
+                helper.click('_paste');
+                let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('Item Name');
+                expect(cell.style.fontWeight).toEqual('bold');
+                expect(cell.style.fontStyle).toEqual('italic');
+                expect(cell.style.textDecoration).toEqual('underline');
+                //undo testing
+                helper.click('_undo');
+                cell = getCell(0, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('');
+                expect(cell.style).toBeNull();
+                done();
+            }, 100);
+        });
         
-        // it('Cut-redo testing', (done: Function) => {
-        //     let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
-        //     helper.click('_redo');
-        //     setTimeout(() => {
-        //         cell = getCell(0, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('Item Name');
-        //         expect(cell.style.fontWeight).toEqual('bold');
-        //         expect(cell.style.fontStyle).toEqual('italic');
-        //         expect(cell.style.textDecoration).toEqual('underline');
-        //         done();
-        //     }, 10);
-        // });
+        it('Cut-redo testing', (done: Function) => {
+            let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
+            helper.click('_redo');
+            setTimeout(() => {
+                cell = getCell(0, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('Item Name');
+                expect(cell.style.fontWeight).toEqual('bold');
+                expect(cell.style.fontStyle).toEqual('italic');
+                expect(cell.style.textDecoration).toEqual('underline');
+                done();
+            }, 10);
+        });
 
-        // it('Copy testing', (done: Function) => {
-        //     helper.click('_copy');
-        //     setTimeout(() => {
-        //         helper.invoke('selectRange', ['K2']);
-        //         helper.triggerKeyNativeEvent(86, true);
-        //         // Copied cell
-        //         let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('Item Name');
-        //         expect(cell.style.fontWeight).toEqual('bold');
-        //         expect(cell.style.fontStyle).toEqual('italic');
-        //         expect(cell.style.textDecoration).toEqual('underline');
-        //         // Pasted the copied content cell
-        //         cell = getCell(1, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('Item Name');
-        //         expect(cell.style.fontWeight).toEqual('bold');
-        //         expect(cell.style.fontStyle).toEqual('italic');
-        //         expect(cell.style.textDecoration).toEqual('underline');
-        //         //undo testing
-        //         helper.invoke('undo', null);
-        //         cell = getCell(1, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('');
-        //         expect(cell.style).toBeNull();
-        //         done();
-        //     }, 100);
-        // });
+        it('Copy testing', (done: Function) => {
+            helper.click('_copy');
+            setTimeout(() => {
+                helper.invoke('selectRange', ['K2']);
+                helper.click('_paste');
+                // Copied cell
+                let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('Item Name');
+                expect(cell.style.fontWeight).toEqual('bold');
+                expect(cell.style.fontStyle).toEqual('italic');
+                expect(cell.style.textDecoration).toEqual('underline');
+                // Pasted the copied content cell
+                cell = getCell(1, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('Item Name');
+                expect(cell.style.fontWeight).toEqual('bold');
+                expect(cell.style.fontStyle).toEqual('italic');
+                expect(cell.style.textDecoration).toEqual('underline');
+                //undo testing
+                helper.invoke('undo', null);
+                cell = getCell(1, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('');
+                expect(cell.style).toBeNull();
+                done();
+            }, 100);
+        });
 
-        // it('Copy-redo testing', (done: Function) => {
-        //     let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
-        //     helper.invoke('redo', null);
-        //     setTimeout(() => {
-        //         cell = getCell(1, 10, instance.getActiveSheet());
-        //         expect(cell.value).toEqual('Item Name');
-        //         expect(cell.style.fontWeight).toEqual('bold');
-        //         expect(cell.style.fontStyle).toEqual('italic');
-        //         expect(cell.style.textDecoration).toEqual('underline');
-        //         done()
-        //     }, 10);
-        // });
+        it('Copy-redo testing', (done: Function) => {
+            let cell: CellModel = getCell(0, 10, instance.getActiveSheet());
+            helper.invoke('redo', null);
+            setTimeout(() => {
+                cell = getCell(1, 10, instance.getActiveSheet());
+                expect(cell.value).toEqual('Item Name');
+                expect(cell.style.fontWeight).toEqual('bold');
+                expect(cell.style.fontStyle).toEqual('italic');
+                expect(cell.style.textDecoration).toEqual('underline');
+                done()
+            }, 10);
+        });
 
-        // it('Paste testing', (): void => {
-        //     helper.invoke('selectRange', ['K3']);
-        //     helper.click('_paste');
-        //     let cell: CellModel = getCell(2, 10, instance.getActiveSheet());
-        //     expect(cell.value).toEqual('Item Name');
-        //     expect(cell.style.fontWeight).toEqual('bold');
-        //     expect(cell.style.fontStyle).toEqual('italic');
-        //     expect(cell.style.textDecoration).toEqual('underline');
-        // });
+        it('Paste testing', (): void => {
+            helper.invoke('selectRange', ['K3']);
+            helper.click('_paste');
+            let cell: CellModel = getCell(2, 10, instance.getActiveSheet());
+            expect(cell.value).toEqual('Item Name');
+            expect(cell.style.fontWeight).toEqual('bold');
+            expect(cell.style.fontStyle).toEqual('italic');
+            expect(cell.style.textDecoration).toEqual('underline');
+        });
 
         it('Text color testing', (): void => {
             helper.invoke('selectRange', ['K4']);

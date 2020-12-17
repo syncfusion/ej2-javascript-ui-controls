@@ -45,7 +45,8 @@ export class FieldList implements IAction {
                 ';display:none'
         });
         let containerWrapper: HTMLElement = createElement('div', {
-            id: this.parent.element.id + 'containerwrapper'
+            id: this.parent.element.id + 'containerwrapper',
+            styles: 'height:' + this.parent.element.parentElement.getBoundingClientRect().height + 'px'
         });
         this.parent.element.parentElement.appendChild(containerWrapper);
         containerWrapper.appendChild(this.element);

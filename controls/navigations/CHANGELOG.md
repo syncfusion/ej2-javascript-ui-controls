@@ -2,21 +2,7 @@
 
 ## [Unreleased]
 
-## 18.3.53 (2020-12-08)
-
-### ContextMenu
-
-#### Bug Fixes
-
-- `#294581` - ContextMenu with items more than the window size closes automatically while opening issue resolved.
-
 ## 18.3.50 (2020-11-17)
-
-### Menu
-
-#### Bug Fixes
-
-- `#298633` - Sub menu closed while clicking on the scroll bar issue resolved.
 
 ### Tab
 
@@ -43,11 +29,7 @@
 
 ## 18.3.40 (2020-10-13)
 
-### Context Menu
-
-#### Bug Fixes
-
-- Issue with item selection has been fixed.
+### Tab
 
 #### Bug Fixes
 

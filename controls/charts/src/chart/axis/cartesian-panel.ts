@@ -890,30 +890,31 @@ export class CartesianAxisLayoutPanel {
      * @param rect 
      */
     private drawYAxisTitle(axis: Axis, index: number, parent: Element, rect: Rect): void {
+        if (axis.title) {
+            let chart: Chart = this.chart;
 
-        let chart: Chart = this.chart;
+            let labelRotation: number = (axis.opposedPosition) ? 90 : -90;
 
-        let labelRotation: number = (axis.opposedPosition) ? 90 : -90;
+            let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+                (axis.labelPosition === 'Inside' ? 0 :
+                    (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
 
-        let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
-            (axis.labelPosition === 'Inside' ? 0 :
-                (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
+            padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
 
-        padding = axis.opposedPosition ? padding + axis.scrollBarHeight : -padding - axis.scrollBarHeight;
+            let x: number = rect.x + padding;
 
-        let x: number = rect.x + padding;
-
-        let y: number = rect.y + rect.height * 0.5;
-        let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
-        let options: TextOption = new TextOption(
-            chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle',
-            axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
-        );
-        let element: Element = textElement(
-            chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
-        );
-        element.setAttribute('tabindex', axis.tabIndex.toString());
-        element.setAttribute('aria-label', axis.description || axis.title);
+            let y: number = rect.y + rect.height * 0.5;
+            let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
+            let options: TextOption = new TextOption(
+                chart.element.id + '_AxisTitle_' + index, x, y - axis.labelPadding - titleSize, 'middle',
+                axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
+            );
+            let element: Element = textElement(
+                chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
+            );
+            element.setAttribute('tabindex', axis.tabIndex.toString());
+            element.setAttribute('aria-label', axis.description || axis.title);
+        }
     }
 
     /**
@@ -1374,24 +1375,26 @@ export class CartesianAxisLayoutPanel {
      * @param rect 
      */
     private drawXAxisTitle(axis: Axis, index: number, parent: Element, rect: Rect): void {
-        let chart: Chart = this.chart;
-        let elementSize: Size = measureText(axis.title, axis.titleStyle);
-        let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
-        let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
-            (axis.labelPosition === 'Inside' ? 0 :
-                axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
-        let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
-        padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
-            elementSize.height / 4) + scrollBarHeight);
-        let options: TextOption = new TextOption(
-            chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5,
-            rect.y + padding, 'middle', axis.titleCollection
-        );
-        let element: Element = textElement(
-            chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
-        );
-        element.setAttribute('aria-label', axis.description || axis.title);
-        element.setAttribute('tabindex', axis.tabIndex.toString());
+        if (axis.title) {
+            let chart: Chart = this.chart;
+            let elementSize: Size = measureText(axis.title, axis.titleStyle);
+            let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
+            let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+                (axis.labelPosition === 'Inside' ? 0 :
+                    axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
+            let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
+            padding = axis.opposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
+                elementSize.height / 4) + scrollBarHeight);
+            let options: TextOption = new TextOption(
+                chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5,
+                rect.y + padding, 'middle', axis.titleCollection
+            );
+            let element: Element = textElement(
+                chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent
+            );
+            element.setAttribute('aria-label', axis.description || axis.title);
+            element.setAttribute('tabindex', axis.tabIndex.toString());
+        }
     }
 
     /**

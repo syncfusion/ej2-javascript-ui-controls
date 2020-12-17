@@ -267,9 +267,13 @@ export class DataLabel {
             }
         }
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
-            // tslint:disable-next-line:align
-            false, 'x', 'y', null, '', false, false, null, chart.duration);
+            if (!chart.enableCanvas) {
+                appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
+                // tslint:disable-next-line:align
+                false, 'x', 'y', null, '', false, false, null, chart.duration);
+            } else {
+                getElement(chart.element.id + '_Secondary_Element').appendChild(element);
+            }
         }
     }
     /**
@@ -328,8 +332,10 @@ export class DataLabel {
                 rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
             ));
             appendChildElement(this.chart.enableCanvas, parentElement, childElement, redraw, true, 'left', 'top');
-            if (series.animation.enable && this.chart.animateSeries) {
+            if (series.animation.enable && this.chart.animateSeries && !this.chart.enableCanvas) {
                 this.doDataLabelAnimation(series, childElement);
+            } else if (this.chart.enableCanvas) {
+                parentElement.appendChild(childElement);
             }
         }
     }

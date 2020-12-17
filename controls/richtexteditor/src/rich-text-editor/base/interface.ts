@@ -12,7 +12,7 @@ import { NodeSelection } from '../../selection/selection';
 import { EditorMode } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
-import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
 import { Link } from '../renderer/link-module';
@@ -32,6 +32,7 @@ import { ViewSource } from '../renderer/view-source';
 import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Resize } from '../actions/resize';
+import { FileManager } from '../actions/file-manager';
 /**
  * Specifies Rich Text Editor interfaces.
  * @hidden
@@ -54,6 +55,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
      * }
      */
     insertImageSettings: ImageSettingsModel;
+    fileManagerSettings: FileManagerSettingsModel;
 
     tableSettings: TableSettingsModel;
 
@@ -98,6 +100,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     inputElement?: HTMLElement;
     toolbarModule?: Toolbar;
     tableModule?: Table;
+    fileManagerModule?: FileManager;
     sourceCodeModule?: ViewSource;
     getToolbarElement?(): Element;
     fullScreenModule?: FullScreen;
@@ -150,6 +153,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     enableAutoUrl?: boolean;
     enableXhtml?: boolean;
     enableHtmlSanitizer?: boolean;
+    getInsertImgMaxWidth?(): string | number;
 }
 /**
  * @deprecated

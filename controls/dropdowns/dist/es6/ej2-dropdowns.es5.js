@@ -211,7 +211,11 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
      * * Constructor for DropDownBase class
      */
     function DropDownBase(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.preventChange = false;
+        _this.isAngular = false;
+        _this.isPreventChange = false;
+        return _this;
     }
     
     DropDownBase.prototype.getPropObject = function (prop, newProp, oldProp) {
@@ -596,6 +600,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var ulElement;
         this.isActive = true;
         var eventArgs = { cancel: false, data: dataSource, query: query };
+        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
         this.trigger('actionBegin', eventArgs, function (eventArgs) {
             if (!eventArgs.cancel) {
                 _this.showSpinner();
@@ -606,6 +611,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
                         return;
                     }
                     eventArgs.data.executeQuery(_this.getQuery(eventArgs.query)).then(function (e) {
+                        _this.isPreventChange = _this.isAngular && _this.preventChange ? true : _this.isPreventChange;
                         _this.trigger('actionComplete', e, function (e) {
                             if (!e.cancel) {
                                 var listItems = e.result;
@@ -631,6 +637,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
                     var dataManager = new DataManager(eventArgs.data);
                     var listItems = (_this.getQuery(eventArgs.query)).executeLocal(dataManager);
                     var localDataArgs = { cancel: false, result: listItems };
+                    _this.isPreventChange = _this.isAngular && _this.preventChange ? true : _this.isPreventChange;
                     _this.trigger('actionComplete', localDataArgs, function (localDataArgs) {
                         if (!localDataArgs.cancel) {
                             ulElement = _this.renderItems(localDataArgs.result, fields);
@@ -1437,6 +1444,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.previousValue = null;
         _this.isListSearched = false;
+        _this.preventChange = false;
+        _this.isAngular = false;
         return _this;
     }
     
@@ -2568,7 +2577,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 value: this.value,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 this.interopAdaptor.invokeMethodAsync('ServerChange');
@@ -9437,7 +9451,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');

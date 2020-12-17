@@ -195,7 +195,7 @@ let RichTextEditor: object = {
         if (element) { element.blazor__instance.restoreSelection(); }
     },
     getXhtml(element: BlazorRteElement): string {
-        return element && element.blazor__instance.getXhtml();
+        return element.blazor__instance.getXhtml();
     },
     destroy(element: BlazorRteElement): void {
         if (element) { element.blazor__instance.destroy(); }

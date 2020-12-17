@@ -919,10 +919,10 @@ var Slider = /** @class */ (function (_super) {
         }
     };
     Slider.prototype.checkTooltipPosition = function (args) {
+        var tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
         if (this.tooltipCollidedPosition === undefined ||
-            this.tooltipCollidedPosition !== args.collidedPosition) {
+            this.tooltipCollidedPosition !== args.collidedPosition || !args.element.classList.contains(tooltipClass)) {
             if (this.isMaterialTooltip) {
-                var tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
                 if (tooltipClass !== undefined) {
                     args.element.classList.remove(this.previousTooltipClass);
                     args.element.classList.add(tooltipClass);
@@ -2724,6 +2724,9 @@ var Slider = /** @class */ (function (_super) {
         }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
+        }
+        if (sf.base.isBlazor() && this.isMaterialTooltip && !sf.base.isNullOrUndefined(this.materialHandle)) {
+            this.materialHandle.remove();
         }
         if (!sf.base.isBlazor() && !this.isServerRendered) {
             this.element.innerHTML = '';

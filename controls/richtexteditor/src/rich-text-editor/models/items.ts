@@ -228,6 +228,13 @@ export let tools: { [key: string]: IToolsItems } = {
         'command': 'Images',
         'subCommand': 'Image'
     },
+    'filemanager': {
+        'id': 'FileManager',
+        'icon': 'e-rte-file-manager',
+        'tooltip': 'File Manager',
+        'command': 'Files',
+        'subCommand': 'File'
+    },
     'createtable': {
         'id': 'CreateTable',
         'icon': 'e-create-table',

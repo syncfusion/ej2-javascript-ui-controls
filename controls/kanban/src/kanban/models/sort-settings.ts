@@ -11,9 +11,9 @@ export class SortSettings extends ChildProperty<SortSettings> {
      * * DataSourceOrder
      * * Index
      * * Custom
-     * @default 'DataSourceOrder'
+     * @default 'Index'
      */
-    @Property('DataSourceOrder')
+    @Property('Index')
     public sortBy: SortOrderBy;
 
     /**

@@ -1144,9 +1144,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let args: ValidateEventArgs;
         if (this.validationRules) {
             let rules: string[] = Object.keys(this.validationRules);
-            let templateCount : number = Object.keys(this.validationRules).length;
-            let templateIndex : number = 0;
-            let status : boolean = true;
             let validationLength : number =  Object.keys(this.validationRules[rules[0]]).length;
             validationLength = 'validateHidden' in this.validationRules[rules[0]] ? validationLength - 1 : validationLength;
             let count : number = 0;
@@ -1160,18 +1157,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                         };
                         this.trigger('validating', args, (validateArgs: ValidateEventArgs) => {
                             if (e.status === 'failure') {
-                                status = false;
                                 e.errorElement.innerText = validateArgs.errorMessage;
                                 this.toggleErrorClass(true);
                             } else {
                                 this.toggleErrorClass(false);
                             }
                             if (!isNOU(fromSubmit) && fromSubmit && (validationLength === count || e.status === 'failure')) {
-                                templateIndex = templateIndex + 1;
-                                if (templateIndex === templateCount && status) {
-                                    fromSubmit = false;
-                                    this.afterValidation(isValidate);
-                                }
+                                fromSubmit = false;
+                                this.afterValidation(isValidate);
                                 count = 0;
                             }
                         });

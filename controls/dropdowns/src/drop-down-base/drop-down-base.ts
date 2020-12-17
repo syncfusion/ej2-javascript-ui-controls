@@ -232,6 +232,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected footerTemplateId: string;
     protected noRecordsTemplateId: string;
     protected actionFailureTemplateId: string;
+    protected preventChange: boolean = false;
+    protected isAngular: boolean = false;
+    protected isPreventChange: boolean = false;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -824,6 +827,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let ulElement: HTMLElement;
         this.isActive = true;
         let eventArgs: ActionBeginEventArgs = { cancel: false, data: dataSource, query: query };
+        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
         this.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginEventArgs) => {
             if (!eventArgs.cancel) {
                 this.showSpinner();
@@ -834,6 +838,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         return;
                     }
                     (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
+                        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                         this.trigger('actionComplete', e, (e: Object) => {
                             if (!(e as { [key: string]: object }).cancel) {
                                 let listItems: { [key: string]: Object }[] = (e as ResultData).result;
@@ -857,6 +862,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     let listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
                         this.getQuery(eventArgs.query as Query)).executeLocal(dataManager);
                     let localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
+                    this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                     this.trigger('actionComplete', localDataArgs, (localDataArgs: { [key: string]: object }) => {
                         if (!localDataArgs.cancel) {
                             ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object; }[], fields);

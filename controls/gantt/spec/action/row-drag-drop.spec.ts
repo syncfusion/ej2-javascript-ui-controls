@@ -61,9 +61,9 @@ describe('Gantt Drag and Drop support', () => {
         });
         it('Drag and drop parent record to another parent record', () => {
             ganttObj_self.reorderRows([1], 6, 'child');
-            expect(parseInt(ganttObj_self.currentViewData[6].ganttProperties.parentId)).toBe(7);
-            expect(ganttObj_self.currentViewData[6][ganttObj_self.taskFields.parentID]).toBe(7);
-            expect(ganttObj_self.currentViewData[6].taskData[ganttObj_self.taskFields.parentID]).toBe(7);
+            expect(parseInt(ganttObj_self.currentViewData[6].ganttProperties.parentId)).toBe(1);
+            expect(ganttObj_self.currentViewData[6][ganttObj_self.taskFields.parentID]).toBe(1);
+            expect(ganttObj_self.currentViewData[6].taskData[ganttObj_self.taskFields.parentID]).toBe(1);
         });
     });
 });

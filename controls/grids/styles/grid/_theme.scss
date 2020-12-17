@@ -203,11 +203,21 @@
       border-right-color: $frozen-border-color;
   }
 
+    .e-frozenheader.e-frozen-right-header > .e-table,
+    .e-frozencontent.e-frozen-right-content > .e-table {
+      border-left-color: $frozen-border-color;
+  }
+
     &.e-rtl .e-frozenheader > .e-table,
     &.e-rtl .e-frozencontent > .e-table,
     &.e-rtl .e-frozenheader .e-virtualtable > .e-table,
     &.e-rtl .e-frozencontent .e-virtualtable > .e-table {
       border-left-color: $frozen-border-color;
+  }
+
+    &.e-rtl .e-frozenheader.e-frozen-right-header > .e-table,
+    &.e-rtl .e-frozencontent.e-frozen-right-content > .e-table {
+      border-right-color: $frozen-border-color;
   }
 
     &.e-gridhover tr[role='row']:not(.e-editedrow):hover .e-rowcell,
@@ -250,7 +260,6 @@
 
     .e-columnselection {
       background-color: $grid-row-selection-bg-color;
-      color: $grid-row-selection-color;
     }
 
     td.e-cellselectionbackground {
@@ -324,6 +333,11 @@
       border-right: 1px solid $grid-header-border-color;
     }
 
+    &.e-resize-lines .e-frozen-right-header .e-headercell .e-rhandler,
+    &.e-resize-lines .e-frozen-right-header .e-headercell .e-rsuppress {
+      border-left: 1px solid $grid-header-border-color;
+    }
+
     &.e-resize-lines .e-focused .e-rhandler {
       border: 0 none;
     }
@@ -333,11 +347,22 @@
       border-right: 1px solid $grid-header-border-color;
     }
 
+    &.e-resize-lines .e-frozen-right-header .e-headercell.e-stackedheadercell {
+      border-left: 1px solid $grid-header-border-color;
+    }
+
     &.e-rtl.e-resize-lines .e-headercell.e-stackedheadercell,
     &.e-rtl.e-resize-lines .e-headercell .e-rhandler,
     &.e-rtl.e-resize-lines .e-headercell .e-rsuppress {
       border-left: 1px solid $grid-header-border-color;
       border-right-width: 0;
+    }
+
+    &.e-rtl.e-resize-lines .e-frozen-right-header .e-headercell.e-stackedheadercell,
+    &.e-rtl.e-resize-lines .e-frozen-right-header .e-headercell .e-rhandler,
+    &.e-rtl.e-resize-lines .e-frozen-right-header .e-headercell .e-rsuppress {
+      border-left-width: 0;
+      border-right: 1px solid $grid-header-border-color;
     }
 
     &.e-resize-lines .e-filterbarcell,

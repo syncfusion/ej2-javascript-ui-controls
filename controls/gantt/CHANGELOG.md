@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 18.3.53 (2020-12-08)
+## 18.4.30 (2020-12-17)
+
+### Gantt
+
+#### New Features
+
+- `#298884` - Provided `Virtual Scroll` support for Gantt.
+
+#### Bug Fixes
+
+- `#306090` - Issue on pressing delete key when add/edit dialog is opened has been fixed.
+- `#306342` - Included additional field in `taskData.segments`.
+- `#305420` - Issue on triggering `rowSelected` event while opening context menu has been fixed.
+
+## 18.3.52 (2020-12-01)
 
 ### Gantt
 

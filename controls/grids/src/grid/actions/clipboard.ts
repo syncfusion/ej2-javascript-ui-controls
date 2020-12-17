@@ -102,9 +102,13 @@ export class Clipboard implements IAction {
         let cols: string[];
         let dataRows: HTMLElement[] = grid.getDataRows() as HTMLElement[];
         let mRows: HTMLElement[];
-        let isFrozen: number = this.parent.getFrozenColumns();
+        let frRows: HTMLElement[];
+        let isFrozen: boolean = this.parent.isFrozenGrid();
         if (isFrozen) {
             mRows = grid.getMovableDataRows() as HTMLElement[];
+            if (grid.getFrozenRightColumnsCount()) {
+                frRows = grid.getFrozenRightDataRows() as HTMLElement[];
+            }
         }
 
         for (let r: number = 0; r < rows.length; r++) {
@@ -117,10 +121,14 @@ export class Clipboard implements IAction {
             for (let c: number = 0; c < cols.length; c++) {
                 isAvail = grid.getCellFromIndex(rIdx, cIdx);
                 if (isFrozen) {
-                    let fTr: HTMLElement = dataRows[rIdx] as HTMLElement;
-                    let mTr: HTMLElement = mRows[rIdx] as HTMLElement;
+                    let fTr: HTMLElement = dataRows[rIdx];
+                    let mTr: HTMLElement = mRows[rIdx];
                     isAvail = !fTr.querySelector('[aria-colindex="' + cIdx + '"]') ?
                         mTr.querySelector('[aria-colindex="' + cIdx + '"]') : true;
+                    if (frRows && !isAvail) {
+                        let frTr: HTMLElement = frRows[rIdx];
+                        isAvail = frTr.querySelector('[aria-colindex="' + cIdx + '"]');
+                    }
                 }
                 if (!isAvail) {
                     cIdx++;
@@ -178,12 +186,16 @@ export class Clipboard implements IAction {
 
     protected setCopyData(withHeader?: boolean): void {
         if (window.getSelection().toString() === '') {
-            let isFrozen: number = this.parent.getFrozenColumns();
+            let isFrozen: boolean = this.parent.isFrozenGrid();
             this.clipBoardTextArea.value = this.copyContent = '';
             let mRows: Element[];
+            let frRows: Element[];
             let rows: Element[] = this.parent.getRows();
             if (isFrozen) {
                 mRows = this.parent.getMovableDataRows();
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    frRows = this.parent.getFrozenRightRows();
+                }
             }
             if (this.parent.selectionSettings.mode !== 'Cell') {
                 let selectedIndexes: Object[] = this.parent.getSelectedRowIndexes().sort((a: number, b: number) => { return a - b; });
@@ -202,6 +214,9 @@ export class Clipboard implements IAction {
                     let cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell'));
                     if (isFrozen) {
                         cells.push(...[].slice.call(mRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell')));
+                        if (frRows) {
+                            cells.push(...[].slice.call(frRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell')));
+                        }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);
                 }
@@ -223,7 +238,12 @@ export class Clipboard implements IAction {
                         let cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[i] as number].
                             querySelectorAll('.e-cellselectionbackground'));
                         if (isFrozen) {
-                            cells.push(...[].slice.call(mRows[obj.rowIndexes[i] as number].querySelectorAll('.e-cellselectionbackground')));
+                            cells.push(...[].slice.call(mRows[obj.rowIndexes[i] as number]
+                                .querySelectorAll('.e-cellselectionbackground')));
+                            if (frRows) {
+                                cells.push(...[].slice.call(frRows[obj.rowIndexes[i] as number]
+                                    .querySelectorAll('.e-cellselectionbackground')));
+                            }
                         }
                         this.getCopyData(cells, false, '\t', withHeader);
                     }

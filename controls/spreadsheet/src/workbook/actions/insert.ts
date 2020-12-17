@@ -64,7 +64,7 @@ export class WorkbookInsert {
             if (!args.model.rows) { args.model.rows = []; }
             let cellModel: CellModel[] = [];
             if (!args.columnCellsModel) { args.columnCellsModel = []; }
-            for (let i: number = 0; i < model.length; i++) { cellModel.push({}); }
+            for (let i: number = 0; i < model.length; i++) { cellModel.push(null); }
             mergeCollection = [];
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 if (!args.model.rows[i]) {

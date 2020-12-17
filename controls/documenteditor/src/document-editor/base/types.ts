@@ -19,18 +19,18 @@ export type HyperlinkType =
      */
     'Bookmark';
 
-    /**
-     * Indicates inserted revision types
-     */
-    export type RevisionType =
+/**
+ * Indicates inserted revision types
+ */
+export type RevisionType =
     'Insertion' |
-    'Deletion'|
+    'Deletion' |
     'MoveTo' |
     'MoveFrom';
-    /**
-     * Indicates inserted revision types
-     */
-    export type  ReviewTabType=
+/**
+ * Indicates inserted revision types
+ */
+export type ReviewTabType =
     'Comments' |
     'Changes';
 
@@ -1145,7 +1145,7 @@ export type DialogType =
     /**
      * Specifies table options dialog.
      */
-    'TableOptions'|
+    'TableOptions' |
     /**
      * Specifies spell check dialog.
      */
@@ -1200,8 +1200,8 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
     | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
     | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
-    'FormTextFormat'|'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' | 'RemoveRowTrack'
-    | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace';
+    'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
+    'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace';
 /**
  * Enum for direction
  */
@@ -1461,3 +1461,19 @@ export type ContentControlType = 'BuildingBlockGallery' | 'CheckBox' | 'ComboBox
  * Specifies collaborative editing action
  */
 export type CollaborativeEditingAction = 'LockContent' | 'SaveContent' | 'UnlockContent';
+/**
+ * Specifies comment action
+ */
+export type CommentAction = 'Delete' | 'Reply'| 'Edit' | 'Resolve' | 'Reopen' | 'Post';
+/**
+ * Specifies the Footnote type
+ */
+export type FootnoteType = 'Footnote' | 'Endnote';
+/**
+ * Specifies the Restart index for footnote
+ */
+export type FootnoteRestartIndex = 'DoNotRestart' | 'RestartForEachSection' | 'RestartForEachPage';
+/**
+ * Specifies the Footnote and Endnote number format
+ */
+export type FootEndNoteNumberFormat = 'Arabic' | 'UpperCaseRoman' | 'LowerCaseRoman' | 'UpperCaseLetter' | 'LowerCaseLetter';

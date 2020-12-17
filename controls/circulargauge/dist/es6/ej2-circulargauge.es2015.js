@@ -4686,6 +4686,7 @@ let CircularGauge = class CircularGauge extends Component {
                 remove(this.svgObject);
             }
         }
+        removeElement(this.element.id + '_svg');
         this.clearTemplate();
     }
     /**

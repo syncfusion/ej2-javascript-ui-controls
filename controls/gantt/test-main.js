@@ -106,6 +106,11 @@ require.config({
         name: '@syncfusion/ej2-richtexteditor',
         location: 'node_modules/@syncfusion/ej2-richtexteditor/dist',
         main: 'ej2-richtexteditor.umd.min.js'
+      },
+      {
+        name: '@syncfusion/ej2-filemanager',
+        location: 'node_modules/@syncfusion/ej2-filemanager/dist',
+        main: 'ej2-filemanager.umd.min.js'
       }
     // Include dependent packages
   ],

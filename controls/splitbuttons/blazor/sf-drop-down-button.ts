@@ -8,8 +8,11 @@ const EMPTY: string = '';
 const PIXEL: string = 'px';
 const DOT: string = '.';
 const HASH: string = '#';
-const BTNCLICK: string = 'BtnClick';
+const BTN_CLICK: string = 'BtnClick';
 const DROPDOWN: string = 'e-dropdown-menu';
+const COLOR_PICKER: string = 'e-colorpicker-container';
+const HSV_MODEL: string = 'e-hsv-model';
+const CONTAINER: string = '.e-container';
 const ITEM: string = 'e-item';
 const FOCUSED: string = 'e-focused';
 const WRAPPER: string = 'e-split-btn-wrapper';
@@ -44,11 +47,16 @@ class SfDropDownButton {
         if (blankIcon) { setBlankIconStyle(this.popup); }
         this.popup.classList.remove(TRANSPARENT);
         let zIndex: number = getZindexPartial(this.element);
+        let isColorPicker: Boolean = this.element.parentElement.classList.contains(COLOR_PICKER);
+        if (isColorPicker) {
+            (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setPaletteWidth(this.popup.querySelector(CONTAINER));
+        }
         this.setPosition();
         EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
         this.popup.style.zIndex = zIndex + EMPTY;
         this.popup.style.visibility = EMPTY;
+        if (isColorPicker) { (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setOffset(this.popup, zIndex); }
         if (this.popup.firstElementChild) { (this.popup.firstElementChild as HTMLElement).focus(); }
     }
     private setPosition(): void {
@@ -71,8 +79,16 @@ class SfDropDownButton {
     }
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         if (this.popup.parentElement) {
-            if (!closest(e.target as Element, HASH + this.getDropDownButton().id) && !closest(e.target as Element, HASH + this.popup.id)) {
-                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+            let target: Element = e.target as Element;
+            let prevent: boolean = true;
+            if (target.classList.contains(HSV_MODEL)) {
+                let ref: ClientRect = target.parentElement.getBoundingClientRect();
+                let btn: ClientRect = this.element.getBoundingClientRect();
+                prevent = (e.clientX >= ref.left && e.clientX <= ref.right && e.clientY >= ref.top && e.clientY <= ref.bottom) ||
+                    (e.clientX >= btn.left && e.clientX <= btn.right && e.clientY >= btn.top && e.clientY <= btn.bottom);
+            }
+            if (!prevent || (!closest(target, HASH + this.getDropDownButton().id) && !closest(e.target as Element, HASH + this.popup.id))) {
+                this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 this.removeEventListener();
             }
         } else {
@@ -85,7 +101,7 @@ class SfDropDownButton {
             if (e.keyCode === UP) {
                 e.stopPropagation();
                 e.preventDefault();
-                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+                this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 element.focus();
                 this.removeEventListener();
             }
@@ -93,7 +109,7 @@ class SfDropDownButton {
             let ul: HTMLElement = this.popup.firstElementChild as HTMLElement;
             if (e.keyCode === ESC || e.keyCode === TAB) {
                 e.stopPropagation();
-                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+                this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 if (e.keyCode === ESC) {
                     e.preventDefault();
                 }
@@ -141,6 +157,9 @@ class SfDropDownButton {
             return;
         }
         this.setPosition();
+        if (this.element.parentElement.classList.contains(COLOR_PICKER)) {
+            (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setOffset(this.popup);
+        }
     }
     public addEventListener(setFocus?: boolean): void {
         EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
@@ -196,6 +215,10 @@ let DropDownButton: object = {
 
 interface BlazorDropDownMenuElement extends HTMLElement {
     blazor__instance: SfDropDownButton;
+}
+interface BlazorColorPickerElement extends HTMLElement {
+    // tslint:disable-next-line:no-any
+    blazor__instance: any;
 }
 
 export default DropDownButton;

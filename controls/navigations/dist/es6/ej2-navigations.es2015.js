@@ -1424,9 +1424,9 @@ let MenuBase = class MenuBase extends Component {
             let sli;
             let ul;
             let item;
-            let items;
-            let beforeCloseArgs;
             let wrapper = this.getWrapper();
+            let beforeCloseArgs;
+            let items;
             let popups = this.getPopups();
             let isClose = false;
             let cnt = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
@@ -1444,7 +1444,7 @@ let MenuBase = class MenuBase extends Component {
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items = item ? item.items : this.items;
                 beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item, ulIndex) : item,
-                    items: items, event: e, cancel: false };
+                    items: items, event: e, cancel: false, liElement: liElem };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
                     let popupEle;
                     let closeArgs;
@@ -1530,7 +1530,7 @@ let MenuBase = class MenuBase extends Component {
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false');
                                 sli.classList.remove(SELECTED);
-                                if (liElem) {
+                                if (observedCloseArgs.liElement) {
                                     sli.classList.add(FOCUSED);
                                     sli.focus();
                                 }

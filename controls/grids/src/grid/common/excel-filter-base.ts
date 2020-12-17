@@ -103,7 +103,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         let ul: Element = this.parent.createElement('ul');
         let icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
-        if (this.parent.allowSorting) {
+        // tslint:disable-next-line:no-any
+        if (this.parent.allowSorting && (this.parent as any).getModuleName() === 'grid') {
             let hdrele: string = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
             let colIsSort: object = this.parent.getColumnByField(eleOptions.field).allowSorting;
             let isAsc: string = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';

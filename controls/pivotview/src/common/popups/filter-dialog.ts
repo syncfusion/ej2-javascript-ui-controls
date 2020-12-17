@@ -315,7 +315,7 @@ export class FilterDialog {
             items.push({ id: levels[i].id, text: levels[i].name });
         }
         this.dropMenu = new DropDownButton({
-            cssClass: 'e-level-drop',
+            cssClass: 'e-level-drop e-caret-hide',
             items: items, iconCss: 'e-icons e-dropdown-icon',
             disabled: (levelCount === levels.length),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {

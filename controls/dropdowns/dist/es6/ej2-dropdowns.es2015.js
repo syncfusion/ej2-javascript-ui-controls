@@ -193,6 +193,9 @@ let DropDownBase = class DropDownBase extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        this.preventChange = false;
+        this.isAngular = false;
+        this.isPreventChange = false;
     }
     ;
     getPropObject(prop, newProp, oldProp) {
@@ -573,6 +576,7 @@ let DropDownBase = class DropDownBase extends Component {
         let ulElement;
         this.isActive = true;
         let eventArgs = { cancel: false, data: dataSource, query: query };
+        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
         this.trigger('actionBegin', eventArgs, (eventArgs) => {
             if (!eventArgs.cancel) {
                 this.showSpinner();
@@ -583,6 +587,7 @@ let DropDownBase = class DropDownBase extends Component {
                         return;
                     }
                     eventArgs.data.executeQuery(this.getQuery(eventArgs.query)).then((e) => {
+                        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                         this.trigger('actionComplete', e, (e) => {
                             if (!e.cancel) {
                                 let listItems = e.result;
@@ -608,6 +613,7 @@ let DropDownBase = class DropDownBase extends Component {
                     let dataManager = new DataManager(eventArgs.data);
                     let listItems = (this.getQuery(eventArgs.query)).executeLocal(dataManager);
                     let localDataArgs = { cancel: false, result: listItems };
+                    this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                     this.trigger('actionComplete', localDataArgs, (localDataArgs) => {
                         if (!localDataArgs.cancel) {
                             ulElement = this.renderItems(localDataArgs.result, fields);
@@ -1395,6 +1401,8 @@ let DropDownList = class DropDownList extends DropDownBase {
         super(options, element);
         this.previousValue = null;
         this.isListSearched = false;
+        this.preventChange = false;
+        this.isAngular = false;
     }
     ;
     /**
@@ -2522,7 +2530,12 @@ let DropDownList = class DropDownList extends DropDownBase {
                 value: this.value,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             if (this.isServerBlazor && this.enablePersistence) {
                 // tslint:disable-next-line
                 this.interopAdaptor.invokeMethodAsync('ServerChange');
@@ -9289,7 +9302,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 isInteracted: event ? true : false,
                 element: this.element
             };
-            this.trigger('change', eventArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', eventArgs);
+            }
             this.updateTempValue();
             if (!this.changeOnBlur) {
                 this.dispatchEvent(this.hiddenElement, 'change');

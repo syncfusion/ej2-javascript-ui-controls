@@ -98,6 +98,7 @@ class SfTreeView {
     private keyAction: KeyboardEventArgs;
     private keyConfigs: { [key: string]: string };
     private preventExpand: boolean = false;
+    private keyBoardAction: boolean = false;
     private firstTap: Element;
     public focussedElement: Element;
     constructor(element: BlazorTreeViewElement, options: ITreeViewOptions, dotnetRef: BlazorDotnetObject) {
@@ -880,7 +881,11 @@ class SfTreeView {
         let isLoaded: boolean = false;
         isLoaded = currLi.querySelector('ul') != null;
         if (currLi && currLi.classList.contains(PROCESS)) { removeClass([currLi], PROCESS); }
-        this.dotNetRef.invokeMethodAsync('TriggerNodeExpandingEvent', this.expandArgs, isLoaded);
+        let level: number;
+        if (currLi) {
+            level = parseInt(currLi.getAttribute('aria-level'), 10);
+        }
+        this.dotNetRef.invokeMethodAsync('TriggerNodeExpandingEvent', this.expandArgs, isLoaded, level);
     }
 
     public collapseAction(currLi: Element, e: TapEventArgs | KeyboardEventArgs): void {
@@ -1019,10 +1024,6 @@ class SfTreeView {
                     liEle.style.height = EMPTY;
                 }
             });
-        } else if (li.querySelector(".e-icon-expandable")) {
-            let icon: Element = select('div.' + ICON, li);
-            removeClass([icon], EXPANDABLE);
-            addClass([icon], COLLAPSIBLE);
         }
     }
 
@@ -1046,12 +1047,9 @@ class SfTreeView {
         li.style.height = EMPTY;   
         this.expandArgs = this.getExpandEvent(li, null);
         let icon: Element = select('div.' + ICON, li);
-        let _this: any = this;
-        setTimeout(function(){
-            removeClass([icon], COLLAPSIBLE);
-            addClass([icon], EXPANDABLE);
-            _this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', _this.expandArgs);
-        }, 100);
+        removeClass([icon], COLLAPSIBLE);
+        addClass([icon], EXPANDABLE);
+        this.dotNetRef.invokeMethodAsync('TriggerNodeCollapsedEvent', this.expandArgs);
     }
 
     private preventContextMenu(e: MouseEvent): void {
@@ -1526,16 +1524,18 @@ class SfTreeView {
         let focusedNode: Element;
         let nodeElement : Element = this.element.querySelector('[data-uid="' + nodeId + '"]');
         focusedNode = isNOU(nodeElement) ? this.getFocusedNode() : nodeElement;
-        switch (this.keyAction.action) {
+        switch (e.action) {
             case 'space':
                 if (this.options.showCheckBox) {
                     this.checkNode(this.keyAction);
                 }
                 break;
             case 'moveRight':
+                this.keyBoardAction = true;
                 this.openNode(!this.options.enableRtl, this.keyAction);
                 break;
             case 'moveLeft':
+                this.keyBoardAction = true;
                 this.openNode(this.options.enableRtl, this.keyAction);
                 break;
             case 'shiftDown':
@@ -1584,6 +1584,13 @@ class SfTreeView {
                 }
                 break;
         }
+        let _this: any = this;
+        setTimeout(function() {
+            if(_this.keyBoardAction) {
+                _this.setHover(focusedNode);
+                _this.keyBoardAction = false;
+              }
+        }, 100);
     }
 }
 

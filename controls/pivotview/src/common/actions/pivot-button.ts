@@ -11,7 +11,7 @@ import { IFieldOptions, IFilter, IField, IDataOptions, PivotEngine, IMembers, Fi
 import { IPivotValues, IPivotRows, IAxisSet, INumberIndex } from '../../base/engine';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DragAndDropEventArgs, TreeView, NodeCheckEventArgs, SelectEventArgs } from '@syncfusion/ej2-navigations';
-import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
+import { Dialog, ButtonPropsModel, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Operators, FilterType } from '../../base/types';
 import { AggregateMenu } from '../popups/aggregate-menu';
 import { AxisFieldRenderer } from '../../pivotfieldlist/renderer/axis-field-renderer';
@@ -863,7 +863,11 @@ export class PivotButton implements IAction {
     private updateFiltering(args: MouseEventArgs): void {
         /* tslint:disable */
         let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
-        pivotObj.showWaitingPopup();
+        if (pivotObj.getModuleName() === 'pivotfieldlist') {
+            showSpinner(pivotObj.fieldListSpinnerElement as HTMLElement);
+        } else {
+            pivotObj.showWaitingPopup();
+        }
         pivotObj.mouseEventArgs = args;
         pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
             this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
@@ -912,7 +916,11 @@ export class PivotButton implements IAction {
             // this.parent.pivotCommon.filterDialog.allMemberSelect.nodeChecked = this.nodeStateModified.bind(this);
             this.bindDialogEvents();
         }
-        pivotObj.hideWaitingPopup();
+        if (pivotObj.getModuleName() === 'pivotfieldlist') {
+            hideSpinner(pivotObj.fieldListSpinnerElement as HTMLElement);
+        } else {
+            pivotObj.hideWaitingPopup();
+        }
     }
     private bindDialogEvents(): void {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {

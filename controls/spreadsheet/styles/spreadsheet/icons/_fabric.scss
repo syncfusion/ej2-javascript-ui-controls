@@ -285,6 +285,159 @@
     }
   }
 
+  .e-chart-ddb {
+    & .e-chart-icon {
+      &::before {
+        content: '\e440';
+      }
+    }
+  }
+
+  .e-chart-menu .e-ul .e-menu-item .e-menu-icon {
+    font-size: 30px;
+    margin-right: 5px;
+  }
+
+  .e-chart-menu {
+    & .e-column {
+      &::before {
+        content: '\e440';
+      }
+    }
+
+    & .e-bar {
+      &::before {
+        content: '\e877';
+      }
+    }
+
+    & .e-area {
+      &::before {
+        content: '\e455';
+      }
+    }
+
+    & .e-pie-doughnut {
+      &::before {
+        content: '\e458';
+      }
+    }
+
+    & .e-line {
+      &::before {
+        content: '\e449';
+      }
+    }
+
+    & .e-scatter {
+      &::before {
+        content: '\e443';
+      }
+    }
+
+    & .e-column-main {
+      & .e-clusteredcolumn {
+        &::before {
+          content: '\e847';
+        }
+     }
+
+      & .e-stackedcolumn {
+        &::before {
+          content: '\e888';
+        }
+      }
+
+      & .e-stackedcolumn100 {
+        &::before {
+          content: '\e868';
+        }
+      }
+    }
+
+    & .e-bar-main {
+      & .e-clusteredbar {
+        &::before {
+          content: '\e855';
+        }
+      }
+
+      & .e-stackedbar {
+        &::before {
+          content: '\e889';
+        }
+      }
+
+      & .e-stackedbar100 {
+        &::before {
+          content: '\e863';
+        }
+      }
+    }
+
+    & .e-pie-main {
+      & .e-pie {
+        &::before {
+          content: '\e141';
+        }
+      }
+
+      & .e-doughnut {
+        &::before {
+          content: '\e112';
+        }
+      }
+    }
+
+    & .e-area-main {
+      & .e-area {
+        &::before {
+          content: '\e883';
+        }
+      }
+
+      & .e-stackedarea {
+        &::before {
+          content: '\e875';
+        }
+      }
+
+      & .e-stackedarea100 {
+        &::before {
+          content: '\e900';
+        }
+      }
+    }
+
+    & .e-line-main {
+      & .e-line {
+        &::before {
+          content: '\e867';
+        }
+      }
+
+      & .e-stackedline {
+        &::before {
+          content: '\e841';
+        }
+      }
+
+      & .e-stackedline100 {
+        &::before {
+          content: '\e871';
+        }
+      }
+    }
+
+    & .e-scatter-main {
+      & .e-scatter {
+        &::before {
+          content: '\e887';
+        }
+      }
+    }
+}
+
   .e-cf-ddb {
     & .e-conditionalformatting-icon {
       &::before {

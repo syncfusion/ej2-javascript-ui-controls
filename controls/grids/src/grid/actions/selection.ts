@@ -7,9 +7,10 @@ import {
     BeforeAutoFillEventArgs, RowDeselectEventArgs
 } from '../base/interface';
 import { SelectionSettings } from '../base/grid';
-import { setCssInGridPopUp, getPosition, isGroupAdaptive, parentsUntil, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
+import { setCssInGridPopUp, getPosition, isGroupAdaptive, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
+import { getCellsByTableName, getCellByColAndRowIndex, parentsUntil, gridActionHandler } from '../base/util';
 import * as events from '../base/constant';
-import { RenderType, CheckState } from '../base/enum';
+import { RenderType, CheckState, freezeTable } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { Column } from '../models/column';
@@ -21,7 +22,6 @@ import { iterateExtend, setChecked } from '../base/util';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { VirtualFreezeRenderer } from '../renderer/virtual-freeze-renderer';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from '../base/interface';
-
 
 
 /**
@@ -111,8 +111,10 @@ export class Selection implements IAction {
     private bdrElement: HTMLElement;
     private selectDirection: string;
     private mcBdrElement: HTMLElement;
+    private frcBdrElement: HTMLElement;
     private fhBdrElement: HTMLElement;
     private mhBdrElement: HTMLElement;
+    private frhBdrElement: HTMLElement;
     private bdrAFLeft: HTMLElement;
     private bdrAFRight: HTMLElement;
     private bdrAFTop: HTMLElement;
@@ -225,8 +227,16 @@ export class Selection implements IAction {
 
     private getSelectedMovableRow(index: number): Element {
         let gObj: IGrid = this.parent;
-        if (gObj.getFrozenColumns() && this.parent.getContent().querySelector('.e-movablecontent')) {
+        if (gObj.isFrozenGrid() && this.parent.getContent().querySelector('.e-movablecontent')) {
             return gObj.getMovableRowByIndex(index);
+        }
+        return null;
+    }
+
+    private getSelectedFrozenRightRow(index: number): Element {
+        let gObj: IGrid = this.parent;
+        if (gObj.isFrozenGrid() && gObj.getFrozenMode() === 'Left-Right' && gObj.getFrozenRightContent()) {
+            return gObj.getFrozenRightRowByIndex(index);
         }
         return null;
     }
@@ -270,11 +280,12 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let selectedRow: Element = gObj.getRowByIndex(index);
         let selectedMovableRow: Element = this.getSelectedMovableRow(index);
+        let selectedFrozenRightRow: Element = this.getSelectedFrozenRightRow(index);
         let selectData: Object;
         let isRemoved: boolean = false;
         if (gObj.enableVirtualization && index > -1) {
             this.parent.notify(events.selectVirtualRow, { selectedIndex: index });
-            let frozenData: Object = gObj.getFrozenColumns() ? (gObj.contentModule as VirtualFreezeRenderer).getRowObjectByIndex(index)
+            let frozenData: Object = gObj.isFrozenGrid() ? (gObj.contentModule as VirtualFreezeRenderer).getRowObjectByIndex(index)
                 : null;
             if (selectedRow && (gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')) || frozenData)) {
                 selectData = frozenData ? frozenData : gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
@@ -311,7 +322,7 @@ export class Selection implements IAction {
                     previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted,
                     isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             } else {
                 args = {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
@@ -361,10 +372,11 @@ export class Selection implements IAction {
         let isRemoved: boolean = this.removed;
         let selectedRow: Element = gObj.getRowByIndex(index);
         let selectedMovableRow: Element = this.getSelectedMovableRow(index);
+        let selectedFrozenRightRow: Element = this.getSelectedFrozenRightRow(index);
         if (!isToggle && !isRemoved) {
             if (this.selectedRowIndexes.indexOf(index) <= -1) {
-                if (gObj.getFrozenColumns()) { this.updateRowSelection(selectedMovableRow, index); }
                 this.updateRowSelection(selectedRow, index);
+                this.selectMovableRow(selectedMovableRow, selectedFrozenRightRow, index);
             }
             this.selectRowIndex(index);
         }
@@ -377,7 +389,7 @@ export class Selection implements IAction {
                     previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted,
                     isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             } else {
                 args = {
                     data: selectData, rowIndex: index,
@@ -397,9 +409,23 @@ export class Selection implements IAction {
         this.updateRowProps(index);
     }
 
-    private addMovableArgs(targetObj: Object, mRow: Element): Object {
-        if (this.parent.getFrozenColumns()) {
+    private selectMovableRow(selectedMovableRow: Element, selectedFrozenRightRow: Element, index: number): void {
+        if (this.parent.isFrozenGrid()) {
+            this.updateRowSelection(selectedMovableRow, index);
+            if (this.parent.getFrozenMode() === 'Left-Right' && selectedFrozenRightRow) {
+                this.updateRowSelection(selectedFrozenRightRow, index);
+            }
+        }
+    }
+
+    private addMovableArgs(targetObj: Object, mRow: Element, frRow: Element): Object {
+        if (this.parent.isFrozenGrid()) {
             let mObj: Object = { mRow: mRow, previousMovRow: this.parent.getMovableRows()[this.prevRowIndex] };
+            let frozenRightRow: string = 'frozenRightRow'; let previousFrozenRightRow: string = 'previousFrozenRightRow';
+            if (this.parent.getFrozenMode() === 'Left-Right' && frRow) {
+                mObj[frozenRightRow] = frRow;
+                mObj[previousFrozenRightRow] = this.parent.getFrozenRightDataRows()[this.prevRowIndex];
+            }
             targetObj = { ...targetObj, ...mObj };
         }
         return targetObj;
@@ -428,7 +454,7 @@ export class Selection implements IAction {
         let selectedRows: Element[] = [];
         let foreignKeyData: Object[] = [];
         let selectedMovableRow: Element = this.getSelectedMovableRow(rowIndex);
-        let frzCols: number = gObj.getFrozenColumns();
+        let selectedFrozenRightRow: Element = this.getSelectedFrozenRightRow(rowIndex);
         let can: string = 'cancel';
         let selectedData: Object[] = [];
         if (!this.isRowType() || this.isEditing()) {
@@ -454,7 +480,7 @@ export class Selection implements IAction {
                 isInteracted: this.isInteracted, isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                 data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, foreignKeyData: foreignKeyData
             };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
         } else {
             args  = {
                 cancel: false,
@@ -470,16 +496,21 @@ export class Selection implements IAction {
             }
             this.clearRow();
             this.selectRowIndex(rowIndexes.slice(-1)[0]);
+            let selectRowFn: Function = (index: number) => {
+                this.updateRowSelection(gObj.getRowByIndex(index), index);
+                if (gObj.isFrozenGrid()) {
+                    let rightEle: Element = this.parent.getFrozenMode() === 'Left-Right' ? gObj.getFrozenRightRowByIndex(index)
+                        : undefined;
+                    this.selectMovableRow(gObj.getMovableRowByIndex(index), rightEle, index);
+                }
+                this.updateRowProps(rowIndex);
+            };
             if (!this.isSingleSel()) {
                 for (let rowIdx of rowIndexes) {
-                    this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
-                    if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIdx), rowIdx); }
-                    this.updateRowProps(rowIndex);
+                    selectRowFn(rowIdx);
                 }
             } else {
-                this.updateRowSelection(gObj.getRowByIndex(rowIndex), rowIndex);
-                if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex); }
-                this.updateRowProps(rowIndex);
+                selectRowFn(rowIndex);
             }
             let isHybrid: string = 'isHybrid';
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
@@ -489,7 +520,7 @@ export class Selection implements IAction {
                     data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted,
                     isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, foreignKeyData: foreignKeyData
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
             } else {
                 args = {
                     rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
@@ -510,6 +541,7 @@ export class Selection implements IAction {
      * @return {void} 
      * @hidden
      */
+    // tslint:disable-next-line:max-func-body-length
     public addRowsToSelection(rowIndexes: number[]): void {
         let gObj: IGrid = this.parent;
         let can: string = 'cancel';
@@ -520,7 +552,8 @@ export class Selection implements IAction {
             gObj.getRowByIndex(rowIndexes[rowIndexes.length - 1]);
         let selectedMovableRow: Element = !this.isSingleSel() ? this.getSelectedMovableRow(rowIndexes[0]) :
             this.getSelectedMovableRow(rowIndexes[rowIndexes.length - 1]);
-        let frzCols: number = gObj.getFrozenColumns();
+        let selectedFrozenRightRow: Element = !this.isSingleSel() ? this.getSelectedFrozenRightRow(rowIndexes[0]) :
+            this.getSelectedFrozenRightRow(rowIndexes[rowIndexes.length - 1]);
         if ((!this.isRowType() || this.isEditing()) && !this.selectionSettings.checkboxOnly) {
             return;
         }
@@ -562,7 +595,7 @@ export class Selection implements IAction {
                         foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
                         isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
                     };
-                    args = this.addMovableArgs(args, selectedMovableRow);
+                    args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
                 } else {
                     args = {
                         cancel: false,
@@ -581,7 +614,7 @@ export class Selection implements IAction {
                         this.clearRow();
                     }
                     this.updateRowSelection(selectedRow, rowIndex);
-                    if (frzCols) { this.updateRowSelection(selectedMovableRow, rowIndex); }
+                    this.selectMovableRow(selectedMovableRow, selectedFrozenRightRow, rowIndex);
                 });
             }
             if (!isUnSelected) {
@@ -593,7 +626,7 @@ export class Selection implements IAction {
                         foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
                         isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
                     };
-                    args = this.addMovableArgs(args, selectedMovableRow);
+                    args = this.addMovableArgs(args, selectedMovableRow, selectedFrozenRightRow);
                 } else {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
@@ -715,7 +748,7 @@ export class Selection implements IAction {
         }
         this.selectedRowIndexes.push(startIndex);
         let len: number = this.selectedRowIndexes.length;
-        if (this.parent.getFrozenColumns() && len > 1) {
+        if (this.parent.isFrozenGrid() && len > 1) {
             if ((this.selectedRowIndexes[len - 2] === this.selectedRowIndexes[len - 1])) {
                 this.selectedRowIndexes.pop();
             }
@@ -765,6 +798,7 @@ export class Selection implements IAction {
      * Deselects the currently selected rows.
      * @return {void} 
      */
+    // tslint:disable-next-line:max-func-body-length
     public clearRowSelection(): void {
         if (this.isRowSelected) {
             let gObj: IGrid = this.parent;
@@ -772,8 +806,8 @@ export class Selection implements IAction {
             let data: Object[] = [];
             let row: Element[] = [];
             let mRow: Element[] = [];
+            let fRightRow: Element[] = [];
             let rowIndex: number[] = [];
-            let frzCols: number = gObj.getFrozenColumns();
             let foreignKeyData: Object[] = [];
             let target: Element = this.target;
             let currentViewData: Object[] = this.parent.getCurrentViewRecords();
@@ -789,25 +823,77 @@ export class Selection implements IAction {
                     rowIndex.push(this.selectedRowIndexes[i]);
                     foreignKeyData.push(rowObj.foreignKeyData);
                 }
-                if (frzCols) {
+                if (gObj.isFrozenGrid()) {
                     mRow.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
+                    if (gObj.getFrozenMode() === 'Left-Right') {
+                        fRightRow.push(gObj.getFrozenRightRows()[this.selectedRowIndexes[i]]);
+                    }
                 }
             }
             if (this.selectionSettings.persistSelection && this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
                 this.isInteracted = this.checkSelectAllClicked ? true : false;
             }
-            this.rowDeselect(events.rowDeselecting, rowIndex, data, row, foreignKeyData, target, mRow, () => {
-                if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
-                    if (this.parent.isPersistSelection) {
-                        if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
-                            for (let i: number = 0; i < this.selectedRecords.length; i++) {
-                                this.updatePersistCollection(this.selectedRecords[i], true);
+            this.rowDeselect(events.rowDeselecting, rowIndex, data, row, foreignKeyData, target, mRow,
+                () => {
+                    if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
+                        if (this.parent.isPersistSelection) {
+                            if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                                for (let i: number = 0; i < this.selectedRecords.length; i++) {
+                                    this.updatePersistCollection(this.selectedRecords[i], true);
+                                }
+                            } else {
+                                this.parent.checkAllRows = 'Check';
+                                this.updatePersistSelectedData(true);
                             }
-                        } else {
-                            this.parent.checkAllRows = 'Check';
-                            this.updatePersistSelectedData(true);
+                        }
+                        if (this.clearRowCheck) {
+                            this.clearRowCallBack();
+                            this.clearRowCheck = false;
+                            if (this.selectRowCheck) {
+                                this.selectRowCallBack();
+                                this.selectRowCheck = false;
+                            }
+                        }
+                        return;
+                    }
+                    let element: HTMLElement[] = [].slice.call(rows.filter((record: HTMLElement) => record.hasAttribute('aria-selected')));
+                    for (let j: number = 0; j < element.length; j++) {
+                        if (!this.disableUI || isBlazor()) {
+                            element[j].removeAttribute('aria-selected');
+                            this.addRemoveClassesForRow(element[j], false, true, 'e-selectionbackground', 'e-active');
+                        }
+                        // tslint:disable-next-line:align
+                        this.updatePersistCollection(element[j], false);
+                        this.updateCheckBoxes(element[j]);
+                    }
+                    if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
+                        this.getRenderer().setSelection(null, false, true);
+                    }
+                    for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
+                        let movableRow: Element = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
+                        if (movableRow) {
+                            if (!this.disableUI || isBlazor()) {
+                                movableRow.removeAttribute('aria-selected');
+                                this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
+                            }
+                            this.updateCheckBoxes(movableRow);
+                            this.updatePersistCollection(movableRow, false);
+                        }
+                        let frRow: Element = this.getSelectedFrozenRightRow(this.selectedRowIndexes[i]);
+                        if (frRow) {
+                            if (!this.disableUI) {
+                                frRow.removeAttribute('aria-selected');
+                                this.addRemoveClassesForRow(frRow, false, true, 'e-selectionbackground', 'e-active');
+                            }
+                            this.updateCheckBoxes(frRow);
+                            this.updatePersistCollection(frRow, false);
                         }
                     }
+                    this.selectedRowIndexes = [];
+                    this.selectedRecords = [];
+                    this.isRowSelected = false;
+                    this.selectRowIndex(-1);
+                    this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow, undefined, fRightRow);
                     if (this.clearRowCheck) {
                         this.clearRowCallBack();
                         this.clearRowCheck = false;
@@ -816,45 +902,9 @@ export class Selection implements IAction {
                             this.selectRowCheck = false;
                         }
                     }
-                    return;
-                }
-                let element: HTMLElement[] = [].slice.call(rows.filter((record: HTMLElement) => record.hasAttribute('aria-selected')));
-                for (let j: number = 0; j < element.length; j++) {
-                    if (!this.disableUI || isBlazor()) {
-                        element[j].removeAttribute('aria-selected');
-                        this.addRemoveClassesForRow(element[j], false, true, 'e-selectionbackground', 'e-active');
-                }
-                // tslint:disable-next-line:align
-                this.updatePersistCollection(element[j], false);
-                this.updateCheckBoxes(element[j]);
-                }
-                if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
-                    this.getRenderer().setSelection(null, false, true);
-                }
-                for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
-                    let movableRow: Element = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
-                    if (movableRow) {
-                        if (!this.disableUI || isBlazor()) {
-                            movableRow.removeAttribute('aria-selected');
-                            this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
-                        }
-                        this.updatePersistCollection(movableRow, false);
-                    }
-                }
-                this.selectedRowIndexes = [];
-                this.selectedRecords = [];
-                this.isRowSelected = false;
-                this.selectRowIndex(-1);
-                this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow);
-                if (this.clearRowCheck) {
-                    this.clearRowCallBack();
-                    this.clearRowCheck = false;
-                    if (this.selectRowCheck) {
-                        this.selectRowCallBack();
-                        this.selectRowCheck = false;
-                    }
-                }
-            });
+                },
+                fRightRow
+            );
         } else {
             if (this.clearRowCheck) {
                 this.clearRowCallBack();
@@ -869,7 +919,7 @@ export class Selection implements IAction {
 
     private rowDeselect(
         type: string, rowIndex: number[], data: Object, row: Element[],
-        foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function): void {
+        foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function, frozenRightRow?: Element[]): void {
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
             let cancl: string = 'cancel';
             let rowDeselectObj: RowDeselectEventArgs = {
@@ -910,8 +960,8 @@ export class Selection implements IAction {
                 rowDeselectObj[data] = rowDeselectObj[data][rowDeselectObj[data].length - 1];
             }
             this.parent.trigger(
-                type, (!isBlazor() || this.parent.isJsComponent) && this.parent.getFrozenColumns() !== 0 ?
-                { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj,
+                type, (!isBlazor() || this.parent.isJsComponent) && this.parent.isFrozenGrid() ?
+                { ...rowDeselectObj, ...{ mRow: mRow, frozenRightRow: frozenRightRow } } : rowDeselectObj,
                 (args: Object) => {
                     this.isCancelDeSelect = args[cancl];
                     if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
@@ -942,9 +992,10 @@ export class Selection implements IAction {
 
     private getSelectedMovableCell(cellIndex: IIndex): Element {
         let gObj: IGrid = this.parent;
-        let frzCols: number = gObj.getFrozenColumns();
+        let col: Column = gObj.getColumnByIndex(cellIndex.cellIndex);
+        let frzCols: boolean = gObj.isFrozenGrid();
         if (frzCols) {
-            if (cellIndex.cellIndex >= frzCols) {
+            if (col.getFreezeTableName() === 'movable') {
                 return gObj.getMovableCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
             }
             return null;
@@ -1217,28 +1268,35 @@ export class Selection implements IAction {
      * @return {void}
      * @hidden
      */
+    // tslint:disable-next-line:max-func-body-length
     public addCellsToSelection(cellIndexes: IIndex[]): void {
         if (!this.isCellType()) { return; }
         let gObj: IGrid = this.parent;
-        let selectedTable: NodeListOf<Element>;
-        let cIdx: number;
         let selectedCell: Element;
-        let frzCols: number = gObj.getFrozenColumns();
         let index: number;
         this.currentIndex = cellIndexes[0].rowIndex;
         let cncl: string = 'cancel';
         let selectedData: Object = this.getCurrentBatchRecordChanges()[this.currentIndex];
         let isHybrid: string = 'isHybrid';
+        let left: number = gObj.getFrozenLeftCount();
+        let movable: number = gObj.getMovableColumnsCount();
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
         this.hideAutoFill();
+        let col: Column = gObj.getColumnByIndex(cellIndexes[0].cellIndex);
         let rowObj: Row<Column>;
-        if (frzCols && cellIndexes[0].cellIndex >= frzCols) {
-            rowObj = gObj.getMovableRowsObject()[cellIndexes[0].rowIndex];
-        } else {
-            rowObj = this.getRowObj(cellIndexes[0].rowIndex);
-        }
+        gridActionHandler(
+            this.parent,
+            (tableName: freezeTable, rows: Row<Column>[]) => {
+                rowObj = rows[cellIndexes[0].rowIndex];
+            },
+            [
+                !col.getFreezeTableName() || col.getFreezeTableName() === 'frozen-left' ? gObj.getRowsObject() : [],
+                col.getFreezeTableName() === 'movable' ? gObj.getMovableRowsObject() : [],
+                col.getFreezeTableName() === 'frozen-right' ? gObj.getFrozenRightRowsObject() : []
+            ]
+        );
         let foreignKeyData: Object[] = [];
         for (let cellIndex of cellIndexes) {
             for (let i: number = 0, len: number = this.selectedRowCellIndexes.length; i < len; i++) {
@@ -1250,8 +1308,9 @@ export class Selection implements IAction {
             if (!selectedCell) {
                 selectedCell = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
             }
-            foreignKeyData.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
-                ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
+            let idx: number = col.getFreezeTableName() === 'movable' ? cellIndex.cellIndex - left
+                : col.getFreezeTableName() === 'frozen-right' ? cellIndex.cellIndex - (left + movable) : cellIndex.cellIndex;
+            foreignKeyData.push(rowObj.cells[idx].foreignKeyData);
             let args: Object;
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
                 args = {
@@ -1320,25 +1379,18 @@ export class Selection implements IAction {
     }
 
     private getColIndex(rowIndex: number, index: number): number {
-        let cells: NodeListOf<Element>;
-        let frzCols: number = this.parent.getFrozenColumns();
-        if (frzCols) {
-            if (index >= frzCols) {
-                cells = this.parent.getMovableDataRows()[rowIndex] &&
-                    this.parent.getMovableDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
-            }
-        }
-        if (!cells) {
-            cells = this.parent.getDataRows()[rowIndex] &&
-                this.parent.getDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
-        }
+        let frzCols: boolean = this.parent.isFrozenGrid();
+        let col: Column = this.parent.getColumnByIndex(index);
+        let cells: Element[] = getCellsByTableName(this.parent, col, rowIndex);
         if (cells) {
             for (let m: number = 0; m < cells.length; m++) {
                 let colIndex: number = parseInt(cells[m].getAttribute('aria-colindex'), 10);
                 if (colIndex === index) {
                     if (frzCols) {
-                        if (index >= frzCols) {
-                            m += frzCols;
+                        if (col.getFreezeTableName() === 'movable') {
+                            m += this.parent.getFrozenLeftCount();
+                        } else if (col.getFreezeTableName() === 'frozen-right') {
+                            m += (this.parent.getFrozenLeftColumnsCount() + this.parent.getMovableColumnsCount());
                         }
                     }
                     return m;
@@ -1432,7 +1484,7 @@ export class Selection implements IAction {
             let foreignKeyData: Object[] = [];
             let currentViewData: Object[] = this.getCurrentBatchRecordChanges();
             let selectedTable: NodeListOf<Element>;
-            let frzCols: number = gObj.getFrozenColumns();
+            let frzCols: boolean = gObj.isFrozenGrid();
 
             this.hideAutoFill();
             for (let i: number = 0, len: number = rowCell.length; i < len; i++) {
@@ -1440,11 +1492,8 @@ export class Selection implements IAction {
                 let rowObj: Row<Column> = this.getRowObj(rowCell[i].rowIndex);
                 for (let j: number = 0, cLen: number = rowCell[i].cellIndexes.length; j < cLen; j++) {
                     if (frzCols) {
-                        if (rowCell[i].cellIndexes[j] < frzCols) {
-                            cells.push(gObj.getCellFromIndex(rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
-                        } else {
-                            cells.push(gObj.getMovableCellFromIndex(rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
-                        }
+                        let col: Column = gObj.getColumnByIndex(rowCell[i].cellIndexes[j]);
+                        cells.push(getCellByColAndRowIndex(this.parent, col, rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
                     } else {
                         if (rowObj.cells) {
                             foreignKeyData.push(rowObj.cells[rowCell[i].cellIndexes[j]].foreignKeyData);
@@ -1477,9 +1526,12 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let rows: Element[] = gObj.getDataRows();
         let mRows: Element[];
-        if (gObj.getFrozenColumns()) {
+        if (gObj.isFrozenGrid()) {
             mRows = gObj.getMovableDataRows();
             rows = gObj.addMovableRows(rows as HTMLElement[], mRows as HTMLElement[]);
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                rows = gObj.addMovableRows(rows as HTMLElement[], gObj.getFrozenRightDataRows() as HTMLElement[]);
+            }
         }
         let cells: Element[] = [];
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
@@ -1583,24 +1635,27 @@ export class Selection implements IAction {
         let cells: HTMLElement[] = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground')).
             filter((ele: HTMLElement) => ele.style.display === '');
         if (cells.length) {
+            let isFrozen: boolean = this.parent.isFrozenGrid();
             let start: HTMLElement = cells[0];
             let end: HTMLElement = cells[cells.length - 1];
             let stOff: ClientRect = start.getBoundingClientRect();
             let endOff: ClientRect = end.getBoundingClientRect();
             let parentOff: ClientRect = start.offsetParent.getBoundingClientRect();
 
-            let rowHeight: number = this.isLastRow(end) && (bdrStr === '1' || bdrStr === '2') ? 2 : 0;
+            let rowHeight: number = this.isLastRow(end) && (bdrStr === '1' || bdrStr === '2' || bdrStr === '5') ? 2 : 0;
             let topOffSet: number = this.parent.frozenRows && (bdrStr === '1' || bdrStr === '2') &&
                 this.isFirstRow(start) ? 1.5 : 0;
-            let leftOffset: number = this.parent.getFrozenColumns() && (bdrStr === '2' || bdrStr === '4') &&
-                this.isFirstCell(start) ? 1 : 0;
+            let leftOffset: number = isFrozen && (bdrStr === '2' || bdrStr === '4') && this.isFirstCell(start) ? 1 : 0;
+            let rightOffset: number = ((this.parent.getFrozenMode() === 'Right' && (bdrStr === '1' || bdrStr === '3'))
+                || (this.parent.getFrozenMode() === 'Left-Right' && (bdrStr === '5' || bdrStr === '6')))
+                && this.isFirstCell(start) ? 1 : 0;
 
             if (this.parent.enableRtl) {
                 border.style.right = parentOff.right - stOff.right - leftOffset + 'px';
                 border.style.width = stOff.right - endOff.left + leftOffset + 1 + 'px';
             } else {
-                border.style.left = stOff.left - parentOff.left - leftOffset + 'px';
-                border.style.width = endOff.right - stOff.left + leftOffset + 1 + 'px';
+                border.style.left = stOff.left - parentOff.left - leftOffset - rightOffset + 'px';
+                border.style.width = endOff.right - stOff.left + leftOffset - rightOffset + 1 + 'px';
             }
             border.style.top = stOff.top - parentOff.top - topOffSet + 'px';
             border.style.height = endOff.top - stOff.top > 0 ?
@@ -1620,54 +1675,174 @@ export class Selection implements IAction {
         this.selectDirection = '';
         this.showHideBorders('');
         this.setBorders(this.parent.getContentTable(), this.bdrElement, '1');
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             this.setBorders(this.parent.contentModule.getMovableContent(), this.mcBdrElement, '2');
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                this.setBorders(this.parent.contentModule.getFrozenRightContent(), this.frcBdrElement, '5');
+            }
         }
         if (this.parent.frozenRows) {
             this.setBorders(this.parent.getHeaderTable(), this.fhBdrElement, '3');
 
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.setBorders(this.parent.headerModule.getMovableHeader(), this.mhBdrElement, '4');
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.setBorders(this.parent.headerModule.getFrozenRightHeader(), this.frhBdrElement, '6');
+                }
             }
         }
         this.applyBorders(this.selectDirection);
     }
 
-    private applyBorders(str: string): void {
+    private applyBothFrozenBorders(str: string): void {
         let rtl: boolean = this.parent.enableRtl;
         switch (str.length) {
-            case 4: {
+            case 6: {
                 this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
-                this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                this.mcBdrElement.style.borderWidth = '0 0 2px 0';
                 this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
-                this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                this.mhBdrElement.style.borderWidth = '2px 0 0 0';
+                this.frcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                this.frhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+            }
+                break;
+            case 4: {
+                if (str.includes('1') && str.includes('2') && str.includes('3') && str.includes('4')) {
+                    this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                    this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                    this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                    this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                }
+                if (str.includes('2') && str.includes('4') && str.includes('5') && str.includes('6')) {
+                    this.mcBdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                    this.mhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                    this.frcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                    this.frhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                }
+            }
+                break;
+            case 3: {
+                this.bdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                this.mcBdrElement.style.borderWidth = '2p 0 2px 0';
+                this.frcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                if (this.parent.frozenRows) {
+                    this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    this.mhBdrElement.style.borderWidth = '2px 0 2px 0';
+                    this.frcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                }
             }
                 break;
             case 2: {
-                this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 2px 2px 0' : '2px 0 2px 2px' : '0 2px 2px 2px';
-                if (this.parent.getFrozenColumns()) {
-                    this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 0 2px 2px' : '2px 2px 2px 0' : '0 2px 2px 2px';
-                }
-                if (this.parent.frozenRows) {
-                    this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px' : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
-                    if (this.parent.getFrozenColumns()) {
-                        this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px' : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                if (str.includes('1')) {
+                    this.mcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    if (this.parent.frozenRows) {
+                        this.fhBdrElement.style.borderWidth = '2px 2px 0 2px';
                     }
+                }
+                if (str.includes('2')) {
+                    this.bdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    this.frcBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    if (this.parent.frozenRows) {
+                        this.mhBdrElement.style.borderWidth = '2px 2px 0 2px';
+                    }
+                }
+                if (str.includes('3')) {
+                    this.mhBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    this.bdrElement.style.borderWidth = '0 2px 2px 2px';
+                }
+                if (str.includes('4')) {
+                    this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    this.frhBdrElement.style.borderWidth = rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                    this.mcBdrElement.style.borderWidth = '0 2px 2px 2px';
+                }
+                if (str.includes('5')) {
+                    this.mcBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    if (this.parent.frozenRows) {
+                        this.frhBdrElement.style.borderWidth = '2px 2px 0 2px';
+                    }
+                }
+                if (str.includes('6')) {
+                    this.mhBdrElement.style.borderWidth = rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                    this.frcBdrElement.style.borderWidth = '0 2px 2px 2px';
                 }
             }
                 break;
             default:
                 this.bdrElement.style.borderWidth = '2px';
-                if (this.parent.getFrozenColumns()) {
-                    this.mcBdrElement.style.borderWidth = '2px';
-                }
+                this.mcBdrElement.style.borderWidth = '2px';
+                this.frcBdrElement.style.borderWidth = '2px';
                 if (this.parent.frozenRows) {
                     this.fhBdrElement.style.borderWidth = '2px';
-                    if (this.parent.getFrozenColumns()) {
-                        this.mhBdrElement.style.borderWidth = '2px';
-                    }
+                    this.mhBdrElement.style.borderWidth = '2px';
+                    this.frhBdrElement.style.borderWidth = '2px';
                 }
                 break;
+        }
+    }
+
+    private applyBorders(str: string): void {
+        let rtl: boolean = this.parent.enableRtl;
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            this.applyBothFrozenBorders(str);
+        } else {
+            switch (str.length) {
+                case 4: {
+                    if (this.parent.getFrozenMode() === 'Right') {
+                        this.bdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                        this.mcBdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                        this.fhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                        this.mhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                    } else {
+                        this.bdrElement.style.borderWidth = rtl ? '0 2px 2px 0' : '0 0 2px 2px';
+                        this.mcBdrElement.style.borderWidth = rtl ? '0 0 2px 2px' : '0 2px 2px 0';
+                        this.fhBdrElement.style.borderWidth = rtl ? '2px 2px 0 0' : '2px 0 0 2px';
+                        this.mhBdrElement.style.borderWidth = rtl ? '2px 0 0 2px' : '2px 2px 0 0';
+                    }
+                }
+                    break;
+                case 2: {
+                    if (this.parent.getFrozenMode() === 'Right') {
+                        this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 0 2px 2px'
+                            : '2px 2px 2px 0' : '0 2px 2px 2px';
+                        this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 2px 2px 0'
+                            : '2px 0 2px 2px' : '0 2px 2px 2px';
+                        if (this.parent.frozenRows) {
+                            this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px'
+                                : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                            this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px'
+                                : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                        }
+                    } else {
+                        this.bdrElement.style.borderWidth = str.includes('2') ? rtl ? '2px 2px 2px 0'
+                            : '2px 0 2px 2px' : '0 2px 2px 2px';
+                        if (this.parent.isFrozenGrid()) {
+                            this.mcBdrElement.style.borderWidth = str.includes('1') ? rtl ? '2px 0 2px 2px'
+                                : '2px 2px 2px 0' : '0 2px 2px 2px';
+                        }
+                        if (this.parent.frozenRows) {
+                            this.fhBdrElement.style.borderWidth = str.includes('1') ? '2px 2px 0 2px'
+                                : rtl ? '2px 2px 2px 0' : '2px 0 2px 2px';
+                            if (this.parent.isFrozenGrid()) {
+                                this.mhBdrElement.style.borderWidth = str.includes('2') ? '2px 2px 0 2px'
+                                    : rtl ? '2px 0 2px 2px' : '2px 2px 2px 0';
+                            }
+                        }
+                    }
+                }
+                    break;
+                default:
+                    this.bdrElement.style.borderWidth = '2px';
+                    if (this.parent.isFrozenGrid()) {
+                        this.mcBdrElement.style.borderWidth = '2px';
+                    }
+                    if (this.parent.frozenRows) {
+                        this.fhBdrElement.style.borderWidth = '2px';
+                        if (this.parent.isFrozenGrid()) {
+                            this.mhBdrElement.style.borderWidth = '2px';
+                        }
+                    }
+                    break;
+            }
         }
     }
 
@@ -1678,20 +1853,31 @@ export class Selection implements IAction {
                     className: 'e-xlsel', id: this.parent.element.id + '_bdr',
                     styles: 'width: 2px; border-width: 0;'
                 }));
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.mcBdrElement = this.parent.contentModule.getMovableContent().appendChild(
                     createElement('div', {
                         className: 'e-xlsel', id: this.parent.element.id + '_mcbdr',
                         styles: 'height: 2px; border-width: 0;'
                     }));
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frcBdrElement = this.parent.contentModule.getFrozenRightContent().appendChild(
+                        createElement('div', {
+                            className: 'e-xlsel', id: this.parent.element.id + '_frcbdr',
+                            styles: 'height: 2px; border-width: 0;'
+                        }));
+                }
             }
             if (this.parent.frozenRows) {
                 this.fhBdrElement = this.parent.getHeaderTable().parentElement.appendChild(
                     createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_fhbdr', styles: 'height: 2px;' }));
             }
-            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+            if (this.parent.frozenRows && this.parent.isFrozenGrid()) {
                 this.mhBdrElement = this.parent.headerModule.getMovableHeader().appendChild(
                     createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_mhbdr', styles: 'height: 2px;' }));
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frhBdrElement = this.parent.headerModule.getFrozenRightHeader().appendChild(
+                        createElement('div', { className: 'e-xlsel', id: this.parent.element.id + '_frhbdr', styles: 'height: 2px;' }));
+                }
             }
         }
     }
@@ -1699,14 +1885,20 @@ export class Selection implements IAction {
     private showHideBorders(display: string): void {
         if (this.bdrElement) {
             this.bdrElement.style.display = display;
-            if (this.parent.getFrozenColumns()) {
+            if (this.parent.isFrozenGrid()) {
                 this.mcBdrElement.style.display = display;
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frcBdrElement.style.display = display;
+                }
             }
             if (this.parent.frozenRows) {
                 this.fhBdrElement.style.display = display;
             }
-            if (this.parent.frozenRows && this.parent.getFrozenColumns()) {
+            if (this.parent.frozenRows && this.parent.isFrozenGrid()) {
                 this.mhBdrElement.style.display = display;
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    this.frhBdrElement.style.display = display;
+                }
             }
         }
     }
@@ -1851,9 +2043,13 @@ export class Selection implements IAction {
     }
 
     private getAutoFillCells(rowIndex: number, startCellIdx: number): HTMLElement[] {
-        let cells: HTMLElement[] = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground'));
-        if (this.parent.getFrozenColumns()) {
-           cells = cells.concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll('.e-cellselectionbackground')));
+        let cls: string = '.e-cellselectionbackground';
+        let cells: HTMLElement[] = [].slice.call(this.parent.getDataRows()[rowIndex].querySelectorAll(cls));
+        if (this.parent.isFrozenGrid()) {
+            cells = cells.concat([].slice.call(this.parent.getMovableDataRows()[rowIndex].querySelectorAll(cls)));
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                cells = cells.concat([].slice.call(this.parent.getFrozenRightDataRows()[rowIndex].querySelectorAll(cls)));
+            }
         }
         return cells;
     }
@@ -2029,19 +2225,14 @@ export class Selection implements IAction {
         if (this.parent.enableAutoFill && !this.parent.isEdit &&
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
             && this.selectedRowCellIndexes.length) {
-            let frzCols: number = this.parent.getFrozenColumns();
             let index: number = parseInt(this.target.getAttribute('aria-colindex'), 10);
             let rindex: number = parseInt(this.target.getAttribute('index'), 10);
             let rowIndex: number = this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex;
             let cells: Element[] = this.getAutoFillCells(rowIndex, index).filter((ele: HTMLElement) => ele.style.display === '');
-            let isFrozenCol: Boolean;
-            let isFrozenRow: Boolean;
-            if (frzCols && index >= frzCols) {
-                isFrozenCol = true;
-            }
-            if (rindex < this.parent.frozenRows) {
-                isFrozenRow = true;
-            }
+            let col: Column = this.parent.getColumnByIndex(index);
+            let isFrozenCol: Boolean = col.getFreezeTableName() === 'movable';
+            let isFrozenRow: Boolean = rindex < this.parent.frozenRows;
+            let isFrozenRight: boolean = this.parent.getFrozenMode() === 'Left-Right' && col.getFreezeTableName() === 'frozen-right';
             if (!select('#' + this.parent.element.id + '_autofill', parentsUntil(this.target, 'e-table'))) {
                 if (select('#' + this.parent.element.id + '_autofill', this.parent.element)) {
                     select('#' + this.parent.element.id + '_autofill', this.parent.element).remove();
@@ -2053,6 +2244,10 @@ export class Selection implements IAction {
                     this.parent.contentModule.getMovableContent().appendChild(this.autofill) :
                     !isFrozenCol ? this.parent.getHeaderTable().parentElement.appendChild(this.autofill) :
                         this.parent.headerModule.getMovableHeader().appendChild(this.autofill);
+                if (isFrozenRight) {
+                    isFrozenRow ? this.parent.getFrozenRightHeader().appendChild(this.autofill)
+                        : this.parent.getFrozenRightContent().appendChild(this.autofill);
+                }
             }
             let cell: HTMLElement = cells[cells.length - 1] as HTMLElement;
             if (cell && cell.offsetParent) {
@@ -2301,9 +2496,14 @@ export class Selection implements IAction {
         }
     }
 
-    private initialEnd(): void {
-        this.parent.off(events.contentReady, this.initialEnd);
-        this.selectRow(this.parent.selectedRowIndex);
+    private initialEnd(e: { rows: Row<Column>[], args: NotifyArgs }): void {
+        let isFrozen: boolean = this.parent.isFrozenGrid();
+        let isLeftRightFrozen: boolean = this.parent.getFrozenMode() === 'Left-Right';
+        if (!isFrozen || (isFrozen && (!isLeftRightFrozen && !e.args.isFrozen)
+            || (isLeftRightFrozen && e.args.renderFrozenRightContent))) {
+            this.parent.off(events.contentReady, this.initialEnd);
+            this.selectRow(this.parent.selectedRowIndex);
+        }
     }
 
     private checkBoxSelectionChanged(): void {
@@ -2750,7 +2950,8 @@ export class Selection implements IAction {
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
-        if (parentsUntil(target, 'e-row') || parentsUntil(target, 'e-headerchkcelldiv')) {
+        if (parentsUntil(target, 'e-row') || parentsUntil(target, 'e-headerchkcelldiv') ||
+            (this.selectionSettings.allowColumnSelection && target.classList.contains('e-headercell'))) {
             this.isInteracted = true;
         }
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch ||
@@ -2902,8 +3103,8 @@ export class Selection implements IAction {
                 }
             }
         }
-        let clear: boolean = this.parent.getFrozenColumns() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump &&
-            this.selectionSettings.mode !== 'Column') ||
+        let clear: boolean = this.parent.isFrozenGrid() ? (((e.container.isHeader && e.element.tagName !== 'TD' && e.isJump &&
+            !this.selectionSettings.allowColumnSelection) ||
             ((e.container.isContent || e.element.tagName === 'TD') && !(e.container.isSelectable || e.element.tagName === 'TD')))
             && !(e.byKey && e.keyArgs.action === 'space')) : ((e.container.isHeader && e.isJump) ||
                 (e.container.isContent && !e.container.isSelectable)) && !(e.byKey && e.keyArgs.action === 'space')
@@ -2926,7 +3127,7 @@ export class Selection implements IAction {
                 prev.rowIndex = prev.rowIndex === 0 || !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex + this.parent.frozenRows : null;
             }
         }
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             let cIdx: number = Number(e.element.getAttribute('aria-colindex'));
             let selectedIndexes: ISelectedCell[] = this.parent.getSelectedRowCellIndexes();
             if (selectedIndexes.length && prev.cellIndex === 0) {
@@ -2937,7 +3138,7 @@ export class Selection implements IAction {
         }
         if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
             e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&
-            this.selectionSettings.mode !== 'Column') { return; }
+            !this.selectionSettings.allowColumnSelection) { return; }
         this.preventFocus = true;
         let columnIndex: number = this.getKeyColIndex(e);
         if (this.needColumnSelection) {
@@ -2997,7 +3198,7 @@ export class Selection implements IAction {
         let uid: string;
         let index: number = null;
         let stackedHeader: HTMLElement = (e.element as HTMLTableCellElement).querySelector('.e-stackedheadercelldiv');
-        if (this.selectionSettings.mode === 'Column' && parentsUntil(e.element, 'e-columnheader')) {
+        if (this.selectionSettings.allowColumnSelection && parentsUntil(e.element, 'e-columnheader')) {
             this.needColumnSelection =  e.container.isHeader ? true : false;
             if (stackedHeader) {
                 if (e.keyArgs.action === 'rightArrow' || e.keyArgs.action === 'leftArrow') {
@@ -3062,7 +3263,7 @@ export class Selection implements IAction {
         if (this.isCellType()) {
             this.selectCell({ rowIndex, cellIndex }, true);
         }
-        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+        if (this.selectionSettings.allowColumnSelection && this.needColumnSelection) {
             this.selectColumn(cellIndex);
         }
     }
@@ -3089,7 +3290,7 @@ export class Selection implements IAction {
 
     private applyRightLeftKey(rowIndex?: number, cellIndex?: number): void {
         let gObj: IGrid = this.parent;
-        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+        if (this.selectionSettings.allowColumnSelection && this.needColumnSelection) {
             this.selectColumn(cellIndex);
         } else if (this.isCellType()) {
             this.selectCell({ rowIndex, cellIndex }, true);
@@ -3130,7 +3331,7 @@ export class Selection implements IAction {
     private applyShiftLeftRightKey(rowIndex?: number, cellIndex?: number): void {
         let gObj: IGrid = this.parent;
         this.isMultiShiftRequest = true;
-        if (this.selectionSettings.mode === 'Column' && this.needColumnSelection) {
+        if (this.selectionSettings.allowColumnSelection && this.needColumnSelection) {
             this.selectColumnsByRange(this.prevColIndex, cellIndex);
         } else {
             this.selectCellsByRange(this.prevCIdxs, { rowIndex, cellIndex });
@@ -3216,28 +3417,34 @@ export class Selection implements IAction {
         if (isNullOrUndefined(gObj.getColumns()[index])) {
             return;
         }
-        let selectedCol: Element = gObj.getColumnHeaderByUid(gObj.getColumnByIndex(index).uid);
+        let column: Column =  gObj.getColumnByIndex(index);
+        let selectedCol: Element = gObj.getColumnHeaderByUid(column.uid);
         let isColSelected: boolean = selectedCol.classList.contains('e-columnselection');
-        if ((gObj.selectionSettings.mode !== 'Column')) {
+        if ((!gObj.selectionSettings.allowColumnSelection)) {
             return;
         }
+        let isMultiColumns: boolean = this.selectedColumnsIndexes.length > 1 &&
+            this.selectedColumnsIndexes.indexOf(index) > -1;
         this.clearColDependency();
-        if (!isColSelected || !this.selectionSettings.enableToggle) {
+        if (!isColSelected || !this.selectionSettings.enableToggle || isMultiColumns) {
             let args: ColumnSelectingEventArgs = {
                 columnIndex: index, headerCell: selectedCol,
+                column: column,
                 cancel: false, target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
             };
             this.onActionBegin(args, events.columnSelecting);
             if (args.cancel) {
+                this.disableInteracted();
                 return;
             }
-            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected)) {
+            if (!(gObj.selectionSettings.enableToggle && index === this.prevColIndex && isColSelected) || isMultiColumns) {
                 this.updateColSelection(selectedCol, index);
             }
             let selectedArgs: ColumnSelectEventArgs = {
                 columnIndex: index, headerCell: selectedCol,
+                column: column,
                 target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
             };
@@ -3278,19 +3485,21 @@ export class Selection implements IAction {
         if (gObj.selectionSettings.type === 'Single') {
             columnIndexes = [columnIndexes[0]];
         }
-        if (gObj.selectionSettings.mode !== 'Column') {
+        if (!gObj.selectionSettings.allowColumnSelection) {
             return;
         }
         this.clearColDependency();
         let selectingArgs: ColumnSelectingEventArgs = {
             columnIndex: columnIndexes[0], headerCell: selectedCol,
             columnIndexes: columnIndexes,
+            column: gObj.getColumnByIndex(columnIndexes[0]),
             cancel: false, target: this.actualTarget,
             isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
             isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
         };
         this.onActionBegin(selectingArgs, events.columnSelecting);
         if (selectingArgs.cancel) {
+            this.disableInteracted();
             return;
         }
         for (let i: number = 0, len: number = columnIndexes.length; i < len; i++) {
@@ -3300,6 +3509,7 @@ export class Selection implements IAction {
         let selectedArgs: ColumnSelectEventArgs = {
             columnIndex: columnIndexes[0], headerCell: selectedCol,
             columnIndexes: columnIndexes,
+            column: gObj.getColumnByIndex(columnIndexes[0]),
             target: this.actualTarget,
             isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
         };
@@ -3323,46 +3533,31 @@ export class Selection implements IAction {
         if (gObj.selectionSettings.type === 'Single') {
             this.clearColDependency();
         }
-        if ( gObj.selectionSettings.mode !== 'Column') {
+        if ( !gObj.selectionSettings.allowColumnSelection) {
             return;
         }
         let rows: Element[] = !isFreeze ? gObj.getDataRows() : gObj.getMovableRows();
         if (this.selectedColumnsIndexes.indexOf(startIndex) > -1) {
-            let deselectedArgs: ColumnDeselectEventArgs = {
-                columnIndex: startIndex, headerCell: selectedCol,
-                columnIndexes: this.selectedColumnsIndexes,
-                cancel: false, target: this.actualTarget,
-                isInteracted: this.isInteracted
-            };
-            let isCanceled: boolean = this.columnDeselect(deselectedArgs, events.columnDeselecting);
-            if (isCanceled) {
-                return;
-            }
-            this.selectedColumnsIndexes.splice(this.selectedColumnsIndexes.indexOf(startIndex), 1);
-            addRemoveActiveClasses([newCol], false, 'e-columnselection');
-            let index: number = isFreeze ? startIndex - frzCols : startIndex;
-            index = index + gObj.getIndentCount();
-            for (let j: number = 0, len: number = rows.length; j < len; j++) {
-                addRemoveActiveClasses([rows[j].childNodes[index] as Element], false, 'e-columnselection');
-            }
-            this.columnDeselect(deselectedArgs, events.columnDeselected);
-            this.parent.getColumns()[startIndex].isSelected = false;
+            this.clearColumnSelection(startIndex);
         } else {
             let selectingArgs: ColumnSelectingEventArgs = {
                 columnIndex: startIndex, headerCell: selectedCol,
                 columnIndexes: this.selectedColumnsIndexes,
+                column: gObj.getColumnByIndex(startIndex),
                 cancel: false, target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
             };
             this.onActionBegin(selectingArgs, events.columnSelecting);
             if (selectingArgs.cancel) {
+                this.disableInteracted();
                 return;
             }
             this.updateColSelection(newCol, startIndex);
             selectedCol = this.getselectedCols();
             let selectedArgs: ColumnSelectEventArgs = {
                 columnIndex: startIndex, headerCell: selectedCol,
+                column: gObj.getColumnByIndex(startIndex),
                 columnIndexes: this.selectedColumnsIndexes,
                 target: this.actualTarget,
                 isInteracted: this.isInteracted, previousColumnIndex: this.prevColIndex
@@ -3375,38 +3570,56 @@ export class Selection implements IAction {
     /**
      * Clear the column selection
      */
-    public clearColumnSelection(): void {
+    public clearColumnSelection(clearIndex?: number): void {
         if (this.isColumnSelected) {
             let gObj: IGrid = this.parent;
-            let frzCols: number = gObj.getFrozenColumns();
-            let index: number = this.selectedColumnsIndexes[this.selectedColumnsIndexes.length - 1];
-            let isFreeze: boolean = frzCols && index >= frzCols;
-            let selectedCol: Element = !isFreeze ? gObj.getColumnHeaderByIndex(index) :
-                gObj.getHeaderContent().querySelectorAll('.e-headercell')[index];
+            if (!isNullOrUndefined(clearIndex) && this.selectedColumnsIndexes.indexOf(clearIndex) === -1) {
+                return;
+            }
+            let index: number = !isNullOrUndefined(clearIndex) ? clearIndex :
+                this.selectedColumnsIndexes[this.selectedColumnsIndexes.length - 1];
+            let col: Column = gObj.getColumnByIndex(index);
+            let selectedCol: Element;
+            let column: Column = gObj.getColumnByIndex(index);
+            if (col.getFreezeTableName() === 'frozen-right') {
+                selectedCol = gObj.getFrozenRightColumnHeaderByIndex(index);
+            } else if (col.getFreezeTableName() === 'movable') {
+                selectedCol = gObj.getMovableColumnHeaderByIndex(index);
+            } else {
+                selectedCol = gObj.getColumnHeaderByUid(column.uid);
+            }
             let deselectedArgs: ColumnDeselectEventArgs = {
                 columnIndex: index, headerCell: selectedCol,
                 columnIndexes: this.selectedColumnsIndexes,
+                column: column,
                 cancel: false, target: this.actualTarget,
                 isInteracted: this.isInteracted
             };
             let isCanceled: boolean = this.columnDeselect(deselectedArgs, events.columnDeselecting);
             if (isCanceled) {
+                this.disableInteracted();
                 return;
             }
-            let selectedHeader: NodeListOf<Element> = gObj.getHeaderContent().querySelectorAll('.e-columnselection');
-            let selectedCells: Element[] = this.getSelectedColumnCells();
+            let selectedHeader: Element[] = !isNullOrUndefined(clearIndex) ? [selectedCol] :
+                [].slice.call(gObj.getHeaderContent().querySelectorAll('.e-columnselection'));
+            let selectedCells: Element[] = this.getSelectedColumnCells(clearIndex);
             for (let i: number = 0, len: number = selectedHeader.length; i < len; i++) {
                 addRemoveActiveClasses([selectedHeader[i]], false, 'e-columnselection');
             }
             for (let i: number = 0, len: number = selectedCells.length; i < len; i++) {
                 addRemoveActiveClasses([selectedCells[i]], false, 'e-columnselection');
             }
+            if (!isNullOrUndefined(clearIndex)) {
+                this.selectedColumnsIndexes.splice(this.selectedColumnsIndexes.indexOf(clearIndex), 1);
+                this.parent.getColumns()[clearIndex].isSelected = false;
+            } else {
             this.columnDeselect(deselectedArgs, events.columnDeselected);
             this.selectedColumnsIndexes = [];
             this.isColumnSelected = false;
             this.parent.getColumns().filter((col: Column) => col.isSelected = false);
         }
     }
+}
 
     private getselectedCols(): Element[] {
         let gObj: IGrid = this.parent;
@@ -3422,18 +3635,23 @@ export class Selection implements IAction {
         return selectedCol as Element[];
     }
 
-    private getSelectedColumnCells(): Element[] {
+    private getSelectedColumnCells(clearIndex?: number): Element[] {
         let gObj: IGrid = this.parent;
         let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
         let rows: Element[] = isRowTemplate ? gObj.getRows() : gObj.getDataRows();
-        let movableRows: Element[];
-        if (gObj.getFrozenColumns() && gObj.getContent().querySelector('.e-movablecontent')) {
+        let movableRows: Element[]; let frRows: Element[];
+        if (gObj.isFrozenGrid() && gObj.getContent().querySelector('.e-movablecontent')) {
             movableRows = isRowTemplate ? gObj.getMovableRows() : gObj.getMovableDataRows();
             rows = gObj.addMovableRows(rows as HTMLElement[], movableRows as HTMLElement[]);
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                frRows = isRowTemplate ? gObj.getFrozenRightRows() : gObj.getFrozenRightDataRows();
+                rows = gObj.addMovableRows(rows as HTMLElement[], frRows as HTMLElement[]);
+            }
         }
         let seletedcells: Element[] = [];
+        let selectionString: string = !isNullOrUndefined(clearIndex) ? '[aria-colindex="' + clearIndex + '"]' : '.e-columnselection';
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            seletedcells = seletedcells.concat([].slice.call(rows[i].querySelectorAll('.e-columnselection')));
+            seletedcells = seletedcells.concat([].slice.call(rows[i].querySelectorAll(selectionString)));
         }
         return seletedcells;
     }
@@ -3460,14 +3678,23 @@ export class Selection implements IAction {
         if (isNullOrUndefined(this.parent.getColumns()[startIndex])) {
             return;
         }
-        let frzCols: number = this.parent.getFrozenColumns();
-        let isFreeze: boolean = frzCols && startIndex >= frzCols;
+        let left: number = this.parent.getFrozenLeftCount();
+        let movable: number = this.parent.getMovableColumnsCount();
+        let col: Column = this.parent.getColumnByIndex(startIndex);
         let isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
-        let rows: Element[] = !isFreeze ? !isRowTemplate ? this.parent.getDataRows() : this.parent.getRows() :
-            !isRowTemplate ? this.parent.getMovableRows() : this.parent.getMovableRows();
+        let rows: Element[];
         this.selectedColumnsIndexes.push(startIndex);
         this.parent.getColumns()[startIndex].isSelected = true;
-        startIndex = isFreeze ? startIndex - frzCols : startIndex + this.parent.getIndentCount();
+        if (col.getFreezeTableName() === 'frozen-right') {
+            startIndex = startIndex - (left + movable);
+            rows = isRowTemplate ? this.parent.getFrozenRightRows() : this.parent.getFrozenRightDataRows();
+        } else if (col.getFreezeTableName() === 'movable') {
+            startIndex = startIndex - left;
+            rows = isRowTemplate ? this.parent.getMovableRows() : this.parent.getMovableDataRows();
+        } else {
+            startIndex = startIndex + this.parent.getIndentCount();
+            rows = isRowTemplate ? this.parent.getRows() : this.parent.getDataRows();
+        }
         addRemoveActiveClasses([selectedCol], true, 'e-columnselection');
         for (let j: number = 0, len: number = rows.length; j < len; j++) {
             if (rows[j].classList.contains('e-row')) {

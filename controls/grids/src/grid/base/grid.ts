@@ -9,7 +9,7 @@ import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej
 import { GridModel, ResizeSettingsModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
 import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable } from './util';
-import { setRowElements, resetRowIndex, compareChanges } from './util';
+import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';
@@ -30,8 +30,8 @@ import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEv
 import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
-import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, ClipMode } from './enum';
-import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition } from './enum';
+import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
+import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, freezeTable, ClipMode, freezeMode } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';
 import { ColumnQueryModeType } from './enum';
 import { Data } from '../actions/data';
@@ -462,6 +462,13 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property(true)
     public enableToggle: boolean;
+
+    /**
+     * If 'allowColumnSelection' set to true, then the user can able to select the columns.
+     * @default false
+     */
+    @Property(false)
+    public allowColumnSelection: boolean;
 }
 
 /**    
@@ -790,9 +797,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private getShowHideService: ShowHide;
     private mediaColumn: Column[];
     private keyA: boolean = false;
+    private frozenRightCount: number = 0;
+    private frozenLeftCount: number = 0;
+    private tablesCount: number = 1;
+    private movableCount: number = 0;
+    private visibleFrozenLeft: number = 0;
+    private frozenName: freezeMode;
+    private visibleFrozenRight: number = 0;
+    private visibleMovable: number = 0;
+    private frozenLeftColumns: Column[] = [];
+    private frozenRightColumns: Column[] = [];
+    private movableColumns: Column[] = [];
     private media: { [key: string]: MediaQueryList } = {};
     /** @hidden */
     public invokedFromMedia: boolean;
+    /** @hidden */
+    public tableIndex: number = 0;
     private dataBoundFunction: Function;
     private dataToBeUpdated: BatchChanges;
     private componentRefresh: Function = Component.prototype.refresh;
@@ -2294,7 +2314,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {ModuleDeclaration[]}
      * @hidden
      */
+    // tslint:disable-next-line:max-func-body-length
     public requiredModules(): ModuleDeclaration[] {
+        this.setFrozenCount();
         let modules: ModuleDeclaration[] = [];
         if (this.isDestroyed) { return modules; }
         if (this.allowFiltering) {
@@ -2377,7 +2399,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 args: [this, this.serviceLocator]
             });
         }
-        if (this.getFrozenColumns() || this.frozenRows) {
+        if (this.getFrozenColumns() || this.frozenRows || this.frozenRightCount || this.frozenLeftCount) {
             modules.push({ member: 'freeze', args: [this, this.serviceLocator] });
         }
         if (this.isCommandColumn(<Column[]>this.columns)) {
@@ -2798,9 +2820,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.style.display = 'none';
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
-        if ((<{ isAngular?: boolean }>this).isAngular) {
-            this.element = null;
-        }
     }
 
     private destroyDependentModules(): void {
@@ -3101,6 +3120,31 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.filterModule.refreshFilter();
         }
     }
+    
+    /**
+     * @hidden   
+     */
+    public setTablesCount(): void {
+        let frozenCols: number = this.getFrozenColumns();
+        let frozenLeft: number = this.getFrozenLeftColumnsCount();
+        let frozenRight: number = this.getFrozenRightColumnsCount();
+        if (frozenCols && !frozenLeft && !frozenRight) {
+            this.tablesCount = 2;
+        } else if (!frozenCols && (frozenLeft || frozenRight)) {
+            if ((frozenLeft && !frozenRight) || (frozenRight && !frozenLeft)) {
+                this.tablesCount = 2;
+            } else if (frozenLeft && frozenRight) {
+                this.tablesCount = 3;
+            }
+        }
+    }
+
+    /**
+     * @hidden   
+     */
+    public getTablesCount(): number {
+        return this.tablesCount;
+    }
 
     /**
      * @hidden   
@@ -3138,19 +3182,71 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.columnModel.push(columns[i] as Column);
             }
         }
+        this.updateColumnLevelFrozen();
         this.updateFrozenColumns();
         this.updateLockableColumns();
     }
 
-    private updateFrozenColumns(): void {
+    private updateColumnLevelFrozen(): void {
         let cols: Column[] = this.columnModel;
+        let leftCols: Column[] = []; let rightCols: Column[] = []; let movableCols: Column[] = [];
+        if (this.frozenLeftCount || this.frozenRightCount) {
+            for (let i: number = 0, len: number = cols.length; i < len; i++) {
+                /* tslint:disable-next-line:no-any */
+                let col: any = cols[i];
+                if (col.freeze === 'Left') {
+                    col.freezeTable = 'frozen-left';
+                    leftCols.push(col);
+                } else if (col.freeze === 'Right') {
+                    col.freezeTable = 'frozen-right';
+                    rightCols.push(col);
+                } else {
+                    col.freezeTable = 'movable';
+                    movableCols.push(col);
+                }
+            }
+            this.columnModel = leftCols.concat(movableCols).concat(rightCols);
+        }
+    }
+
+    private updateFrozenColumns(): void {
+        if (this.frozenLeftCount || this.frozenRightCount) {
+            return;
+        }
+        let cols: Column[] = this.columnModel;
+        let directFrozenCount: number = this.frozenColumns;
+        let totalFrozenCount: number = this.getFrozenColumns();
         let count: number = 0;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].isFrozen) {
+            /* tslint:disable-next-line:no-any */
+            let col: any = cols[i];
+            if (directFrozenCount) {
+                if (i < directFrozenCount) {
+                    col.freezeTable = 'frozen-left';
+                } else {
+                    col.freezeTable = 'movable';
+                }
+            }
+            if (col.isFrozen && i >= directFrozenCount) {
+                col.freezeTable = 'frozen-left';
                 cols.splice(this.frozenColumns + count, 0, cols.splice(i, 1)[0]);
                 count++;
+            } else if (totalFrozenCount && !directFrozenCount) {
+                col.freezeTable = 'movable';
             }
         }
+    }
+
+    public getFrozenLeftCount(): number {
+        return this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
+    }
+
+    public isFrozenGrid(): boolean {
+        return this.getFrozenColumns() !== 0 || this.getFrozenLeftColumnsCount() !== 0 || this.getFrozenRightColumnsCount() !== 0;
+    }
+
+    public getFrozenMode(): freezeMode {
+        return this.frozenName;
     }
 
     private updateLockableColumns(): void {
@@ -3195,7 +3291,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         let columns: Column[] = vLen === 0 ? this.columnModel :
             this.columnModel.slice(inview[0], inview[vLen - 1] + 1);
-        if (this.contentModule && this.enableColumnVirtualization && this.getFrozenColumns() && inview.length
+        if (this.contentModule && this.enableColumnVirtualization && this.isFrozenGrid() && inview.length
             && inview[0] > 0) {
             let frozenCols: Column[] = (<{ ensureFrozenCols?: Function }>this.contentModule).ensureFrozenCols(columns);
             columns = frozenCols;
@@ -3405,6 +3501,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return this.contentModule.getRowElements();
     }
 
+     /**
+     * Gets a frozen right tables row element by index.
+     * @param  {number} index - Specifies the row index.
+     * @return {Element} 
+     */
+    public getFrozenRightRowByIndex(index: number): Element {
+        return this.contentModule.getFrozenRightRowByIndex(index);
+    }
+
     /**
      * Get a row information based on cell
      * @param {Element}
@@ -3430,15 +3535,26 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 let row: Element = closest(cell, '.e-row');
                 let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
                 let frzCols: number = this.getFrozenColumns();
-                let isMovable: boolean = frzCols ? cellIndex >= frzCols : false;
-                let rows: Row<{}>[] = <Row<{}>[]>(isMovable ?
-                    this.contentModule.getMovableRows() : this.contentModule.getRows());
+                let tableName: freezeTable = this.columnModel[cellIndex].getFreezeTableName();
+                let rows: Row<{}>[] = <Row<{}>[]>this.contentModule.getRows();
+                let index: number = cellIndex + this.getIndentCount();
+                if (this.isFrozenGrid()) {
+                    if (tableName === 'frozen-left') {
+                        rows = <Row<{}>[]>this.contentModule.getRows()
+                    } else if (tableName === 'movable') {
+                        index = cellIndex - frzCols - this.frozenLeftCount;
+                        rows = <Row<{}>[]>this.contentModule.getMovableRows();
+                    } else if (tableName === 'frozen-right') {
+                        index = cellIndex - (this.frozenLeftCount + this.movableCount);
+                        rows = <Row<{}>[]>this.contentModule.getFrozenRightRows();
+                    }
+                }
                 let rowsObject: Object = rows.filter((r: Row<{}>) => r.uid === row.getAttribute('data-uid'));
                 let rowData: Object = {};
                 let column: Column;
                 if (Object.keys(rowsObject).length) {
                     rowData = rowsObject[0].data;
-                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex + this.getIndentCount()].column as Column;
+                    column = rowsObject[0].cells[index].column as Column;
                 }
                 args = { cell: cell, cellIndex: cellIndex, row: row, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
@@ -3455,17 +3571,35 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Gets the Grid's frozen right content rows from frozen grid.
+     * @return {Element[]} 
+     */
+    public getFrozenRightRows(): Element[] {
+        return this.contentModule.getFrozenRightRowElements();
+    }
+
+    /**
      * Gets all the Grid's data rows.
      * @return {Element[]} 
      */
     public getDataRows(): Element[] {
+        return this.getAllDataRows();
+    }
+
+    /**
+     * @hidden   
+     */
+    public getAllDataRows(includeAdd?: boolean): Element[] {
         if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) { return []; }
-        let rows: HTMLElement[] = [].slice.call(this.getContentTable().querySelector('tbody').children);
+        let tbody: Element = this.isFrozenGrid() ? this.getFrozenLeftContentTbody() : this.getContentTable().querySelector('tbody');
+        let rows: HTMLElement[] = [].slice.call(tbody.children);
         if (this.frozenRows) {
-            let freezeRows: HTMLElement[] = [].slice.call(this.getHeaderTable().querySelector('tbody').children);
+            let hdrTbody: Element = this.isFrozenGrid() ? this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody')
+                : this.getHeaderTable().querySelector('tbody');
+            let freezeRows: HTMLElement[] = [].slice.call(hdrTbody.children);
             rows = this.addMovableRows(freezeRows, rows);
         }
-        let dataRows: Element[] = this.generateDataRows(rows);
+        let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
         return dataRows;
     }
 
@@ -3479,15 +3613,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return fRows;
     }
 
-    private generateDataRows(rows: HTMLElement[]): Element[] {
+    private generateDataRows(rows: HTMLElement[], includAdd?: boolean): Element[] {
         let dRows: Element[] = [];
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
-            if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
+            if (rows[i].classList.contains('e-row') && (!rows[i].classList.contains('e-hiddenrow') || includAdd)) {
                 if (this.isCollapseStateEnabled()) {
-					dRows[parseInt(rows[i].getAttribute("aria-rowindex"))] = rows[i];
-				} else {
-					dRows.push(rows[i] as Element);
-				}
+                    dRows[parseInt(rows[i].getAttribute("aria-rowindex"))] = rows[i];
+                } else {
+                    dRows.push(rows[i] as Element);
+                }
             }
         }
         return dRows;
@@ -3498,6 +3632,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element[]} 
      */
     public getMovableDataRows(): Element[] {
+        return this.getAllMovableDataRows();
+    }
+
+    /**
+     * @hidden   
+     */
+    public getAllMovableDataRows(includeAdd?: boolean): Element[] {
+        if (!this.isFrozenGrid()) {
+            return [];
+        }
         let rows: HTMLElement[] =
             [].slice.call(this.getContent().querySelector('.e-movablecontent').querySelector('tbody').children);
         if (this.frozenRows) {
@@ -3505,7 +3649,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 [].slice.call(this.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody').children);
             rows = this.addMovableRows(freezeRows, rows);
         }
-        let dataRows: Element[] = this.generateDataRows(rows);
+        let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
         return dataRows;
     }
 
@@ -3514,6 +3658,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element[]} 
      */
     public getFrozenDataRows(): Element[] {
+        return this.getAllFrozenDataRows();
+    }
+
+    /**
+     * @hidden   
+     */
+    public getAllFrozenDataRows(includeAdd?: boolean): Element[] {
         let rows: HTMLElement[] =
             [].slice.call(this.getContent().querySelector('.e-frozencontent').querySelector('tbody').children);
         if (this.frozenRows) {
@@ -3521,7 +3672,33 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 [].slice.call(this.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').children);
             rows = this.addMovableRows(freezeRows, rows);
         }
-        let dataRows: Element[] = this.generateDataRows(rows);
+        let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
+        return dataRows;
+    }
+
+    /**
+     * Gets all the Grid's frozen right table data rows.
+     * @return {Element[]} 
+     */
+    public getFrozenRightDataRows(): Element[] {
+        return this.getAllFrozenRightDataRows();
+    }
+
+    /**
+     * @hidden   
+     */
+    public getAllFrozenRightDataRows(includeAdd?: boolean): Element[] {
+        if (this.getFrozenMode() !== 'Right' && this.getFrozenMode() !== 'Left-Right') {
+            return [];
+        }
+        let rows: HTMLElement[] =
+            [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector('tbody').children);
+        if (this.frozenRows) {
+            let freezeRows: HTMLElement[] =
+                [].slice.call(this.getHeaderContent().querySelector('.e-frozen-right-header').querySelector('tbody').children);
+            rows = this.addMovableRows(freezeRows, rows);
+        }
+        let dataRows: Element[] = this.generateDataRows(rows, includeAdd);
         return dataRows;
     }
 
@@ -3636,10 +3813,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getCellFromIndex(rowIndex: number, columnIndex: number): Element {
-        let frzCols: number = this.getFrozenColumns();
-        return frzCols && columnIndex >= frzCols ?
-            this.getMovableDataRows()[rowIndex] && this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - frzCols] :
-            this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
+        let col: Column = this.getColumnByIndex(columnIndex);
+        return getCellByColAndRowIndex(this, col, rowIndex, columnIndex);
     }
 
     /**
@@ -3649,8 +3824,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
+        if (this.frozenName === 'Left-Right' && columnIndex >= this.movableCount) {
+            return undefined;
+        }
+        let index: number = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
         return this.getMovableDataRows()[rowIndex] &&
-            this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - this.getFrozenColumns()];
+            this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - index];
+    }
+
+    /**
+     * Gets a frozen right table cell by row and column index.
+     * @param  {number} rowIndex - Specifies the row index.
+     * @param  {number} columnIndex - Specifies the column index.
+     * @return {Element} 
+     */
+    public getFrozenRightCellFromIndex(rowIndex: number, columnIndex: number): Element {
+        let index: number = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
+        let rows: Element[] = this.getFrozenRightDataRows();
+        return rows[rowIndex] && rows[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - index];
     }
 
     /**
@@ -3663,14 +3854,46 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Gets a movable column header by column index.
+     * @param  {number} index - Specifies the column index.
+     * @return {Element} 
+     */
+    public getMovableColumnHeaderByIndex(index: number): Element {
+        let left: number = this.getFrozenColumns() || this.getFrozenLeftColumnsCount();
+        return this.getMovableVirtualHeader().querySelectorAll('.e-headercell')[index - left];
+    }
+
+    /**
+     * Gets a frozen right column header by column index.
+     * @param  {number} index - Specifies the column index.
+     * @return {Element} 
+     */
+    public getFrozenRightColumnHeaderByIndex(index: number): Element {
+        let left: number = this.getFrozenLeftColumnsCount() + this.getMovableColumnsCount();
+        return this.getFrozenRightHeader().querySelectorAll('.e-headercell')[index - left];
+    }
+
+    /**
+     * Gets a frozen left column header by column index.
+     * @param  {number} index - Specifies the column index.
+     * @return {Element} 
+     */
+    public getFrozenLeftColumnHeaderByIndex(index: number): Element {
+        return this.getFrozenVirtualHeader().querySelectorAll('.e-headercell')[index];
+    }
+
+    /**
      * @hidden   
      */
-    public getRowObjectFromUID(uid: string): Row<Column> {
+    public getRowObjectFromUID(uid: string, isMovable?: boolean, isFrozenRight?: boolean): Row<Column> {
         let rows: Row<Column>[] = this.contentModule.getRows() as Row<Column>[];
         let row: Row<Column> = this.rowObject(rows, uid);
-        if (this.getFrozenColumns()) {
-            if (!row) {
+        if (this.isFrozenGrid()) {
+            if (!row || isMovable || isFrozenRight) {
                 row = this.rowObject(this.contentModule.getMovableRows() as Row<Column>[], uid);
+                if ((!row && this.getFrozenMode() === 'Left-Right') || isFrozenRight) {
+                    row = this.rowObject(this.contentModule.getFrozenRightRows() as Row<Column>[], uid);
+                }
                 return row;
             }
         }
@@ -3701,7 +3924,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden   
      */
     public getMovableRowsObject(): Row<Column>[] {
-        return this.contentModule.getMovableRows() as Row<Column>[];
+        let rows: Row<Column>[] = [];
+        if (this.isFrozenGrid()) {
+            rows = this.contentModule.getMovableRows() as Row<Column>[];
+        }
+        return rows;
+    }
+
+    /**
+     * @hidden   
+     */
+    public getFrozenRightRowsObject(): Row<Column>[] {
+        let rows: Row<Column>[] = [];
+        if (this.getFrozenMode() === 'Right' || this.getFrozenMode() === 'Left-Right') {
+            rows = this.contentModule.getFrozenRightRows() as Row<Column>[];
+        }
+        return rows;
     }
 
     /**
@@ -4033,7 +4271,113 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public getFrozenColumns(): number {
-        return this.frozenColumns + this.getFrozenCount(this.columns as Column[], 0);
+        return this.frozenColumns + this.getFrozenCount(this.columns as Column[], 0, 0);
+    }
+
+    /** 
+     * @hidden
+     */
+    public getFrozenRightColumnsCount(): number {
+        return this.frozenRightCount;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getFrozenLeftColumnsCount(): number {
+        return this.frozenLeftCount;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getMovableColumnsCount(): number {
+        return this.movableCount;
+    }
+
+    /** 
+     * @hidden
+     */
+    public setFrozenCount(): void {
+        this.frozenLeftCount = this.frozenRightCount = this.movableCount = 0;
+        this.visibleFrozenLeft = this.visibleFrozenRight = this.visibleMovable = 0;
+        this.frozenLeftColumns = []; this.frozenRightColumns = []; this.movableColumns = [];
+        this.splitFrozenCount(this.columns as Column[]);
+        if (this.frozenColumns && (this.frozenLeftCount || this.frozenRightCount)) {
+            this.setProperties({ frozenColumns: 0 }, true);
+        }
+        this.setTablesCount();
+        if (this.frozenLeftCount && !this.frozenRightCount) {
+            this.frozenName = 'Left';
+        } else if (this.frozenRightCount && !this.frozenLeftCount) {
+            this.frozenName = 'Right';
+        } else if (this.frozenLeftCount && this.frozenRightCount) {
+            this.frozenName = 'Left-Right';
+        }
+    }
+
+    /** 
+     * @hidden
+     */
+    public getVisibleFrozenLeftCount(): number {
+        return this.visibleFrozenLeft;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getVisibleFrozenRightCount(): number {
+        return this.visibleFrozenRight;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getVisibleMovableCount(): number {
+        return this.visibleMovable;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getFrozenRightColumns(): Column[] {
+        return this.frozenRightColumns;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getFrozenLeftColumns(): Column[] {
+        return this.frozenLeftColumns;
+    }
+
+    /** 
+     * @hidden
+     */
+    public getMovableColumns(): Column[] {
+        return this.movableColumns;
+    }
+
+    private splitFrozenCount(columns: Column[]): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            if (columns[i].columns) {
+                this.splitFrozenCount(columns[i].columns as Column[])
+            } else {
+                if (columns[i].freeze === 'Right') {
+                    if (columns[i].visible !== false) { this.visibleFrozenRight++ };
+                    this.frozenRightColumns.push(columns[i]);
+                    this.frozenRightCount++;
+                } else if (columns[i].freeze === 'Left') {
+                    if (columns[i].visible !== false) { this.visibleFrozenLeft++ };
+                    this.frozenLeftColumns.push(columns[i]);
+                    this.frozenLeftCount++;
+                } else {
+                    if (columns[i].visible !== false) { this.visibleMovable++ };
+                    this.movableColumns.push(columns[i]);
+                    this.movableCount++;
+                }
+            }
+        }
     }
 
     /** 
@@ -4053,36 +4397,46 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getVisibleFrozenColumnsCount(): number {
         let visibleFrozenColumns: number = 0;
-        let col: Column[] = this.columnModel;
+        let columns: Column[] = this.columnModel;
         for (let i: number = 0; i < this.frozenColumns; i++) {
-            if (col[i].visible) {
+            if (columns[i].visible) {
                 visibleFrozenColumns++;
+            }
+        }
+        if (this.frozenLeftCount || this.frozenRightCount) {
+            for (let i: number = 0; i < columns.length; i++) {
+                if (columns[i].visible && (columns[i].freeze === 'Left' || columns[i].freeze === 'Right')) {
+                    visibleFrozenColumns++;
+                }
             }
         }
         return visibleFrozenColumns;
     }
 
     private getVisibleFrozenCount(cols: Column[], cnt: number): number {
-        for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].columns) {
-                cnt = this.getVisibleFrozenCount(cols[i].columns as Column[], cnt);
-            } else {
-                if (cols[i].isFrozen && cols[i].visible) {
-                    cnt++;
+        if (!this.frozenLeftCount && !this.frozenRightCount) {
+            for (let i: number = 0, len: number = cols.length; i < len; i++) {
+                if (cols[i].columns) {
+                    cnt = this.getVisibleFrozenCount(cols[i].columns as Column[], cnt);
+                } else {
+                    if (cols[i].isFrozen && cols[i].visible) {
+                        cnt++;
+                    }
                 }
             }
         }
         return cnt;
     }
 
-    private getFrozenCount(cols: Column[], cnt: number): number {
+    private getFrozenCount(cols: Column[], cnt: number, index?: number): number {
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             if (cols[i].columns) {
-                cnt = this.getFrozenCount(cols[i].columns as Column[], cnt);
+                cnt = this.getFrozenCount(cols[i].columns as Column[], cnt, index);
             } else {
-                if (cols[i].isFrozen) {
+                if (cols[i].isFrozen && index > this.frozenColumns - 1) {
                     cnt++;
                 }
+                index++;
             }
         }
         return cnt;
@@ -4432,7 +4786,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let headerCol: HTMLElement[] = [].slice.call(this.getHeaderTable().querySelector('colgroup').childNodes);
         let contentCol: HTMLElement[] = [].slice.call(this.getContentTable().querySelector('colgroup').childNodes);
         let perPixel: number = indentWidth / 30;
-        let i: number = 0;
+        let i: number = this.getFrozenMode() === 'Right' ? this.frozenRightCount : 0;
         let parentOffset: number =  this.element.offsetWidth;
         let applyWidth = (index: number, width: number) => {
             if (ispercentageWidth(this)) {
@@ -4477,6 +4831,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             && this.getColumns().filter((col: Column) => (!col.width || col.width === 'auto') && col.minWidth).length > 0) {
             let tgridWidth: number = this.widthService.getTableWidth(this.getColumns());
             this.widthService.setMinwidthBycalculation(tgridWidth);
+        }
+        if (this.isFrozenGrid() && this.widthService) {
+            this.widthService.refreshFrozenScrollbar();
         }
     }
 
@@ -4865,7 +5222,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** @hidden */
     public hoverFrozenRows(e: MouseEvent): void {
-        if (this.getFrozenColumns()) {
+        if (this.isFrozenGrid()) {
             let row: Element = parentsUntil(e.target as Element, 'e-row');
             if ([].slice.call(this.element.querySelectorAll('.e-frozenhover')).length && e.type === 'mouseout') {
                 let rows: Element[] = [].slice.call(this.element.querySelectorAll('.e-frozenhover'));
@@ -4875,10 +5232,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             } else if (row) {
                 let rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
                 rows.splice(rows.indexOf(row), 1);
-                if (row.getAttribute('aria-selected') != 'true' && rows[0]) {
-                    rows[0].classList.add('e-frozenhover');
-                } else if (rows[0]) {
-                    rows[0].classList.remove('e-frozenhover');
+                for (let i: number = 0; i < rows.length; i++) {
+                    if (row.getAttribute('aria-selected') != 'true' && rows[i]) {
+                        rows[i].classList.add('e-frozenhover');
+                    } else if (rows[i]) {
+                        rows[i].classList.remove('e-frozenhover');
+                    }
                 }
             }
         }
@@ -4942,6 +5301,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.element, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
+        /* tslint:disable-next-line:no-any */
         EventHandler.add(window as any, 'resize', this.resetIndentWidth, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
@@ -4975,6 +5335,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
         EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+        /* tslint:disable-next-line:no-any */
         EventHandler.remove(window as any, 'resize', this.resetIndentWidth);
     }
     /**
@@ -5168,7 +5529,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public mergePersistGridData(persistedData?: Object): void {
-        let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        let data: string = this.getLocalData();
         if (!(isNullOrUndefined(data) || (data === ''))|| !isNullOrUndefined(persistedData)) {
             let dataObj: Grid = !isNullOrUndefined(persistedData) ? persistedData: JSON.parse(data);
             if (this.enableVirtualization) {
@@ -5326,8 +5687,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Refreshes the Grid column changes.
      */
     public refreshColumns(): void {
-        let fCnt: Element = this.getContent().querySelector('.e-frozencontent');
-        if ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt)) {
+        this.setFrozenCount();
+        let fCnt: Element = this.getContent().querySelector('.e-frozen-left-content');
+        let frCnt: Element = this.getContent().querySelector('.e-frozen-right-content');
+        let isColFrozen: boolean = !this.frozenRightCount && !this.frozenLeftCount;
+        let isFrozen: boolean = this.getFrozenColumns() !== 0;
+        if (!isFrozen && ((!fCnt && this.frozenLeftCount) || (!frCnt && this.frozenRightCount) || (fCnt && !this.frozenLeftCount)
+            || (frCnt && !this.frozenRightCount))) {
+            this.tableIndex = 0; this.tablesCount = 1;
+            if (this.enableColumnVirtualization) {
+                this.columnModel = [];
+                this.updateColumnModel(this.columns as Column[]);
+            }
+            this.freezeRefresh();
+        } else if (isColFrozen && ((this.getFrozenColumns() === 1 && !fCnt) || (this.getFrozenColumns() === 0 && fCnt))) {
+            this.tableIndex = 0; this.tablesCount = 1;
             if (this.enableColumnVirtualization) {
                 this.columnModel = [];
                 this.updateColumnModel(this.columns as Column[]);
@@ -5338,16 +5712,25 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.updateColumnObject();
             this.checkLockColumns(this.getColumns());
             this.refresh();
-            if (this.getFrozenColumns()) {
+            if (this.isFrozenGrid()) {
                 let mTbl: Element = this.contentModule.getMovableContent().querySelector('.e-table');
                 remove(mTbl.querySelector('colgroup'));
                 let colGroup: Element = ((this.getHeaderContent()
                     .querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true)) as Element;
                 mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
+                if (this.getFrozenMode() === 'Left-Right') {
+                    let frTbl: Element = this.contentModule.getFrozenRightContent().querySelector('.e-table');
+                    remove(frTbl.querySelector('colgroup'));
+                    let colGrp: Element = ((this.getHeaderContent()
+                        .querySelector('.e-frozen-right-header').querySelector('colgroup')).cloneNode(true)) as Element;
+                    frTbl.insertBefore(colGrp, frTbl.querySelector('tbody'));
+                }
             }
         }
-        if (this.getFrozenColumns()) {
-            this.headerModule.getMovableHeader().scrollLeft = this.contentModule.getMovableContent().scrollLeft;
+        if (this.isFrozenGrid()) {
+            let left: number = this.getContent().querySelector('.e-movablescrollbar').scrollLeft;
+            this.headerModule.getMovableHeader().scrollLeft = left;
+            this.contentModule.getMovableContent().scrollLeft = left;
         }
     }
     /**
@@ -5631,16 +6014,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public hideScroll(): void {
         let content: HTMLElement = this.getContent().querySelector('.e-content');
-        let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
-        let fTable: HTMLElement = content.querySelector('.e-frozencontent') ? content.querySelector('.e-frozencontent') : content;
-        if (cTable.scrollHeight <= cTable.clientHeight && fTable.scrollHeight <= fTable.clientHeight) {
+        let scrollBar: HTMLElement = this.getContent().querySelector('.e-scrollbar');
+        if (content.scrollHeight <= content.clientHeight) {
             this.scrollModule.removePadding();
-            cTable.style.overflowY = 'auto';
+            content.style.overflowY = 'auto';
         }
-        if (this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth) {
-            cTable.style.overflowX = 'auto';
-            cTable.style.overflowY = 'auto';
-            this.notify(events.frozenHeight, 0);
+        if (this.isFrozenGrid() && scrollBar) {
+            let mvblScrollBar: HTMLElement = this.getContent().querySelector('.e-movablescrollbar');
+            let mvblChild: HTMLElement = this.getContent().querySelector('.e-movablechild');
+            scrollBar.style.display = 'flex';
+            if (mvblScrollBar.offsetWidth >= mvblChild.offsetWidth) {
+                scrollBar.style.display = 'none';
+                this.notify(events.frozenHeight, 0);
+            }
         }
     }
 
@@ -5780,15 +6166,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getRowElementByUID(uid: string): Element {
         let rowEle: Element;
         let rows: Element[] = [];
-        if (this.getFrozenColumns()) {
+        if (this.isFrozenGrid()) {
             let fRows: Element[] = [].slice.call(this.getFrozenVirtualContent().querySelector('tbody').children);
             let mRows: Element[] = [].slice.call(this.getMovableVirtualContent().querySelector('tbody').children);
+            let frozenRigtRows: Element[] = [];
+            if (this.tablesCount === 3) {
+                frozenRigtRows = [].slice.call(this.getContent().querySelector('.e-frozen-right-content').querySelector('tbody').children);
+            }
             if (this.frozenRows) {
                 rows = [].slice.call(this.getFrozenVirtualHeader().querySelector('tbody').children);
                 rows = rows.concat([].slice.call(this.getMovableVirtualHeader().querySelector('tbody').children));
+                if (this.tablesCount === 3) {
+                    let frHdr: Element = this.getHeaderContent().querySelector('.e-frozen-right-header');
+                    rows = rows.concat([].slice.call(frHdr.querySelector('tbody').children)).concat(frozenRigtRows);
+                };
                 rows = rows.concat(fRows).concat(mRows);
             } else {
-                rows = fRows.concat(mRows);
+                rows = fRows.concat(mRows).concat(frozenRigtRows);
             }
         } else {
             let cntRows: Element[] = [].slice.call(this.getContent().querySelector('tbody').children);
@@ -6114,6 +6508,51 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             height = this.height;
         }
         return height;
+    }
+
+    /** @hidden */
+    public getFrozenRightContent(): Element {
+        return this.getContent().querySelector('.e-frozen-right-content');
+    }
+
+    /** @hidden */
+    public getFrozenRightHeader(): Element {
+        return this.getHeaderContent().querySelector('.e-frozen-right-header');
+    }
+
+    /** @hidden */
+    public getMovableHeaderTbody(): Element {
+        return this.getMovableVirtualHeader().querySelector('tbody');
+    }
+
+    /** @hidden */
+    public getMovableContentTbody(): Element {
+        return this.getMovableVirtualContent().querySelector('tbody');
+    }
+
+    /** @hidden */
+    public getFrozenHeaderTbody(): Element {
+        return this.getFrozenVirtualHeader().querySelector('tbody');
+    }
+
+    /** @hidden */
+    public getFrozenLeftContentTbody(): Element {
+        return this.getFrozenVirtualContent().querySelector('tbody');
+    }
+
+    /** @hidden */
+    public getFrozenRightHeaderTbody(): Element {
+        return this.getFrozenRightHeader().querySelector('tbody');
+    }
+
+    /** @hidden */
+    public getFrozenRightContentTbody(): Element {
+        let cnt: Element = this.getFrozenRightContent();
+        let tbody: Element;
+        if (cnt) {
+            tbody = this.getFrozenRightContent().querySelector('tbody')
+        }
+        return tbody;
     }
 
 

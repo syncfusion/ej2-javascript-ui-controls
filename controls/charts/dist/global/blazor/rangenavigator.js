@@ -440,9 +440,6 @@ var TooltipSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
-    __decorate$1([
-        sf.base.Property('None')
-    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(sf.base.ChildProperty));
 /**
@@ -836,9 +833,7 @@ var Double = /** @class */ (function () {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        var duplicateTempInterval;
-        for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
-            duplicateTempInterval = tempInterval;
+        for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
             labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
@@ -4514,7 +4509,7 @@ var RangeNavigatorAxis = /** @class */ (function (_super) {
             else {
                 continue;
             }
-            textElement(this.rangeNavigator.renderer, new sf.svgbase.TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).style.cursor = axis.valueType === 'DateTime' ? 'pointer' : 'default';
+            textElement(this.rangeNavigator.renderer, new sf.svgbase.TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

@@ -147,7 +147,7 @@ describe('Quick Popups', () => {
 
         it('Prevent event click quickInfo', () => {
             schObj.popupOpen = (args: PopupOpenEventArgs) =>
-                args.cancel = (args.type === 'EditEventInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS));
+                args.cancel = (args.type === 'QuickInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS));
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });
@@ -327,7 +327,7 @@ describe('Quick Popups', () => {
 
         it('Prevent event click quickInfo', () => {
             schObj.popupOpen = (args: PopupOpenEventArgs) =>
-                args.cancel = (args.type === 'EditEventInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS));
+                args.cancel = (args.type === 'QuickInfo' && args.target.classList.contains(cls.APPOINTMENT_CLASS));
             (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
             expect(schObj.quickPopup.quickPopup.element.classList).toContain('e-popup-close');
         });

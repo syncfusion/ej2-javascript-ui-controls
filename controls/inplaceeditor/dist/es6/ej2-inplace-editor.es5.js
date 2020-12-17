@@ -5,7 +5,7 @@ import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfu
 import { Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
 import { AutoComplete, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, Table, Toolbar } from '@syncfusion/ej2-richtexteditor';
+import { FileManager, HtmlEditor, Image, Link, MarkdownEditor, QuickToolbar, RichTextEditor, Table, Toolbar } from '@syncfusion/ej2-richtexteditor';
 
 /**
  * Exports util methods used by In-place editor.
@@ -978,9 +978,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         var args;
         if (this.validationRules) {
             var rules = Object.keys(this.validationRules);
-            var templateCount_1 = Object.keys(this.validationRules).length;
-            var templateIndex_1 = 0;
-            var status_1 = true;
             var validationLength_1 = Object.keys(this.validationRules[rules[0]]).length;
             validationLength_1 = 'validateHidden' in this.validationRules[rules[0]] ? validationLength_1 - 1 : validationLength_1;
             var count_1 = 0;
@@ -994,7 +991,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                     };
                     _this.trigger('validating', args, function (validateArgs) {
                         if (e.status === 'failure') {
-                            status_1 = false;
                             e.errorElement.innerText = validateArgs.errorMessage;
                             _this.toggleErrorClass(true);
                         }
@@ -1002,11 +998,8 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                             _this.toggleErrorClass(false);
                         }
                         if (!isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength_1 === count_1 || e.status === 'failure')) {
-                            templateIndex_1 = templateIndex_1 + 1;
-                            if (templateIndex_1 === templateCount_1 && status_1) {
-                                fromSubmit = false;
-                                _this.afterValidation(isValidate);
-                            }
+                            fromSubmit = false;
+                            _this.afterValidation(isValidate);
                             count_1 = 0;
                         }
                     });
@@ -1891,7 +1884,7 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
 var Rte = /** @__PURE__ @class */ (function () {
     function Rte(parent) {
         this.compObj = undefined;
-        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
+        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table, FileManager);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

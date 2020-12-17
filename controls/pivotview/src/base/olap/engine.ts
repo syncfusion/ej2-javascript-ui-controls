@@ -997,7 +997,8 @@ export class OlapEngine {
                     if (isGrandTotal ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) : true) {
                         this.frameCommonColumnLoop(
                             coll.members, coll.ordinal, position, maxLevel, minLevel, allType);
-                        if (this.tupColumnInfo[coll.ordinal].showTotals) {
+                        let attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[coll.ordinal].drillInfo, 'columns');
+                        if (this.tupColumnInfo[coll.ordinal].showTotals || attrDrill) {
                             position++;
                         }
                     }
@@ -1187,7 +1188,8 @@ export class OlapEngine {
                 memberPos++;
             }
         }
-        if (this.tupColumnInfo[tupPos].showTotals) {
+        let attrDrill: boolean = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
+        if (this.tupColumnInfo[tupPos].showTotals || attrDrill) {
             let memPos: number = 0;
             let spanMemPos: number = 0;
             let colMembers: { [key: string]: string } = {};
@@ -1725,6 +1727,7 @@ export class OlapEngine {
                 let rowflag: boolean = false;
                 let tupColInfo: ITupInfo = this.tupColumnInfo[currCell.ordinal];
                 let isSubTot: boolean = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
+                let attrDrill: boolean = this.checkAttributeDrill(tupColInfo.drillInfo, 'columns');
                 if (nextRowCell && nextColCell && ((currCell.memberType === 2 || currCell.level === -1) ?
                     (nextColCell.actualText === currCell.actualText) :
                     ((currCell.memberType === 3 && currCell.actualText === nextColCell.actualText) ||
@@ -1744,7 +1747,9 @@ export class OlapEngine {
                 }
                 if (currCell.memberType === 2) {
                     if (isSubTot) {
-                        currCell.type = 'sum';
+                        if (!attrDrill) {
+                            currCell.type = 'sum';
+                        }
                         /* tslint:disable-next-line:max-line-length */
                         //currCell.formattedText = (this.pivotValues[tupColInfo.allStartPos - 1] as IAxisSet[])[colPos].formattedText + ' Total';
                         currCell.formattedText = 'Total';
@@ -1850,16 +1855,17 @@ export class OlapEngine {
                         let value: string = '0';
                         let measureName: string = this.getUniqueName(measure as string);
                         let showTotals: boolean = true;
+                        let attrDrill: boolean = (this.fieldList[columns[0].hierarchy] && this.fieldList[columns[0].hierarchy].isHierarchy && columns[0].isDrilled);
                         if (this.tupRowInfo[rowOrdinal]) {
                             showTotals = this.tupRowInfo[rowOrdinal].showTotals;
                         } else {
                             showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
                         }
                         valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                        formattedText = !showTotals ? '' :
+                        formattedText = (!showTotals && attrDrill) ? '' :
                             ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
                                 valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
-                        value = !showTotals ? '0' :
+                        value = (!showTotals && attrDrill) ? '0' :
                             ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
                                 valElement.querySelector('Value').textContent : null);
                         formattedText = showTotals && !isNullOrUndefined(value) ?

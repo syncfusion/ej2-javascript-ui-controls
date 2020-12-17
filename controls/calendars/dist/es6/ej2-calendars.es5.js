@@ -79,6 +79,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         _this.isPopupClicked = false;
         _this.isDateSelected = true;
         _this.isTodayClicked = false;
+        _this.preventChange = false;
+        _this.isAngular = false;
         return _this;
     }
     /**
@@ -2375,7 +2377,12 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
     Calendar.prototype.changeEvent = function (e) {
         if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
             || this.isMultiSelection) {
-            this.trigger('change', this.changedArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', this.changedArgs);
+            }
             this.previousDate = new Date(+this.value);
         }
     };
@@ -2986,6 +2993,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         _this.isBlazorServer = false;
         _this.invalidValueString = null;
         _this.checkPreviousValue = null;
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.datepickerOptions = options;
         return _this;
     }
@@ -3911,7 +3920,12 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.changedArgs.event = event || null;
                 this.changedArgs.element = this.element;
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
-                this.trigger('change', this.changedArgs);
+                if (this.isAngular && this.preventChange) {
+                    this.preventChange = false;
+                }
+                else {
+                    this.trigger('change', this.changedArgs);
+                }
                 this.previousElementValue = this.inputElement.value;
                 this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
                 this.isInteracted = true;
@@ -4915,6 +4929,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         _this.preventBlur = false;
         _this.preventFocus = false;
         _this.invalidValueString = null;
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.dateRangeOptions = options;
         return _this;
     }
@@ -8271,7 +8287,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ endDate: this.checkDateValue(this.endValue) }, true);
             this.setProperties({ startDate: this.checkDateValue(this.startValue) }, true);
             this.setModelValue();
-            this.trigger('change', this.rangeArgs(e));
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            }
+            else {
+                this.trigger('change', this.rangeArgs(e));
+            }
         }
         this.previousEleValue = this.inputElement.value;
         this.initStartDate = this.checkDateValue(this.startValue);
@@ -9121,6 +9142,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         _this.disableItemCollection = [];
         _this.invalidValueString = null;
         _this.isBlazorServer = false;
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.timeOptions = options;
         return _this;
     }
@@ -10863,7 +10886,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         };
         eventArgs.value = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
         this.prevDate = this.valueWithMinutes || this.getDateObject(this.inputElement.value);
-        this.trigger('change', eventArgs);
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
         this.invalidValueString = null;
         this.checkErrorState(this.value);
     };
@@ -11416,6 +11444,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                             this.checkErrorState(this.invalidValueString);
                         }
                         this.checkValueChange(null, false);
+                        if (this.isAngular && this.preventChange) {
+                            this.preventChange = false;
+                        }
                     }
                     break;
                 case 'floatLabelType':

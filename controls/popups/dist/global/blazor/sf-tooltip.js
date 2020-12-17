@@ -8,6 +8,7 @@ var HIDE_POINTER_TIP_GAP = 8;
 var MOUSE_TRAIL_GAP = 2;
 var POINTER_ADJUST = 2;
 var ROOT = 'e-tooltip';
+var ELEMENT_HIDDNE = 'e-blazor-hidden';
 var TOOLTIP_WRAP = 'e-tooltip-wrap';
 var ARROW_TIP = 'e-arrow-tip';
 var ARROW_TIP_OUTER = 'e-arrow-tip-outer';
@@ -61,6 +62,7 @@ var SfTooltip = /** @class */ (function () {
         this.contentAnimation = null;
         this.beforeCloseAnimation = null;
         this.isPopupHidden = true;
+        this.mouseAction = false;
         this.element = element;
         this.properties = properties;
         this.dotnetRef = ref;
@@ -359,6 +361,7 @@ var SfTooltip = /** @class */ (function () {
             var target_1 = targetList_5[_i];
             this.restoreElement(target_1);
         }
+        this.mouseAction = false;
         this.showTooltip(target, this.properties.animation.open, e);
     };
     SfTooltip.prototype.isHidden = function () {
@@ -709,6 +712,7 @@ var SfTooltip = /** @class */ (function () {
     };
     SfTooltip.prototype.onMouseOut = function (e) {
         var enteredElement = e.relatedTarget;
+        this.mouseAction = true;
         if (enteredElement && !this.properties.mouseTrail) {
             var checkForTooltipElement = sf.base.closest(enteredElement, "." + TOOLTIP_WRAP + "." + POPUP_LIB + "." + POPUP_ROOT);
             if (checkForTooltipElement) {
@@ -871,6 +875,9 @@ var SfTooltip = /** @class */ (function () {
             }
         }
         else {
+            if (sf.base.isNullOrUndefined(this.contentAnimation)) {
+                return;
+            }
             var openAnimation = {
                 name: this.contentAnimation.effect,
                 duration: this.contentAnimation.duration,
@@ -890,7 +897,7 @@ var SfTooltip = /** @class */ (function () {
         this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
     };
     SfTooltip.prototype.reposition = function (target) {
-        if (!this.tooltipEle) {
+        if (target === null || !this.tooltipEle) {
             return;
         }
         var elePos = this.getTooltipPosition(target);
@@ -917,6 +924,9 @@ var SfTooltip = /** @class */ (function () {
         this.isRestrictUpdate = this.element.eventList.opened && !this.isHidden();
         if (this.element.eventList.opened) {
             this.triggerEvent('TriggerOpenedEvent', this.tooltipEventArgs);
+        }
+        if (this.mouseAction && !sf.base.isNullOrUndefined(this.tooltipEle)) {
+            this.hideTooltip(this.properties.animation.close);
         }
     };
     SfTooltip.prototype.closePopupHandler = function () {
@@ -983,9 +993,8 @@ var Tooltip = {
         if (this.isValid(element)) {
             element.blazor__instance.formatPosition();
             element.blazor__instance.wireEvents(properties.opensOn);
+            sf.base.removeClass([element], [ELEMENT_HIDDNE]);
         }
-        // tslint:disable-next-line
-        window.sfBlazor.renderComplete(element);
     },
     contentUpdated: function (element) {
         if (this.isValid(element)) {

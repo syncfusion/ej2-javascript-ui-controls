@@ -21,6 +21,11 @@ let Kanban: object = {
             element.blazor__instance.updateScrollPosition();
         }
     },
+    wireDragEvents(element: BlazorKanbanElement): void {
+        if (element && element.blazor__instance) {
+            (element as BlazorKanbanElement).blazor__instance.wireDragEvent();
+        }
+    },
     propertyChanged(element: BlazorKanbanElement, changedProps: string[]): void {
         if (!isNullOrUndefined(element)) {
             (element as BlazorKanbanElement).blazor__instance.onPropertyChanged(changedProps);

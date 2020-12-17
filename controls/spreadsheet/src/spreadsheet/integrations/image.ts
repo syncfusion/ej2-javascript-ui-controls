@@ -207,7 +207,7 @@ export class SpreadsheetImage {
         let prevImgObj: ImageModel;
         let currImgObj: ImageModel[];
         let prevCellImgLen: number = (prevCellImg && prevCellImg.length) ? prevCellImg.length : 0;
-        if (prevCellObj && prevCellObj.image) {
+        if (prevCellObj && prevCellObj.image && prevCellImg.length > 0) {
             for (let i: number = 0; i < prevCellImgLen; i++) {
                 if ((prevCellImg[i] as ImageModel).id === args.id) {
                     prevImgObj = prevCellImg[i];

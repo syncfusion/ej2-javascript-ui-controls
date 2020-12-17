@@ -269,6 +269,16 @@ export const createImageElement: string = 'createImageElement';
 /** @hidden */
 export const deleteImage: string = 'deleteImage';
 /** @hidden */
+export const deleteChart: string = 'deleteChart';
+/** @hidden */
+export const refreshChartCellObj: string = 'refreshChartCellObj';
+/** @hidden */
 export const refreshImagePosition: string = 'refreshImagePosition';
 /** @hidden */
 export const updateTableWidth: string = 'updateTableWidth';
+/** @hidden */
+export const focusBorder: string = 'focusBorder';
+/** @hidden */
+export const clearChartBorder: string = 'clearChartBorder';
+/** @hidden */
+export const insertChart: string = 'insertChart';

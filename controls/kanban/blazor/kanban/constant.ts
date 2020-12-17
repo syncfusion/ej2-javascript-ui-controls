@@ -74,6 +74,14 @@ export const bottomSpace: number = 25;
 
 export const DRAGGABLE_CLASS: string = 'e-draggable';
 
+export const DROPPABLE_CLASS: string = 'e-droppable';
+
+export const DRAG_CLASS: string = 'e-drag';
+
+export const DROP_CLASS: string = 'e-drop';
+
+export const DISABLED_CLASS: string = 'e-disabled';
+
 export const CLS_RTL: string = 'e-rtl';
 
 export const TOOLBAR_SWIMLANE_NAME_CLASS: string = 'e-toolbar-swimlane-name';

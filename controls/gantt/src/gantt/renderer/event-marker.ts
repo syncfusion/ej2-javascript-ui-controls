@@ -20,7 +20,11 @@ export class EventMarker {
                 this.eventMarkersContainer = createElement('div', {
                     className: cls.eventMarkersContainer
                 });
-                this.parent.ganttChartModule.chartBodyContent.appendChild(this.eventMarkersContainer);
+                if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                    this.parent.ganttChartModule.virtualRender.appendChildElements(this.eventMarkersContainer);
+                } else {
+                    this.parent.ganttChartModule.chartBodyContent.appendChild(this.eventMarkersContainer);
+                }
             }
             this.eventMarkersContainer.innerHTML = '';
             this.getEventMarkersElements(this.eventMarkersContainer);
@@ -83,7 +87,7 @@ export class EventMarker {
      */
     public updateContainerHeight(): void {
         if (this.eventMarkersContainer) {
-            this.eventMarkersContainer.style.height = formatUnit(this.parent.contentHeight);
+            this.eventMarkersContainer.style.height = formatUnit(this.parent.getContentHeight());
         }
     }
 }

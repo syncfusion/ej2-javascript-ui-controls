@@ -101,7 +101,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected previousDateTime: Date;
     protected isTodayClicked: boolean = false;
     protected todayButtonEvent: MouseEvent | KeyboardEvent;
-
+    protected preventChange: boolean = false;
+    protected isAngular: boolean = false;
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      * @default new Date(1900, 00, 01)
@@ -2582,7 +2583,11 @@ export class Calendar extends CalendarBase {
     protected changeEvent(e: Event): void {
         if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
         || this.isMultiSelection) {
-            this.trigger('change', this.changedArgs);
+            if (this.isAngular && this.preventChange) {
+                this.preventChange = false;
+            } else {
+                this.trigger('change', this.changedArgs);
+            }
             this.previousDate = new Date(+this.value);
         }
     }

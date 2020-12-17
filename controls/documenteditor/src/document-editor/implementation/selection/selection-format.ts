@@ -1,7 +1,8 @@
 import { Selection } from './selection';
 import {
     TextAlignment, Underline, HighlightColor, BaselineAlignment, WidthType, Strikethrough, LineSpacingType,
-    CellVerticalAlignment, HeightType, TableAlignment, BiDirectionalOverride
+    CellVerticalAlignment, HeightType, TableAlignment, BiDirectionalOverride, FootEndNoteNumberFormat,
+    FootnoteRestartIndex
 } from '../../base/types';
 import {
     WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading
@@ -1099,6 +1100,13 @@ export class SelectionSectionFormat {
     private bottomMarginIn: number;
     private restartPageNumberingIn: boolean;
     private pageStartingNumberIn: number;
+    private endnoteNumberFormatIn: FootEndNoteNumberFormat;
+    private footNoteNumberFormatIn: FootEndNoteNumberFormat;
+    private restartIndexForFootnotesIn: FootnoteRestartIndex;
+    private restartIndexForEndnotesIn: FootnoteRestartIndex;
+    private initialFootNoteNumberIn: number;
+    private initialEndNoteNumberIn: number;
+
 
     /**
      * private
@@ -1309,6 +1317,85 @@ export class SelectionSectionFormat {
         this.notifyPropertyChanged('differentOddAndEvenPages');
     }
     /**
+     * Gets or sets the number format of endnote.
+     */
+    public get endnoteNumberFormat(): FootEndNoteNumberFormat {
+        return this.endnoteNumberFormatIn;
+    }
+    /**
+     * Gets or sets the number format of endnote.
+     */
+    public set endnoteNumberFormat(value: FootEndNoteNumberFormat) {
+        this.endnoteNumberFormatIn = value;
+        this.notifyPropertyChanged('endnoteNumberFormat');
+    }
+    /**
+     * Gets or sets the number format of footnote.
+     */
+    public get footNoteNumberFormat(): FootEndNoteNumberFormat {
+        return this.footNoteNumberFormatIn;
+    }
+    /**
+     * Gets or sets the number format of footnote.
+     */
+    public set footNoteNumberFormat(value: FootEndNoteNumberFormat) {
+        this.footNoteNumberFormatIn = value;
+        this.notifyPropertyChanged('footNoteNumberFormat');
+    }
+    /**
+     * Gets or sets the number format of footnote.
+     */
+    public get initialFootNoteNumber(): number {
+        return this.initialFootNoteNumberIn;
+    }
+    /**
+     * Gets or sets the number format of footnote.
+     */
+    public set initialFootNoteNumber(value: number) {
+        this.initialFootNoteNumberIn = value;
+        this.notifyPropertyChanged('initialFootNoteNumber');
+    }
+    /**
+     * Gets or sets the number format of footnote.
+     */
+    public get initialEndNoteNumber(): number {
+        return this.initialEndNoteNumberIn;
+    }
+    /**
+     * Gets or sets the number format of footnote.
+     */
+    public set initialEndNoteNumber(value: number) {
+        this.initialEndNoteNumberIn = value;
+        this.notifyPropertyChanged('initialEndNoteNumber');
+    }
+
+    /**
+     * Gets or sets the restart index of footnote
+     */
+    public get restartIndexForFootnotes(): FootnoteRestartIndex {
+        return this.restartIndexForFootnotesIn;
+    }
+    /**
+     * Gets or sets the restart index of footnote
+     */
+    public set restartIndexForFootnotes(value: FootnoteRestartIndex) {
+        this.restartIndexForFootnotesIn = value;
+        this.notifyPropertyChanged('restartIndexForFootnotes');
+    }
+    /**
+     * Gets or sets the restart index of endnote
+     */
+    public get restartIndexForEndnotes(): FootnoteRestartIndex {
+        return this.restartIndexForEndnotesIn;
+    }
+    /**
+     * Gets or sets the restart index of endnote
+     */
+    public set restartIndexForEndnotes(value: FootnoteRestartIndex) {
+        this.restartIndexForEndnotesIn = value;
+        this.notifyPropertyChanged('restartIndexForEndnotes');
+    }
+    /**
      * @private
      */
     constructor(selection: Selection) {
@@ -1334,6 +1421,12 @@ export class SelectionSectionFormat {
         this.bidi = format.bidi;
         this.pageStartingNumber = format.pageStartingNumber;
         this.restartPageNumbering = format.restartPageNumbering;
+        this.endnoteNumberFormat = format.endnoteNumberFormat;
+        this.footNoteNumberFormat = format.footNoteNumberFormat;
+        this.restartIndexForEndnotes = format.restartIndexForEndnotes;
+        this.restartIndexForFootnotes = format.restartIndexForFootnotes;
+        this.initialEndNoteNumber = format.initialEndNoteNumber;
+        this.initialFootNoteNumber = format.initialFootNoteNumber;
     }
     private notifyPropertyChanged(propertyName: string): void {
         let selection: Selection = this.selection;
@@ -1405,6 +1498,18 @@ export class SelectionSectionFormat {
                     return this.restartPageNumbering;
                 }
                 return undefined;
+            case 'endnoteNumberFormat':
+                return this.endnoteNumberFormatIn;
+            case 'restartIndexForEndnotes':
+                return this.restartIndexForEndnotesIn;
+            case 'restartIndexForFootnotes':
+                return this.restartIndexForFootnotesIn;
+            case 'footNoteNumberFormat':
+                return this.footNoteNumberFormatIn;
+            case 'initialFootNoteNumber':
+                return this.initialFootNoteNumber;
+            case 'initialEndNoteNumber':
+                return this.initialEndNoteNumber;
             default:
                 return undefined;
         }
@@ -1454,6 +1559,24 @@ export class SelectionSectionFormat {
         if (!isNullOrUndefined(this.bidi) && this.bidi !== format.bidi) {
             this.bidi = undefined;
         }
+        if (!isNullOrUndefined(this.endnoteNumberFormat) && this.endnoteNumberFormat !== format.endnoteNumberFormat) {
+            this.endnoteNumberFormat = undefined;
+        }
+        if (!isNullOrUndefined(this.restartIndexForEndnotes) && this.restartIndexForEndnotes !== format.restartIndexForEndnotes) {
+            this.restartIndexForEndnotes = undefined;
+        }
+        if (!isNullOrUndefined(this.restartIndexForFootnotes) && this.restartIndexForFootnotes !== format.restartIndexForFootnotes) {
+            this.restartIndexForFootnotes = undefined;
+        }
+        if (!isNullOrUndefined(this.footNoteNumberFormat) && this.footNoteNumberFormat !== format.footNoteNumberFormat) {
+            this.footNoteNumberFormat = undefined;
+        }
+        if (!isNullOrUndefined(this.initialFootNoteNumber) && this.initialFootNoteNumber !== format.initialFootNoteNumber) {
+            this.initialFootNoteNumber = undefined;
+        }
+        if (!isNullOrUndefined(this.initialEndNoteNumber) && this.initialEndNoteNumber !== format.initialEndNoteNumber) {
+            this.initialEndNoteNumber = undefined;
+        }
     }
     /**
      * Clears the format.
@@ -1474,6 +1597,12 @@ export class SelectionSectionFormat {
         this.bidi = undefined;
         this.pageStartingNumber = undefined;
         this.restartPageNumbering = undefined;
+        this.endnoteNumberFormat = undefined;
+        this.footNoteNumberFormat = undefined;
+        this.restartIndexForFootnotes = undefined;
+        this.restartIndexForEndnotes = undefined;
+        this.initialFootNoteNumber = 1;
+        this.initialEndNoteNumber = 1;
     }
     /**
      * Destroys the managed resources.
@@ -1495,6 +1624,12 @@ export class SelectionSectionFormat {
         this.bidi = undefined;
         this.pageStartingNumberIn = undefined;
         this.restartPageNumberingIn = undefined;
+        this.endnoteNumberFormatIn = undefined;
+        this.footNoteNumberFormatIn = undefined;
+        this.restartIndexForFootnotesIn = undefined;
+        this.restartIndexForEndnotesIn = undefined;
+        this.initialEndNoteNumber = undefined;
+        this.initialFootNoteNumber = undefined;
     }
 }
 /**

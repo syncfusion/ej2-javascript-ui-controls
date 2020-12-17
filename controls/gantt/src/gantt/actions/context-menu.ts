@@ -29,7 +29,7 @@ export class ContextMenu {
     /**
      * @private
      */
-    public isOpen: Boolean;
+    public isOpen: boolean;
     /**
      * @private
      */
@@ -125,7 +125,7 @@ export class ContextMenu {
                     data[taskfields.parentID] = null;
                 }
                 if (this.rowData) {
-                    let rowIndex: number = this.parent.currentViewData.indexOf(this.rowData);
+                    let rowIndex: number = this.parent.updatedRecords.indexOf(this.rowData);
                     this.parent.addRecord(data, position, rowIndex);
                 }
                 break;
@@ -223,10 +223,10 @@ export class ContextMenu {
     private getClickedDate(element: HTMLElement): Date {
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         // context menu click position
-        let containerPosition: { top: number, left: number } = this.parent.getOffsetRect(element);
-
+        let ganttElementPosition: { top: number, left: number } = this.parent.getOffsetRect(this.parent.element);
+        let ganttLeft: number = ganttElementPosition.left - this.parent.element.offsetLeft;
         // task left position
-        let pageLeft: number = this.parent.element.offsetLeft + this.parent.ganttChartModule.chartElement.offsetLeft +
+        let pageLeft: number = ganttLeft + this.parent.ganttChartModule.chartElement.offsetLeft +
             this.rowData.ganttProperties.left - this.parent.ganttChartModule.scrollElement.scrollLeft;
 
         // difference from task start date to current click position. 
@@ -249,8 +249,8 @@ export class ContextMenu {
         }
         args.gridRow = closest(target, '.e-row');
         args.chartRow = closest(target, '.e-chart-row');
-        let menuElement: Element = closest(target as Element, '.e-gantt');
-        let editForm: Element = closest(target as Element, cons.editForm);
+        let menuElement: Element = closest(target, '.e-gantt');
+        let editForm: Element = closest(target, cons.editForm);
         if (!editForm && this.parent.editModule && this.parent.editModule.cellEditModule
             && this.parent.editModule.cellEditModule.isCellEdit && this.parent.editModule.dialogModule.dialogObj
             && !this.parent.editModule.dialogModule.dialogObj.open) {
@@ -258,8 +258,11 @@ export class ContextMenu {
             this.parent.editModule.cellEditModule.isCellEdit = false;
         }
         if (this.parent.readOnly) {
+            /* tslint:disable-next-line */
             this.contextMenu.enableItems(
-                ['Add', 'Save', 'Convert', 'Delete Dependency', 'Delete Task', 'TaskMode', 'Indent', 'Outdent'], false);
+                ['Add', 'Save', 'Convert', 'Delete Dependency', 'Delete Task', 'TaskMode', 'Indent', 'Outdent', 'SplitTask', 'MergeTask'],
+                false
+            );
         }
         if ((isNullOrUndefined(args.gridRow) && isNullOrUndefined(args.chartRow)) || this.contentMenuItems.length === 0) {
             if (!isNullOrUndefined(args.parentItem) && !isNullOrUndefined(menuElement)) {
@@ -273,18 +276,18 @@ export class ContextMenu {
             if (args.gridRow) {
                 rowIndex = parseInt(args.gridRow.getAttribute('aria-rowindex'), 0);
             } else if (args.chartRow) {
-                rowIndex = parseInt(getValue('rowIndex', args.chartRow), 0);
+                rowIndex = parseInt(args.chartRow.getAttribute('aria-rowindex'), 0);
             }
-            if (this.parent.selectionModule && this.parent.allowSelection) {
+            if (this.parent.selectionModule && this.parent.allowSelection && !args.parentItem && !isNullOrUndefined(args.chartRow)) {
                 this.parent.selectionModule.selectRow(rowIndex);
             }
             if (!args.parentItem) {
-                this.rowData = this.parent.currentViewData[rowIndex];
+                this.rowData = this.parent.updatedRecords[rowIndex];
             }
             for (let item of args.items) {
                 // let target: EventTarget = target;
                 if (!item.separator) {
-                    this.updateItemStatus(item, target);
+                    this.updateItemStatus(item, target, rowIndex);
                 }
             }
             args.rowData = this.rowData;
@@ -296,18 +299,18 @@ export class ContextMenu {
                 return;
             }
             let callBackPromise: Deferred = new Deferred();
-            this.parent.trigger('contextMenuOpen', args, (args: CMenuOpenEventArgs) => {
-                callBackPromise.resolve(args);
+            this.parent.trigger('contextMenuOpen', args, (arg: CMenuOpenEventArgs) => {
+                callBackPromise.resolve(arg);
                 if (isBlazor()) {
-                    args.element = !isNullOrUndefined(args.element) ? getElement(args.element) : args.element;
-                    args.gridRow = !isNullOrUndefined(args.gridRow) ? getElement(args.gridRow) : args.gridRow;
-                    args.chartRow = !isNullOrUndefined(args.chartRow) ? getElement(args.chartRow) : args.chartRow;
+                    arg.element = !isNullOrUndefined(arg.element) ? getElement(arg.element) : arg.element;
+                    arg.gridRow = !isNullOrUndefined(arg.gridRow) ? getElement(arg.gridRow) : arg.gridRow;
+                    arg.chartRow = !isNullOrUndefined(arg.chartRow) ? getElement(arg.chartRow) : arg.chartRow;
                 }
-                this.hideItems = args.hideItems;
-                this.disableItems = args.disableItems;
-                if (!args.parentItem && args.hideItems.length === args.items.length) {
+                this.hideItems = arg.hideItems;
+                this.disableItems = arg.disableItems;
+                if (!arg.parentItem && arg.hideItems.length === arg.items.length) {
                     this.revertItemStatus();
-                    args.cancel = true;
+                    arg.cancel = true;
                 }
                 if (this.hideItems.length > 0) {
                     this.contextMenu.hideItems(this.hideItems);
@@ -320,10 +323,12 @@ export class ContextMenu {
         }
     }
 
-    private updateItemStatus(item: ContextMenuItemModel, target: EventTarget): void {
+    /* tslint:disable-next-line:max-func-body-length */
+    private updateItemStatus(item: ContextMenuItemModel, target: EventTarget, rowIndex: number): void {
         let key: string = this.getKeyFromId(item.id);
         let editForm: Element = closest(target as Element, cons.editForm);
-        let ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
+        let subMenu: ContextMenuItemModel[] = [];
+        let taskbarElement: Element = closest(target as Element, '.e-gantt-child-taskbar');
         if (editForm) {
             if (!(key === 'Save' || key === 'Cancel')) {
                 this.hideItems.push(item.text);
@@ -350,7 +355,6 @@ export class ContextMenu {
                     } else if (!this.parent.editSettings.allowEditing || !this.parent.editModule) {
                         this.updateItemVisibility(item.text);
                     } else {
-                        let subMenu: ContextMenuItemModel[] = [];
                         if (!this.rowData.ganttProperties.isMilestone) {
                             subMenu.push(
                                 this.createItemModel(cons.content, 'ToMilestone', this.getLocale('toMilestone')));
@@ -377,7 +381,6 @@ export class ContextMenu {
                     }
                     break;
                 case 'TaskMode':
-                    let subMenu: ContextMenuItemModel[] = [];
                     if (this.parent.taskMode !== 'Custom') {
                         this.updateItemVisibility(item.text);
                     } else {
@@ -392,31 +395,37 @@ export class ContextMenu {
                     }
                     break;
                 case 'Indent':
-                    let index : number = this.parent.selectedRowIndex;
+                    let index: number = this.parent.selectedRowIndex;
                     let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
                         this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-                    let prevRecord: IGanttData = this.parent.currentViewData[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+                    let prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
                     if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
-                        this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level - prevRecord.level === 1) {
-                        this.hideItems.push(item.text);
+                        this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
+                        this.updateItemVisibility(item.text);
                     }
                     break;
                 case 'Outdent':
+                    let ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
                     let isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
                         this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
                     if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
-                        this.parent.viewType === 'ResourceView' || this.parent.currentViewData[ind].level === 0) {
-                        this.hideItems.push(item.text);
+                        this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[ind].level === 0) {
+                        this.updateItemVisibility(item.text);
                     }
                     break;
                 case 'SplitTask':
                     let taskSettings: TaskFieldsModel = this.parent.taskFields;
-                    if (isNullOrUndefined(taskSettings.segments) || this.parent.currentViewData[ind].hasChildRecords) {
-                        this.hideItems.push(item.text);
+                    if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
+                        this.parent.currentViewData[rowIndex].hasChildRecords) {
+                        this.updateItemVisibility(item.text);
                     }
                     break;
                 case 'MergeTask':
-                    this.mergeItemVisiblity(target as HTMLElement, item);
+                    if (this.parent.readOnly || !taskbarElement) {
+                        this.updateItemVisibility(item.text);
+                    } else {
+                        this.mergeItemVisiblity(target as HTMLElement, item);
+                    }
                     break;
             }
         }
@@ -429,7 +438,7 @@ export class ContextMenu {
         let segments: ITaskSegment[] = this.rowData.ganttProperties.segments;
         if (!isNullOrUndefined(segments) && segments.length > 0) {
             if (isNullOrUndefined(taskfields.segments) && this.segmentIndex === -1) {
-                this.hideItems.push(item.text);
+                this.updateItemVisibility(item.text);
             } else {
                 if (this.segmentIndex === 0) {
                     subMenu.push(this.createItemModel(cons.content, 'Right', this.getLocale('right')));
@@ -455,7 +464,7 @@ export class ContextMenu {
     }
     private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
-        let firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide)')[0] as Element;
+        let firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide)')[0];
         addClass([firstMenuItem], 'e-focused');
     }
 

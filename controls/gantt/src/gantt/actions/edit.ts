@@ -55,7 +55,7 @@ export class Edit {
     private taskbarMoved: boolean = false;
     private predecessorUpdated: boolean = false;
     public newlyAddedRecordBackup: IGanttData;
-    public isBreakLoop: Boolean = false;
+    public isBreakLoop: boolean = false;
     public addRowSelectedItem: IGanttData;
     public cellEditModule: CellEdit;
     public taskbarEditModule: TaskbarEdit;
@@ -537,7 +537,7 @@ export class Edit {
                 switch (taskType) {
                     case 'FixedUnit':
                         if (isAutoSchedule && ganttProp.resourceInfo.length &&
-                            (column === 'work' || ((column === 'resource')))) {
+                            (column === 'work' || (column === 'resource'))) {
                             this.parent.dataOperation.updateDurationWithWork(currentData);
                         } else if (!isAutoSchedule && column === 'work') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
@@ -1087,7 +1087,6 @@ export class Edit {
     public initiateSaveAction(args: ITaskbarEditedEventArgs): void {
         this.parent.showSpinner();
         let eventArgs: IActionBeginEventArgs = {};
-        let modifiedTaskData: IGanttData[] = [];
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
@@ -1097,20 +1096,19 @@ export class Edit {
         }
         if (isBlazor()) {
             eventArgs = this.parent.updateDataArgs(eventArgs);
-            modifiedTaskData = eventArgs.modifiedTaskData;
         }
-        this.parent.trigger('actionBegin', eventArgs, (eventArgs: IActionBeginEventArgs) => {
-            if (eventArgs.cancel) {
+        this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
+            if (eventArg.cancel) {
                 this.reUpdatePreviousRecords();
                 this.parent.chartRowsModule.refreshRecords([args.data]);
                 this.resetEditProperties();
                 // Trigger action complete event with save canceled request type
             } else {
-                eventArgs.modifiedTaskData = getTaskData(eventArgs.modifiedRecords);
+                eventArg.modifiedTaskData = getTaskData(eventArg.modifiedRecords);
                 if (isRemoteData(this.parent.dataSource)) {
                     let data: DataManager = this.parent.dataSource as DataManager;
                     let updatedData: object = {
-                        changedRecords: eventArgs.modifiedTaskData
+                        changedRecords: eventArg.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
                     let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
@@ -1348,7 +1346,7 @@ export class Edit {
         if (this.parent.dataSource instanceof DataManager && this.parent.dataSource.dataSource.json.length > 0) {
             data = this.parent.dataSource.dataSource.json;
         } else {
-            data = this.parent.currentViewData as IGanttData[];
+            data = this.parent.currentViewData;
         }
         dataSource = this.parent.dataSource;
         let deletedRow: IGanttData = record;
@@ -1378,7 +1376,7 @@ export class Edit {
             }
             this.updateTreeGridUniqueID(deletedRow, 'delete');
             //method to delete the record from datasource collection
-            if (deletedRow && !this.parent.taskFields.parentID) {
+            if (!this.parent.taskFields.parentID) {
                 let deleteRecordIDs: string[] = [];
                 deleteRecordIDs.push(deletedRow.ganttProperties.rowUniqueID.toString());
                 this.parent.editModule.removeFromDataSource(deleteRecordIDs);
@@ -1541,14 +1539,14 @@ export class Edit {
     private confirmDeleteOkButton(): void {
         this.deleteSelectedItems();
         this.confirmDialog.hide();
-        let focussedElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-treegrid');
+        let focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
         focussedElement.focus();
     }
     /**
      * @private
      */
     public startDeleteAction(): void {
-        if (this.parent.editSettings.allowDeleting) {
+        if (this.parent.editSettings.allowDeleting && !this.parent.readOnly) {
             if (this.parent.editSettings.showDeleteConfirmDialog) {
                 this.confirmDialog.show();
             } else {
@@ -1661,7 +1659,6 @@ export class Edit {
     }
 
     private deleteRow(tasks: IGanttData[]): void {
-        let flatData: IGanttData[] = this.parent.flatData;
         let rowItems: IGanttData[] = tasks && tasks.length ? tasks :
             this.parent.selectionModule.getSelectedRecords();
         if (rowItems.length) {
@@ -1813,7 +1810,7 @@ export class Edit {
         }
     }
     private updatePredecessorOnUpdateId(currentGanttRecord: IGanttData, cId: string, nId: string): void {
-        if (this.parent.currentViewData.indexOf(currentGanttRecord) > -1) {
+        if (this.parent.flatData.indexOf(currentGanttRecord) > -1) {
             let pred: IPredecessor[] = currentGanttRecord.ganttProperties.predecessor;
             for (let j: number = 0; j < pred.length; j++) {
                 let pre: IPredecessor = pred[j];
@@ -1847,11 +1844,10 @@ export class Edit {
 
     public removeFromDataSource(deleteRecordIDs: string[]): void {
         let dataSource: Object[];
-        let taskFields: TaskFieldsModel = this.parent.taskFields;
         if (this.parent.dataSource instanceof DataManager) {
-            dataSource = this.parent.dataSource.dataSource.json as Object[];
+            dataSource = this.parent.dataSource.dataSource.json;
         } else {
-            dataSource = this.parent.dataSource as Object[];
+            dataSource = this.parent.dataSource;
         }
         this.removeData(dataSource, deleteRecordIDs);
         this.isBreakLoop = false;
@@ -1892,8 +1888,8 @@ export class Edit {
             blazorArgs.modifiedTaskData = eventArgs.modifiedTaskData;
             blazorArgs.data = eventArgs.data;
         }
-        this.parent.trigger('actionBegin', eventArgs, (eventArgs: IActionBeginEventArgs) => {
-            if (eventArgs.cancel) {
+        this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
+            if (eventArg.cancel) {
                 let deleteRecords: IGanttData[] = this.deletedTaskDetails;
                 for (let d: number = 0; d < deleteRecords.length; d++) {
                     deleteRecords[d].isDelete = false;
@@ -1907,8 +1903,8 @@ export class Edit {
                     let data: DataManager = this.parent.dataSource as DataManager;
                     let updatedData: object = {
                         /* tslint:disable-next-line */
-                        deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[]) : getTaskData(eventArgs.data as IGanttData[]), // to check
-                        changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArgs.modifiedTaskData
+                        deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[]) : getTaskData(eventArg.data as IGanttData[]), // to check
+                        changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArg.modifiedTaskData
                     };
                     if (isBlazor()) {
                         let blazAddedRec: string = 'addedRecords';
@@ -2175,7 +2171,6 @@ export class Edit {
                 this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
             } else if (predecessorCollection[count].from === parentRecordTaskData.rowUniqueID.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].to);
-                let stringPredecessor: string = this.predecessorToString(childRecord.ganttProperties.predecessor, parentRecord);
                 let prdcList: string[] = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
                 let str: string = predecessorCollection[count].from + predecessorCollection[count].type;
                 let ind: number = prdcList.indexOf(str);
@@ -2442,11 +2437,11 @@ export class Edit {
                 this.parent.selectionModule ?
                     (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both') &&
                         this.parent.selectionModule.selectedRowIndexes.length === 1 ?
-                        this.parent.selectionModule.selectedRowIndexes[0] :
+                        this.parent.updatedRecords.indexOf(this.parent.selectionModule.getSelectedRecords()[0]) :
                         this.parent.selectionSettings.mode === 'Cell' &&
-                            this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ?
                             this.parent.selectionModule.getSelectedRowCellIndexes()[0].rowIndex : null : null : rowIndex;
-            this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.currentViewData[selectedRowIndex];
+            this.addRowSelectedItem = isNullOrUndefined(selectedRowIndex) ? null : this.parent.updatedRecords[selectedRowIndex];
             rowPosition = isNullOrUndefined(rowPosition) ? this.parent.editSettings.newRowPosition : rowPosition;
             data = isNullOrUndefined(data) ? this.parent.editModule.dialogModule.composeAddRecord() : data;
             if (((isNullOrUndefined(selectedRowIndex) || selectedRowIndex < 0 ||
@@ -2702,15 +2697,15 @@ export class Edit {
         let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         let dropIndex: number;
-        let prevRecord: IGanttData = this.parent.currentViewData[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        let prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
         if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
-            this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level - prevRecord.level === 1) {
+            this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
             return;
         } else {
             if (prevRecord.level > (this.parent.selectionModule.getSelectedRecords()[0] as IGanttData).level) {
                 let thisParent: IGanttData = this.parent.getTaskByUniqueID(prevRecord.parentItem.uniqueID);
                 for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                    if ((this.parent.currentViewData[i] as IGanttData).taskData === thisParent.taskData) {
+                    if ((this.parent.currentViewData[i]).taskData === thisParent.taskData) {
                         dropIndex = i;
                     }
                 }
@@ -2730,16 +2725,12 @@ export class Edit {
         let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         if (!this.parent.editSettings.allowEditing || index === -1 || index === 0 || !isSelected ||
-            this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level === 0) {
+            this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level === 0) {
             return;
         } else {
             let thisParent: IGanttData = this.parent.getTaskByUniqueID((this.parent.selectionModule.getSelectedRecords()[0] as
                 IGanttData).parentItem.uniqueID);
-            for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                if ((this.parent.currentViewData[i] as IGanttData).taskData === thisParent.taskData) {
-                    dropIndex = i;
-                }
-            }
+            dropIndex = this.parent.updatedRecords.indexOf(thisParent);
             this.indentOutdentRow([index], dropIndex, 'below');
         }
     }
@@ -2757,7 +2748,7 @@ export class Edit {
             let action: string;
             let record: IGanttData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
-                record[i] = this.parent.currentViewData[fromIndexes[i]];
+                record[i] = this.parent.updatedRecords[fromIndexes[i]];
             }
             let isByMethod: boolean = true;
             let args: RowDropEventArgs = {
@@ -2775,8 +2766,8 @@ export class Edit {
                 data: record[0],
                 cancel: false
             };
-            this.parent.trigger('actionBegin', actionArgs, (actionArgs: IActionBeginEventArgs) => {
-                if (!actionArgs.cancel) {
+            this.parent.trigger('actionBegin', actionArgs, (actionArg: IActionBeginEventArgs) => {
+                if (!actionArg.cancel) {
                     this.reArrangeRows(args, isByMethod);
                 } else {
                     return;
@@ -2790,7 +2781,7 @@ export class Edit {
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             let obj: Gantt = this.parent; let draggedRec: IGanttData; let droppedRec: IGanttData;
-            this.droppedRecord = obj.currentViewData[args.dropIndex];
+            this.droppedRecord = obj.updatedRecords[args.dropIndex];
             let dragRecords: IGanttData[] = [];
             droppedRec = this.droppedRecord;
             if (!args.data[0]) {
@@ -3114,7 +3105,6 @@ export class Edit {
         }
     }
     private removeChildItem(record: IGanttData): void {
-        let obj: Gantt = this.parent;
         let currentRec: IGanttData;
         let indx: number;
         for (let i: number = 0; i < record.childRecords.length; i++) {
@@ -3125,9 +3115,9 @@ export class Edit {
             } else {
                 data = this.parent.dataSource;
             }
-            for (let i: number = 0; i < (<IGanttData[]>data).length; i++) {
-                if (data[i][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
-                    indx = i;
+            for (let j: number = 0; j < (<IGanttData[]>data).length; j++) {
+                if (data[j][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
+                    indx = j;
                 }
             }
             if (indx !== -1) {

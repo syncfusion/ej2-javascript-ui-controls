@@ -4703,7 +4703,7 @@ describe(' EJ242851 => Column Selection testing', () => {
                 allowPaging: true,
                 pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
                 allowSelection: true,
-                selectionSettings: { type: 'Multiple', mode: 'Column' },
+                selectionSettings: { type: 'Multiple', allowColumnSelection: true },
             }, done);
     });
 

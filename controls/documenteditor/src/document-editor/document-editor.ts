@@ -4,7 +4,7 @@ import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs } from './index';
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, CommentDeleteEventArgs, BeforeFileOpenArgs, CommentActionEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -39,6 +39,7 @@ import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-dro
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
+import { NotesDialog } from './implementation/dialogs/notes-dialog';
 
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -192,6 +193,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public pageSetupDialogModule: PageSetupDialog;
+    /**
+     * @private
+     */
+    public footNotesDialogModule: NotesDialog;
     /**
      * @private
      */
@@ -425,6 +430,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enableBordersAndShadingDialog: boolean;
+    /**
+     * Gets or sets a value indicating whether notes dialog is enabled or not.
+     * @default false
+     */
+    @Property(false)
+    public enableFootnoteAndEndnoteDialog: boolean;
     /**
      * Gets or sets a value indicating whether margin dialog is enabled or not.
      * @default false
@@ -676,6 +687,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public commentDelete: EmitType<CommentDeleteEventArgs>;
+    /**
+     * Triggers on comment actions(Post, edit, reply, resolve, reopen).
+     * @event
+     */
+    @Event()
+    public beforeCommentAction: EmitType<CommentActionEventArgs>;
     /**
      * Triggers when TrackChanges enabled / disabled.
      * @blazorproperty 'OnTrackChange'
@@ -1039,6 +1056,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.paragraphDialogModule) {
                 this.paragraphDialogModule.initParagraphDialog(l10n);
             }
+            if (this.footNotesDialogModule) {
+                this.footNotesDialogModule.notesDialog(l10n, enableRtl);
+            }
             if (this.pageSetupDialogModule) {
                 this.pageSetupDialogModule.initPageSetupDialog(l10n, enableRtl);
             }
@@ -1237,6 +1257,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * Shows the Footnote dialog
+     * @private
+     */
+    public showFootNotesDialog(): void {
+        if (this.footNotesDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.footNotesDialogModule.show();
+        }
+    }
+    /**
      * Shows the font dialog
      * @private
      */
@@ -1432,6 +1461,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     member: 'PageSetupDialog', args: [this.documentHelper]
                 });
             }
+            if (this.enableFootnoteAndEndnoteDialog) {
+                modules.push({
+                    member: 'FootNotesDialog', args: [this.documentHelper]
+                });
+            }
             if (this.enableStyleDialog) {
                 modules.push({
                     member: 'StylesDialog', args: [this.documentHelper]
@@ -1506,6 +1540,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Row': 'Row',
         'Cell': 'Cell',
         'Ok': 'OK',
+        'Apply': 'Apply',
         'Cancel': 'Cancel',
         'Size': 'Size',
         'Preferred Width': 'Preferred width',
@@ -1540,6 +1575,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Width': 'Width',
         'Height': 'Height',
         'Letter': 'Letter',
+        '1, 2, 3, ...': '1, 2, 3, ...',
+        'a, b, c, ...': 'a, b, c, ...',
+        'A, B, C, ...': 'A, B, C, ...',
+        'I, II, III, ...': 'I, II, III, ...',
+        'i, ii, iii, ...': 'i, ii, iii, ...',
         'Tabloid': 'Tabloid',
         'Legal': 'Legal',
         'Statement': 'Statement',
@@ -1717,6 +1757,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Create New Style': 'Create New Style',
         'Modify Style': 'Modify Style',
         'New': 'New',
+        'InsertFootnote': 'InsertFootnote',
+        'InsertEndnote': 'InsertEndnote',
+        'Footnote': 'Footnote',
+        'Endnote': 'Endnote',
+        'Notes Options': 'Notes Options',
         'Bullets': 'Bullets',
         'Use bookmarks': 'Use bookmarks',
         'Table of Contents': 'Table of Contents',
@@ -1862,7 +1907,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'This region is locked by': 'This region is locked by',
         'Lock': 'Lock',
         'Unlock': 'Unlock',
-        'Already locked': 'Selected or part of region is already locked by another user'
+        'Already locked': 'Selected or part of region is already locked by another user',
+        'Click to View/Edit Footnote': 'Click to View/Edit Footnote',
+        'Click to View/Edit Endnote': 'Click to View/Edit Endnote'
     };
     // Public Implementation Starts
     /**
@@ -1916,12 +1963,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableSelection = this.enableContextMenu = this.enableSearch = this.enableOptionsPane
             = this.enableEditor = this.enableImageResizer = this.enableEditorHistory
             = this.enableHyperlinkDialog = this.enableTableDialog = this.enableBookmarkDialog
-            = this.enableTableOfContentsDialog = this.enablePageSetupDialog = this.enableStyleDialog
+            = this.enableTableOfContentsDialog = this.enableFootnoteAndEndnoteDialog
+            = this.enablePageSetupDialog = this.enableStyleDialog
             = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
             = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
-            = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment = this.enableFormField = true;
+            = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
+            = this.enableFormField = true;
         // tslint:disable-next-line:max-line-length
-        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog);
+        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog);
     }
     /**
      * Resizes the component and its sub elements based on given size or container size.
@@ -2392,6 +2441,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.pageSetupDialogModule) {
             this.pageSetupDialogModule.destroy();
             this.pageSetupDialogModule = undefined;
+        }
+        if (this.footNotesDialogModule) {
+            this.footNotesDialogModule.destroy();
+            this.footNotesDialogModule = undefined;
         }
         if (this.fontDialogModule) {
             this.fontDialogModule.destroy();

@@ -351,11 +351,13 @@ var Input;
             var parentElement = getParentNode(element);
             if (!isNullOrUndefined(parentElement)) {
                 var button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-                if (element.value && parentElement.classList.contains('e-input-focus')) {
-                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
-                else {
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                if (!isNullOrUndefined(button)) {
+                    if (element.value && parentElement.classList.contains('e-input-focus')) {
+                        removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
+                    else {
+                        addClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
                 }
             }
         }
@@ -840,6 +842,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isVue = false;
         _this.preventChange = false;
+        _this.isAngular = false;
+        _this.isDynamicChange = false;
         _this.numericOptions = options;
         return _this;
     }
@@ -1444,6 +1448,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     
     NumericTextBox.prototype.inputHandler = function (event) {
+        // tslint:disable-next-line
+        var numerictextboxObj = this;
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -1451,6 +1457,15 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         var fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
+        }
+        /* istanbul ignore next */
+        if (this.isAngular
+            && this.element.value !== getValue('decimal', getNumericObject(this.locale))
+            && this.element.value !== getValue('minusSign', getNumericObject(this.locale))) {
+            var parsedValue = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            parsedValue = isNaN(parsedValue) ? null : parsedValue;
+            numerictextboxObj.localChange({ value: parsedValue });
+            this.preventChange = true;
         }
         if (this.isVue) {
             var current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
@@ -1522,7 +1537,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+        /* istanbul ignore next */
+        if (!this.isDynamicChange) {
             this.raiseChangeEvent(event);
         }
     };
@@ -1964,9 +1980,11 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                     this.floatLabelTypeUpdate();
                     break;
                 case 'value':
+                    this.isDynamicChange = (this.isAngular || this.isVue) && this.preventChange;
                     this.updateValue(newProp.value);
-                    if (this.isVue && this.preventChange) {
+                    if (this.isDynamicChange) {
                         this.preventChange = false;
+                        this.isDynamicChange = false;
                     }
                     break;
                 case 'min':
@@ -2745,7 +2763,13 @@ function triggerMaskChangeEvent(event, oldValue) {
         this.value = this.changeEventArgs.value;
         this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
-        this.trigger('change', eventArgs);
+        /* istanbul ignore next */
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);
@@ -3214,6 +3238,8 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
     function MaskedTextBox(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.initInputValue = '';
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.maskOptions = options;
         return _this;
     }
@@ -4583,10 +4609,10 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.checkTooltipPosition = function (args) {
+        var tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
         if (this.tooltipCollidedPosition === undefined ||
-            this.tooltipCollidedPosition !== args.collidedPosition) {
+            this.tooltipCollidedPosition !== args.collidedPosition || !args.element.classList.contains(tooltipClass)) {
             if (this.isMaterialTooltip) {
-                var tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
                 if (tooltipClass !== undefined) {
                     args.element.classList.remove(this.previousTooltipClass);
                     args.element.classList.add(tooltipClass);
@@ -6388,6 +6414,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
+        }
+        if (isBlazor() && this.isMaterialTooltip && !isNullOrUndefined(this.materialHandle)) {
+            this.materialHandle.remove();
         }
         if (!isBlazor() && !this.isServerRendered) {
             this.element.innerHTML = '';

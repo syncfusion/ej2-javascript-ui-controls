@@ -15,7 +15,7 @@ export class ViewBase {
         this.parent = parent;
     }
     public onDataReady(args: NotifyEventArgs): void {
-       // Need for events positioning
+        // Need for events positioning
     }
     public getScrollXIndent(content: HTMLElement): number {
         return content.offsetHeight - content.clientHeight > 0 ? util.getScrollBarWidth() : 0;

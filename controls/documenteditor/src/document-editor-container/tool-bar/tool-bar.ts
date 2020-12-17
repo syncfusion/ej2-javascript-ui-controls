@@ -40,6 +40,8 @@ const UPDATE_FIELDS_ID: string = '_update_fields';
 const TEXT_FORM: string = '_text_form';
 const CHECKBOX: string = '_checkbox';
 const DROPDOWN: string = '_dropdown';
+const FOOTNOTE_ID: string = '_footnote';
+const ENDNOTE_ID: string = '_endnote';
 
 /**
  * Toolbar Module
@@ -469,6 +471,20 @@ export class Toolbar {
                         cssClass: className + ' e-de-formfields'
                     });
                     break;
+                case 'InsertFootnote':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-footnote', tooltipText: locale.getConstant('Footnote Tooltip'),
+                        text: this.onWrapText(locale.getConstant('Insert Footnote')), id: id + FOOTNOTE_ID,
+                        cssClass: className
+                    });
+                    break;
+                case 'InsertEndnote':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-endnote', tooltipText: locale.getConstant('Endnote Tooltip'),
+                        text: this.onWrapText(locale.getConstant('Insert Endnote')), id: id + ENDNOTE_ID,
+                        cssClass: className
+                    });
+                    break;
                 default:
                     //Here we need to process the items
                     toolbarItems.push(tItem[i]);
@@ -533,6 +549,12 @@ export class Toolbar {
                 break;
             case id + UPDATE_FIELDS_ID:
                 this.documentEditor.updateFields();
+                break;
+            case id + FOOTNOTE_ID:
+                this.documentEditor.editor.insertFootnote();
+                break;
+            case id + ENDNOTE_ID:
+                this.documentEditor.editor.insertEndnote();
                 break;
             default:
                 this.container.trigger('toolbarClick', args);
@@ -728,7 +750,8 @@ export class Toolbar {
                     itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
                     itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
                     itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
-                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID && itemId !== id + TRACK_ID) {
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID && itemId !== id + TRACK_ID
+                    && itemId !== id + FOOTNOTE_ID && itemId !== id + ENDNOTE_ID) {
                     continue;
                 }
                 let element: HTMLElement = document.getElementById(item.id);
@@ -737,6 +760,11 @@ export class Toolbar {
         }
         if (!isNullOrUndefined(this.documentEditor)) {
             this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
+        }
+        if (this.documentEditor.selection.isinFootnote || this.documentEditor.selection.isinEndnote) {
+            enable = false;
+            this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, enable);
+            this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, enable);
         }
         if (!isProtectedContent || this.container.showPropertiesPane) {
             if (isProtectedContent) {

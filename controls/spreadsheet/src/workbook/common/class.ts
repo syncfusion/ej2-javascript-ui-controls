@@ -1,5 +1,5 @@
 import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
-import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell } from './enum';
+import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, chartType, chartTheme } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
 import { CellStyleModel, FormatModel } from './class-model';
 import { CellModel } from '../base';
@@ -268,6 +268,7 @@ export class Format extends ChildProperty<FormatModel> {
      * Specifies the number format code to display value in specified number format.
      * @default 'General'
      */
+    @Property('General')
     public format: string;
 
     /**
@@ -277,6 +278,12 @@ export class Format extends ChildProperty<FormatModel> {
     @Complex<CellStyleModel>({}, CellStyle)
     public style: CellStyleModel;
 
+    /**
+     * Specifies the range is locked or not, for allow edit range in spreadsheet protect option.
+     * @default true
+     */
+    @Property(true)
+    public isLocked: boolean;
 }
 
 /**    
@@ -318,6 +325,46 @@ export class ConditionalFormat extends ChildProperty<ConditionalFormat> {
      */
     @Property('')
     public range: string;
+}
+
+/**
+ * Represents the Chart.
+ */
+export class Chart extends ChildProperty<CellModel> {
+    /**
+     * Specifies the type of a chart.
+     * @default 'Line'
+     */
+    @Property('Line')
+    public type: chartType;
+
+    /**
+     * Specifies the theme of a chart.
+     * @default 'Material'
+     */
+    @Property('Material')
+    public theme: chartTheme;
+
+    /**
+     * Specifies to switch the row or a column.
+     * @default false
+     */
+    @Property(false)
+    public isSeriesInRows: boolean;
+
+    /**
+     * Specifies the selected range or specified range.
+     * @default ''
+     */
+    @Property('')
+    public range: string;
+
+    /**
+     * Specifies chart element id.
+     * @default ''
+     */
+    @Property('')
+    public id: string;
 }
 
 /**

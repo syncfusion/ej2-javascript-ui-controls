@@ -138,3 +138,61 @@ export type ClearType =
     'Clear Contents' |
     /** Clear the hyperlinks applied in the provided range. */
     'Clear Hyperlinks';
+
+/**
+ * Chart type
+ */
+export type chartType =
+/**  Define the Column series. */
+'Column' |
+/**  Define the StackingColumn series. */
+'StackingColumn' |
+/** Define the StackingColumn100 series */
+'StackingColumn100' |
+/**  Define the line series. */
+'Line' |
+/**  Define the StackingLine series. */
+'StackingLine' |
+/** Define the StackingLine100 series */
+'StackingLine100' |
+/**  Define the Bar series. */
+'Bar' |
+/**  Define the StackingBar series. */
+'StackingBar' |
+/** Define the StackingBar100 series */
+'StackingBar100' |
+/**  Define the Area series. */
+'Area' |
+/**  Define the StackingArea series. */
+'StackingArea' |
+/** Define the StackingArea100 series */
+'StackingArea100' |
+/**  Define the Scatter series. */
+'Scatter' |
+/**  Define the Pie series. */
+'Pie' |
+/**  Define the Doughnut series. */
+'Doughnut';
+
+/**
+ * Chart theme
+ */
+export type chartTheme =
+/**  Render a chart with Material theme. */
+'Material' |
+/**  Render a chart with Fabric theme. */
+'Fabric' |
+/**  Render a chart with Bootstrap theme. */
+'Bootstrap' |
+/**  Render a chart with HighcontrastLight theme. */
+'HighContrastLight'|
+/**  Render a chart with MaterialDark theme. */
+'MaterialDark' |
+/**  Render a chart with FabricDark theme. */
+'FabricDark' |
+/**  Render a chart with HighContrast theme. */
+'HighContrast'|
+/**  Render a chart with BootstrapDark theme. */
+'BootstrapDark' |
+/**  Render a chart with Bootstrap4 theme. */
+'Bootstrap4';

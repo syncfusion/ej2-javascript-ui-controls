@@ -17,7 +17,7 @@ import { IBlazorDraggingEventArgs } from '../objects/interface/IElement';
 import { rotatePoint, cloneObject } from '../utility/base-util';
 import { Rect } from '../primitives/rect';
 import { getPolygonPath } from '../utility/path-util';
-import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOutConnect } from '../utility/constraints-util';
+import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOutConnect, canMove } from '../utility/constraints-util';
 import { HistoryEntry } from '../diagram/history';
 import { Matrix, transformPointByMatrix, rotateMatrix, identityMatrix } from '../primitives/matrix';
 import { Snap } from './../objects/snapping';
@@ -106,6 +106,8 @@ export class ToolBase {
 
     protected undoParentElement: SelectorModel = { nodes: [], connectors: [] };
 
+    protected mouseDownElement: (NodeModel | ConnectorModel);
+
     protected startAction(currentElement: IElement): void {
         this.currentElement = currentElement;
         this.inAction = true;
@@ -122,6 +124,8 @@ export class ToolBase {
         this.isTooltipVisible = true;
         this.startAction(args.source);
         this.checkProperty = true;
+        // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+        this.mouseDownElement = args.source;
     }
 
     public checkPropertyValue(): void {
@@ -157,6 +161,8 @@ export class ToolBase {
             this.commandHandler.getBlazorOldValues(args, this instanceof LabelDragTool);
         }
         this.endAction();
+        // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+        this.mouseDownElement = null;
     }
 
     protected endAction(): void {
@@ -317,13 +323,19 @@ export class SelectTool extends ToolBase {
         //draw selected region
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
-            this.commandHandler.clearSelectedItems();
-            this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
+            // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+            if (this.mouseDownElement && !canMove(this.mouseDownElement)) {
+                this.commandHandler.clearObjectSelection(this.mouseDownElement);
+            } else {
+                this.commandHandler.clearSelectedItems();
+                this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
+            }
         }
         return !this.blocked;
     }
 
-    /**   @private  */
+
+/**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         //rubber band selection

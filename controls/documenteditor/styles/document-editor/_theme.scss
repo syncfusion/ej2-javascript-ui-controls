@@ -741,6 +741,14 @@
     margin-top: $de-insert-table-title-top-margin;
   }
 
+  .e-de-insert-footnote-dlg-sub-header {
+    display: block;
+    font-size: 12px;
+    font-weight: normal;
+    margin-bottom: $de-insert-table-title-bottom-margin;
+    margin-top: $de-insert-table-title-top-margin;
+  }
+
   .e-de-insert-table-dlg-input {
     margin-bottom: $de-insert-table-dlg-input-bottom;
   }
@@ -1352,6 +1360,11 @@
   .e-de-insert-table {
     height: $de-insert-table-height;
     width: $de-insert-table-width;
+  }
+
+  .e-de-insert-footnote {
+    height: $de-insert-footnote-height;
+    width: $de-insert-footnote-width;
   }
 
   .e-de-insert-spellchecker {
@@ -2219,6 +2232,11 @@
 
   .e-bigger {
     .e-de-insert-table {
+      height: auto;
+      width: auto;
+    }
+
+    .e-de-insert-footnote {
       height: auto;
       width: auto;
     }

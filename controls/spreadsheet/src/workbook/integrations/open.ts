@@ -116,14 +116,14 @@ export class WorkbookOpen {
     /**
      * Adding event listener for workbook open. 
      */
-    public addEventListener(): void {
+    private addEventListener(): void {
         this.parent.on(workbookOpen, this.open.bind(this));
     }
 
     /**
      * Removing event listener workbook open.
      */
-    public removeEventListener(): void {
+    private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(workbookOpen, this.open.bind(this));
         }

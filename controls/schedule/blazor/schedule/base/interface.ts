@@ -239,9 +239,11 @@ export interface IScheduleOptions {
     allowInline: boolean;
     minDate: Date;
     maxDate: Date;
+    timeFormat : string;
     enableIndicator: boolean;
     enableMaxHeight: boolean;
     ignoreWhitespace: boolean;
+    enablePersistence: boolean;
 }
 
 export interface BlazorScheduleElement extends HTMLElement {

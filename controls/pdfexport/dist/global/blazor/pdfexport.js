@@ -35553,7 +35553,5 @@ exports.PdfGridCellCollection = PdfGridCellCollection;
 return exports;
 
 });
-sfBlazor.libs.push("pdfexport")
-sfBlazor.loadDependencies(["compression","fileutils"], () => {
+
     sf.pdfexport = sf.pdfexport({});
-});

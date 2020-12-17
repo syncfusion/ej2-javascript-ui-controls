@@ -1344,6 +1344,19 @@
     }
   }
 
+  .e-rte-file-manager-dialog {
+
+    .e-rte-label {
+      padding-bottom: 8px;
+      padding-top: 15px;
+
+      label {
+        font-size: 15px;
+        opacity: .87;
+      }
+    }
+  }
+
   // Blazor styles start
   .e-rte-upload-popup.e-dialog .e-file-select-wrap {
     display: none;

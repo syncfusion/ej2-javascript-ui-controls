@@ -215,6 +215,12 @@ export class TextPosition {
             } else {
                 widget = page.footerWidget;
             }
+        } else if (value === 'FN' || value === 'EN') {
+            if (value === 'FN') {
+                widget = page.footnoteWidget;
+            } else {
+                widget = page.endnoteWidget;
+            }
         } else if (!isNullOrUndefined(page)) {
             widget = page.bodyWidgets[0];
         }
@@ -385,7 +391,11 @@ export class TextPosition {
         let lineLength: number = this.selection.getLineLength(lineWidget);
         let lineIndex: number = lineWidget.paragraph.childWidgets.indexOf(lineWidget);
         if (lineWidget.isLastLine()) {
-            lineLength = lineLength + 1;
+            if (!isNullOrUndefined(lineWidget.paragraph.footNoteReference)) {
+                lineLength = lineLength + lineWidget.paragraph.footNoteReference.text.length;
+            } else {
+                lineLength = lineLength + 1;
+            }
         }
         if (offset > lineLength) {
             let nextLineWidget: LineWidget;

@@ -442,7 +442,11 @@ class SfToolbar {
         }
         for (let i: number = 0; i < items.length; i++) {
             let itemEleBlaDom: HTEle = this.element.querySelector('.' + BZ_ITEMS);
-            innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
+            if (this.options.overflowMode === 'MultiRow') {
+                innerItem = itemEleDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
+            } else {
+                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[id="' + items[i].id + '"]');
+            }
             if (!innerItem) {
                 continue;
             }
@@ -458,6 +462,9 @@ class SfToolbar {
             }
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
+            }
+            if (this.options.overflowMode === 'MultiRow') {
+                continue;
             }
             if (!this.tbarAlign) {
                 this.tbarItemAlign(items[i], itemEleDom, i);
@@ -476,8 +483,8 @@ class SfToolbar {
     public serverItemsRefresh(): void {
         let ele: HTEle = this.element;
         let wrapBlaEleDom: HTEle = <HTEle>ele.querySelector('.' + BZ_ITEMS);
-        if (wrapBlaEleDom.children.length > 0) {
-            let itemEleDom: HTEle = <HTEle>ele.querySelector('.' + CLS_ITEMS);
+        let itemEleDom: HTEle = <HTEle>ele.querySelector('.' + CLS_ITEMS);
+        if ((itemEleDom && itemEleDom.children.length > 0) || wrapBlaEleDom.children.length > 0) {
             if (!itemEleDom && ele && ele.classList.contains(CLS_TOOLBAR) && ele.firstElementChild) {
                 itemEleDom = createElement('div', { className: CLS_ITEMS });
                 ele.insertBefore(itemEleDom, ele.firstElementChild);
@@ -488,6 +495,9 @@ class SfToolbar {
         }
     }
     public resetServerItems(): void {
+        if (this.options.overflowMode === 'MultiRow') {
+            return;
+        }
         let wrapBlaEleDom: HTEle = <HTEle>this.element.querySelector('.' + BZ_ITEMS);
         let itemEles: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
         append(itemEles, wrapBlaEleDom);
@@ -973,7 +983,7 @@ class SfToolbar {
         let isVer: boolean = this.options.isVertical;
         let popNav: HTEle = <HTEle>ele.querySelector('.' + CLS_TBARNAV);
         let innerEle: HTEle = <HTEle>ele.querySelector('.' + CLS_ITEMS);
-        if (isNOU(popNav)) {
+        if (isNOU(popNav) || isNOU(innerEle)) {
             return;
         }
         innerEle.removeAttribute('style');

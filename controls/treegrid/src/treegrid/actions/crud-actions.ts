@@ -286,9 +286,13 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
             movableRow = <HTMLTableRowElement>control.getMovableRowByIndex(index);
         }
         if (!control.enableVirtualization && !isNullOrUndefined(row) || !isNullOrUndefined(movableRow)) {
+            let index: number = control.treeColumnIndex;
+            if (control.allowRowDragAndDrop && control.enableImmutableMode) {
+                index = index + 1;
+            }
             control.renderModule.cellRender({
-                data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
-                    : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
+                data: record, cell: row.cells[index] ? row.cells[index]
+                : movableRow.cells[index - control.frozenColumns],
                 column: control.grid.getColumns()[control.treeColumnIndex],
                 requestType: action
             });

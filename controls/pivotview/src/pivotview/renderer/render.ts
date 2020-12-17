@@ -97,6 +97,13 @@ export class Render {
                     this.frameDataSource('value')
             }, true);
             /* tslint:enable */
+            if (this.parent.grid.height == 'auto') {
+                let mCntHeight: number = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as any).offsetHeight;
+                let dataHeight: number = (this.parent.grid.dataSource as []).length * this.parent.gridSettings.rowHeight;
+                if (mCntHeight < dataHeight) {
+                    (this.parent.grid.contentModule as any).setHeightToContent(dataHeight);
+                }
+            }
             this.parent.grid.notify('datasource-modified', {});
             if (this.parent.isScrolling) {
                 this.parent.resizeInfo = {};
@@ -145,7 +152,7 @@ export class Render {
             setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
                 transform: ((mCont.querySelector('.e-table') as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
             });
-            mHdr.scrollLeft = mCont.scrollLeft;
+            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft;
         }
     }
     /** @hidden */
@@ -324,7 +331,7 @@ export class Render {
             }
             this.parent.gridHeaderCellInfo = [];
         }
-        if (this.parent.element.querySelector('.e-firstcell')) {
+        if (this.parent.element.querySelector('.e-firstcell') && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.columns.length > 0)) {
             if (this.parent.enableRtl) {
                 (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderRight = 'none';
             } else {
@@ -337,9 +344,6 @@ export class Render {
         /* tslint:disable-next-line */
         if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
-        }
-        if (this.parent.currentView !== 'Chart') {
-            this.parent.grid.hideScroll();
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
@@ -1552,10 +1556,10 @@ export class Render {
                     let contentWidth: number =
                         (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetWidth;
                     let horizontalOverflow: boolean = contentWidth < tableWidth;
-                    let verticalOverflow: boolean = contentHeight < tableHeight;
+                    //let verticalOverflow: boolean = contentHeight < tableHeight;
                     let commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow) {
+                        !commonOverflow) {
                         this.parent.grid.height = 'auto';
                     } else {
                         this.parent.grid.height = gridHeight;

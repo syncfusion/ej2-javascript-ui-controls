@@ -169,10 +169,11 @@ export class ProtectSheet {
             id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
             id + '_clear', id + '_conditionalformatting'];
         let enableFrmlaBtnId: string[] = [id + '_insert_function'];
-        let enableInsertBtnId: string[] = [id + '_hyperlink', id + '_'];
+        let enableInsertBtnId: string[] = [id + '_hyperlink', id + '_', id + '_chart'];
         let imageBtnId: string[] = [id + '_'];
         let findBtnId: string[] = [id + '_find'];
         let dataValidationBtnId: string[]  = [id + '_datavalidation'];
+        let chartBtnId: string[] = [id + '_chart'];
         let sheetElement: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_panel');
         if (sheetElement) {
         if ((sheet.isProtected && sheet.protectSettings.selectCells)) {
@@ -189,7 +190,7 @@ export class ProtectSheet {
         this.parent.dataBind();
         this.parent.notify( protectCellFormat, { disableHomeBtnId: disableHomeBtnId,
             enableHomeBtnId: enableHomeBtnId, enableFrmlaBtnId: enableFrmlaBtnId, enableInsertBtnId: enableInsertBtnId,
-            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId, imageBtnId: imageBtnId});
+            findBtnId: findBtnId, dataValidationBtnId: dataValidationBtnId, imageBtnId: imageBtnId, chartBtnId: chartBtnId });
         this.parent.notify(enableFormulaInput, null);
         this.parent.notify(updateToggleItem, { props: 'Protect' });
     }

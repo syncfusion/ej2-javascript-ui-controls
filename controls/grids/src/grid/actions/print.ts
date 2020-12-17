@@ -1,10 +1,11 @@
-import { print as printWindow, createElement, detach, classList, selectAll } from '@syncfusion/ej2-base';
+import { print as printWindow, createElement, detach, classList, selectAll, extend } from '@syncfusion/ej2-base';
 import { IGrid, PrintEventArgs } from '../base/interface';
 import { getPrintGridModel } from '../base/util';
 import { Scroll } from '../actions/scroll';
 import { Grid } from '../base/grid';
 import * as events from '../base/constant';
 import { Deferred } from '@syncfusion/ej2-data';
+import { Column } from '../models/column';
 
 /**
  * @hidden
@@ -99,6 +100,12 @@ export class Print {
         });
         document.body.appendChild(element);
         let printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
+        if (gObj.isFrozenGrid() && !gObj.getFrozenColumns()) {
+            for (let i: number = 0; i < printGrid.columns.length; i++) {
+                (printGrid.columns[i] as Column) = extend({}, printGrid.columns[i]) as Column;
+                (printGrid.columns[i] as Column).freeze = undefined;
+            }
+        }
         /* tslint:disable-next-line:no-any */
         if ((this.parent as any).isAngular ) {
             /* tslint:disable-next-line:no-any */

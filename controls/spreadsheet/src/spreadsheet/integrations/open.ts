@@ -44,7 +44,7 @@ export class Open {
         let uploadID: string = this.parent.element.id + '_fileUpload';
         this.parent.element.appendChild(this.parent.createElement('input', {
             id: uploadID,
-            attrs: { type: 'file', accept: '.xls, .xlsx, .csv', name: 'fileUpload' }
+            attrs: { type: 'file', accept: '.xls, .xlsx, .csv, .xlsm', name: 'fileUpload' }
         }));
         let uploadBox: HTMLElement = document.getElementById(uploadID);
         uploadBox.onchange = this.fileSelect.bind(this);

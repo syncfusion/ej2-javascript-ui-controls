@@ -526,39 +526,39 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
 
-        // it('cut testing', (done: Function) => {
-        //     helper.invoke('cut').then(() => {
-        //         helper.invoke('selectRange', ['K1']);
-        //         helper.triggerKeyNativeEvent(86, true);
-        //         helper.invoke('getData', ['Sheet1!K1']).then((values: Map<string, CellModel>) => {
-        //             expect(values.get('K1').value).toEqual('Quantity');
-        //             done();
-        //         });
-        //     });
-        // });
+        it('cut testing', (done: Function) => {
+            helper.invoke('cut').then(() => {
+                helper.invoke('selectRange', ['K1']);
+                helper.invoke('paste', ['K1']);
+                helper.invoke('getData', ['Sheet1!K1']).then((values: Map<string, CellModel>) => {
+                    expect(values.get('K1').value).toEqual('Quantity');
+                    done();
+                });
+            });
+        });
 
-        // it('copy testing', (done: Function) => {
-        //     helper.invoke('copy').then(() => {
-        //         helper.invoke('selectRange', ['K2']);
-        //         helper.triggerKeyNativeEvent(86, true);
-        //         helper.invoke('getData', ['Sheet1!K2']).then((values: Map<string, CellModel>) => {
-        //             expect(values.get('K2').value).toEqual('Quantity');
-        //             done();
-        //         });
-        //     })
-        // });
+        it('copy testing', (done: Function) => {
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['K2']);
+                helper.invoke('paste', ['K2']);
+                helper.invoke('getData', ['Sheet1!K2']).then((values: Map<string, CellModel>) => {
+                    expect(values.get('K2').value).toEqual('Quantity');
+                    done();
+                });
+            })
+        });
 
-        // it('paste testing', (done: Function) => {
-        //     helper.invoke('selectRange', ['K1']);
-        //     helper.invoke('copy').then(() => {
-        //         helper.invoke('selectRange', ['K3']);
-        //         helper.invoke('paste', ['K3']);
-        //         helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
-        //             expect(values.get('K3').value).toEqual('Quantity');
-        //             done();
-        //         });
-        //     });
-        // });
+        it('paste testing', (done: Function) => {
+            helper.invoke('selectRange', ['K1']);
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['K3']);
+                helper.invoke('paste', ['K3']);
+                helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
+                    expect(values.get('K3').value).toEqual('Quantity');
+                    done();
+                });
+            });
+        });
 
         it('setUsedRange testing', (done: Function) => {
             helper.invoke('setUsedRange', [11, 12]);
@@ -621,44 +621,44 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
 
-        // it('startEdit testing', (done: Function) => {
-        //     helper.invoke('selectRange', ['K3']);
-        //     helper.invoke('startEdit');
-        //     let editorElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
-        //     expect(helper.getInstance().isEdit).toBeTruthy();
-        //     setTimeout(() => {
-        //         expect(editorElem.textContent).toBe('Quantity');
-        //         editorElem.textContent = 'Test';
-        //         helper.triggerKeyNativeEvent(17); //To update internal props.
-        //         done();
-        //     }, 20);
-        // });
+        it('startEdit testing', (done: Function) => {
+            helper.invoke('selectRange', ['K3']);
+            helper.invoke('startEdit');
+            let editorElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            expect(helper.getInstance().isEdit).toBeTruthy();
+            setTimeout(() => {
+                expect(editorElem.textContent).toBe('Quantity');
+                editorElem.textContent = 'Test';
+                helper.triggerKeyNativeEvent(17); //To update internal props.
+                done();
+            }, 20);
+        });
 
-        // it('endEdit testing', (done: Function) => {
-        //     helper.invoke('endEdit');
-        //     expect(helper.getInstance().isEdit).toBeFalsy();
-        //     helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
-        //         expect(values.get('K3').value).toEqual('Test');
-        //         done();
-        //     });
-        // });
+        it('endEdit testing', (done: Function) => {
+            helper.invoke('endEdit');
+            expect(helper.getInstance().isEdit).toBeFalsy();
+            helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
+                expect(values.get('K3').value).toEqual('Test');
+                done();
+            });
+        });
 
-        // it('closeEdit testing', (done: Function) => {
-        //     helper.invoke('startEdit');
-        //     let editorElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
-        //     expect(helper.getInstance().isEdit).toBeTruthy();
-        //     setTimeout(() => {
-        //         expect(editorElem.textContent).toBe('Test');
-        //         editorElem.textContent = 'Quantity';
-        //         helper.triggerKeyNativeEvent(17); //To update internal props.
-        //         helper.invoke('closeEdit');
-        //         expect(helper.getInstance().isEdit).toBeFalsy();
-        //         helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
-        //             expect(values.get('K3').value).toEqual('Test');
-        //             done();
-        //         });
-        //     }, 20);
-        // });
+        it('closeEdit testing', (done: Function) => {
+            helper.invoke('startEdit');
+            let editorElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            expect(helper.getInstance().isEdit).toBeTruthy();
+            setTimeout(() => {
+                expect(editorElem.textContent).toBe('Test');
+                editorElem.textContent = 'Quantity';
+                helper.triggerKeyNativeEvent(17); //To update internal props.
+                helper.invoke('closeEdit');
+                expect(helper.getInstance().isEdit).toBeFalsy();
+                helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
+                    expect(values.get('K3').value).toEqual('Test');
+                    done();
+                });
+            }, 20);
+        });
 
         it('clearRange testing', (done: Function) => {
             helper.invoke('clearRange', ['K3']);

@@ -3,11 +3,12 @@ import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAr
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj } from './index';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, clearCells } from '../../workbook/index';
-import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs } from '../../workbook/index';
+import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs,  } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged, replace } from './index';
-import { getCellIndexes, getCell, getColumnWidth } from '../../workbook/index';
+import { getCellIndexes, getCell, getColumnWidth, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
+import { deleteChart } from '../../spreadsheet/index';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -771,7 +772,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             if (isRedo) {
                 spreadsheet.notify(createImageElement, {
                     options: {
-                        data: options.eventArgs.imageData,
+                        src: options.eventArgs.imageData,
                         height: options.eventArgs.imageHeight, width: options.eventArgs.imageWidth, imageId: options.eventArgs.id
                     },
                     range: options.eventArgs.range, isPublic: false, isUndoRedo: true
@@ -800,6 +801,51 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             element.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
             element.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
             element.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            break;
+        case 'insertChart':
+            if (isRedo) {
+                let chartOptions: ChartModel[] = [{
+                    type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                    range: eventArgs.range, id: eventArgs.id
+                }];
+                spreadsheet.notify(setChart, {
+                    chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
+                });
+            } else {
+                spreadsheet.notify(deleteChart, { id: eventArgs.id });
+            }
+            break;
+        case 'deleteChart':
+            if (isRedo) {
+                spreadsheet.notify(deleteChart, { id: eventArgs.id });
+            } else {
+                let chartOpts: ChartModel[] = [{
+                    type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
+                    range: eventArgs.range, id: eventArgs.id
+                }];
+                spreadsheet.notify(setChart, {
+                    chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
+                });
+            }
+            break;
+        case 'chartRefresh':
+            let chartElement: HTMLElement = document.getElementById(options.eventArgs.id);
+            if (chartElement) {
+                chartElement.style.height = isRedo ? options.eventArgs.currentHeight + 'px' : options.eventArgs.prevHeight + 'px';
+                chartElement.style.width = isRedo ? options.eventArgs.currentWidth + 'px' : options.eventArgs.prevWidth + 'px';
+                chartElement.style.top = isRedo ? options.eventArgs.currentTop + 'px' : options.eventArgs.prevTop + 'px';
+                chartElement.style.left = isRedo ? options.eventArgs.currentLeft + 'px' : options.eventArgs.prevLeft + 'px';
+            }
+            if (isRedo) {
+                options.eventArgs.isUndoRedo = true;
+                spreadsheet.notify(refreshChartSize, {
+                    height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
+                });
+            } else {
+                spreadsheet.notify(refreshChartSize, {
+                    height: chartElement.style.height, width: chartElement.style.width, overlayEle: chartElement
+                });
+            }
             break;
     }
 }

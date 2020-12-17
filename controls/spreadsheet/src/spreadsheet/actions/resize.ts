@@ -270,10 +270,8 @@ export class Resize {
                         if (getCell(rowIdx, idx, sheet).wrap) {
                             isWrap = true;
                         }
-                        let td: HTMLElement = this.parent.createElement('td', {
-                            className: 'e-cell',
-                            innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
-                        });
+                        let td: HTMLElement = this.parent.createElement('td', { className: 'e-cell' });
+                        td.textContent = this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx]);
                         if (sheet.rows[rowIdx].cells[idx].style) {
                             let style: CellStyleModel = sheet.rows[rowIdx].cells[idx].style;
                             if (style.fontFamily) {
@@ -295,9 +293,8 @@ export class Resize {
                         isWrap = true;
                     }
                     let style: CellStyleModel = sheet.rows[idx].cells[colIdx].style;
-                    let td: HTMLElement = this.parent.createElement('td', {
-                        innerHTML: this.parent.getDisplayText(sheet.rows[idx].cells[colIdx])
-                    });
+                    let td: HTMLElement = this.parent.createElement('td');
+                    td.textContent = this.parent.getDisplayText(sheet.rows[idx].cells[colIdx]);
                     if (sheet.rows[idx].cells[colIdx].style) {
                         let style: CellStyleModel = sheet.rows[idx].cells[colIdx].style;
                         if (style.fontFamily) {

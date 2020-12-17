@@ -18,7 +18,9 @@
     }
 
     .e-south-east::before,
-    .e-south-west::before {
+    .e-south-west::before,
+    .e-north-east::before,
+    .e-north-west::before {
       content: '\e7cf';
     }
   }

@@ -1,7 +1,7 @@
 import { TreeGrid } from '../base/treegrid';
 import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil } from '@syncfusion/ej2-grids';
 import { EJ2Intance, RowDragEventArgs, getObject, Scroll } from '@syncfusion/ej2-grids';
-import { closest, isNullOrUndefined, classList, setValue, extend, getValue } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, classList, setValue, extend, getValue, removeClass, addClass } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
@@ -530,6 +530,7 @@ export class RowDD {
 
     private rowDropped(args: RowDropEventArgs): void {
         let tObj: TreeGrid = this.parent;
+        let parentItem: string = 'parentItem';
         if (!tObj.rowDropSettings.targetID) {
             if (parentsUntil(args.target, 'e-content')) {
             if (this.parent.element.querySelector('.e-errorelem')) {
@@ -570,6 +571,40 @@ export class RowDD {
             this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
         } else if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-lastrow-border')[0])) {
             this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
+        }
+        if (this.parent.enableImmutableMode && !this.parent.allowPaging && !isNullOrUndefined(args.data[0][parentItem])) {
+            let index: number = this.parent.treeColumnIndex;
+            index = index + 1;
+            let primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            let rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(args.data[0][primaryKeyField]);
+            let row: HTMLTableRowElement = this.parent.getRows()[rowIndex];
+            let data: object = args.data[0];
+            if (this.dropPosition === 'middleSegment') {
+                 let record: object[] = []; let rows: HTMLTableRowElement[] = [];
+                 record.push(data); rows.push(row);
+                 data = args.data[0][parentItem];
+                 rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[primaryKeyField]);
+                 let parentrow: HTMLTableRowElement = this.parent.getRows()[rowIndex];
+                 record.push(data); rows.push(parentrow);
+                 for (let i: number = 0; i < record.length; i++) {
+                    this.parent.renderModule.cellRender({
+                        data: record[i], cell: rows[i].cells[index] ,
+                        column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
+                        requestType: 'rowDragAndDrop'
+                    });
+                 }
+                 let targetEle: Element = parentrow.getElementsByClassName('e-treegridcollapse')[0];
+                 if (!isNullOrUndefined(targetEle)) {
+                     removeClass([targetEle], 'e-treegridcollapse');
+                     addClass([targetEle], 'e-treegridexpand');
+                 }
+            } else {
+                this.parent.renderModule.cellRender({
+                    data: data, cell: row.cells[index] ,
+                    column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
+                    requestType: 'rowDragAndDrop'
+                });
+            }
         }
     }
 

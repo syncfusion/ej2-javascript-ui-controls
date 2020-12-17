@@ -596,7 +596,7 @@ export class ConditionalFormatting {
         let cFColors: string[] = ['e-redft', 'e-yellowft', 'e-greenft', 'e-redf', 'e-redt'];
         let isActiveCF: boolean = false;
         if (cFRules[cFRuleIdx].cFColor) {
-            if (td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
+            if (td && td.classList.contains('e-' + cFRules[cFRuleIdx].cFColor.toLowerCase())) {
                 isActiveCF = true;
             }
         } else if (cFRules[cFRuleIdx].format.style.backgroundColor && td.style.backgroundColor) {

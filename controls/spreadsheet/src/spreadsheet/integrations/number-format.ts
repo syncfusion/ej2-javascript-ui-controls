@@ -23,7 +23,7 @@ export class NumberFormat {
      * Adding event listener for number format.
      * @hidden
      */
-    public addEventListener(): void {
+    private addEventListener(): void {
         this.parent.on(refreshCellElement, this.refreshCellElement, this);
     }
 
@@ -31,7 +31,7 @@ export class NumberFormat {
      * Removing event listener for number format.
      * @hidden
      */
-    public removeEventListener(): void {
+    private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(refreshCellElement, this.refreshCellElement);
         }

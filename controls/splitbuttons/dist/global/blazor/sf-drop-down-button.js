@@ -8,8 +8,11 @@ var EMPTY = '';
 var PIXEL = 'px';
 var DOT = '.';
 var HASH = '#';
-var BTNCLICK = 'BtnClick';
+var BTN_CLICK = 'BtnClick';
 var DROPDOWN = 'e-dropdown-menu';
+var COLOR_PICKER = 'e-colorpicker-container';
+var HSV_MODEL = 'e-hsv-model';
+var CONTAINER = '.e-container';
 var ITEM = 'e-item';
 var FOCUSED = 'e-focused';
 var WRAPPER = 'e-split-btn-wrapper';
@@ -42,11 +45,18 @@ var SfDropDownButton = /** @class */ (function () {
         }
         this.popup.classList.remove(TRANSPARENT);
         var zIndex = sf.popups.getZindexPartial(this.element);
+        var isColorPicker = this.element.parentElement.classList.contains(COLOR_PICKER);
+        if (isColorPicker) {
+            this.element.parentElement.blazor__instance.setPaletteWidth(this.popup.querySelector(CONTAINER));
+        }
         this.setPosition();
         sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
         this.popup.style.zIndex = zIndex + EMPTY;
         this.popup.style.visibility = EMPTY;
+        if (isColorPicker) {
+            this.element.parentElement.blazor__instance.setOffset(this.popup, zIndex);
+        }
         if (this.popup.firstElementChild) {
             this.popup.firstElementChild.focus();
         }
@@ -71,8 +81,16 @@ var SfDropDownButton = /** @class */ (function () {
     };
     SfDropDownButton.prototype.mouseDownHandler = function (e) {
         if (this.popup.parentElement) {
-            if (!sf.base.closest(e.target, HASH + this.getDropDownButton().id) && !sf.base.closest(e.target, HASH + this.popup.id)) {
-                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+            var target = e.target;
+            var prevent = true;
+            if (target.classList.contains(HSV_MODEL)) {
+                var ref = target.parentElement.getBoundingClientRect();
+                var btn = this.element.getBoundingClientRect();
+                prevent = (e.clientX >= ref.left && e.clientX <= ref.right && e.clientY >= ref.top && e.clientY <= ref.bottom) ||
+                    (e.clientX >= btn.left && e.clientX <= btn.right && e.clientY >= btn.top && e.clientY <= btn.bottom);
+            }
+            if (!prevent || (!sf.base.closest(target, HASH + this.getDropDownButton().id) && !sf.base.closest(e.target, HASH + this.popup.id))) {
+                this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 this.removeEventListener();
             }
         }
@@ -86,7 +104,7 @@ var SfDropDownButton = /** @class */ (function () {
             if (e.keyCode === UP) {
                 e.stopPropagation();
                 e.preventDefault();
-                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+                this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 element.focus();
                 this.removeEventListener();
             }
@@ -95,7 +113,7 @@ var SfDropDownButton = /** @class */ (function () {
             var ul = this.popup.firstElementChild;
             if (e.keyCode === ESC || e.keyCode === TAB) {
                 e.stopPropagation();
-                this.dotNetRef.invokeMethodAsync(BTNCLICK, null);
+                this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 if (e.keyCode === ESC) {
                     e.preventDefault();
                 }
@@ -147,6 +165,9 @@ var SfDropDownButton = /** @class */ (function () {
             return;
         }
         this.setPosition();
+        if (this.element.parentElement.classList.contains(COLOR_PICKER)) {
+            this.element.parentElement.blazor__instance.setOffset(this.popup);
+        }
     };
     SfDropDownButton.prototype.addEventListener = function (setFocus) {
         sf.base.EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);

@@ -539,11 +539,13 @@
   }
 
   .e-spreadsheet .e-sheet-panel:not(.e-rtl) {
-    & .e-cell.e-vborderright {
+    & .e-cell.e-vborderright,
+    .e-cell.e-vcborderright {
       border-right: 1px dashed $vborder-selection;
     }
 
-    & .e-cell.e-vborderbottom {
+    & .e-cell.e-vborderbottom,
+    .e-cell.e-vcborderbottom {
       border-bottom: 1px dashed $vborder-selection;
     }
 
@@ -579,12 +581,22 @@
       border-bottom: 1px dashed $oborder-selection;
     }
 
-    & .e-cell.e-bborderright {
+    & .e-cell.e-bborderright,
+    .e-cell.e-bcborderright {
       border-right: 1px dashed $bborder-selection;
     }
 
-    & .e-cell.e-bborderbottom {
+    & .e-cell.e-bborderbottom,
+    .e-cell.e-bcborderbottom {
       border-bottom: 1px dashed $bborder-selection;
+    }
+
+    & .e-cell.e-rcborderbottom {
+      border-bottom: 1px dashed $dlg-error-color;
+    }
+
+    & .e-cell.e-rcborderright {
+      border-right: 1px dashed $dlg-error-color;
     }
   }
 
@@ -1099,6 +1111,76 @@
   .e-menu-wrapper .e-5boxes-5,
   .e-spreadsheet .e-5boxes-5 {
     background: transparent url('data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgdmlld0JveD0iMCAwIDE0IDE0Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjYjNiM2IzOwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICM3MjcyNzI7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDx0aXRsZT5BcnRib2FyZCA1MCBjb3B5PC90aXRsZT4KICA8Zz4KICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHJ4PSIwLjUiIHJ5PSIwLjUiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTYsN0gxQTEsMSwwLDAsMSwwLDZWMUExLDEsMCwwLDEsMSwwSDZBMSwxLDAsMCwxLDcsMVY2QTEsMSwwLDAsMSw2LDdaTTYsNlY2Wk0xLDFWNkg2VjFaIi8+CiAgPC9nPgogIDxnPgogICAgPHJlY3QgY2xhc3M9ImNscy0xIiB4PSI2LjUiIHk9IjAuNSIgd2lkdGg9IjYiIGhlaWdodD0iNiIgcng9IjAuNSIgcnk9IjAuNSIvPgogICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNMTIsN0g3QTEsMSwwLDAsMSw2LDZWMUExLDEsMCwwLDEsNywwaDVhMSwxLDAsMCwxLDEsMVY2QTEsMSwwLDAsMSwxMiw3Wm0wLTFWNlpNNywxVjZoNVYxWiIvPgogIDwvZz4KICA8Zz4KICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iMC41IiB5PSI2LjUiIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHJ4PSIwLjUiIHJ5PSIwLjUiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTYsMTNIMWExLDEsMCwwLDEtMS0xVjdBMSwxLDAsMCwxLDEsNkg2QTEsMSwwLDAsMSw3LDd2NUExLDEsMCwwLDEsNiwxM1ptMC0xdjBaTTEsN3Y1SDZWN1oiLz4KICA8L2c+CiAgPGc+CiAgICA8cmVjdCBjbGFzcz0iY2xzLTEiIHg9IjYuNSIgeT0iNi41IiB3aWR0aD0iNiIgaGVpZ2h0PSI2IiByeD0iMC41IiByeT0iMC41Ii8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMiwxM0g3YTEsMSwwLDAsMS0xLTFWN0ExLDEsMCwwLDEsNyw2aDVhMSwxLDAsMCwxLDEsMXY1QTEsMSwwLDAsMSwxMiwxM1ptMC0xdjBaTTcsN3Y1aDVWN1oiLz4KICA8L2c+Cjwvc3ZnPgo=') no-repeat 50% 50%;
+  }
+
+  .e-popup.e-menu-popup.e-chart-menu ul {
+
+    & .e-column1-text,
+    & .e-column2-text,
+    & .e-bar1-text,
+    & .e-bar2-text,
+    & .e-line-text,
+    & .e-pie-text,
+    & .e-radar-text ,
+    & .e-area-text,
+    & .e-scatter-text {
+      background-color: $ele-hover-color;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $ele-color;
+      }
+    }
+
+    & .e-column1-cont,
+    & .e-column2-cont,
+    & .e-bar1-cont,
+    & .e-bar2-cont,
+    & .e-line-cont,
+    & .e-pie-cont,
+    & .e-radar-cont,
+    & .e-area-cont,
+    & .e-scatter-cont {
+      background-color: $cell-background;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $dark-ele-color;
+      }
+
+      & .e-clusteredcolumn:hover,
+      & .e-stackedcolumn:hover,
+      & .e-stackedcolumn100:hover,
+      & .e-clusteredcolumn3d:hover,
+      & .e-stackedcolumn3d:hover,
+      & .e-stackedcolumn1003d:hover,
+      & .e-clusteredbar:hover,
+      & .e-stackedbar:hover,
+      & .e-stackedbar100:hover,
+      & .e-clusteredbar3d:hover,
+      & .e-stackedbar3d:hover,
+      & .e-stackedbar1003d:hover,
+      & .e-line:hover,
+      & .e-stackedline:hover,
+      & .e-stackedline100:hover,
+      & .e-pie:hover,
+      & .e-doughnut:hover,
+      & .e-radar:hover,
+      & .e-radar-markers:hover,
+      & .e-area:hover,
+      & .e-stackedarea:hover,
+      & .e-stackedarea100:hover,
+      & .e-scatter:hover {
+        background-color: $ele-hover-color;
+        @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+          background-color: $dark-ele-hover-color;
+        }
+      }
+
+    }
+
+    & .e-is-wrapper:hover {
+      background-color: $ele-hover-color;
+      @if $sheet-skin == 'bootstrap-dark' or $sheet-skin == 'fabric-dark' or $sheet-skin == 'material-dark' {
+        background-color: $dark-ele-hover-color;
+      }
+    }
   }
 
   .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {

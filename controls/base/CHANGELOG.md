@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 18.3.51 (2020-11-24)
+## 18.3.52 (2020-12-01)
+
+### Common
+
+#### New Features
+
+- Provided version based state persistence support.
 
 ### Common
 

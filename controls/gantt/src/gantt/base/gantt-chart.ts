@@ -3,7 +3,7 @@ import {
     createElement, formatUnit, EventHandler, Browser, KeyboardEvents, isBlazor, getElement,
     KeyboardEventArgs
 } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import { ChartScroll } from '../actions/chart-scroll';
 import { IGanttData, IWorkTimelineRanges } from '../base/interface';
@@ -11,6 +11,7 @@ import { click } from '@syncfusion/ej2-grids';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs, IIndicator } from '../base/interface';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
+import { VirtualContentRenderer } from '../renderer/virtual-content-render';
 
 /**
  * module to render gantt chart - project view
@@ -32,11 +33,13 @@ export class GanttChart {
     private isGanttElement: boolean = false;
     public keyboardModule: KeyboardEvents;
     public targetElement: Element;
+    public virtualRender: VirtualContentRenderer;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
         this.rangeViewContainer =
             createElement('div', { className: cls.rangeContainer });
+        this.virtualRender = new VirtualContentRenderer(this.parent);
         this.addEventListener();
     }
 
@@ -107,7 +110,13 @@ export class GanttChart {
             this.renderOverAllocationContainer();
         }
         this.updateWidthAndHeight();
+        this.setOverflowStyle();
         this.parent.notify('selectRowByIndex', {});
+    }
+
+    private setOverflowStyle(): void {
+        let content: HTMLElement = this.chartBodyContent;
+        content.style.overflow = this.scrollElement.offsetHeight > content.offsetHeight ? 'hidden' : 'visible';
     }
     /**
      * @private
@@ -194,7 +203,7 @@ export class GanttChart {
             className: cls.chartScrollElement + ' ' + cls.scrollContent, styles: 'position:relative;'
         });
         this.chartBodyContainer.appendChild(this.scrollElement);
-        this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; overflow: hidden;' });
+        this.chartBodyContent = createElement('div', { className: cls.chartBodyContent, styles: 'position:relative; ' });
         this.scrollElement.appendChild(this.chartBodyContent);
         // this.parent.chartRowsModule.createChartTable();
         this.scrollObject = new ChartScroll(this.parent);
@@ -212,7 +221,6 @@ export class GanttChart {
     public updateWidthAndHeight(): void {
         //empty row height
         let emptydivHeight: number = isBlazor() ? 39 : 36;
-        this.parent.updateContentHeight();
         let emptyHeight: number = this.parent.contentHeight === 0 ? emptydivHeight : this.parent.contentHeight;
         this.chartBodyContent.style.height = formatUnit(emptyHeight);
         //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
@@ -221,6 +229,7 @@ export class GanttChart {
         this.parent.updateGridLineContainerHeight();
         this.updateLastRowBottomWidth();
     }
+
     /**
      * Method to update bottom border for chart rows
      */
@@ -299,11 +308,11 @@ export class GanttChart {
      * @private
      */
     public updateScrollLeft(scrollLeft: number): void {
-        scrollLeft = scrollLeft - 50 > 0 ? scrollLeft - 50 : 0;
+        scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
         scrollLeft = this.scrollElement.scrollWidth <= scrollLeft ? this.scrollElement.scrollWidth : scrollLeft;
         if ((this.scrollElement.offsetWidth + this.parent.ganttChartModule.scrollElement.scrollLeft) < scrollLeft
             || (this.scrollElement.scrollLeft > scrollLeft)) {
-            this.scrollObject.setScrollLeft(scrollLeft);
+            this.scrollObject.setScrollLeft(scrollLeft - 50);
         }
     }
 
@@ -416,7 +425,7 @@ export class GanttChart {
      */
     private contextClick(e: PointerEvent): void {
         if (this.parent.allowFiltering && this.parent.filterModule) {
-            this.parent.filterModule.closeFilterOnContextClick(e.srcElement);
+            this.parent.filterModule.closeFilterOnContextClick(e.srcElement as Element);
         }
     }
 
@@ -577,13 +586,13 @@ export class GanttChart {
         if (isCancel) {
             this.collapsedGanttRow(args);
         } else {
-            this.parent.trigger('collapsing', args, (args: object) => {
-                if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.parent.trigger('collapsing', args, (arg: object) => {
+                if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
                     if (isBlazor()) {
-                        setValue('chartRow', getElement(getValue('chartRow', args)), args);
-                        setValue('gridRow', getElement(getValue('gridRow', args)), args);
+                        setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
+                        setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
                     }
-                    this.collapsedGanttRow(args);
+                    this.collapsedGanttRow(arg);
                 }
                 this.isExpandCollapseFromChart = false;
             });
@@ -608,7 +617,9 @@ export class GanttChart {
         if (this.parent.viewType === 'ResourceView') {
             this.renderMultiTaskbar(record);
         }
-        this.parent.updateContentHeight();
+        if (!this.parent.enableVirtualization) {
+            this.parent.updateContentHeight();
+        }
         this.updateWidthAndHeight();
         this.reRenderConnectorLines();
         getValue('chartRow', args).setAttribute('aria-expanded', 'false');
@@ -625,13 +636,13 @@ export class GanttChart {
         if (isCancel) {
             this.expandedGanttRow(args);
         } else {
-            this.parent.trigger('expanding', args, (args: object) => {
+            this.parent.trigger('expanding', args, (arg: object) => {
                 if (isBlazor()) {
-                    setValue('chartRow', getElement(getValue('chartRow', args)), args);
-                    setValue('gridRow', getElement(getValue('gridRow', args)), args);
+                    setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
+                    setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
                 }
-                if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
-                    this.expandedGanttRow(args);
+                if (this.isExpandCollapseFromChart && !getValue('cancel', arg)) {
+                    this.expandedGanttRow(arg);
                 }
                 this.isExpandCollapseFromChart = false;
             });
@@ -656,7 +667,9 @@ export class GanttChart {
         if (this.parent.viewType === 'ResourceView') {
             this.renderMultiTaskbar(record);
         }
-        this.parent.updateContentHeight();
+        if (!this.parent.enableVirtualization) {
+            this.parent.updateContentHeight();
+        }
         this.updateWidthAndHeight();
         this.reRenderConnectorLines();
         getValue('chartRow', args).setAttribute('aria-expanded', 'true');
@@ -734,7 +747,7 @@ export class GanttChart {
             this.parent.treeGrid.collapseAll();
         }
         this.isExpandAll = false;
-        let focussedElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-treegrid');
+        let focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
         focussedElement.focus();
     }
 

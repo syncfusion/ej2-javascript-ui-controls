@@ -44,7 +44,7 @@ import { ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import {BeforeDataBoundArgs} from '@syncfusion/ej2-grids';
 import { DataManager, ReturnOption, RemoteSaveAdaptor, Query, JsonAdaptor, Deferred } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner, Dialog } from '@syncfusion/ej2-popups';
-import { isRemoteData, isOffline, extendArray, isCountRequired } from '../utils';
+import { isRemoteData, isOffline, extendArray, isCountRequired, findChildrenRecords } from '../utils';
 import { Grid, QueryCellInfoEventArgs, Logger } from '@syncfusion/ej2-grids';
 import { Render } from '../renderer/render';
 import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-render';
@@ -72,6 +72,7 @@ import { Edit} from '../actions/edit';
 import { SortSettings } from '../models/sort-settings';
 import { SortSettingsModel } from '../models/sort-settings-model';
 import { isHidden } from '../utils';
+import { editAction } from '../actions/crud-actions';
 
 
 
@@ -590,6 +591,13 @@ public pagerTemplate: string;
    */
   @Property(false)
   public enableAutoFill: boolean;
+  /**    
+   * If `enableImmutableMode`  is set to true, the TreeGrid will reuse old rows if it exists in the new result instead of
+   * full refresh while performing the TreeGrid actions.
+   * @default false
+   */
+  @Property(false)
+  public enableImmutableMode: boolean;
   /**    
    * Defines the scrollable height of the TreeGrid content.    
    * @default 'auto'    
@@ -1800,6 +1808,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.allowResizing = this.allowResizing;
     this.grid.enableHover = this.enableHover;
     this.grid.enableAutoFill = this.enableAutoFill;
+    this.grid.enableImmutableMode = this.enableImmutableMode;
     this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
     this.grid.rowDropSettings = getActualProperties(this.rowDropSettings);
     this.grid.rowHeight = this.rowHeight;
@@ -1972,6 +1981,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         //args = this.dataModule.dataProcessor(args);
       }
       extend(args, treeGrid.dataResults);
+      if (treeGrid.enableImmutableMode) {
+        args.result = args.result.slice();
+      }
       // this.notify(events.beforeDataBound, args);
       if (!(<IGrid>this).isPrinting) {
         let callBackPromise: Deferred = new Deferred();
@@ -2482,7 +2494,7 @@ private getGridEditSettings(): GridEditModel {
         gridColumn.field =  treeGridColumn.field = <string>this.columns[i];
       } else {
         for (let prop of Object.keys(column[i])) {
-          if (i === this.treeColumnIndex && prop === 'template') {
+          if (i === this.treeColumnIndex && prop === 'template' && !isBlazor()) {
             treeGridColumn[prop] = column[i][prop];
           } else {
             gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
@@ -2619,6 +2631,8 @@ private getGridEditSettings(): GridEditModel {
           this.grid.enableHover = this.enableHover; break;
         case 'enableAutoFill':
           this.grid.enableAutoFill = this.enableAutoFill; break;
+        case 'enableImmutableMode':
+          this.grid.enableImmutableMode = this.enableImmutableMode; break;
         case 'allowExcelExport':
           this.grid.allowExcelExport = this.allowExcelExport; break;
         case 'allowPdfExport':
@@ -2647,13 +2661,7 @@ private getGridEditSettings(): GridEditModel {
                           (newProp[prop].mode === 'Cell' || newProp[prop].mode === 'Row')) {
             this.grid.closeEdit();
           }
-
-          this.grid.editSettings = this.getGridEditSettings();
-          if (this.grid.editSettings.allowEditing) {
-            let isOnBatch: string = 'isOnBatch';
-            this.editModule[isOnBatch] = false;
-          }
-          break;
+          this.grid.editSettings = this.getGridEditSettings(); break;
       }
       if (requireRefresh) {
         this.grid.refresh();
@@ -2924,6 +2932,12 @@ private getGridEditSettings(): GridEditModel {
      */
     public setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void {
       this.grid.setCellValue(key, field, value);
+      let rowIndex: number = this.grid.getRowIndexByPrimaryKey(key);
+      let record: ITreeData = this.getCurrentViewRecords()[rowIndex];
+      if (!isNullOrUndefined(record)) {
+          editAction({ value: record, action: 'edit' }, this,
+                     this.isSelfReference, record.index, this.grid.selectedRowIndex, field);
+      }
     }
 
     /**
@@ -3140,7 +3154,7 @@ private getGridEditSettings(): GridEditModel {
     if (this.treeColumnIndex !== -1 && this.columns[this.treeColumnIndex] &&
                     !isNullOrUndefined((this.columns[this.treeColumnIndex] as Column).template)) {
       temp = (this.columns[this.treeColumnIndex] as Column).template;
-      field = gridColumns[this.treeColumnIndex].field;
+      field = (this.columns[this.treeColumnIndex] as Column).field;
     }
     this.columnModel = [];
     let stackedHeader: boolean = false;
@@ -3321,6 +3335,26 @@ private getGridEditSettings(): GridEditModel {
     public getCheckedRecords(): Object[] {
       return this.selectionModule.getCheckedrecords();
   }
+  /** 
+   * Get the visible records corresponding to rows visually displayed.
+   * @return {Object[]}
+   * @isGenericType true
+   */
+
+  public getVisibleRecords(): Object[] {
+    let visibleRecords: ITreeData[] = []; let currentViewRecords: ITreeData[] = this.getCurrentViewRecords();
+    if (!this.allowPaging) {
+      for (let i: number = 0; i < currentViewRecords.length; i++) {
+        visibleRecords.push(currentViewRecords[i]);
+        if (!currentViewRecords[i].expanded) {
+          i += findChildrenRecords(currentViewRecords[i]).length;
+        }
+      }
+    } else {
+      visibleRecords = currentViewRecords;
+    }
+    return visibleRecords;
+  }
     /** 
      * Get the indexes of checked rows.
      * @return {number[]}
@@ -3385,6 +3419,9 @@ private getGridEditSettings(): GridEditModel {
     }else {
       let rowInfo: RowInfo = this.grid.getRowInfo(target);
       let record: ITreeData = <ITreeData>rowInfo.rowData;
+      if (this.enableImmutableMode && Object.keys(record).length === 0) {
+        record = this.getCurrentViewRecords()[(<HTMLTableRowElement>rowInfo).rowIndex];
+      }
       if (target.classList.contains('e-treegridexpand')) {
         this.collapseRow(<HTMLTableRowElement>rowInfo.row, record);
       }else {
@@ -3546,6 +3583,7 @@ private getGridEditSettings(): GridEditModel {
   }
   private expandCollapse(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean): void {
     let expandingArgs: DataStateChangeEventArgs = { row: row, data: record, childData: [], requestType: action };
+    let targetEle: Element;
     if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this)) {
       this.updateChildOnDemand(expandingArgs);
     }
@@ -3575,7 +3613,9 @@ private getGridEditSettings(): GridEditModel {
           record.expanded = true;
           this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
         }
-        let targetEle: Element = row.getElementsByClassName('e-treegridcollapse')[0];
+        if (!isNullOrUndefined(row)) {
+          targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
+        }
         if (isChild && !isNullOrUndefined(record[this.expandStateMapping]) &&
             record[this.expandStateMapping] && isNullOrUndefined(targetEle)) {
               targetEle = row.getElementsByClassName('e-treegridexpand')[0];
@@ -3593,7 +3633,9 @@ private getGridEditSettings(): GridEditModel {
             record.expanded = false;
             this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
           }
-          let targetEle: Element = row.getElementsByClassName('e-treegridexpand')[0];
+          if (!isNullOrUndefined(row)) {
+            targetEle = row.getElementsByClassName('e-treegridexpand')[0];
+          }
           if (isChild && !isNullOrUndefined(record[this.expandStateMapping]) &&
               !record[this.expandStateMapping] && isNullOrUndefined(targetEle)) {
               targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
@@ -3725,6 +3767,7 @@ private getGridEditSettings(): GridEditModel {
     }
   }
   private localExpand(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean) : void {
+    let rows: HTMLTableRowElement[];
     let childRecords: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {
       return e.parentUniqueID === record.uniqueID ;
     });
@@ -3738,12 +3781,23 @@ private getGridEditSettings(): GridEditModel {
       gridRows = [].slice.call(rows);
     }
     let displayAction: string = (action === 'expand') ? 'table-row' : 'none';
+    let primaryKeyField: string = this.getPrimaryKeyFieldNames()[0]; let indx: string = 'index';
     let index: number = (<ITreeData>childRecords[0].parentItem).index;
-    let rows: HTMLTableRowElement[] = gridRows.filter(
-      (r: HTMLTableRowElement) =>
-        r.querySelector(
-          '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
-        ));
+    if (this.enableImmutableMode && !this.allowPaging) {
+      let index: number = this.getCurrentViewRecords().map((e: Object) => { return e[indx]; }).indexOf(record.index);
+      let children: ITreeData[]  = findChildrenRecords(this.getCurrentViewRecords()[index]);
+      rows = []; childRecords = children;
+      for (let i: number = 0; i < children.length; i++) {
+        let rowIndex: number = this.grid.getRowIndexByPrimaryKey(children[i][primaryKeyField]);
+        rows.push(this.getRows()[rowIndex]);
+      }
+    } else {
+      rows = gridRows.filter(
+        (r: HTMLTableRowElement) =>
+          r.querySelector(
+            '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
+          ));
+    }
     if (this.frozenRows || this.frozenColumns || this.getFrozenColumns()) {
         movableRows = <HTMLTableRowElement[]>this.getMovableRows().filter(
           (r: HTMLTableRowElement) =>
@@ -3752,7 +3806,9 @@ private getGridEditSettings(): GridEditModel {
           ));
     }
     for (let i: number = 0; i < rows.length; i++) {
-      rows[i].style.display = displayAction;
+      if (!isNullOrUndefined(rows[i])) {
+        rows[i].style.display = displayAction;
+      }
       if (!isNullOrUndefined(movableRows)) {
         movableRows[i].style.display = displayAction;
       }

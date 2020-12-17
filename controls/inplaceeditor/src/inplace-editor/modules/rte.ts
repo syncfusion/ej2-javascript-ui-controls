@@ -1,5 +1,5 @@
 import { RichTextEditor, RichTextEditorModel, HtmlEditor } from '@syncfusion/ej2-richtexteditor';
-import { MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table } from '@syncfusion/ej2-richtexteditor';
+import { MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table, FileManager } from '@syncfusion/ej2-richtexteditor';
 import { Base } from './base-module';
 import { InPlaceEditor } from '../base/inplace-editor';
 import { NotifyParams, IComponent } from '../base/interface';
@@ -13,7 +13,7 @@ export class Rte implements IComponent {
     public compObj: RichTextEditor = undefined;
 
     constructor(parent?: InPlaceEditor) {
-        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
+        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table, FileManager);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

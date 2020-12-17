@@ -75,12 +75,12 @@ export class EditTooltip {
             this.updateTooltip(segmentIndex);
             if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointLeftDrag') {
                 this.toolTipObj.open(
-                    this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointLeft) as HTMLElement);
+                    this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointLeft));
             } else if (this.taskbarEdit.connectorSecondAction === 'ConnectorPointRightDrag') {
                 this.toolTipObj.open(
-                    this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointRight) as HTMLElement);
+                    this.taskbarEdit.connectorSecondElement.querySelector('.' + cls.connectorPointRight));
             } else {
-                this.toolTipObj.open(this.taskbarEdit.taskBarEditElement as HTMLElement);
+                this.toolTipObj.open(this.taskbarEdit.taskBarEditElement);
             }
         } else if (!isNullOrUndefined(this.toolTipObj)) {
             this.toolTipObj.destroy();
@@ -110,7 +110,7 @@ export class EditTooltip {
                 this.toolTipObj.offsetY = -3;
             } else {
                 this.toolTipObj.content = this.getTooltipText(segmentIndex);
-                this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement as HTMLElement);
+                this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
                     this.toolTipObj.offsetX = -taskWidth;
                 } else if (this.taskbarEdit.taskBarEditAction === 'RightResizing' ||
@@ -183,7 +183,7 @@ export class EditTooltip {
                     break;
                 case 'ConnectorPointLeftDrag':
                 case 'ConnectorPointRightDrag':
-                    tooltipString = this.parent.connectorLineModule.tooltipTable as HTMLElement;
+                    tooltipString = this.parent.connectorLineModule.tooltipTable;
                     if (isNullOrUndefined(this.toolTipObj)) {
                         this.parent.connectorLineModule.tooltipTable.innerHTML =
                             this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(

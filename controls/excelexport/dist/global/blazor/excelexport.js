@@ -274,6 +274,7 @@ var Worksheet = /** @class */ (function () {
     function Worksheet() {
         this.isSummaryRowBelow = true;
         this.showGridLines = true;
+        this.enableRtl = false;
     }
     return Worksheet;
 }());
@@ -783,6 +784,9 @@ var Workbook = /** @class */ (function () {
             }
             else {
                 sheet.name = 'Sheet' + (i + 1).toString();
+            }
+            if (jsonSheet.enableRtl !== null && jsonSheet.enableRtl !== undefined) {
+                sheet.enableRtl = jsonSheet.enableRtl;
             }
             sheet.index = (i + 1);
             //Columns
@@ -2044,6 +2048,9 @@ var Workbook = /** @class */ (function () {
     };
     Workbook.prototype.saveSheetView = function (sheet) {
         var paneString = '<sheetViews><sheetView workbookViewId="0" ';
+        if (sheet.enableRtl === true) {
+            paneString += 'rightToLeft="1"';
+        }
         if (sheet.showGridLines === false) {
             paneString += 'showGridLines="0" >';
         }
@@ -2578,7 +2585,5 @@ exports.BlobHelper = BlobHelper;
 return exports;
 
 });
-sfBlazor.libs.push("excelexport")
-sfBlazor.loadDependencies(["compression","base"], () => {
+
     sf.excelexport = sf.excelexport({});
-});

@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { SortEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, BeforeSaveEventArgs } from '../../workbook/index';
 import { BeforeSortEventArgs } from '../../workbook/index';
 import { CellSaveEventArgs, BeforeOpenEventArgs, BeforeSelectEventArgs, completeAction, beginAction } from '../common/index';
-import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection } from '../common/index';
+import { BeforePasteEventArgs, setActionData, updateUndoRedoCollection, BeforeChartEventArgs } from '../common/index';
 
 /**
  *  Begin and complete events.
@@ -66,13 +66,13 @@ export class ActionEvents {
 
     private actionBeginHandler(args: {
         eventArgs: BeforeCellFormatArgs | BeforeOpenEventArgs | BeforeSaveEventArgs | BeforeSelectEventArgs
-        | BeforeSortEventArgs | BeforePasteEventArgs,
+        | BeforeSortEventArgs | BeforePasteEventArgs | BeforeChartEventArgs,
         action: string
     }): void {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
             || args.action === 'beforeWrap' || args.action === 'beforeReplace'
-            || args.action === 'beforeClear' || args.action === 'beforeInsertImage') {
+            || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart') {
             this.parent.notify(setActionData, { args: args });
         }
     }

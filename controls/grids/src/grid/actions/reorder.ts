@@ -2,7 +2,7 @@ import { extend, isNullOrUndefined, isBlazor, KeyboardEventArgs } from '@syncfus
 import { closest as closestElement, removeClass, classList, remove } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { getElementIndex, inArray, parentsUntil, getPosition, isActionPrevent } from '../base/util';
-import { IGrid, IAction, NotifyArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, FrozenReorderArgs } from '../base/interface';
 import * as events from '../base/constant';
 
 /**
@@ -44,7 +44,7 @@ export class Reorder implements IAction {
         let col: Column = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
         let bool: boolean = col ? !col.lockColumn : true;
         return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
-            || (this.parent.getFrozenColumns()
+            || (this.parent.isFrozenGrid()
                 && Array.prototype.indexOf.call(closestElement(srcElem, 'thead').children, srcElem.parentElement)
                 === Array.prototype.indexOf.call(closestElement(destElem, 'thead').children, destElem.parentElement)))
             && this.targetParentContainerIndex(srcElem, destElem) > -1 && bool;
@@ -52,6 +52,7 @@ export class Reorder implements IAction {
 
     private chkDropAllCols(srcElem: Element, destElem: Element): boolean {
         let isFound: boolean;
+        let cols: Column[] = this.parent.columns as Column[];
         let headers: Element[] = this.getHeaderCells();
         let header: Element;
         while (!isFound && headers.length > 0) {
@@ -82,14 +83,19 @@ export class Reorder implements IAction {
     private getColumnsModel(cols: Column[]): Column[] {
         let columnModel: Column[] = [];
         let subCols: Column[] = [];
-        for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            columnModel.push(cols[i]);
-            if (cols[i].columns) {
-                subCols = subCols.concat(cols[i].columns as Column[]);
+        let isFrozen: boolean = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid();
+        if (isFrozen) {
+            return this.parent.getColumns();
+        } else {
+            for (let i: number = 0, len: number = cols.length; i < len; i++) {
+                columnModel.push(cols[i]);
+                if (cols[i].columns) {
+                    subCols = subCols.concat(cols[i].columns as Column[]);
+                }
             }
-        }
-        if (subCols.length) {
-            columnModel = columnModel.concat(this.getColumnsModel(subCols as Column[]));
+            if (subCols.length) {
+                columnModel = columnModel.concat(this.getColumnsModel(subCols as Column[]));
+            }
         }
         return columnModel;
     }
@@ -135,6 +141,7 @@ export class Reorder implements IAction {
                 let newIndex: number = this.targetParentContainerIndex(this.element, destElem);
                 let uid: string = this.element.firstElementChild.getAttribute('e-mappinguid');
                 this.destElement = destElem;
+                this.parent.notify(events.setReorderDestinationElement, { ele: destElem });
                 if (uid) {
                     this.moveColumns(newIndex, this.parent.getColumnByUid(uid));
                 } else {
@@ -158,10 +165,11 @@ export class Reorder implements IAction {
             gObj.notify(events.preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
             return;
         }
+        let isFrozen: boolean = !gObj.getFrozenColumns() && gObj.isFrozenGrid();
         let parent: Column = this.getColParent(column, this.parent.columns as Column[]);
-        let cols: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
+        let cols: Column[] = parent ? parent.columns as Column[] : isFrozen ? this.parent.getColumns() : this.parent.columns as Column[];
         let srcIdx: number = inArray(column, cols);
-        if (((this.parent.getFrozenColumns() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn) {
+        if (((this.parent.isFrozenGrid() && parent) || this.parent.lockcolPositionCount) && !reorderByColumn) {
             for (let i: number = 0; i < cols.length; i++) {
                 if (cols[i].field === column.field) {
                     srcIdx = i;
@@ -189,6 +197,9 @@ export class Reorder implements IAction {
             return;
         }
         (cols as Column[]).splice(destIndex, 0, (cols as Column[]).splice(srcIdx, 1)[0] as Column);
+        let args: FrozenReorderArgs = { column: column, destIndex: destIndex, columns: cols, parent: parent, cancel: false };
+        gObj.notify(events.refreshFrozenColumns, args);
+        if (args.cancel) { return; }
         gObj.getColumns(true);
         gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
         if (preventRefresh !== false) {
@@ -199,13 +210,15 @@ export class Reorder implements IAction {
     }
 
     private targetParentContainerIndex(srcElem: Element, destElem: Element): number {
+        let isFrozen: boolean = !this.parent.getFrozenColumns() && this.parent.isFrozenGrid();
+        let cols: Column[] = isFrozen ? this.parent.getColumns() : this.parent.columns as Column[];
         let headers: Element[] = this.getHeaderCells();
-        let cols: Column[] = this.parent.columns as Column[];
         let flatColumns: Column[] = this.getColumnsModel(cols);
         let parent: Column = this.getColParent(flatColumns[getElementIndex(srcElem, headers)], cols);
 
         cols = parent ? parent.columns as Column[] : cols;
         return inArray(flatColumns[getElementIndex(destElem, headers)], cols);
+
     }
 
     private getHeaderCells(): Element[] {
@@ -465,7 +478,7 @@ export class Reorder implements IAction {
         }
         let closest: Element = closestElement(target, '.e-headercell:not(.e-stackedHeaderCell)');
         let cloneElement: HTMLElement = gObj.element.querySelector('.e-cloneproperties') as HTMLElement;
-        let content: Element = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        let content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
         let isLeft: boolean = this.x > getPosition(e.event).x + content.scrollLeft;
         removeClass(gObj.getHeaderTable().querySelectorAll('.e-reorderindicate'), ['e-reorderindicate']);
         this.setDisplay('none');
@@ -486,14 +499,31 @@ export class Reorder implements IAction {
     }
 
     private updateScrollPostion(e: MouseEvent | TouchEvent): void {
-        let frzCols: number = this.parent.getFrozenColumns();
         let x: number = getPosition(e).x;
         let cliRect: ClientRect = this.parent.element.getBoundingClientRect();
-        let cliRectBaseLeft: number = frzCols ? this.parent.element.querySelector('.e-movableheader')
-            .getBoundingClientRect().left : cliRect.left;
         let cliRectBaseRight: number = cliRect.right;
-        let scrollElem: Element = frzCols ? this.parent.getContent().querySelector('.e-movablecontent')
-            : this.parent.getContent().firstElementChild;
+        if (this.parent.isFrozenGrid()) {
+            this.updateFrozenScrollPosition(x, cliRect);
+        } else {
+            let cliRectBaseLeft: number = cliRect.left;
+            let scrollElem: Element = this.parent.getContent().firstElementChild;
+            if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
+                this.timer = window.setInterval(
+                    () => { this.setScrollLeft(scrollElem, true); }, 50);
+            } else if (x < cliRectBaseRight && x > cliRectBaseRight - 35) {
+                this.timer = window.setInterval(
+                    () => { this.setScrollLeft(scrollElem, false); }, 50);
+            }
+        }
+    }
+
+    private updateFrozenScrollPosition(x: number, cliRect: ClientRect): void {
+        let scrollElem: Element = this.parent.getContent().querySelector('.e-movablecontent');
+        let mhdrCliRect: ClientRect = this.parent.element.querySelector('.e-movableheader').getBoundingClientRect();
+        let left: number = this.parent.getFrozenLeftCount();
+        let right: number = this.parent.getFrozenRightColumnsCount();
+        let cliRectBaseRight: number = right ? mhdrCliRect.right : cliRect.right;
+        let cliRectBaseLeft: number = left ? mhdrCliRect.left : cliRect.left;
         if (x > cliRectBaseLeft && x < cliRectBaseLeft + 35) {
             this.timer = window.setInterval(
                 () => { this.setScrollLeft(scrollElem, true); }, 50);
@@ -521,13 +551,23 @@ export class Reorder implements IAction {
         if ((isLeft && cliRect.left < cliRectBase.left) || (!isLeft && cliRect.right > cliRectBase.right)) {
             return;
         }
-        if (this.parent.getFrozenColumns() && target.classList.contains('e-headercell')) {
+        if (this.parent.isFrozenGrid() && target.classList.contains('e-headercell')) {
+            let left: number = this.parent.getFrozenLeftCount();
+            let right: number = this.parent.getFrozenRightColumnsCount();
+            let dropEle: Element = this.element.querySelector('.e-headercelldiv');
+            let dropCol: Column = dropEle ? this.parent.getColumnByUid(dropEle.getAttribute('data-uid')) : null;
             let col: Column = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
             let fhdrWidth: number = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
             let mhdrRight: number = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
-            if (col && this.parent.getNormalizedColumnIndex(col.uid) >= this.parent.getFrozenColumns()
-                && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
-                return;
+            if (col) {
+                if (left && !right && this.parent.getNormalizedColumnIndex(col.uid) >= left
+                    && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
+                    return;
+                }
+                if (!left && right && dropCol && dropCol.getFreezeTableName() !== col.getFreezeTableName()
+                    && (!isLeft && Math.round(cliRect.right) < fhdrWidth)) {
+                    return;
+                }
             }
         }
         this.upArrow.style.top = cliRect.top + cliRect.height - cliRectBase.top + 'px';
@@ -544,7 +584,7 @@ export class Reorder implements IAction {
         if (!e.column.allowReordering || e.column.lockColumn) {
              return;
         }
-        let content: Element = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        let content: Element = gObj.isFrozenGrid() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
         this.x = getPosition(e.event).x + content.scrollLeft;
         gObj.trigger(events.columnDragStart, {
             target: target as Element, draggableType: 'headercell', column: e.column

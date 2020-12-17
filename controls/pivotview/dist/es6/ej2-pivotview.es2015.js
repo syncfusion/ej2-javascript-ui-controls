@@ -5939,6 +5939,10 @@ const VIRTUALTRACK_DIV = 'e-virtualtrack';
 /** @hidden */
 const MOVABLECONTENT_DIV = 'e-movablecontent';
 /** @hidden */
+const MOVABLESCROLL_DIV = 'e-movablescrollbar';
+/** @hidden */
+const MOVABLECHILD_DIV = 'e-movablechild';
+/** @hidden */
 const FROZENCONTENT_DIV = 'e-frozencontent';
 /** @hidden */
 const MOVABLEHEADER_DIV = 'e-movableheader';
@@ -6610,6 +6614,13 @@ class Render {
                     this.frameDataSource('value')
             }, true);
             /* tslint:enable */
+            if (this.parent.grid.height == 'auto') {
+                let mCntHeight = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).offsetHeight;
+                let dataHeight = this.parent.grid.dataSource.length * this.parent.gridSettings.rowHeight;
+                if (mCntHeight < dataHeight) {
+                    this.parent.grid.contentModule.setHeightToContent(dataHeight);
+                }
+            }
             this.parent.grid.notify('datasource-modified', {});
             if (this.parent.isScrolling) {
                 this.parent.resizeInfo = {};
@@ -6659,7 +6670,7 @@ class Render {
             setStyleAttribute(mHdr.querySelector('.e-table'), {
                 transform: (mCont.querySelector('.e-table').style.transform).split(',')[0] + ',' + 0 + 'px)'
             });
-            mHdr.scrollLeft = mCont.scrollLeft;
+            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft;
         }
     }
     /** @hidden */
@@ -6822,7 +6833,7 @@ class Render {
             }
             this.parent.gridHeaderCellInfo = [];
         }
-        if (this.parent.element.querySelector('.e-firstcell')) {
+        if (this.parent.element.querySelector('.e-firstcell') && !(this.parent.dataSourceSettings.values.length === 1 && this.parent.dataSourceSettings.columns.length > 0)) {
             if (this.parent.enableRtl) {
                 this.parent.element.querySelector('.e-firstcell').style.borderRight = 'none';
             }
@@ -6836,9 +6847,6 @@ class Render {
         /* tslint:disable-next-line */
         if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
-        }
-        if (this.parent.currentView !== 'Chart') {
-            this.parent.grid.hideScroll();
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
@@ -8062,10 +8070,10 @@ class Render {
                     let tableWidth = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV + ' .' + TABLE).offsetWidth;
                     let contentWidth = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).offsetWidth;
                     let horizontalOverflow = contentWidth < tableWidth;
-                    let verticalOverflow = contentHeight < tableHeight;
+                    //let verticalOverflow: boolean = contentHeight < tableHeight;
                     let commonOverflow = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
                     if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
-                        !verticalOverflow && !commonOverflow) {
+                        !commonOverflow) {
                         this.parent.grid.height = 'auto';
                     }
                     else {
@@ -9841,7 +9849,7 @@ class FilterDialog {
             items.push({ id: levels[i].id, text: levels[i].name });
         }
         this.dropMenu = new DropDownButton({
-            cssClass: 'e-level-drop',
+            cssClass: 'e-level-drop e-caret-hide',
             items: items, iconCss: 'e-icons e-dropdown-icon',
             disabled: (levelCount === levels.length),
             beforeOpen: (args) => {
@@ -12694,28 +12702,32 @@ class VirtualScroll$1 {
             EventHandler.clearEvents(mCont);
             EventHandler.clearEvents(fCont);
             if (this.engineModule) {
-                EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
-                EventHandler.add(mCont, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
-                EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
-                EventHandler.add(fCont, 'wheel', this.onWheelScroll(mCont, fCont), this);
-                EventHandler.add(fCont, 'touchstart pointerdown', this.setPageXY(), this);
-                EventHandler.add(fCont, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV), 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
+                EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(fCont, mCont), this);
+                EventHandler.add(mCont.parentElement.parentElement, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
+                // EventHandler.add(fCont.parentElement, 'wheel', this.onWheelScroll(mCont, fCont), this);
+                // EventHandler.add(fCont.parentElement, 'touchstart pointerdown', this.setPageXY(), this);
+                // EventHandler.add(fCont.parentElement, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
                 EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
             }
+            this.parent.grid.on('check-scroll-reset', (args) => {
+                args.cancel = true;
+            });
+            this.parent.grid.on('prevent-frozen-scroll-refresh', function (args) {
+                args.cancel = true;
+            });
             this.parent.grid.isPreventScrollEvent = true;
         }
     }
     onWheelScroll(mCont, fCont) {
         let element = mCont;
         return (e) => {
-            let top = element.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
+            let top = element.parentElement.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
             if (this.frozenPreviousValues.top === top) {
                 return;
             }
             e.preventDefault();
-            fCont.scrollTop = top;
-            element.scrollTop = top;
             this.frozenPreviousValues.top = top;
             this.eventType = e.type;
         };
@@ -12739,14 +12751,13 @@ class VirtualScroll$1 {
                 return;
             }
             let pageXY = this.getPointXY(e);
-            let top = element.scrollTop + (this.pageXY.y - pageXY.y);
-            let left = element.scrollLeft + (this.pageXY.x - pageXY.x);
+            let top = element.parentElement.scrollTop + (this.pageXY.y - pageXY.y);
+            let left = element.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft + (this.pageXY.x - pageXY.x);
             if (this.parent.element.querySelector('.' + HEADERCONTENT).contains(e.target)) {
                 if (this.frozenPreviousValues.left === left || left < 0) {
                     return;
                 }
                 mHdr.scrollLeft = left;
-                element.scrollLeft = left;
                 this.pageXY.x = pageXY.x;
                 this.frozenPreviousValues.left = left;
             }
@@ -12754,8 +12765,6 @@ class VirtualScroll$1 {
                 if (this.frozenPreviousValues.top === top || top < 0) {
                     return;
                 }
-                fCont.scrollTop = top;
-                element.scrollTop = top;
                 this.pageXY.y = pageXY.y;
                 this.frozenPreviousValues.top = top;
             }
@@ -12776,7 +12785,7 @@ class VirtualScroll$1 {
                 let section = Math.ceil(top / exactSize);
                 if ((this.parent.scrollPosObject.vertical === section ||
                     engine.pageSettings.rowSize >= engine.rowCount)) {
-                    this.parent.hideWaitingPopup();
+                    // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.showWaitingPopup();
@@ -12836,7 +12845,7 @@ class VirtualScroll$1 {
                     colValues * this.parent.gridSettings.columnWidth);
                 let section = Math.ceil(left / exactSize);
                 if (this.parent.scrollPosObject.horizontal === section) {
-                    this.parent.hideWaitingPopup();
+                    // this.parent.hideWaitingPopup();
                     return;
                 }
                 this.parent.showWaitingPopup();
@@ -12902,31 +12911,30 @@ class VirtualScroll$1 {
     }
     common(mHdr, mCont, fCont) {
         return (e) => {
-            this.update(mHdr, mCont, mCont.scrollTop * this.parent.verticalScrollScale, mCont.scrollLeft * this.parent.horizontalScrollScale, e);
+            this.update(mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale, e);
         };
     }
     onHorizondalScroll(mHdr, mCont, fCont) {
         /* tslint:disable-next-line */
         let timeOutObj;
         return (e) => {
-            let left = mCont.scrollLeft * this.parent.horizontalScrollScale;
+            let left = mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* tslint:disable */
                 timeOutObj = setTimeout(() => {
-                    left = e.type === 'touchmove' ? mCont.scrollLeft : left;
-                    this.update(mHdr, mCont, mCont.scrollTop * this.parent.verticalScrollScale, left, e);
+                    left = e.type === 'touchmove' ? mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft : left;
+                    this.update(mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e);
                 }, 300);
             }
             if (this.previousValues.left === left) {
-                fCont.scrollTop = mCont.scrollTop;
                 return;
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
-            let horiOffset = -((left - this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
+            let horiOffset = -((left - this.parent.scrollPosObject.horizontalSection - mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft));
             let vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',').length > 1 ?
                 mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim() : "0px)";
-            if (mCont.scrollLeft < this.parent.scrollerBrowserLimit) {
+            if (mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft < this.parent.scrollerBrowserLimit) {
                 setStyleAttribute(mCont.querySelector('.e-table'), {
                     transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
@@ -12952,9 +12960,8 @@ class VirtualScroll$1 {
                 else {
                     excessMove = -this.parent.scrollPosObject.horizontalSection;
                 }
-                horiOffset = -((left - (this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.scrollLeft));
-                let vWidth = (this.parent.gridSettings.columnWidth * this.engineModule.columnCount
-                    - this.parent.grid.columns[0].width);
+                horiOffset = -((left - (this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft));
+                let vWidth = (this.parent.gridSettings.columnWidth * this.engineModule.columnCount);
                 if (vWidth > this.parent.scrollerBrowserLimit) {
                     this.parent.horizontalScrollScale = vWidth / this.parent.scrollerBrowserLimit;
                     vWidth = this.parent.scrollerBrowserLimit;
@@ -12974,17 +12981,17 @@ class VirtualScroll$1 {
             this.previousValues.left = left;
             this.frozenPreviousValues.left = left;
             this.eventType = '';
-            mHdr.scrollLeft = mCont.scrollLeft;
+            mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft;
         };
     }
     onVerticalScroll(fCont, mCont) {
         let timeOutObj;
         return (e) => {
-            let top = mCont.scrollTop * this.parent.verticalScrollScale;
+            let top = mCont.parentElement.scrollTop * this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
-                    this.update(null, mCont, mCont.scrollTop * this.parent.verticalScrollScale, mCont.scrollLeft * this.parent.horizontalScrollScale, e);
+                    this.update(null, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, mCont.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
             /* tslint:enable */
@@ -12992,9 +12999,12 @@ class VirtualScroll$1 {
                 return;
             }
             this.parent.scrollDirection = this.direction = 'vertical';
-            let vertiOffset = -((top - this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
+            let vertiOffset = -((top - this.parent.scrollPosObject.verticalSection - mCont.parentElement.scrollTop));
             let horiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[0].trim();
-            if (mCont.scrollTop < this.parent.scrollerBrowserLimit) {
+            if (vertiOffset > this.parent.virtualDiv.clientHeight) {
+                vertiOffset = this.parent.virtualDiv.clientHeight;
+            }
+            if (mCont.parentElement.scrollTop < this.parent.scrollerBrowserLimit) {
                 setStyleAttribute(fCont.querySelector('.e-table'), {
                     transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
                 });
@@ -13003,15 +13013,15 @@ class VirtualScroll$1 {
                 });
             }
             let excessMove = this.parent.scrollPosObject.verticalSection > top ?
-                -(this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.clientHeight) -
+                -(this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.parentElement.clientHeight) -
                 (this.parent.scrollPosObject.verticalSection + fCont.querySelector('.e-table').offsetHeight));
             let notLastPage = Math.ceil(this.parent.scrollPosObject.verticalSection / this.parent.verticalScrollScale) <
                 this.parent.scrollerBrowserLimit;
             if (this.parent.scrollPosObject.verticalSection > top ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
-                if (top > fCont.clientHeight) {
+                if (top > fCont.parentElement.clientHeight) {
                     if (this.parent.scrollPosObject.top < 1) {
-                        this.parent.scrollPosObject.top = fCont.clientHeight;
+                        this.parent.scrollPosObject.top = fCont.parentElement.clientHeight;
                     }
                     this.parent.scrollPosObject.top = this.parent.scrollPosObject.top - 50;
                     excessMove = this.parent.scrollPosObject.verticalSection > top ?
@@ -13021,7 +13031,7 @@ class VirtualScroll$1 {
                     excessMove = -this.parent.scrollPosObject.verticalSection;
                 }
                 let movableTable = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.e-table');
-                vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.scrollTop));
+                vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.parentElement.scrollTop));
                 let vHeight = (this.parent.gridSettings.rowHeight * this.engineModule.rowCount + 0.1
                     - movableTable.clientHeight);
                 if (vHeight > this.parent.scrollerBrowserLimit) {
@@ -13031,6 +13041,9 @@ class VirtualScroll$1 {
                 if (vertiOffset > vHeight && vertiOffset > top) {
                     vertiOffset = top;
                     excessMove = 0;
+                }
+                if (vertiOffset > this.parent.virtualDiv.clientHeight) {
+                    vertiOffset = this.parent.virtualDiv.clientHeight;
                 }
                 setStyleAttribute(fCont.querySelector('.e-table'), {
                     transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
@@ -13043,8 +13056,6 @@ class VirtualScroll$1 {
             this.previousValues.top = top;
             this.frozenPreviousValues.top = top;
             this.eventType = '';
-            fCont.scrollTop = mCont.scrollTop;
-            mCont.scrollTop = fCont.scrollTop;
         };
     }
     /**
@@ -14007,7 +14018,7 @@ class PivotChart {
         let columnHeader = (this.parent.chartSettings.columnHeader && this.parent.chartSettings.columnHeader !== '') ?
             this.parent.chartSettings.columnHeader.split(delimiter).join(' - ') : '';
         let chartType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
-        if (this.accumulationType.indexOf(chartType) > -1) {
+        if (this.accumulationType.indexOf(chartType) > -1 && columnKeys.length > 0) {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             let currentSeries = {};
             currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) : currentSeries;
@@ -14335,6 +14346,12 @@ class PivotChart {
                 }
             }
             this.parent.chart.refresh();
+            if ((this.accumulationType.indexOf(type) > -1) && this.parent.chart.getModuleName() === 'accumulationchart' && (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0)) {
+                this.parent.hideWaitingPopup();
+                if (this.parent.pivotFieldListModule) {
+                    hideSpinner(this.parent.pivotFieldListModule.fieldListSpinnerElement);
+                }
+            }
         }
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultiAxis) {
             this.parent.chart.appendTo('#' + this.parent.element.id + '_chartInner');
@@ -18550,7 +18567,8 @@ class OlapEngine {
                         this.tupColumnInfo[coll.ordinal].allStartPos === 1 : this.tupColumnInfo[coll.ordinal].allStartPos === 0;
                     if (isGrandTotal ? (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showColumnGrandTotals) : true) {
                         this.frameCommonColumnLoop(coll.members, coll.ordinal, position, maxLevel, minLevel, allType);
-                        if (this.tupColumnInfo[coll.ordinal].showTotals) {
+                        let attrDrill = this.checkAttributeDrill(this.tupColumnInfo[coll.ordinal].drillInfo, 'columns');
+                        if (this.tupColumnInfo[coll.ordinal].showTotals || attrDrill) {
                             position++;
                         }
                     }
@@ -18734,7 +18752,8 @@ class OlapEngine {
                 memberPos++;
             }
         }
-        if (this.tupColumnInfo[tupPos].showTotals) {
+        let attrDrill = this.checkAttributeDrill(this.tupColumnInfo[tupPos].drillInfo, 'columns');
+        if (this.tupColumnInfo[tupPos].showTotals || attrDrill) {
             let memPos = 0;
             let spanMemPos = 0;
             let colMembers = {};
@@ -19287,6 +19306,7 @@ class OlapEngine {
                 let rowflag = false;
                 let tupColInfo = this.tupColumnInfo[currCell.ordinal];
                 let isSubTot = tupColInfo.allStartPos > (tupColInfo.typeCollection[0] === '3' ? 1 : 0);
+                let attrDrill = this.checkAttributeDrill(tupColInfo.drillInfo, 'columns');
                 if (nextRowCell && nextColCell && ((currCell.memberType === 2 || currCell.level === -1) ?
                     (nextColCell.actualText === currCell.actualText) :
                     ((currCell.memberType === 3 && currCell.actualText === nextColCell.actualText) ||
@@ -19308,7 +19328,9 @@ class OlapEngine {
                 }
                 if (currCell.memberType === 2) {
                     if (isSubTot) {
-                        currCell.type = 'sum';
+                        if (!attrDrill) {
+                            currCell.type = 'sum';
+                        }
                         /* tslint:disable-next-line:max-line-length */
                         //currCell.formattedText = (this.pivotValues[tupColInfo.allStartPos - 1] as IAxisSet[])[colPos].formattedText + ' Total';
                         currCell.formattedText = 'Total';
@@ -19421,6 +19443,7 @@ class OlapEngine {
                         let value = '0';
                         let measureName = this.getUniqueName(measure);
                         let showTotals = true;
+                        let attrDrill = (this.fieldList[columns[0].hierarchy] && this.fieldList[columns[0].hierarchy].isHierarchy && columns[0].isDrilled);
                         if (this.tupRowInfo[rowOrdinal]) {
                             showTotals = this.tupRowInfo[rowOrdinal].showTotals;
                         }
@@ -19428,10 +19451,10 @@ class OlapEngine {
                             showTotals = this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals;
                         }
                         valElement = valCollection[(rowOrdinal - startRowOrdinal) * colLength + colOrdinal];
-                        formattedText = !showTotals ? '' :
+                        formattedText = (!showTotals && attrDrill) ? '' :
                             ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('FmtValue'))) ?
                                 valElement.querySelector('FmtValue').textContent : this.emptyCellTextContent);
-                        value = !showTotals ? '0' :
+                        value = (!showTotals && attrDrill) ? '0' :
                             ((!isNullOrUndefined(valElement) && !isNullOrUndefined(valElement.querySelector('Value'))) ?
                                 valElement.querySelector('Value').textContent : null);
                         formattedText = showTotals && !isNullOrUndefined(value) ?
@@ -21780,6 +21803,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.pivotRefresh = Component.prototype.refresh;
         this.isScrolling = false;
         this.allowServerDataBinding = false;
+        this.isStaticRefresh = false;
         this.setProperties({ pivotValues: [] }, true);
         /* tslint:disable-next-line:no-any */
         delete this.bulkChanges.pivotValues;
@@ -23243,8 +23267,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     this.verticalScrollScale = vHeight / this.scrollerBrowserLimit;
                     vHeight = this.scrollerBrowserLimit;
                 }
-                let vWidth = (this.gridSettings.columnWidth * engine.columnCount
-                    - this.grid.columns[0].width);
+                let vWidth = this.gridSettings.columnWidth * engine.columnCount;
                 if (vWidth > this.scrollerBrowserLimit) {
                     this.horizontalScrollScale = vWidth / this.scrollerBrowserLimit;
                     vWidth = this.scrollerBrowserLimit;
@@ -23259,13 +23282,13 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 let mCnt = this.element.querySelector('.' + MOVABLECONTENT_DIV);
                 let fCnt = this.element.querySelector('.' + FROZENCONTENT_DIV);
                 let mHdr = this.element.querySelector('.' + MOVABLEHEADER_DIV);
-                let verOffset = (mCnt.scrollTop > this.scrollerBrowserLimit) ?
+                let verOffset = (mCnt.parentElement.scrollTop > this.scrollerBrowserLimit) ?
                     mCnt.querySelector('.' + TABLE).style.transform.split(',')[1].trim() :
-                    -(((mCnt.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.scrollTop)) + 'px)';
-                let horiOffset = (mCnt.scrollLeft > this.scrollerBrowserLimit) ?
+                    -(((mCnt.parentElement.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.parentElement.scrollTop)) + 'px)';
+                let horiOffset = (mCnt.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft > this.scrollerBrowserLimit) ?
                     (mCnt.querySelector('.' + TABLE).style.transform.split(',')[0].trim() + ',') :
-                    'translate(' + -(((mCnt.scrollLeft * this.horizontalScrollScale) -
-                        this.scrollPosObject.horizontalSection - mCnt.scrollLeft)) + 'px,';
+                    'translate(' + -(((mCnt.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft * this.horizontalScrollScale) -
+                        this.scrollPosObject.horizontalSection - mCnt.parentElement.parentElement.querySelector('.' + MOVABLESCROLL_DIV).scrollLeft)) + 'px,';
                 setStyleAttribute(fCnt.querySelector('.e-table'), {
                     transform: 'translate(' + 0 + 'px,' + verOffset
                 });
@@ -23275,6 +23298,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 setStyleAttribute(mHdr.querySelector('.e-table'), {
                     transform: horiOffset + 0 + 'px)'
                 });
+                this.grid.element.querySelector('.' + MOVABLECHILD_DIV).style.width = vWidth + 'px';
+                if (this.grid.height !== 'auto') {
+                    this.grid.contentModule.setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);
+                }
+                else {
+                    this.grid.contentModule.setHeightToContent(this.element.querySelector('.' + FROZENCONTENT_DIV + ' .' + TABLE).offsetHeight);
+                }
+            }
+            if (this.currentView !== 'Chart') {
+                this.grid.hideScroll();
             }
             if (this.showGroupingBar) {
                 this.element.style.minWidth = '400px';
@@ -24174,11 +24207,15 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.grid.isStringTemplate = true;
             this.grid.appendTo('#' + this.element.id + '_grid');
             /* tslint:disable-next-line:no-any */
+            this.grid.on('refresh-frozen-height', () => {
+                if (!this.enableVirtualization) {
+                    this.grid.contentModule.setHeightToContent(this.grid.contentModule.getTable().offsetHeight);
+                }
+            });
             this.grid.off('data-ready', this.grid.dataReady);
             this.grid.on('data-ready', () => {
                 this.grid.scrollModule.setWidth();
                 this.grid.scrollModule.setHeight();
-                this.grid.element.querySelector('.e-movablecontent').style.overflowY = 'auto';
             });
         }
     }
@@ -27615,7 +27652,12 @@ class PivotButton {
     updateFiltering(args) {
         /* tslint:disable */
         let pivotObj = this.parent.pivotGridModule ? this.parent.pivotGridModule : this.parent;
-        pivotObj.showWaitingPopup();
+        if (pivotObj.getModuleName() === 'pivotfieldlist') {
+            showSpinner(pivotObj.fieldListSpinnerElement);
+        }
+        else {
+            pivotObj.showWaitingPopup();
+        }
         pivotObj.mouseEventArgs = args;
         pivotObj.filterTargetID = this.parent.pivotCommon.moduleName !== 'pivotfieldlist' ?
             this.parent.element : document.getElementById(this.parent.pivotCommon.parentID + '_Wrapper');
@@ -27666,7 +27708,12 @@ class PivotButton {
             // this.parent.pivotCommon.filterDialog.allMemberSelect.nodeChecked = this.nodeStateModified.bind(this);
             this.bindDialogEvents();
         }
-        pivotObj.hideWaitingPopup();
+        if (pivotObj.getModuleName() === 'pivotfieldlist') {
+            hideSpinner(pivotObj.fieldListSpinnerElement);
+        }
+        else {
+            pivotObj.hideWaitingPopup();
+        }
     }
     bindDialogEvents() {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {
@@ -31639,7 +31686,8 @@ class FieldList {
                 ';display:none'
         });
         let containerWrapper = createElement('div', {
-            id: this.parent.element.id + 'containerwrapper'
+            id: this.parent.element.id + 'containerwrapper',
+            styles: 'height:' + this.parent.element.parentElement.getBoundingClientRect().height + 'px'
         });
         this.parent.element.parentElement.appendChild(containerWrapper);
         containerWrapper.appendChild(this.element);

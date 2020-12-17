@@ -993,7 +993,12 @@ export class ResourceBase {
             if (!this.parent.activeViewOptions.group.byGroupID) {
                 index = this.getIndexFromResourceId(id, levelName, resource);
             } else {
-                index = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
+                if (levelName === this.parent.resourceCollection.slice(-1)[0].name) {
+                    index = (this.lastResourceLevel as Object[]).map((e: { [key: string]: Object }) =>
+                        (e.resourceData as { [key: string]: Object })[resource.idField]).indexOf(id);
+                } else {
+                    index = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
+                }
             }
             let offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
             let offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);

@@ -2640,6 +2640,17 @@ export class CommandHandler {
     }
 
     /** @private */
+    // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+    public clearObjectSelection(mouseDownElement: (NodeModel | ConnectorModel)): void {
+        let selectedItems: SelectorModel = this.diagram.selectedItems;
+        let list: (NodeModel | ConnectorModel)[] = [];
+        list = list.concat(selectedItems.nodes, selectedItems.connectors);
+        if (list.indexOf(mouseDownElement) === -1) {
+            this.clearSelection((list.length>0) ? true : false);
+            this.selectObjects([mouseDownElement], true);
+        }
+    }
+    /** @private */
     public async clearSelection(triggerAction?: boolean, isTriggered?: boolean): Promise<void> {
         let enableServerDataBinding: boolean = this.diagram.allowServerDataBinding;
         this.diagram.enableServerDataBinding(false);
@@ -2719,7 +2730,6 @@ export class CommandHandler {
         let selectedConnectors: number = this.diagram.selectedItems.connectors ? this.diagram.selectedItems.connectors.length : 0;
         this.clearSelection((selectedNodes + selectedConnectors) > 0 ? true : false);
     }
-
     /** 
      * @private
      */

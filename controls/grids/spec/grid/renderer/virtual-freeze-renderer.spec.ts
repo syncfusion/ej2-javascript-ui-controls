@@ -5,14 +5,16 @@ import { Grid } from '../../../src/grid/base/grid';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { createGrid, destroy } from '../base/specutil.spec';
-import { getTransformValues } from '../../../src/grid/base/util';
+import { getTransformValues, parentsUntil } from '../../../src/grid/base/util';
 import { NotifyArgs, IGrid } from '../../../src/grid/base/interface';
 import { Row } from '../../../src/grid/models/row';
 import { Column } from '../../../src/grid/models/column';
 import { EmitType, createElement, extend } from '@syncfusion/ej2-base';
 import { GridModel } from '../../../src/grid/base/grid-model';
+import { Filter } from '../../../src/grid/actions/filter';
+import { Reorder } from '../../../src/grid/actions/reorder';
 
-Grid.Inject(Freeze, VirtualScroll);
+Grid.Inject(Freeze, VirtualScroll, Filter, Reorder);
 
 let ctr: number = 0;
 let count500: string[] = Array.apply(null, Array(5)).map(() => 'Column' + ++ctr + '');
@@ -67,15 +69,17 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         let fHdr: HTMLElement;
         let mRowBeforeScroll: Element;
         let fRowBeforeScroll: Element;
+        let scrollEle: HTMLElement;
+        let virtualTable: HTMLElement;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: data2,
+                    dataSource: data1,
                     frozenColumns: 2,
                     enableVirtualization: true,
                     height: 400,
-                    columns: count5000
+                    columns: count500
                 }, done);
         });
 
@@ -84,6 +88,8 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
             mCont = gridObj.getContent().querySelector('.e-movablecontent');
             mHdr = gridObj.getHeaderContent().querySelector('.e-movableheader');
             fHdr = gridObj.getHeaderContent().querySelector('.e-movableheader');
+            scrollEle = gridObj.getContent().firstElementChild;
+            virtualTable = gridObj.getContent().querySelector('.e-virtualtable');
             fRowBeforeScroll = fCont.querySelector('.e-row');
             mRowBeforeScroll = mCont.querySelector('.e-row');
         });
@@ -95,14 +101,12 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('Ensure tables, virtualtracks and its count', () => {
-            expect(fCont.querySelectorAll('.e-virtualtable').length).toBe(1);
-            expect(mCont.querySelectorAll('.e-virtualtable').length).toBe(1);
-            expect(mHdr.querySelector('.e-virtualtable')).toBeNull();
-            expect(fHdr.querySelector('.e-virtualtable')).toBeNull();
-            expect(fCont.querySelectorAll('.e-virtualtrack').length).toBe(1);
-            expect(mCont.querySelectorAll('.e-virtualtrack').length).toBe(1);
-            expect(mHdr.querySelector('.e-virtualtrack')).toBeNull();
-            expect(fHdr.querySelector('.e-virtualtrack')).toBeNull();
+            expect(parentsUntil(fCont, 'e-virtualtable')).toBeTruthy();
+            expect(parentsUntil(mCont, 'e-virtualtable')).toBeTruthy();
+            expect(parentsUntil(fHdr, 'e-virtualtable')).toBeFalsy();
+            expect(parentsUntil(mHdr, 'e-virtualtable')).toBeFalsy();
+            expect(gridObj.getContent().querySelectorAll('.e-virtualtrack').length).toBe(1);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-virtualtrack').length).toBe(0);
         });
 
         it('Ensure rows and its count', () => {
@@ -111,48 +115,36 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('Ensure transform values before scroll', () => {
-            let mVTblTrans: { width: number, height: number } = getTransformValues(mCont.firstElementChild);
-            let fVTblTrans: { width: number, height: number } = getTransformValues(fCont.firstElementChild);
+            let mVTblTrans: { width: number, height: number } = getTransformValues(virtualTable);
             expect(mVTblTrans.height).toBe(0);
-            expect(fVTblTrans.height).toBe(0);
         });
 
         it('Ensure position absolute', () => {
-            expect((mCont.firstElementChild as HTMLElement).style.position).toBe("");
-            expect((fCont.firstElementChild as HTMLElement).style.position).toBe("");
+            expect(virtualTable.style.position).toBe("");
         });
 
         it('Perform scrolling', (done: Function) => {
-            mCont.scrollTop = 2500;
+            scrollEle.scrollTop = 2500;
             setTimeout(done, 400);
         });
 
         it('Check rows count after scrolling', () => {
             let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
-            let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
-            let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
-            let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
+            let mVTblTrans: { width: number, height: number } = getTransformValues(virtualTable);
             expect(fcnt.querySelectorAll('.e-row').length).toBe(mCont.querySelectorAll('.e-row').length);
             expect(fcnt.querySelector('.e-row')).not.toBe(mCont.querySelector('.e-row'));
             expect(mVTblTrans.height).not.toBe(0);
-            expect(fVTblTrans.height).not.toBe(0);
-            expect(fVTblTrans.height).toBe(mVTblTrans.height);
-            expect(fVTblTrans.width).toBe(0);
             expect(mVTblTrans.width).toBe(0);
         });
 
         it('Go to first page', (done: Function) => {
-            mCont.scrollTop = 0;
+            scrollEle.scrollTop = 0;
             setTimeout(done, 400);
         });
 
         it('ensure transform values in first page', () => {
-            let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
-            let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
-            let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
-            let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
+            let mVTblTrans: { width: number, height: number } = getTransformValues(virtualTable);
             expect(mVTblTrans.height).toBe(0);
-            expect(fVTblTrans.height).toBe(0);
         });
 
         afterAll(() => {
@@ -162,21 +154,23 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
 
     describe('Freeze Row and Column', () => {
         let gridObj: any;
+        let virtualTable: HTMLElement;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: data2,
+                    dataSource: data1,
                     frozenColumns: 2,
                     frozenRows: 2,
                     enableVirtualization: true,
                     height: 400,
-                    columns: count5000
+                    columns: count500
                 }, done);
         });
 
         it('Change dynamically', () => {
             gridObj.dataBound = function (done: Function) {
+                virtualTable = gridObj.getContent().querySelector('.e-virtualtable');
                 let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
                 let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
                 expect(fcnt.querySelector('.e-row').children.length).toBe(gridObj.frozenColumns);
@@ -186,10 +180,8 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
                 let mHdr: Element = gridObj.getHeaderContent().querySelector('.e-movableheader');
                 expect(fHdr.querySelectorAll('.e-row').length).toBe(gridObj.frozenRows);
                 expect(mHdr.querySelectorAll('.e-row').length).toBe(gridObj.frozenRows);
-                let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
-                let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
+                let mVTblTrans: { width: number, height: number } = getTransformValues(virtualTable);
                 expect(mVTblTrans.height).not.toBe(0);
-                expect(fVTblTrans.height).not.toBe(0);
                 done();
             },
             gridObj.frozenColumns = 4;
@@ -198,6 +190,7 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('Ensure new methods', () => {
@@ -206,12 +199,12 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: data2,
+                    dataSource: data1,
                     frozenColumns: 2,
                     frozenRows: 2,
                     enableVirtualization: true,
                     height: 400,
-                    columns: count5000
+                    columns: count500
                 }, done);
         });
 
@@ -289,14 +282,18 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('Ensure tables, virtual tracks, cells and its count', () => {
-            expect(fCont.querySelectorAll('.e-virtualtable').length).toBe(1);
-            expect(mCont.querySelectorAll('.e-virtualtable').length).toBe(1);
+            expect(parentsUntil(fHdr, 'e-virtualtable')).toBeTruthy();
+            expect(parentsUntil(mHdr, 'e-virtualtable')).toBeTruthy();
+            expect(parentsUntil(fCont, 'e-virtualtable')).toBeTruthy();
+            expect(parentsUntil(mCont, 'e-virtualtable')).toBeTruthy();
             expect(mHdr.querySelectorAll('.e-virtualtable').length).toBe(1);
-            expect(fHdr.querySelectorAll('.e-virtualtable').length).toBe(1);
-            expect(fCont.querySelectorAll('.e-virtualtrack').length).toBe(1);
-            expect(mCont.querySelectorAll('.e-virtualtrack').length).toBe(1);
             expect(mHdr.querySelectorAll('.e-virtualtrack').length).toBe(1);
-            expect(fHdr.querySelectorAll('.e-virtualtrack').length).toBe(1);
+            expect(mCont.querySelectorAll('.e-virtualtable').length).toBe(1);
+            expect(mCont.querySelectorAll('.e-virtualtrack').length).toBe(1);
+            expect(gridObj.getContent().querySelectorAll('.e-virtualtrack').length).toBe(2);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-virtualtrack').length).toBe(2);
+            expect(gridObj.getContent().querySelectorAll('.e-virtualtable').length).toBe(2);
+            expect(gridObj.getHeaderContent().querySelectorAll('.e-virtualtable').length).toBe(2);
 
             expect(fCont.querySelector('.e-row').children.length).toBe(gridObj.frozenColumns);
             let len: number = Object.keys(gridObj.dataSource[0]).length;
@@ -304,8 +301,8 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('Ensure transform value before scrolling', () => {
-            let mVTblTrans: { width: number, height: number } = getTransformValues(mCont.firstElementChild);
-            let fVTblTrans: { width: number, height: number } = getTransformValues(fCont.firstElementChild);
+            let mVTblTrans: { width: number, height: number } = getTransformValues(gridObj.getContent().querySelector('.e-virtualtable'));
+            let fVTblTrans: { width: number, height: number } = getTransformValues(mCont.querySelector('.e-virtualtable'));
             expect(mVTblTrans.width).toBe(0);
             expect(fVTblTrans.width).toBe(0);
             expect(mVTblTrans.height).toBe(0);
@@ -336,15 +333,14 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('scroll left', (done: Function) => {
-            gridObj.getContent().querySelector('.e-movablecontent').scrollLeft = 800;
-            setTimeout(done, 200);
+            gridObj.getContent().querySelector('.e-movablescrollbar').scrollLeft = 800;
+            setTimeout(done, 400);
         })
 
         it('Ensure tables transform value', () => {
-            let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
             let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
-            let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
-            let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
+            let fVTblTrans: { width: number, height: number } = getTransformValues(gridObj.getContent().querySelector('.e-virtualtable'));
+            let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.querySelector('.e-virtualtable'));
             expect(fVTblTrans.height).toBe(0);
             expect(mVTblTrans.height).toBe(0);
             expect(fVTblTrans.width).toBe(0);
@@ -352,7 +348,7 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
         
         it('scroll to bottom', function (done) {
-            gridObj.getContent().querySelector('.e-movablecontent').scrollTop = 800;
+            gridObj.getContent().firstElementChild.scrollTop = 800;
             setTimeout(done, 400);
         });
 
@@ -404,23 +400,21 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
                     enableColumnVirtualization: true,
                     enableVirtualization: true,
                     height: 400
-                },
-                () => {
-                    gridObj.getContent().querySelector('.e-movablecontent').scrollLeft = 800;
-                    setTimeout(done, 100);
-                }
-            );
+                }, done);
         });
 
         it('Ensure Header row', function (done) {
-            gridObj.getContent().querySelector('.e-movablecontent').scrollTop = 800;
+            gridObj.getContent().querySelector('.e-movablescrollbar').scrollLeft = 800;
             setTimeout(done, 400);
         });
 
         it ('Ensure header transform', () => {
-            let transform: { width: number, height: number } = getTransformValues(gridObj.getMovableVirtualContent().firstElementChild);
-            expect(transform.height).not.toBe(0);
-            expect(transform.width).not.toBe(0);
+            let transform1: { width: number, height: number } = getTransformValues(gridObj.getHeaderContent().querySelector('.e-virtualtable'));
+            let transform2: { width: number, height: number } = getTransformValues(gridObj.getMovableVirtualHeader().firstElementChild);
+            expect(transform1.height).toBe(0);
+            expect(transform1.width).toBe(0);
+            expect(transform2.height).toBe(0);
+            expect(transform2.width).not.toBe(0);
         });
 
         afterAll(() => {
@@ -455,7 +449,7 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('scroll left', (done: Function) => {
-            gridObj.getMovableVirtualContent().scrollLeft = 1000;
+            gridObj.getContent().querySelector('.e-movablescrollbar').scrollLeft = 1000;
             setTimeout(done, 400);
         });
 
@@ -512,10 +506,23 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
                 if (args.requestType === 'reorder') {
                     let cols: Column[] = gridObj.getColumns();
                     let rowObjects: Row<Column>[] = gridObj.getRowsObject();
-                    let fhdrTable: Element | null = gridObj.getFrozenVirtualHeader().querySelector('.e-virtualtable').firstElementChild;
-                    let mhdrTable: Element | null = gridObj.getMovableVirtualContent().querySelector('.e-virtualtable').firstElementChild;
-                    expect(fhdrTable).not.toBeNull();
-                    expect(mhdrTable).not.toBeNull();
+                    let vTblLength: number = gridObj.getHeaderContent().querySelectorAll('.e-virtualtable').length;
+                    let mTblLength: number = gridObj.getMovableVirtualHeader().querySelectorAll('.e-virtualtable').length;
+                    let vTrkLength: number = gridObj.getHeaderContent().querySelectorAll('.e-virtualtrack').length;
+                    let mTrkLength: number = gridObj.getMovableVirtualHeader().querySelectorAll('.e-virtualtrack').length;
+                    expect(vTblLength).toBe(2);
+                    expect(mTblLength).toBe(1);
+                    expect(vTrkLength).toBe(2);
+                    expect(mTrkLength).toBe(1);
+
+                    let cvTblLength: number = gridObj.getContent().querySelectorAll('.e-virtualtable').length;
+                    let cmTblLength: number = gridObj.getMovableVirtualContent().querySelectorAll('.e-virtualtable').length;
+                    let cvTrkLength: number = gridObj.getContent().querySelectorAll('.e-virtualtrack').length;
+                    let cmTrkLength: number = gridObj.getMovableVirtualContent().querySelectorAll('.e-virtualtrack').length;
+                    expect(cvTblLength).toBe(2);
+                    expect(cmTblLength).toBe(1);
+                    expect(cvTrkLength).toBe(2);
+                    expect(cmTrkLength).toBe(1);
                     expect(cols[gridObj.getFrozenColumns()].field).toBe(fromCol);
                     expect(rowObjects[0].data[cols[gridObj.getFrozenColumns()].field]).toBe(fromColCellValue);
                     expect(rowObjects[0].data[cols[gridObj.getFrozenColumns() - 1].field]).toBe(toColCellValue);

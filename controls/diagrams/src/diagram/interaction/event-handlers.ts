@@ -235,15 +235,15 @@ export class DiagramEventHandler {
 
 
     /** @private */
-
     private updateCursor(): void {
         if ((this.diagram.selectedItems.nodes.length === 1 || this.diagram.selectedItems.connectors.length === 1)) {
             let list: (NodeModel | ConnectorModel)[] = [];
             list = list.concat(this.diagram.selectedItems.nodes, this.diagram.selectedItems.connectors);
-            this.blocked = (this.isMouseDown && list.length === 1 && this.tool instanceof SelectTool && !canMove(list[0]));
+            // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
+            this.blocked = (this.eventArgs && this.eventArgs.source && !canMove(this.eventArgs.source)) ? false :
+                (this.isMouseDown && list.length === 1 && this.tool instanceof SelectTool && !canMove(list[0]));
         }
     }
-
     private isForeignObject(target: HTMLElement, isTextBox?: boolean): HTMLElement {
         let foreignobject: HTMLElement = target;
         if (foreignobject) {
@@ -796,7 +796,7 @@ export class DiagramEventHandler {
             }
             this.eventArgs = {};
         }
-        this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
+        this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
     }
     /* tslint:enable */
 

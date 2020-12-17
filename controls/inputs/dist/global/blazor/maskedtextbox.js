@@ -616,7 +616,13 @@ function triggerMaskChangeEvent(event, oldValue) {
         this.value = this.changeEventArgs.value;
         this.isProtectedOnChange = prevOnChange;
         sf.base.merge(eventArgs, this.changeEventArgs);
-        this.trigger('change', eventArgs);
+        /* istanbul ignore next */
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);
@@ -1085,6 +1091,8 @@ var MaskedTextBox = /** @class */ (function (_super) {
     function MaskedTextBox(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.initInputValue = '';
+        _this.isAngular = false;
+        _this.preventChange = false;
         _this.maskOptions = options;
         return _this;
     }

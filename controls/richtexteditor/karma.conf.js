@@ -25,7 +25,16 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-inputs/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false }
+      { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-layouts/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-excel-export/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-filemanager/**/*.js", included: false }
       // Add dependent package's script files here
     ],
 

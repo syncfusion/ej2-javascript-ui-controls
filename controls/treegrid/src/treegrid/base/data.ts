@@ -5,7 +5,7 @@ import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { getObject, BeforeDataBoundArgs, VirtualContentRenderer, getUid, Row, Column } from '@syncfusion/ej2-grids';
 import { ColumnModel as GridColumnModel, NotifyArgs, SaveEventArgs, Action, VirtualInfo } from '@syncfusion/ej2-grids';
-import { isRemoteData, isOffline, isCountRequired } from '../utils';
+import { isRemoteData, isOffline, isCountRequired, findChildrenRecords } from '../utils';
 import * as events from './constant';
 
 /**
@@ -451,10 +451,6 @@ public isRemote(): boolean {
       if (this.parent.editSettings.mode === 'Batch') {
           this.batchChanges = this.parent.grid.editModule.getBatchChanges();
       }
-      if (action === 'add' || (requestType === 'batchsave' && (this.parent.editSettings.mode === 'Batch'
-          && this.batchChanges[this.addedRecords].length))) {
-        this.parent.grid.currentViewData = args.result;
-      }
       if (this.parent.isLocalData) {
         this.updateAction(actionData, action, requestType);
       }
@@ -545,6 +541,17 @@ public isRemote(): boolean {
       this.parent.notify(events.pagingActions, {result: results, count: count, actionArgs: getValue('actionArgs', args)});
       results = <ITreeData[]>this.dataResults.result;
       count = this.dataResults.count;
+    }
+    if (isPrinting === true && this.parent.printMode === 'AllPages') {
+      let actualResults: ITreeData[] = [];
+      for (let i: number = 0; i < results.length; i++) {
+        actualResults.push(results[i]);
+        if (results[i].expanded === false) {
+          i += findChildrenRecords(results[i]).length;
+        }
+      }
+      results = actualResults;
+      count = results.length;
     }
     let value: BeforeDataBoundArgs = { result: results, count: count };
     return value;

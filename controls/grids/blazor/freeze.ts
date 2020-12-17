@@ -133,7 +133,7 @@ export class Freeze {
         // }
     }
 
-    private refreshStackedHdrHgt(): void {
+    public refreshStackedHdrHgt(): void {
         let fRowSpan: { min: number, max: number };
         let mRowSpan: { min: number, max: number };
         let fTr: NodeListOf<Element> = this.getFrozenHeader().querySelectorAll('.e-columnheader');

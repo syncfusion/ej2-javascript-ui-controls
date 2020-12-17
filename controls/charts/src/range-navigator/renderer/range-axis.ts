@@ -361,7 +361,7 @@ export class RangeNavigatorAxis extends DateTime {
                 new TextOption(
                     this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text),
                 argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor,
-                labelElement) as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'pointer' : 'default';
+                labelElement) as HTMLElement).style.cursor = axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default';
             prevX = pointX;
             prevLabel = label;
         }

@@ -25,6 +25,7 @@ export interface IGridOptions {
     aggregatesCount: number;
     enableVirtualization: boolean;
     enableColumnVirtualization: boolean;
+    enableVirtualMaskRow: boolean;
     editMode: string;
     newRowPosition: string;
     allowPaging: boolean;

@@ -550,9 +550,6 @@ var TooltipSettings = /** @class */ (function (_super) {
     __decorate$1([
         sf.base.Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
-    __decorate$1([
-        sf.base.Property('None')
-    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(sf.base.ChildProperty));
 /**
@@ -946,9 +943,7 @@ var Double = /** @class */ (function () {
         if (axis.visibleRange.interval && (axis.visibleRange.interval + '').indexOf('.') >= 0) {
             intervalDigits = (axis.visibleRange.interval + '').split('.')[1].length;
         }
-        var duplicateTempInterval;
-        for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
-            duplicateTempInterval = tempInterval;
+        for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
             labelStyle = (sf.base.extend({}, sf.base.getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
@@ -6100,7 +6095,8 @@ var AccumulationChart = /** @class */ (function (_super) {
         else {
             for (var i = 0; i < currentSeries.points.length; i++) {
                 currentSeries.points[i].y = currentSeries.dataSource[i].y;
-                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping];
+                currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping] != null
+                    ? currentSeries.dataSource[i][currentSeries.pointColorMapping] : currentSeries.points[i].color;
                 currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
             }
             this.redraw = this.enableAnimation;
@@ -9325,10 +9321,9 @@ var BaseTooltip = /** @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate, tooltipPosition) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
-        if (tooltipPosition === void 0) { tooltipPosition = 'None'; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (!module) { // For the tooltip enable is false.
@@ -9337,7 +9332,7 @@ var BaseTooltip = /** @class */ (function (_super) {
         var isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
         var inverted = this.chart.requireInvertedAxis && series.isRectSeries;
         var position = null;
-        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+        if (this.text.length <= 1) {
             var contentSize = sf.svgbase.measureText(this.text[0], chart.tooltip.textStyle);
             var headerSize = (!(this.header === '' || this.header === '<b></b>')) ? sf.svgbase.measureText(this.header, this.textStyle) :
                 new sf.svgbase.Size(0, 0);
@@ -9351,11 +9346,11 @@ var BaseTooltip = /** @class */ (function (_super) {
             isNegative = (position === 'Left') || (position === 'Bottom');
             inverted = (position === 'Left') || (position === 'Right');
         }
-        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
-            position = tooltipPosition;
-            isNegative = (position === 'Left') || (position === 'Bottom');
-            inverted = (position === 'Left') || (position === 'Right');
-        }
+        // else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+        //     position = tooltipPosition as TooltipPlacement;
+        //     isNegative = (position === 'Left') || (position === 'Bottom');
+        //     inverted = (position === 'Left') || (position === 'Right');
+        // }
         if (isFirst) {
             this.svgTooltip = new sf.svgbase.Tooltip({
                 opacity: chart.tooltip.opacity,

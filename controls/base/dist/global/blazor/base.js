@@ -5635,8 +5635,8 @@ var Base = /** @class */ (function () {
         }
         newChanges = newChanges ? newChanges : {};
         extend(this.bulkChanges, {}, newChanges, true);
-        if (this.allowServerDataBinding) {
-            var sfBlazor = 'sfBlazor';
+        var sfBlazor = 'sfBlazor';
+        if (this.allowServerDataBinding && window[sfBlazor].updateModel) {
             window[sfBlazor].updateModel(this);
             this.bulkChanges = {};
         }
@@ -7063,6 +7063,19 @@ var Component = /** @class */ (function (_super) {
         }
         else {
             return this.element;
+        }
+    };
+    /**
+     * Returns the persistence data for component
+     */
+    //tslint:disable:no-any
+    Component.prototype.getLocalData = function () {
+        var eleId = this.getModuleName() + this.element.id;
+        if (exports.versionBasedStatePersistence) {
+            return window.localStorage.getItem(eleId + this.ej2StatePersistenceVersion);
+        }
+        else {
+            return window.localStorage.getItem(eleId);
         }
     };
     /**

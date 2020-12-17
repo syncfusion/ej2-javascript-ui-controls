@@ -2151,6 +2151,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.pivotRefresh = Component.prototype.refresh;
         this.isScrolling = false;
         this.allowServerDataBinding = false;
+        this.isStaticRefresh = false;
         this.setProperties({ pivotValues: [] }, true);
         /* tslint:disable-next-line:no-any */
         delete (this as any).bulkChanges.pivotValues;
@@ -3600,8 +3601,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.verticalScrollScale = vHeight / this.scrollerBrowserLimit;
                     vHeight = this.scrollerBrowserLimit;
                 }
-                let vWidth: number = (this.gridSettings.columnWidth * engine.columnCount
-                    - ((this.grid.columns[0] as Column).width as number));
+                let vWidth: number = this.gridSettings.columnWidth * engine.columnCount;
                 if (vWidth > this.scrollerBrowserLimit) {
                     this.horizontalScrollScale = vWidth / this.scrollerBrowserLimit;
                     vWidth = this.scrollerBrowserLimit;
@@ -3616,13 +3616,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 let mCnt: HTMLElement = this.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
                 let fCnt: HTMLElement = this.element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement;
                 let mHdr: HTMLElement = this.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-                let verOffset: string = (mCnt.scrollTop > this.scrollerBrowserLimit) ?
+                let verOffset: string = (mCnt.parentElement.scrollTop > this.scrollerBrowserLimit) ?
                     (mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() :
-                    -(((mCnt.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.scrollTop)) + 'px)';
-                let horiOffset: string = (mCnt.scrollLeft > this.scrollerBrowserLimit) ?
+                    -(((mCnt.parentElement.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.parentElement.scrollTop)) + 'px)';
+                let horiOffset: string = (mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft > this.scrollerBrowserLimit) ?
                     ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
-                    'translate(' + -(((mCnt.scrollLeft * this.horizontalScrollScale) -
-                        this.scrollPosObject.horizontalSection - mCnt.scrollLeft)) + 'px,';
+                    'translate(' + -(((mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.horizontalScrollScale) -
+                        this.scrollPosObject.horizontalSection - mCnt.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft)) + 'px,';
                 setStyleAttribute(fCnt.querySelector('.e-table') as HTMLElement, {
                     transform: 'translate(' + 0 + 'px,' + verOffset
                 });
@@ -3632,6 +3632,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
                     transform: horiOffset + 0 + 'px)'
                 });
+                (this.grid.element.querySelector('.' + cls.MOVABLECHILD_DIV) as any).style.width = vWidth + 'px';
+                if (this.grid.height !== 'auto') {
+                    (this.grid.contentModule as any).setHeightToContent(this.virtualDiv.offsetHeight + movableTable.clientHeight);
+                } else {
+                    (this.grid.contentModule as any).setHeightToContent((this.element.querySelector('.' + cls.FROZENCONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight);
+                }
+            }
+            if (this.currentView !== 'Chart') {
+                this.grid.hideScroll();
             }
             if (this.showGroupingBar) {
                 this.element.style.minWidth = '400px';
@@ -4520,11 +4529,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.grid.isStringTemplate = true;
             this.grid.appendTo('#' + this.element.id + '_grid');
             /* tslint:disable-next-line:no-any */
+            this.grid.on('refresh-frozen-height', () => {
+                if (!this.enableVirtualization) {
+                    (this.grid.contentModule as any).setHeightToContent((this.grid.contentModule.getTable() as HTMLElement).offsetHeight);
+                }
+            });
             this.grid.off('data-ready', (this.grid as any).dataReady);
             this.grid.on('data-ready', () => {
                 this.grid.scrollModule.setWidth();
                 this.grid.scrollModule.setHeight();
-                (this.grid.element.querySelector('.e-movablecontent') as HTMLElement).style.overflowY = 'auto';
             });
         }
     }

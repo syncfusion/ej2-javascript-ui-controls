@@ -558,18 +558,10 @@ exports.cssClass = {
             else {
                 var currentID = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    // tslint:disable-next-line
-                    var compiledElement = compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate, null, li);
-                    if (compiledElement) {
-                        sf.base.append(compiledElement, li);
-                    }
+                    sf.base.append(compiledString(curItem, componentInstance, 'headerTemplate', currentID, !!curOpt.isStringTemplate), li);
                 }
                 else {
-                    // tslint:disable-next-line
-                    var compiledElement = compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate, null, li);
-                    if (compiledElement) {
-                        sf.base.append(compiledElement, li);
-                    }
+                    sf.base.append(compiledString(curItem, componentInstance, 'template', currentID, !!curOpt.isStringTemplate), li);
                 }
                 li.setAttribute('data-value', sf.base.isNullOrUndefined(value) ? 'null' : value);
                 li.setAttribute('role', 'option');
@@ -611,11 +603,7 @@ exports.cssClass = {
             var headerData = {};
             headerData[category] = header.textContent;
             header.innerHTML = '';
-            // tslint:disable-next-line
-            var compiledElement = compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, header);
-            if (compiledElement) {
-                sf.base.append(compiledElement, header);
-            }
+            sf.base.append(compiledString(headerData, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), header);
         }
         return headerItems;
     }
@@ -626,9 +614,7 @@ exports.cssClass = {
             .substring(1);
     }
     ListBase.generateId = generateId;
-    function processSubChild(createElement, fieldData, fields, ds, 
-    // tslint:disable-next-line
-    options, element, level) {
+    function processSubChild(createElement, fieldData, fields, ds, options, element, level) {
         // Get SubList
         var subDS = fieldData[fields.child] || [];
         var hasChildren = fieldData[fields.hasChildren];
@@ -785,19 +771,11 @@ exports.cssClass = {
         }
         if (grpLI && options && options.groupTemplate) {
             var compiledString = sf.base.compile(options.groupTemplate);
-            // tslint:disable-next-line
-            var compiledElement = compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate, null, li);
-            if (compiledElement) {
-                sf.base.append(compiledElement, li);
-            }
+            sf.base.append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
         }
         else if (!grpLI && options && options.template) {
             var compiledString = sf.base.compile(options.template);
-            // tslint:disable-next-line
-            var compiledElement = compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate, null, li);
-            if (compiledElement) {
-                sf.base.append(compiledElement, li);
-            }
+            sf.base.append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
         }
         else {
             var innerDiv = createElement('div', {

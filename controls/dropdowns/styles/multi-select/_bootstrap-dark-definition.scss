@@ -31,6 +31,9 @@ $ddl-chip-mobile-content-padding: 7px 10px 7px 10px !default;
 $ddl-rtl-chip-mobile-content-padding: $ddl-chip-mobile-content-padding !default;
 $ddl-chip-padding: 0 !default;
 $ddl-closer-margin-top: -4em !default;
+$ddl-icon-margin-top: -2.65em !default;
+$ddl-clear-margin-top: -3.2em !default;
+$ddl-icon-margin-top-bigger: -2.7em !default;
 $ddl-closer-margin-top-bigger: -4em !default;
 $ddl-chip-close-top: 9px !default;
 $ddl-chip-close-left: 10px !default;
@@ -167,5 +170,15 @@ $ddl-closer-margin-top-bigger-small: -4em !default;
     border-left-width: 0;
     border-radius: 4px 0 0 4px;
     border-right-width: 1px;
+  }
+
+  .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    height: 32px;
+    width: 32px;
+  }
+
+  .e-bigger .e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    height: $ddl-chip-hooker-square;
+    width: $ddl-chip-hooker-square;
   }
 }

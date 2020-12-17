@@ -225,7 +225,8 @@ export class SfSchedule {
         return new Date(+date - (date.getTimezoneOffset() * 60000)).getTime();
     }
     public getTimeString(date: Date): string {
-        let timeFormat: string = IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.options.locale).format;
+        let timeFormat: string = this.options.timeFormat ||
+            IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.options.locale).format;
         let time: string = this.globalize.formatDate(date, { format: timeFormat, type: 'time' });
         return time.toLocaleUpperCase();
     }
@@ -713,7 +714,7 @@ export class SfSchedule {
             let appointments: NodeListOf<HTMLElement> = this.morePopup.element.querySelectorAll('.e-appointment');
             for (let i: number = 0; i < appointments.length; i++) {
                 let ele: HTMLElement = appointments[i];
-                this.eventBase.wireAppointmentEvents(ele, this.options.currentView === 'TimelineYear' ? true : false);
+                this.eventBase.wireAppointmentEvents(ele, this.options.currentView === 'TimelineYear' ? true : false, true);
             }
             this.morePopup.relateTo = this.element.querySelector('.' + clsName + '[data-date="' + dataDate + '"]') as HTMLElement;
             this.morePopup.show();
@@ -873,12 +874,15 @@ export class SfSchedule {
             this.morePopup.hide();
         }
     }
-    public destroy(enablePersistence: boolean): void {
-        this.isDestroyed = true;
-        if (enablePersistence) {
+    public setPersistence(): void {
+        if (this.options.enablePersistence) {
             let props: Object = { selectedDate: this.options.selectedDate, currentView: this.options.currentView };
             window.localStorage.setItem(this.element.id, JSON.stringify(props));
         }
+    }
+    public destroy(): void {
+        this.isDestroyed = true;
+        this.setPersistence();
         this.unwireEvents();
         if (this.headerPopup) {
             this.headerPopup.destroy();

@@ -1217,29 +1217,29 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /** @hidden */
     public getCellFrom(range: string): string {
-            let cellRange: string = '';
-            let cells: string[] = range.indexOf(':') > -1 ? range.split(':') : [range];
-            //this.getCellsFromArgs(range);
-            let last: number = cells.length - 1;
-            let r1: number = this.rowIndex(cells[0]);
-            let x: number;
-            if (r1 === this.rowIndex(cells[last])) {
-                let c1: number = this.colIndex(cells[0]);
-                let c2: number = this.colIndex(cells[last]);
-                let c: number = this.colIndex(this.cell);
-                if (c >= c1 && c <= c2) {
-                    cellRange = getAlphalabel(c).toString() + r1.toString();
-                }
-            } else if (this.colIndex(cells[0]) === this.colIndex(cells[last])) {
-                x = this.colIndex(cells[0]);
-                let r2: number = this.rowIndex(cells[last]);
-                let r: number = this.rowIndex(this.cell);
-                if (r >= r1 && r <= r2) {
-                    cellRange = getAlphalabel(x).toString() + r.toString();
-                }
+        let cellRange: string = '';
+        let cells: string[] = range.indexOf(':') > -1 ? range.split(':') : [range];
+        //this.getCellsFromArgs(range);
+        let last: number = cells.length - 1;
+        let r1: number = this.rowIndex(cells[0]);
+        let x: number;
+        if (r1 === this.rowIndex(cells[last])) {
+            let c1: number = this.colIndex(cells[0]);
+            let c2: number = this.colIndex(cells[last]);
+            let c: number = this.colIndex(this.cell);
+            if (c >= c1 && c <= c2) {
+                cellRange = getAlphalabel(c).toString() + r1.toString();
             }
-            return cellRange;
+        } else if (this.colIndex(cells[0]) === this.colIndex(cells[last])) {
+            x = this.colIndex(cells[0]);
+            let r2: number = this.rowIndex(cells[last]);
+            let r: number = this.rowIndex(this.cell);
+            if (r >= r1 && r <= r2) {
+                cellRange = getAlphalabel(x).toString() + r.toString();
+            }
         }
+        return cellRange;
+    }
 
     /* tslint:disable-next-line:max-func-body-length */
     private computeValue(pFormula: string): string {
@@ -1275,12 +1275,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 } else if (this.isUpperChar(pFormula[i])) {
                     let s: string = this.emptyString;
                     let textName: string = '';
-                    while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
-                        s = s + pFormula[i];
+                    while ( i < pFormula.length && this.isUpperChar(pFormula[i])) {
+                        let char: string = pFormula[i];
+                        s = s + char;
                         i = i + 1;
                     }
-                    while (i < pFormula.length && this.isDigit(pFormula[i])) {
-                        s = s + pFormula[i];
+                    while ( i < pFormula.length && this.isDigit(pFormula[i])) {
+                        let digit: string = pFormula[i];
+                        s = s + digit;
                         i = i + 1;
                     }
                     if (i < pFormula.length && pFormula[i] === ':') {
@@ -1298,7 +1300,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                 s = s + pFormula[i];
                                 i = i + 1;
                         }
-                        while (i < pFormula.length && this.isUpperChar(pFormula[i])) {
+                        while (i < pFormula.length && this.isDigit(pFormula[i])) {
                                 s = s + pFormula[i];
                                 i = i + 1;
                         }
@@ -1818,7 +1820,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /** @hidden */
-    private toOADate(dateTime: Date): number {
+    public toOADate(dateTime: Date): number {
         let result: number = (dateTime.getTime() - Date.parse(this.oaDate.toString())) / this.millisecondsOfaDay;
         return result;
     }
@@ -1905,7 +1907,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     /* tslint:disable-next-line */
-    private isDate(date: any): Date {
+    public isDate(date: any): Date {
         if (typeof date === 'object' || Date.parse(date) !== null) {
             let dateval: Date = new Date(Date.parse(date));
             if (dateval >= this.dateTime1900) {

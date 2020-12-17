@@ -3,7 +3,7 @@ import { Page as GridPage } from '@syncfusion/ej2-grids';
 import { TreeGrid, ITreeData, RowCollapsedEventArgs } from '../base';
 import * as events from '../base/constant';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
-import { getValue, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, isBlazor, addClass, removeClass } from '@syncfusion/ej2-base';
 import { getExpandStatus, isFilterChildHierarchy } from '../utils';
 
 /**
@@ -93,6 +93,22 @@ export class Page {
             count: this.parent.flatData.length
         };
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
+        if (this.parent.enableImmutableMode) {
+          let row: string = 'row'; let action: string = 'action'; let targetEle: Element;
+          if (ret[action] === 'collapse') {
+              targetEle = ret[row].getElementsByClassName('e-treegridexpand')[0];
+              if (!isNullOrUndefined(targetEle)) {
+                  removeClass([targetEle], 'e-treegridexpand');
+                  addClass([targetEle], 'e-treegridcollapse');
+              }
+          } else if (ret[action] === 'expand') {
+              targetEle = ret[row].getElementsByClassName('e-treegridcollapse')[0];
+              if (!isNullOrUndefined(targetEle)) {
+                  removeClass([targetEle], 'e-treegridcollapse');
+                  addClass([targetEle], 'e-treegridexpand');
+            }
+          }
+        }
     }
     private pageRoot(pagedResults: ITreeData[], temp: ITreeData[], result?: ITreeData[]) : ITreeData[] {
       let newResults: ITreeData[] = isNullOrUndefined(result) ? [] : result;

@@ -545,8 +545,8 @@ export class WorkbookFindAndReplace {
     private prevCommon(findPrevArgs: FindPrevious): boolean {
         let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         if (sheet.rows[findPrevArgs.rowIndex]) {
-            if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex] &&
-                sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value) {
+            let rowCol: CellModel = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+            if (rowCol && rowCol.value) {
                 let cellType: CellModel = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
                 if (cellType) {
                     let cellvalue: string;

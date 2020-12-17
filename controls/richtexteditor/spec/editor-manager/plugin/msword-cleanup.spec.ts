@@ -688,12 +688,14 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       }
       let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="54" valign="top" style="width: 40.25pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">No.</span></b></p></td><td width="186" valign="top" style="width: 139.5pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">Present form</span></b></p></td><td width="174" valign="top" style="width: 130.5pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">Past form</span></b></p></td><td width="210" valign="top" style="width: 157.25pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">Past participle form</span></b></p></td></tr><tr><td width="54" valign="top" style="width: 40.25pt; padding: 0in 5.4pt;"><ol level="1" style="list-style: decimal;"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width: 139.5pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><span style="font-size:14.0pt;">Bring</span></p></td><td width="174" valign="top" style="width: 130.5pt; padding: 0in 5.4pt;"><br></td><td width="210" valign="top" style="width: 157.25pt; padding: 0in 5.4pt;"><br></td></tr></tbody></table><p>13</p>`;
+      let expectedElem: string = `<table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">No.</span></b></p></td><td width="186" valign="top" style="width: 139.5pt; border-top: 1pt solid windowtext; border-right: 1pt solid windowtext; border-bottom: 1pt solid windowtext; border-image: initial; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Present form</span></b></p></td><td width="174" valign="top" style="width: 130.5pt; border-top: 1pt solid windowtext; border-right: 1pt solid windowtext; border-bottom: 1pt solid windowtext; border-image: initial; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Past form</span></b></p></td><td width="210" valign="top" style="width: 157.25pt; border-top: 1pt solid windowtext; border-right: 1pt solid windowtext; border-bottom: 1pt solid windowtext; border-image: initial; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Past participle form</span></b></p></td></tr><tr><td width="54" valign="top" style="width: 40.25pt; border-right: 1pt solid windowtext; border-bottom: 1pt solid windowtext; border-left: 1pt solid windowtext; border-image: initial; padding: 0in 5.4pt;"><ol level="1" style="list-style: decimal;"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width: 139.5pt; border-bottom: 1pt solid windowtext; border-right: 1pt solid windowtext; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><span style="font-size:14.0pt;">Bring</span></p></td><td width="174" valign="top" style="width: 130.5pt; border-bottom: 1pt solid windowtext; border-right: 1pt solid windowtext; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">&nbsp;</span></b></p></td><td width="210" valign="top" style="width: 157.25pt; border-bottom: 1pt solid windowtext; border-right: 1pt solid windowtext; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">&nbsp;</span></b></p></td></tr></tbody></table><p>13</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
@@ -930,7 +932,7 @@ ul
       }
       let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p style="margin:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List Sample Content</p><p><br></p><ul type="disc" style="margin-bottom:0in;margin-top:0in;"><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List1</li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List2</li><li style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;margin-left:0in;">List3</li></ul><p>14</p>`;
+      let expectedElem: string = `<p style="margin:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List Sample Content</p><p><br></p><ul type="disc" style="margin-top:0in;margin-bottom:0in;"><li style="margin-left:0in;margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List1</li><li style="margin-left:0in;margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List2</li><li style="margin-left:0in;margin-top:0in;margin-right:0in;margin-bottom:0in;margin-bottom:.0001pt;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">List3</li></ul><p>14</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
         expected = true;
       }
@@ -1054,7 +1056,7 @@ ul
       }
       let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<table cellpadding="0" cellspacing="0" width="425" class="e-rte-table"><tbody><tr height="19"><td height="19" width="233">Hauptansicht
+      let expectedElem: string = `<table cellpadding="0" cellspacing="0" width="425" class="e-rte-table-border e-rte-table"><tbody><tr height="19"><td height="19" width="233">Hauptansicht
       mit Panelverwaltung</td><td align="right" width="64">10</td><td align="right" width="64">84</td><td align="right" width="64">0</td></tr><tr height="19"><td height="19">Bericht</td><td align="right">20</td><td align="right">168</td><td align="right">0</td></tr><tr height="19"><td height="19">Filterauswahl</td><td align="right">5</td><td align="right">42</td><td align="right">0</td></tr></tbody></table><p>15</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
         expected = true;
@@ -1204,7 +1206,7 @@ mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-lis
       }
       let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><p><br></p><table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><p><br></p><table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width: 233.75pt; border-top: 1pt solid windowtext; border-right: 1pt solid windowtext; border-bottom: 1pt solid windowtext; border-image: initial; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width: 233.75pt; border-top: 1pt solid windowtext; border-right: 1pt solid windowtext; border-bottom: 1pt solid windowtext; border-image: initial; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
@@ -5657,6 +5659,607 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     line-height:115%;font-family:&quot;Cambria&quot;,serif;">Melatonina --------------------------------------------
     1mg</span></p><p><span lang="PT-BR" style="font-size:12.0pt;
     line-height:115%;font-family:&quot;Cambria&quot;,serif;">Tomar 1 dose 1<span>&nbsp; </span>hora antes de deitar.</span></p><p>23</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it('EJ2-37593 - Paste from Excel support', (done) => {
+    let localElem: string = `<html><head>
+    <style>
+    <!--table
+      {mso-displayed-decimal-separator:"\.";
+      mso-displayed-thousand-separator:"\,";}
+    @page
+      {margin:.79in .51in .79in .51in;
+      mso-header-margin:.31in;
+      mso-footer-margin:.31in;}
+    .font0
+      {color:black;
+      font-size:11.0pt;
+      font-weight:400;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;}
+    .font5
+      {color:black;
+      font-size:11.0pt;
+      font-weight:700;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;}
+    .font6
+      {color:red;
+      font-size:11.0pt;
+      font-weight:400;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;}
+    .font7
+      {color:black;
+      font-size:11.0pt;
+      font-weight:700;
+      font-style:italic;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;}
+    .font8
+      {color:black;
+      font-size:11.0pt;
+      font-weight:700;
+      font-style:italic;
+      text-decoration:underline;
+      text-underline-style:single;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;}
+    .font9
+      {color:red;
+      font-size:11.0pt;
+      font-weight:700;
+      font-style:italic;
+      text-decoration:underline;
+      text-underline-style:single;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;}
+    tr
+      {mso-height-source:auto;}
+    col
+      {mso-width-source:auto;}
+    br
+      {mso-data-placement:same-cell;}
+    td
+      {padding-top:1px;
+      padding-right:1px;
+      padding-left:1px;
+      mso-ignore:padding;
+      color:black;
+      font-size:11.0pt;
+      font-weight:400;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;
+      mso-number-format:General;
+      text-align:general;
+      vertical-align:bottom;
+      border:none;
+      mso-background-source:auto;
+      mso-pattern:auto;
+      mso-protection:locked visible;
+      white-space:nowrap;
+      mso-rotate:0;}
+    .xl65
+      {text-align:center;
+      border:.5pt solid windowtext;}
+    .xl66
+      {text-align:center;
+      border-top:none;
+      border-right:.5pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:.5pt solid windowtext;}
+    .xl67
+      {text-align:center;
+      border-top:1.0pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:1.0pt solid windowtext;
+      background:#8EA9DB;
+      mso-pattern:black none;}
+    .xl68
+      {text-align:center;
+      border-top:1.0pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:.5pt solid windowtext;
+      background:#F4B084;
+      mso-pattern:black none;}
+    .xl69
+      {text-align:center;
+      border-top:1.0pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:.5pt solid windowtext;
+      background:#9900CC;
+      mso-pattern:black none;}
+    .xl70
+      {text-align:center;
+      border-top:none;
+      border-right:.5pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl71
+      {text-align:center;
+      border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:.5pt solid windowtext;}
+    .xl72
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl73
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:.5pt solid windowtext;}
+    .xl74
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl75
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:.5pt solid windowtext;}
+    .xl76
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:.5pt solid windowtext;}
+    .xl77
+      {border-top:1.0pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl78
+      {border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl79
+      {border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl80
+      {text-align:center;
+      border-top:1.0pt solid windowtext;
+      border-right:none;
+      border-bottom:1.0pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl81
+      {text-align:center;
+      border-top:none;
+      border-right:none;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl82
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:none;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl83
+      {text-align:center;
+      border-top:.5pt solid windowtext;
+      border-right:none;
+      border-bottom:1.0pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl84
+      {border-top:.5pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl85
+      {border-top:.5pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:1.0pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl86
+      {border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl87
+      {border:1.0pt solid windowtext;
+      background:yellow;
+      mso-pattern:black none;}
+    .xl88
+      {font-weight:700;
+      text-align:center;
+      border:1.0pt solid windowtext;}
+    .xl89
+      {font-weight:700;
+      border-top:1.0pt solid windowtext;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl90
+      {font-style:italic;
+      border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl91
+      {text-decoration:underline;
+      text-underline-style:single;
+      border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl92
+      {font-size:16.0pt;
+      border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl93
+      {font-family:Algerian, fantasy;
+      mso-font-charset:0;
+      border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl94
+      {font-weight:700;
+      border-top:none;
+      border-right:1.0pt solid windowtext;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;
+      background:yellow;
+      mso-pattern:black none;}
+    .xl95
+      {text-align:right;
+      border-top:.5pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl96
+      {text-align:left;
+      border-top:.5pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:.5pt solid windowtext;
+      border-left:1.0pt solid windowtext;}
+    .xl97
+      {border-top:.5pt solid red;
+      border-right:.5pt solid red;
+      border-bottom:.5pt solid red;
+      border-left:none;}
+    .xl98
+      {border-top:none;
+      border-right:.5pt solid red;
+      border-bottom:none;
+      border-left:1.0pt solid windowtext;}
+    .xl99
+      {text-align:center;
+      border-top:1.0pt solid windowtext;
+      border-right:.5pt solid windowtext;
+      border-bottom:none;
+      border-left:.5pt solid windowtext;}
+    .xl100
+      {text-align:center;
+      border-top:1.0pt solid windowtext;
+      border-right:none;
+      border-bottom:1.0pt solid windowtext;
+      border-left:.5pt solid windowtext;
+      background:#9900CC;
+      mso-pattern:black none;}
+    .xl101
+      {border-top:1.0pt solid windowtext;
+      border-right:none;
+      border-bottom:none;
+      border-left:none;}
+    .xl102
+      {border-top:none;
+      border-right:none;
+      border-bottom:.5pt solid red;
+      border-left:none;}
+    .xl103
+      {border:.5pt solid red;}
+    -->
+    </style>
+    </head>
+    <body link="#0563C1" vlink="#954F72">
+    <table border=0 cellpadding=0 cellspacing=0 width=830 style='border-collapse:
+     collapse;width:623pt'>
+    <!--StartFragment-->
+     <col width=192 style='mso-width-source:userset;mso-width-alt:6702;width:144pt'>
+     <col width=283 style='mso-width-source:userset;mso-width-alt:9867;width:212pt'>
+     <col width=64 span=3 style='width:48pt'>
+     <col width=99 style='mso-width-source:userset;mso-width-alt:3467;width:75pt'>
+     <col width=64 style='width:48pt'>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 width=192 style='height:15.0pt;width:144pt'>LUCAS SANTOS
+      GUIMARAES<span style='mso-spacerun:yes'> </span></td>
+      <td width=283 style='width:212pt'></td>
+      <td width=64 style='width:48pt'></td>
+      <td width=64 style='width:48pt'></td>
+      <td width=64 style='width:48pt'></td>
+      <td width=99 style='width:75pt'></td>
+      <td width=64 style='width:48pt'></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 style='height:15.0pt'></td>
+      <td class=xl67>PTN</td>
+      <td class=xl68 style='border-left:none'>CHO</td>
+      <td class=xl69 style='border-left:none'>LIP</td>
+      <td class=xl80 style='border-left:none'>KCAL</td>
+      <td class=xl87>Está Corretor?</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl89 style='height:14.5pt'>FRUTAS ASSOCIADAS</td>
+      <td class=xl70 style='border-left:none'>1,107g</td>
+      <td class=xl66 style='border-left:none'>22,96g</td>
+      <td class=xl71 style='border-left:none'>0,32g</td>
+      <td class=xl81 style='border-left:none'>90</td>
+      <td class=xl86>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl90 style='height:14.5pt'>Pão</td>
+      <td class=xl72 style='border-top:none;border-left:none'>2,8g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>11,2g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>1,6g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>70</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl91 style='height:14.5pt'>Carboidrato IGB</td>
+      <td class=xl95 style='border-top:none;border-left:none'>0,58g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>11,91g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>0,09g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>50.4</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>LE<font class="font6">GUMINO</font><font
+      class="font0">SAS</font></td>
+      <td class=xl72 style='border-top:none;border-left:none'>4,11g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>9,17g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>3,31g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>80.75</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=28 style='height:21.0pt'>
+      <td height=28 class=xl92 style='height:21.0pt'>Proteina Refeição Padrão</td>
+      <td class=xl96 style='border-top:none;border-left:none'>24,71g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>0g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>6,16g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>160.74</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=21 style='height:16.0pt'>
+      <td height=21 class=xl93 style='height:16.0pt'>FRUTAS GERIAS</td>
+      <td class=xl72 style='border-top:none;border-left:none'>0,97g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>31,23g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>0,32g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>118</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Semente</td>
+      <td class=xl72 style='border-top:none;border-left:none'>1g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>1g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>3g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>39.5</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl94 style='height:14.5pt'><font class="font5">Veg</font><font
+      class="font7">etai</font><font class="font8">s Cru</font><font class="font9">s
+      ou Cuzidos</font></td>
+      <td class=xl72 style='border-top:none;border-left:none'>1,75g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>3,5g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>1,37g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>33.5</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Vegetal Refogado</td>
+      <td class=xl72 style='border-top:none;border-left:none'>0,87g</td>
+      <td class=xl65 style='border-top:none;border-left:none'>3,41g</td>
+      <td class=xl73 style='border-top:none;border-left:none'>4,06g</td>
+      <td class=xl82 style='border-top:none;border-left:none'>50.4</td>
+      <td class=xl84 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 class=xl79 style='height:15.0pt'>QUEIJO</td>
+      <td class=xl74 style='border-top:none;border-left:none'>4,37g</td>
+      <td class=xl75 style='border-top:none;border-left:none'>1,27g</td>
+      <td class=xl76 style='border-top:none;border-left:none'>5,18g</td>
+      <td class=xl83 style='border-top:none;border-left:none'>69</td>
+      <td class=xl85 style='border-top:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 style='height:15.0pt'></td>
+      <td></td><td></td><td></td><td></td>
+      <td class=xl101 style='border-top:none'>&nbsp;</td>
+      <td class=xl102>&nbsp;</td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 style='height:15.0pt'></td>
+      <td class=xl67>PTN</td>
+      <td class=xl68 style='border-left:none'>CHO</td>
+      <td class=xl100 style='border-left:none'>LIP</td>
+      <td>hello</td>
+      <td></td>
+      <td class=xl97 style='border-top:none'>wqdq</td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl77 style='height:14.5pt'>FRUTAS ASSOCIADAS</td>
+      <td class=xl70 style='border-left:none'>&nbsp;</td>
+      <td class=xl99 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl71 style='border-left:none'>&nbsp;</td>
+      <td></td>
+      <td class=xl102>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Pão</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl66 style='border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl98 style='border-left:none'>&nbsp;</td>
+      <td class=xl103 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Carboidrato IGB</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>LEGUMINOSAS</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Proteina Refeição Padrão</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>FRUTAS GERIAS</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Semente</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Vegetais Crus ou Cuzidos</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl78 style='height:14.5pt'>Vegetal Refogado</td>
+      <td class=xl72 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl65 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl73 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 class=xl79 style='height:15.0pt'>QUEIJO</td>
+      <td class=xl74 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl75 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td class=xl76 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 style='height:14.5pt'></td>
+      <td></td><td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 style='height:15.0pt'></td>
+      <td></td><td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 class=xl88 style='height:15.0pt'>PERGUNTAS</td>
+      <td class=xl88 style='border-left:none'>RESPOSTAS</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl86 style='height:14.5pt'>Quantidade de água</td>
+      <td class=xl86 style='border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl84 style='height:14.5pt;border-top:none'>sdsd</td>
+      <td class=xl84 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl84 style='height:14.5pt;border-top:none'>vsdvdvsdvsdvsdvsdvds
+      vsd vsfgbd vdsvsdvd svsdvsdvsdvs dvsdvsdvsd</td>
+      <td class=xl84 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl84 style='height:14.5pt;border-top:none'>Cirurgias</td>
+      <td class=xl84 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 class=xl84 style='height:14.5pt;border-top:none'>Fezes</td>
+      <td class=xl84 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+     <tr height=20 style='height:15.0pt'>
+      <td height=20 class=xl85 style='height:15.0pt;border-top:none'>Profissão</td>
+      <td class=xl85 style='border-top:none;border-left:none'>&nbsp;</td>
+      <td></td><td></td><td></td><td></td><td></td>
+     </tr>
+    <!--EndFragment--></table></body></html>`;
+    rteObj.value = '<p>24</p>';
+    rteObj.dataBind();
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
+      let expected: boolean = true;
+      let expectedElem: string = `<table cellpadding="0" cellspacing="0" width="830" class="e-rte-table-border e-rte-table" style="width:623pt;"><tbody><tr height="20" style="height:15.0pt;"><td height="20" width="192" style="height:15.0pt;width:144pt;">LUCAS SANTOS
+      GUIMARAES<span>&nbsp;</span></td><td width="283" style="width:212pt;"></td><td width="64" style="width:48pt;"></td><td width="64" style="width:48pt;"></td><td width="64" style="width:48pt;"></td><td width="99" style="width:75pt;"></td><td width="64" style="width:48pt;"></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height:15.0pt;"></td><td style="text-align:center;">PTN</td><td style="text-align: center;">CHO</td><td style="text-align: center;">LIP</td><td style="text-align: center;">KCAL</td><td style="border:1.0pt solid windowtext;">Está Corretor?</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height:14.5pt;font-weight:700;">FRUTAS ASSOCIADAS</td><td style="text-align: center;">1,107g</td><td style="text-align: center;">22,96g</td><td style="text-align: center;">0,32g</td><td style="text-align: center;">90</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height:14.5pt;font-style:italic;">Pão</td><td style="text-align: center;">2,8g</td><td style="text-align: center;">11,2g</td><td style="text-align: center;">1,6g</td><td style="text-align: center;">70</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height:14.5pt;text-decoration:underline;">Carboidrato IGB</td><td style="text-align: right;">0,58g</td><td style="text-align: center;">11,91g</td><td style="text-align: center;">0,09g</td><td style="text-align: center;">50.4</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">LE<font style="color:red;">GUMINO</font><font style="color:black;">SAS</font></td><td style="text-align: center;">4,11g</td><td style="text-align: center;">9,17g</td><td style="text-align: center;">3,31g</td><td style="text-align: center;">80.75</td><td style="">&nbsp;</td><td></td></tr><tr height="28" style="height:21.0pt;"><td height="28" style="height:21.0pt;font-size:16.0pt;">Proteina Refeição Padrão</td><td style="text-align: left;">24,71g</td><td style="text-align: center;">0g</td><td style="text-align: center;">6,16g</td><td style="text-align: center;">160.74</td><td style="">&nbsp;</td><td></td></tr><tr height="21" style="height:16.0pt;"><td height="21" style="height:16.0pt;font-family:Algerian, fantasy;">FRUTAS GERIAS</td><td style="text-align: center;">0,97g</td><td style="text-align: center;">31,23g</td><td style="text-align: center;">0,32g</td><td style="text-align: center;">118</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Semente</td><td style="text-align: center;">1g</td><td style="text-align: center;">1g</td><td style="text-align: center;">3g</td><td style="text-align: center;">39.5</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height:14.5pt;font-weight:700;"><font style="color:black;">Veg</font><font style="color:black;">etai</font><font style="color:black;">s Cru</font><font style="color:red;">s
+      ou Cuzidos</font></td><td style="text-align: center;">1,75g</td><td style="text-align: center;">3,5g</td><td style="text-align: center;">1,37g</td><td style="text-align: center;">33.5</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Vegetal Refogado</td><td style="text-align: center;">0,87g</td><td style="text-align: center;">3,41g</td><td style="text-align: center;">4,06g</td><td style="text-align: center;">50.4</td><td style="">&nbsp;</td><td></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height: 15pt;">QUEIJO</td><td style="text-align: center;">4,37g</td><td style="text-align: center;">1,27g</td><td style="text-align: center;">5,18g</td><td style="text-align: center;">69</td><td style="">&nbsp;</td><td></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height:15.0pt;"></td><td></td><td></td><td></td><td></td><td style="">&nbsp;</td><td style="">&nbsp;</td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height:15.0pt;"></td><td style="text-align:center;">PTN</td><td style="text-align: center;">CHO</td><td style="text-align: center;">LIP</td><td>hello</td><td></td><td style="">wqdq</td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height:14.5pt;border-top:1.0pt solid windowtext;">FRUTAS ASSOCIADAS</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Pão</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="">&nbsp;</td><td style="">&nbsp;</td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Carboidrato IGB</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">LEGUMINOSAS</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Proteina Refeição Padrão</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">FRUTAS GERIAS</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Semente</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Vegetais Crus ou Cuzidos</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Vegetal Refogado</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height: 15pt;">QUEIJO</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td style="text-align: center;">&nbsp;</td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height:14.5pt;"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height:15.0pt;"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height:15.0pt;font-weight:700;">PERGUNTAS</td><td style="font-weight: 700;">RESPOSTAS</td><td></td><td></td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Quantidade de água</td><td style="">&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">sdsd</td><td style="">&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">vsdvdvsdvsdvsdvsdvds
+      vsd vsfgbd vdsvsdvd svsdvsdvsdvs dvsdvsdvsd</td><td style="">&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Cirurgias</td><td style="">&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr><tr height="19" style="height:14.5pt;"><td height="19" style="height: 14.5pt;">Fezes</td><td style="">&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr><tr height="20" style="height:15.0pt;"><td height="20" style="height: 15pt;">Profissão</td><td style="">&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table><p>24</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }

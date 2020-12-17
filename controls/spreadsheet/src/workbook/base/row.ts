@@ -1,7 +1,8 @@
 import { CellModel, SheetModel } from './index';
 import { RowModel } from './row-model';
-import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';
+import { ChildProperty, Collection, Property, Complex } from '@syncfusion/ej2-base';
 import { Cell } from './cell';
+import { FormatModel, Format } from '../common/index';
 
 /**
  * Configures the Row behavior for the spreadsheet.
@@ -58,6 +59,13 @@ export class Row extends ChildProperty<SheetModel> {
      */
     @Property(false)
     public hidden: boolean;
+
+    /**
+     * Specifies format of the row.
+     * @default {}
+     */
+    @Complex<FormatModel>({}, Format)
+    public format: FormatModel;
 }
 
 /**

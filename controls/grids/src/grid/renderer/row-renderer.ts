@@ -170,6 +170,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     if (summarycell.length) {
                         let lastSummaryCell: Element = (summarycell[summarycell.length - 1]) as Element;
                         addClass([lastSummaryCell], ['e-lastsummarycell']);
+                        let firstSummaryCell: Element = (summarycell[0]) as Element;
+                        addClass([firstSummaryCell], ['e-firstsummarycell']);
                     }
                 }
             }

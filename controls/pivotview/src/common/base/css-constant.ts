@@ -462,6 +462,10 @@ export const VIRTUALTRACK_DIV: string = 'e-virtualtrack';
 /** @hidden */
 export const MOVABLECONTENT_DIV: string = 'e-movablecontent';
 /** @hidden */
+export const MOVABLESCROLL_DIV: string = 'e-movablescrollbar';
+/** @hidden */
+export const MOVABLECHILD_DIV: string = 'e-movablechild';
+/** @hidden */
 export const FROZENCONTENT_DIV: string = 'e-frozencontent';
 /** @hidden */
 export const MOVABLEHEADER_DIV: string = 'e-movableheader';

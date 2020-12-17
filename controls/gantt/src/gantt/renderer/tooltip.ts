@@ -81,12 +81,12 @@ export class Tooltip {
                     argsData.data = parent.ganttChartModule.getRecordByTaskBar(element);
                     data = argsData.data;
                 }
-                if ((<HTMLElement>args.target).classList.contains('e-gantt-child-taskbar') ||
-                    (<HTMLElement>args.target).classList.contains('e-gantt-parent-taskbar') ||
-                    (<HTMLElement>args.target).classList.contains('e-gantt-milestone') ||
-                    (<HTMLElement>args.target).classList.contains('e-gantt-unscheduled-taskbar') ||
-                    (<HTMLElement>args.target).classList.contains('e-taskbar-left-resizer') ||
-                    (<HTMLElement>args.target).classList.contains('e-taskbar-right-resizer')) {
+                if (args.target.classList.contains('e-gantt-child-taskbar') ||
+                    args.target.classList.contains('e-gantt-parent-taskbar') ||
+                    args.target.classList.contains('e-gantt-milestone') ||
+                    args.target.classList.contains('e-gantt-unscheduled-taskbar') ||
+                    args.target.classList.contains('e-taskbar-left-resizer') ||
+                    args.target.classList.contains('e-taskbar-right-resizer')) {
                     let taskbarTemplateNode: NodeList;
                     if (parent.tooltipSettings.taskbar) {
                         taskbarTemplateNode = parent.tooltipModule.templateCompiler(
@@ -150,9 +150,9 @@ export class Tooltip {
         }
         if (args.cancel === false) {
             let callBackPromise: Deferred = new Deferred();
-            parent.trigger('beforeTooltipRender', argsData, (argsData: BeforeTooltipRenderEventArgs) => {
-                callBackPromise.resolve(argsData);
-                if (argsData.cancel) {
+            parent.trigger('beforeTooltipRender', argsData, (argData: BeforeTooltipRenderEventArgs) => {
+                callBackPromise.resolve(argData);
+                if (argData.cancel) {
                   args.cancel = true;
                 }
             });
@@ -371,7 +371,7 @@ export class Tooltip {
              fromTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[0])];
              toTask = this.parent.flatData[this.parent.ids.indexOf(taskIds[1])];
         }
-        let predecessor: IPredecessor[] = (fromTask.ganttProperties.predecessor as IPredecessor[]).filter(
+        let predecessor: IPredecessor[] = (fromTask.ganttProperties.predecessor).filter(
             (pdc: IPredecessor) => { return pdc.to === taskIds[1]; });
         let predecessorTooltipData: PredecessorTooltip = {
             fromId: this.parent.viewType === 'ResourceView' ? fromTask.ganttProperties.taskId : fromTask.ganttProperties.rowUniqueID,

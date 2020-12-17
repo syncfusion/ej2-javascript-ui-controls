@@ -1457,8 +1457,8 @@ var Render = /** @class */ (function () {
         else {
             index = data.index;
         }
-        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
-            && (args.requestType === 'add' || args.requestType === 'delete' || sf.base.isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
+        if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex && (args.requestType === 'add' || args.requestType
+            === 'rowDragAndDrop' || args.requestType === 'delete' || sf.base.isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
             var container = sf.base.createElement('div', { className: 'e-treecolumn-container' });
             var emptyExpandIcon = sf.base.createElement('span', {
                 className: 'e-icons e-none',
@@ -1572,7 +1572,7 @@ var Render = /** @class */ (function () {
         else if (args.cell.classList.contains('e-templatecell')) {
             var len = args.cell.children.length;
             var tempID = this.parent.element.id + args.column.uid;
-            if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template)) {
+            if (treeColumn.field === args.column.field && !sf.base.isNullOrUndefined(treeColumn.template) && !sf.base.isBlazor()) {
                 var portals = 'portals';
                 var renderReactTemplates = 'renderReactTemplates';
                 if (this.parent.isReact) {
@@ -2053,10 +2053,6 @@ var DataManipulation = /** @class */ (function () {
             if (this.parent.editSettings.mode === 'Batch') {
                 this.batchChanges = this.parent.grid.editModule.getBatchChanges();
             }
-            if (action === 'add' || (requestType === 'batchsave' && (this.parent.editSettings.mode === 'Batch'
-                && this.batchChanges[this.addedRecords].length))) {
-                this.parent.grid.currentViewData = args.result;
-            }
             if (this.parent.isLocalData) {
                 this.updateAction(actionData, action, requestType);
             }
@@ -2156,6 +2152,17 @@ var DataManipulation = /** @class */ (function () {
             this.parent.notify(pagingActions, { result: results, count: count, actionArgs: sf.base.getValue('actionArgs', args) });
             results = this.dataResults.result;
             count = this.dataResults.count;
+        }
+        if (isPrinting === true && this.parent.printMode === 'AllPages') {
+            var actualResults = [];
+            for (var i = 0; i < results.length; i++) {
+                actualResults.push(results[i]);
+                if (results[i].expanded === false) {
+                    i += findChildrenRecords(results[i]).length;
+                }
+            }
+            results = actualResults;
+            count = results.length;
         }
         var value = { result: results, count: count };
         return value;
@@ -2498,6 +2505,327 @@ var SortSettings = /** @class */ (function (_super) {
     ], SortSettings.prototype, "allowUnsort", void 0);
     return SortSettings;
 }(sf.base.ChildProperty));
+
+function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord) {
+    var value = details.value;
+    var action = details.action;
+    var changedRecords = 'changedRecords';
+    var i;
+    var j;
+    var addedRecords = 'addedRecords';
+    var batchChanges;
+    var key = control.grid.getPrimaryKeyFieldNames()[0];
+    var treeData = control.dataSource instanceof sf.data.DataManager ?
+        control.dataSource.dataSource.json : control.dataSource;
+    var modifiedData = [];
+    var originalData = value;
+    var isSkip = false;
+    if (control.editSettings.mode === 'Batch') {
+        batchChanges = control.grid.editModule.getBatchChanges();
+    }
+    if (action === 'add' || (action === 'batchsave' && (control.editSettings.mode === 'Batch'
+        && batchChanges[addedRecords].length))) {
+        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord);
+        value = addAct.value;
+        isSkip = addAct.isSkip;
+    }
+    if (value instanceof Array) {
+        modifiedData = extendArray(value);
+    }
+    else {
+        modifiedData.push(sf.base.extend({}, value));
+    }
+    if (!isSkip && (action !== 'add' ||
+        (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
+        for (var k = 0; k < modifiedData.length; k++) {
+            if (typeof (modifiedData[k][key]) === 'object') {
+                modifiedData[k] = modifiedData[k][key];
+            }
+            var keys = modifiedData[k].taskData ? Object.keys(modifiedData[k].taskData) :
+                Object.keys(modifiedData[k]);
+            i = treeData.length;
+            var _loop_1 = function () {
+                if (treeData[i][key] === modifiedData[k][key]) {
+                    if (action === 'delete') {
+                        var currentData_1 = treeData[i];
+                        treeData.splice(i, 1);
+                        if (isSelfReference) {
+                            if (!sf.base.isNullOrUndefined(currentData_1[control.parentIdMapping])) {
+                                var parentData = control.flatData.filter(function (e) {
+                                    return e[control.idMapping] === currentData_1[control.parentIdMapping];
+                                })[0];
+                                var childRecords = parentData ? parentData[control.childMapping] : [];
+                                for (var p = childRecords.length - 1; p >= 0; p--) {
+                                    if (childRecords[p][control.idMapping] === currentData_1[control.idMapping]) {
+                                        childRecords.splice(p, 1);
+                                        if (!childRecords.length) {
+                                            parentData.hasChildRecords = false;
+                                            updateParentRow(key, parentData, action, control, isSelfReference);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            return "break";
+                        }
+                    }
+                    else {
+                        if (action === 'edit') {
+                            for (j = 0; j < keys.length; j++) {
+                                if (treeData[i].hasOwnProperty(keys[j]) && ((control.editSettings.mode !== 'Cell'
+                                    || (!sf.base.isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
+                                    || keys[j] === columnName)) {
+                                    var editedData = getParentData(control, modifiedData[k].uniqueID);
+                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                    if (editedData && editedData.taskData) {
+                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                    }
+                                }
+                            }
+                        }
+                        else if (action === 'add' || action === 'batchsave') {
+                            var index = void 0;
+                            if (control.editSettings.newRowPosition === 'Child') {
+                                if (isSelfReference) {
+                                    originalData.taskData[control.parentIdMapping] = treeData[i][control.idMapping];
+                                    treeData.splice(i + 1, 0, originalData.taskData);
+                                }
+                                else {
+                                    if (!treeData[i].hasOwnProperty(control.childMapping)) {
+                                        treeData[i][control.childMapping] = [];
+                                    }
+                                    treeData[i][control.childMapping].push(originalData.taskData);
+                                    updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                                }
+                            }
+                            else if (control.editSettings.newRowPosition === 'Below') {
+                                treeData.splice(i + 1, 0, originalData.taskData);
+                                updateParentRow(key, treeData[i + 1], action, control, isSelfReference, originalData);
+                            }
+                            else if (!addRowIndex) {
+                                index = 0;
+                                treeData.splice(index, 0, originalData.taskData);
+                            }
+                            else if (control.editSettings.newRowPosition === 'Above') {
+                                treeData.splice(i, 0, originalData.taskData);
+                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
+                            }
+                        }
+                        return "break";
+                    }
+                }
+                else if (!sf.base.isNullOrUndefined(treeData[i][control.childMapping])) {
+                    if (removeChildRecords(treeData[i][control.childMapping], modifiedData[k], action, key, control, isSelfReference, originalData, columnName)) {
+                        updateParentRow(key, treeData[i], action, control, isSelfReference);
+                    }
+                }
+            };
+            while (i-- && i >= 0) {
+                var state_1 = _loop_1();
+                if (state_1 === "break")
+                    break;
+            }
+        }
+    }
+}
+function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord) {
+    var value;
+    var isSkip = false;
+    var currentViewRecords = control.grid.getCurrentViewRecords();
+    value = sf.base.extend({}, details.value);
+    value = getPlainData(value);
+    switch (control.editSettings.newRowPosition) {
+        case 'Top':
+            treeData.unshift(value);
+            isSkip = true;
+            break;
+        case 'Bottom':
+            treeData.push(value);
+            isSkip = true;
+            break;
+        case 'Above':
+            if (!sf.base.isNullOrUndefined(addRowRecord)) {
+                value = sf.base.extend({}, addRowRecord);
+                value = getPlainData(value);
+            }
+            else {
+                value = sf.base.extend({}, currentViewRecords[addRowIndex + 1]);
+                value = getPlainData(value);
+            }
+            break;
+        case 'Below':
+        case 'Child':
+            if (!sf.base.isNullOrUndefined(addRowRecord)) {
+                value = sf.base.extend({}, addRowRecord);
+                value = getPlainData(value);
+            }
+            else {
+                var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+                var currentdata = currentViewRecords[addRowIndex];
+                if (!sf.base.isNullOrUndefined(currentdata) && currentdata[primaryKeys] === details.value[primaryKeys] || selectedIndex !== -1) {
+                    value = sf.base.extend({}, currentdata);
+                }
+                else {
+                    value = sf.base.extend({}, details.value);
+                }
+                value = getPlainData(value);
+            }
+            if (selectedIndex === -1) {
+                treeData.unshift(value);
+                isSkip = true;
+            }
+    }
+    return { value: value, isSkip: isSkip };
+}
+function removeChildRecords(childRecords, modifiedData, action, key, control, isSelfReference, originalData, columnName) {
+    var isChildAll = false;
+    var j = childRecords.length;
+    while (j-- && j >= 0) {
+        if (childRecords[j][key] === modifiedData[key] ||
+            (isSelfReference && childRecords[j][control.parentIdMapping] === modifiedData[control.idMapping])) {
+            if (action === 'edit') {
+                var keys = Object.keys(modifiedData);
+                var editedData = getParentData(control, modifiedData.uniqueID);
+                for (var i = 0; i < keys.length; i++) {
+                    if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
+                        editedData[keys[i]] = editedData.taskData[keys[i]] = childRecords[j][keys[i]] = modifiedData[keys[i]];
+                        if (control.grid.editSettings.mode === 'Normal' && control.editSettings.mode === 'Cell') {
+                            var editModule = 'editModule';
+                            control.grid.editModule[editModule].editRowIndex = modifiedData.index;
+                            control.grid.editModule[editModule].updateCurrentViewData(modifiedData);
+                        }
+                    }
+                }
+                break;
+            }
+            else if (action === 'add' || action === 'batchsave') {
+                if (control.editSettings.newRowPosition === 'Child') {
+                    if (isSelfReference) {
+                        originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
+                        childRecords.splice(j + 1, 0, originalData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                    }
+                    else {
+                        if (!childRecords[j].hasOwnProperty(control.childMapping)) {
+                            childRecords[j][control.childMapping] = [];
+                        }
+                        childRecords[j][control.childMapping].push(originalData.taskData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                    }
+                }
+                else if (control.editSettings.newRowPosition === 'Above') {
+                    childRecords.splice(j, 0, originalData.taskData);
+                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                }
+                else if (control.editSettings.newRowPosition === 'Below') {
+                    childRecords.splice(j + 1, 0, originalData.taskData);
+                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
+                }
+            }
+            else {
+                var parentItem = childRecords[j].parentItem;
+                childRecords.splice(j, 1);
+                if (!childRecords.length) {
+                    isChildAll = true;
+                }
+            }
+        }
+        else if (!sf.base.isNullOrUndefined(childRecords[j][control.childMapping])) {
+            if (removeChildRecords(childRecords[j][control.childMapping], modifiedData, action, key, control, isSelfReference, originalData, columnName)) {
+                updateParentRow(key, childRecords[j], action, control, isSelfReference);
+            }
+        }
+    }
+    return isChildAll;
+}
+function updateParentRow(key, record, action, control, isSelfReference, child) {
+    if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
+        && ((action === 'add' || action === 'batchsave')) && !sf.base.isNullOrUndefined(child.parentItem)) {
+        var parentData = getParentData(control, child.parentItem.uniqueID);
+        parentData.childRecords.push(child);
+    }
+    else {
+        var currentRecords = control.grid.getCurrentViewRecords();
+        var index_1;
+        currentRecords.map(function (e, i) { if (e[key] === record[key]) {
+            index_1 = i;
+            return;
+        } });
+        if (!sf.base.isNullOrUndefined(index_1)) {
+            record = currentRecords[index_1];
+        }
+        if (control.enableVirtualization && sf.base.isNullOrUndefined(record) && !sf.base.isNullOrUndefined(child)) {
+            record = sf.base.getValue('uniqueIDCollection.' + child.parentUniqueID, control);
+        }
+        record.hasChildRecords = false;
+        if (action === 'add' || action === 'batchsave') {
+            record.expanded = true;
+            record.hasChildRecords = true;
+            if (control.sortSettings.columns.length && sf.base.isNullOrUndefined(child)) {
+                child = currentRecords.filter(function (e) {
+                    if (e.parentUniqueID === record.uniqueID) {
+                        return e;
+                    }
+                    else {
+                        return null;
+                    }
+                });
+            }
+            var childRecords = child ? child instanceof Array ? child[0] : child : currentRecords[index_1 + 1];
+            if (control.editSettings.newRowPosition !== 'Below') {
+                if (!record.hasOwnProperty('childRecords')) {
+                    record.childRecords = [];
+                }
+                else {
+                    if (!sf.base.isNullOrUndefined(child) && record[key] !== child[key]) {
+                        record.childRecords.push(child);
+                    }
+                }
+                if (record.childRecords.indexOf(childRecords) === -1 && record[key] !== child[key]) {
+                    record.childRecords.unshift(childRecords);
+                }
+                if (isSelfReference) {
+                    if (!record.hasOwnProperty(control.childMapping)) {
+                        record[control.childMapping] = [];
+                    }
+                    if (record[control.childMapping].indexOf(childRecords) === -1 && record[key] !== child[key]) {
+                        record[control.childMapping].unshift(childRecords);
+                    }
+                }
+            }
+        }
+        var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+        var data = control.grid.dataSource instanceof sf.data.DataManager ?
+            control.grid.dataSource.dataSource.json : control.grid.dataSource;
+        for (var i = 0; i < data.length; i++) {
+            if (data[i][primaryKeys] === record[primaryKeys]) {
+                data[i] = record;
+                break;
+            }
+        }
+        control.grid.setRowData(key, record);
+        var row = control.getRowByIndex(index_1);
+        if (control.editSettings.mode === 'Batch') {
+            row = control.getRows()[control.grid.getRowIndexByPrimaryKey(record[key])];
+        }
+        var movableRow = void 0;
+        if (control.frozenRows || control.getFrozenColumns()) {
+            movableRow = control.getMovableRowByIndex(index_1);
+        }
+        if (!control.enableVirtualization && !sf.base.isNullOrUndefined(row) || !sf.base.isNullOrUndefined(movableRow)) {
+            var index_2 = control.treeColumnIndex;
+            if (control.allowRowDragAndDrop && control.enableImmutableMode) {
+                index_2 = index_2 + 1;
+            }
+            control.renderModule.cellRender({
+                data: record, cell: row.cells[index_2] ? row.cells[index_2]
+                    : movableRow.cells[index_2 - control.frozenColumns],
+                column: control.grid.getColumns()[control.treeColumnIndex],
+                requestType: action
+            });
+        }
+    }
+}
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3155,6 +3483,7 @@ var TreeGrid = /** @class */ (function (_super) {
         this.grid.allowResizing = this.allowResizing;
         this.grid.enableHover = this.enableHover;
         this.grid.enableAutoFill = this.enableAutoFill;
+        this.grid.enableImmutableMode = this.enableImmutableMode;
         this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
         this.grid.rowDropSettings = sf.grids.getActualProperties(this.rowDropSettings);
         this.grid.rowHeight = this.rowHeight;
@@ -3338,6 +3667,9 @@ var TreeGrid = /** @class */ (function (_super) {
                 //args = this.dataModule.dataProcessor(args);
             }
             sf.base.extend(args, treeGrid.dataResults);
+            if (treeGrid.enableImmutableMode) {
+                args.result = args.result.slice();
+            }
             // this.notify(events.beforeDataBound, args);
             if (!this.isPrinting) {
                 var callBackPromise_1 = new sf.data.Deferred();
@@ -3855,7 +4187,7 @@ var TreeGrid = /** @class */ (function (_super) {
             else {
                 for (var _i = 0, _a = Object.keys(column[i]); _i < _a.length; _i++) {
                     var prop = _a[_i];
-                    if (i === this.treeColumnIndex && prop === 'template') {
+                    if (i === this.treeColumnIndex && prop === 'template' && !sf.base.isBlazor()) {
                         treeGridColumn[prop] = column[i][prop];
                     }
                     else {
@@ -4022,6 +4354,9 @@ var TreeGrid = /** @class */ (function (_super) {
                 case 'enableAutoFill':
                     this.grid.enableAutoFill = this.enableAutoFill;
                     break;
+                case 'enableImmutableMode':
+                    this.grid.enableImmutableMode = this.enableImmutableMode;
+                    break;
                 case 'allowExcelExport':
                     this.grid.allowExcelExport = this.allowExcelExport;
                     break;
@@ -4062,10 +4397,6 @@ var TreeGrid = /** @class */ (function (_super) {
                         this.grid.closeEdit();
                     }
                     this.grid.editSettings = this.getGridEditSettings();
-                    if (this.grid.editSettings.allowEditing) {
-                        var isOnBatch = 'isOnBatch';
-                        this.editModule[isOnBatch] = false;
-                    }
                     break;
             }
             if (requireRefresh) {
@@ -4321,6 +4652,11 @@ var TreeGrid = /** @class */ (function (_super) {
      */
     TreeGrid.prototype.setCellValue = function (key, field, value) {
         this.grid.setCellValue(key, field, value);
+        var rowIndex = this.grid.getRowIndexByPrimaryKey(key);
+        var record = this.getCurrentViewRecords()[rowIndex];
+        if (!sf.base.isNullOrUndefined(record)) {
+            editAction({ value: record, action: 'edit' }, this, this.isSelfReference, record.index, this.grid.selectedRowIndex, field);
+        }
     };
     /**
      * Updates and refresh the particular row values based on the given primary key value.
@@ -4521,7 +4857,7 @@ var TreeGrid = /** @class */ (function (_super) {
         if (this.treeColumnIndex !== -1 && this.columns[this.treeColumnIndex] &&
             !sf.base.isNullOrUndefined(this.columns[this.treeColumnIndex].template)) {
             temp = this.columns[this.treeColumnIndex].template;
-            field = gridColumns[this.treeColumnIndex].field;
+            field = this.columns[this.treeColumnIndex].field;
         }
         this.columnModel = [];
         var stackedHeader = false;
@@ -4691,6 +5027,27 @@ var TreeGrid = /** @class */ (function (_super) {
         return this.selectionModule.getCheckedrecords();
     };
     /**
+     * Get the visible records corresponding to rows visually displayed.
+     * @return {Object[]}
+     * @isGenericType true
+     */
+    TreeGrid.prototype.getVisibleRecords = function () {
+        var visibleRecords = [];
+        var currentViewRecords = this.getCurrentViewRecords();
+        if (!this.allowPaging) {
+            for (var i = 0; i < currentViewRecords.length; i++) {
+                visibleRecords.push(currentViewRecords[i]);
+                if (!currentViewRecords[i].expanded) {
+                    i += findChildrenRecords(currentViewRecords[i]).length;
+                }
+            }
+        }
+        else {
+            visibleRecords = currentViewRecords;
+        }
+        return visibleRecords;
+    };
+    /**
      * Get the indexes of checked rows.
      * @return {number[]}
      */
@@ -4751,6 +5108,9 @@ var TreeGrid = /** @class */ (function (_super) {
         else {
             var rowInfo = this.grid.getRowInfo(target);
             var record = rowInfo.rowData;
+            if (this.enableImmutableMode && Object.keys(record).length === 0) {
+                record = this.getCurrentViewRecords()[rowInfo.rowIndex];
+            }
             if (target.classList.contains('e-treegridexpand')) {
                 this.collapseRow(rowInfo.row, record);
             }
@@ -4917,6 +5277,7 @@ var TreeGrid = /** @class */ (function (_super) {
     };
     TreeGrid.prototype.expandCollapse = function (action, row, record, isChild) {
         var expandingArgs = { row: row, data: record, childData: [], requestType: action };
+        var targetEle;
         if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this)) {
             this.updateChildOnDemand(expandingArgs);
         }
@@ -4948,7 +5309,9 @@ var TreeGrid = /** @class */ (function (_super) {
                     record.expanded = true;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
-                var targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
+                if (!sf.base.isNullOrUndefined(row)) {
+                    targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
+                }
                 if (isChild && !sf.base.isNullOrUndefined(record[this.expandStateMapping]) &&
                     record[this.expandStateMapping] && sf.base.isNullOrUndefined(targetEle)) {
                     targetEle = row.getElementsByClassName('e-treegridexpand')[0];
@@ -4967,7 +5330,9 @@ var TreeGrid = /** @class */ (function (_super) {
                     record.expanded = false;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
-                var targetEle = row.getElementsByClassName('e-treegridexpand')[0];
+                if (!sf.base.isNullOrUndefined(row)) {
+                    targetEle = row.getElementsByClassName('e-treegridexpand')[0];
+                }
                 if (isChild && !sf.base.isNullOrUndefined(record[this.expandStateMapping]) &&
                     !record[this.expandStateMapping] && sf.base.isNullOrUndefined(targetEle)) {
                     targetEle = row.getElementsByClassName('e-treegridcollapse')[0];
@@ -5095,6 +5460,7 @@ var TreeGrid = /** @class */ (function (_super) {
         }
     };
     TreeGrid.prototype.localExpand = function (action, row, record, isChild) {
+        var rows;
         var childRecords = this.getCurrentViewRecords().filter(function (e) {
             return e.parentUniqueID === record.uniqueID;
         });
@@ -5108,17 +5474,33 @@ var TreeGrid = /** @class */ (function (_super) {
             gridRows = [].slice.call(rows_2);
         }
         var displayAction = (action === 'expand') ? 'table-row' : 'none';
+        var primaryKeyField = this.getPrimaryKeyFieldNames()[0];
+        var indx = 'index';
         var index = childRecords[0].parentItem.index;
-        var rows = gridRows.filter(function (r) {
-            return r.querySelector('.e-gridrowindex' + record.index + 'level' + (record.level + 1));
-        });
+        if (this.enableImmutableMode && !this.allowPaging) {
+            var index_1 = this.getCurrentViewRecords().map(function (e) { return e[indx]; }).indexOf(record.index);
+            var children = findChildrenRecords(this.getCurrentViewRecords()[index_1]);
+            rows = [];
+            childRecords = children;
+            for (var i = 0; i < children.length; i++) {
+                var rowIndex = this.grid.getRowIndexByPrimaryKey(children[i][primaryKeyField]);
+                rows.push(this.getRows()[rowIndex]);
+            }
+        }
+        else {
+            rows = gridRows.filter(function (r) {
+                return r.querySelector('.e-gridrowindex' + record.index + 'level' + (record.level + 1));
+            });
+        }
         if (this.frozenRows || this.frozenColumns || this.getFrozenColumns()) {
             movableRows = this.getMovableRows().filter(function (r) {
                 return r.querySelector('.e-gridrowindex' + record.index + 'level' + (record.level + 1));
             });
         }
         for (var i = 0; i < rows.length; i++) {
-            rows[i].style.display = displayAction;
+            if (!sf.base.isNullOrUndefined(rows[i])) {
+                rows[i].style.display = displayAction;
+            }
             if (!sf.base.isNullOrUndefined(movableRows)) {
                 movableRows[i].style.display = displayAction;
             }
@@ -5547,6 +5929,9 @@ var TreeGrid = /** @class */ (function (_super) {
         sf.base.Property(false)
     ], TreeGrid.prototype, "enableAutoFill", void 0);
     __decorate([
+        sf.base.Property(false)
+    ], TreeGrid.prototype, "enableImmutableMode", void 0);
+    __decorate([
         sf.base.Property('auto')
     ], TreeGrid.prototype, "height", void 0);
     __decorate([
@@ -5869,323 +6254,6 @@ var Resize$1 = /** @class */ (function () {
     };
     return Resize$$1;
 }());
-
-function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord) {
-    var value = details.value;
-    var action = details.action;
-    var changedRecords = 'changedRecords';
-    var i;
-    var j;
-    var addedRecords = 'addedRecords';
-    var batchChanges;
-    var key = control.grid.getPrimaryKeyFieldNames()[0];
-    var treeData = control.dataSource instanceof sf.data.DataManager ?
-        control.dataSource.dataSource.json : control.dataSource;
-    var modifiedData = [];
-    var originalData = value;
-    var isSkip = false;
-    if (control.editSettings.mode === 'Batch') {
-        batchChanges = control.grid.editModule.getBatchChanges();
-    }
-    if (action === 'add' || (action === 'batchsave' && (control.editSettings.mode === 'Batch'
-        && batchChanges[addedRecords].length))) {
-        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord);
-        value = addAct.value;
-        isSkip = addAct.isSkip;
-    }
-    if (value instanceof Array) {
-        modifiedData = extendArray(value);
-    }
-    else {
-        modifiedData.push(sf.base.extend({}, value));
-    }
-    if (!isSkip && (action !== 'add' ||
-        (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
-        for (var k = 0; k < modifiedData.length; k++) {
-            if (typeof (modifiedData[k][key]) === 'object') {
-                modifiedData[k] = modifiedData[k][key];
-            }
-            var keys = modifiedData[k].taskData ? Object.keys(modifiedData[k].taskData) :
-                Object.keys(modifiedData[k]);
-            i = treeData.length;
-            var _loop_1 = function () {
-                if (treeData[i][key] === modifiedData[k][key]) {
-                    if (action === 'delete') {
-                        var currentData_1 = treeData[i];
-                        treeData.splice(i, 1);
-                        if (isSelfReference) {
-                            if (!sf.base.isNullOrUndefined(currentData_1[control.parentIdMapping])) {
-                                var parentData = control.flatData.filter(function (e) {
-                                    return e[control.idMapping] === currentData_1[control.parentIdMapping];
-                                })[0];
-                                var childRecords = parentData ? parentData[control.childMapping] : [];
-                                for (var p = childRecords.length - 1; p >= 0; p--) {
-                                    if (childRecords[p][control.idMapping] === currentData_1[control.idMapping]) {
-                                        childRecords.splice(p, 1);
-                                        if (!childRecords.length) {
-                                            parentData.hasChildRecords = false;
-                                            updateParentRow(key, parentData, action, control, isSelfReference);
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                            return "break";
-                        }
-                    }
-                    else {
-                        if (action === 'edit') {
-                            for (j = 0; j < keys.length; j++) {
-                                if (treeData[i].hasOwnProperty(keys[j]) && ((control.editSettings.mode !== 'Cell'
-                                    || (!sf.base.isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
-                                    || keys[j] === columnName)) {
-                                    var editedData = getParentData(control, modifiedData[k].uniqueID);
-                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
-                                    if (editedData && editedData.taskData) {
-                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
-                                    }
-                                }
-                            }
-                        }
-                        else if (action === 'add' || action === 'batchsave') {
-                            var index = void 0;
-                            if (control.editSettings.newRowPosition === 'Child') {
-                                if (isSelfReference) {
-                                    originalData.taskData[control.parentIdMapping] = treeData[i][control.idMapping];
-                                    treeData.splice(i + 1, 0, originalData.taskData);
-                                }
-                                else {
-                                    if (!treeData[i].hasOwnProperty(control.childMapping)) {
-                                        treeData[i][control.childMapping] = [];
-                                    }
-                                    treeData[i][control.childMapping].push(originalData.taskData);
-                                    updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
-                                }
-                            }
-                            else if (control.editSettings.newRowPosition === 'Below') {
-                                treeData.splice(i + 1, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i + 1], action, control, isSelfReference, originalData);
-                            }
-                            else if (!addRowIndex) {
-                                index = 0;
-                                treeData.splice(index, 0, originalData.taskData);
-                            }
-                            else if (control.editSettings.newRowPosition === 'Above') {
-                                treeData.splice(i, 0, originalData.taskData);
-                                updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);
-                            }
-                        }
-                        return "break";
-                    }
-                }
-                else if (!sf.base.isNullOrUndefined(treeData[i][control.childMapping])) {
-                    if (removeChildRecords(treeData[i][control.childMapping], modifiedData[k], action, key, control, isSelfReference, originalData, columnName)) {
-                        updateParentRow(key, treeData[i], action, control, isSelfReference);
-                    }
-                }
-            };
-            while (i-- && i >= 0) {
-                var state_1 = _loop_1();
-                if (state_1 === "break")
-                    break;
-            }
-        }
-    }
-}
-function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord) {
-    var value;
-    var isSkip = false;
-    var currentViewRecords = control.grid.getCurrentViewRecords();
-    value = sf.base.extend({}, details.value);
-    value = getPlainData(value);
-    switch (control.editSettings.newRowPosition) {
-        case 'Top':
-            treeData.unshift(value);
-            isSkip = true;
-            break;
-        case 'Bottom':
-            treeData.push(value);
-            isSkip = true;
-            break;
-        case 'Above':
-            if (!sf.base.isNullOrUndefined(addRowRecord)) {
-                value = sf.base.extend({}, addRowRecord);
-                value = getPlainData(value);
-            }
-            else {
-                value = sf.base.extend({}, currentViewRecords[addRowIndex + 1]);
-                value = getPlainData(value);
-            }
-            break;
-        case 'Below':
-        case 'Child':
-            if (!sf.base.isNullOrUndefined(addRowRecord)) {
-                value = sf.base.extend({}, addRowRecord);
-                value = getPlainData(value);
-            }
-            else {
-                var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
-                var currentdata = currentViewRecords[addRowIndex];
-                if (!sf.base.isNullOrUndefined(currentdata) && currentdata[primaryKeys] === details.value[primaryKeys] || selectedIndex !== -1) {
-                    value = sf.base.extend({}, currentdata);
-                }
-                else {
-                    value = sf.base.extend({}, details.value);
-                }
-                value = getPlainData(value);
-            }
-            if (selectedIndex === -1) {
-                treeData.unshift(value);
-                isSkip = true;
-            }
-    }
-    return { value: value, isSkip: isSkip };
-}
-function removeChildRecords(childRecords, modifiedData, action, key, control, isSelfReference, originalData, columnName) {
-    var isChildAll = false;
-    var j = childRecords.length;
-    while (j-- && j >= 0) {
-        if (childRecords[j][key] === modifiedData[key] ||
-            (isSelfReference && childRecords[j][control.parentIdMapping] === modifiedData[control.idMapping])) {
-            if (action === 'edit') {
-                var keys = Object.keys(modifiedData);
-                var editedData = getParentData(control, modifiedData.uniqueID);
-                for (var i = 0; i < keys.length; i++) {
-                    if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
-                        editedData[keys[i]] = editedData.taskData[keys[i]] = childRecords[j][keys[i]] = modifiedData[keys[i]];
-                        if (control.grid.editSettings.mode === 'Normal' && control.editSettings.mode === 'Cell') {
-                            var editModule = 'editModule';
-                            control.grid.editModule[editModule].editRowIndex = modifiedData.index;
-                            control.grid.editModule[editModule].updateCurrentViewData(modifiedData);
-                        }
-                    }
-                }
-                break;
-            }
-            else if (action === 'add' || action === 'batchsave') {
-                if (control.editSettings.newRowPosition === 'Child') {
-                    if (isSelfReference) {
-                        originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
-                        childRecords.splice(j + 1, 0, originalData);
-                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                    }
-                    else {
-                        if (!childRecords[j].hasOwnProperty(control.childMapping)) {
-                            childRecords[j][control.childMapping] = [];
-                        }
-                        childRecords[j][control.childMapping].push(originalData.taskData);
-                        updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                    }
-                }
-                else if (control.editSettings.newRowPosition === 'Above') {
-                    childRecords.splice(j, 0, originalData.taskData);
-                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                }
-                else if (control.editSettings.newRowPosition === 'Below') {
-                    childRecords.splice(j + 1, 0, originalData.taskData);
-                    updateParentRow(key, childRecords[j], action, control, isSelfReference, originalData);
-                }
-            }
-            else {
-                var parentItem = childRecords[j].parentItem;
-                childRecords.splice(j, 1);
-                if (!childRecords.length) {
-                    isChildAll = true;
-                }
-            }
-        }
-        else if (!sf.base.isNullOrUndefined(childRecords[j][control.childMapping])) {
-            if (removeChildRecords(childRecords[j][control.childMapping], modifiedData, action, key, control, isSelfReference, originalData, columnName)) {
-                updateParentRow(key, childRecords[j], action, control, isSelfReference);
-            }
-        }
-    }
-    return isChildAll;
-}
-function updateParentRow(key, record, action, control, isSelfReference, child) {
-    if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
-        && ((action === 'add' || action === 'batchsave')) && !sf.base.isNullOrUndefined(child.parentItem)) {
-        var parentData = getParentData(control, child.parentItem.uniqueID);
-        parentData.childRecords.push(child);
-    }
-    else {
-        var currentRecords = control.grid.getCurrentViewRecords();
-        var index_1;
-        currentRecords.map(function (e, i) { if (e[key] === record[key]) {
-            index_1 = i;
-            return;
-        } });
-        if (!sf.base.isNullOrUndefined(index_1)) {
-            record = currentRecords[index_1];
-        }
-        if (control.enableVirtualization && sf.base.isNullOrUndefined(record) && !sf.base.isNullOrUndefined(child)) {
-            record = sf.base.getValue('uniqueIDCollection.' + child.parentUniqueID, control);
-        }
-        record.hasChildRecords = false;
-        if (action === 'add' || action === 'batchsave') {
-            record.expanded = true;
-            record.hasChildRecords = true;
-            if (control.sortSettings.columns.length && sf.base.isNullOrUndefined(child)) {
-                child = currentRecords.filter(function (e) {
-                    if (e.parentUniqueID === record.uniqueID) {
-                        return e;
-                    }
-                    else {
-                        return null;
-                    }
-                });
-            }
-            var childRecords = child ? child instanceof Array ? child[0] : child : currentRecords[index_1 + 1];
-            if (control.editSettings.newRowPosition !== 'Below') {
-                if (!record.hasOwnProperty('childRecords')) {
-                    record.childRecords = [];
-                }
-                else {
-                    if (!sf.base.isNullOrUndefined(child) && record[key] !== child[key]) {
-                        record.childRecords.push(child);
-                    }
-                }
-                if (record.childRecords.indexOf(childRecords) === -1 && record[key] !== child[key]) {
-                    record.childRecords.unshift(childRecords);
-                }
-                if (isSelfReference) {
-                    if (!record.hasOwnProperty(control.childMapping)) {
-                        record[control.childMapping] = [];
-                    }
-                    if (record[control.childMapping].indexOf(childRecords) === -1 && record[key] !== child[key]) {
-                        record[control.childMapping].unshift(childRecords);
-                    }
-                }
-            }
-        }
-        var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
-        var data = control.grid.dataSource instanceof sf.data.DataManager ?
-            control.grid.dataSource.dataSource.json : control.grid.dataSource;
-        for (var i = 0; i < data.length; i++) {
-            if (data[i][primaryKeys] === record[primaryKeys]) {
-                data[i] = record;
-                break;
-            }
-        }
-        control.grid.setRowData(key, record);
-        var row = control.getRowByIndex(index_1);
-        if (control.editSettings.mode === 'Batch') {
-            row = control.getRows()[control.grid.getRowIndexByPrimaryKey(record[key])];
-        }
-        var movableRow = void 0;
-        if (control.frozenRows || control.getFrozenColumns()) {
-            movableRow = control.getMovableRowByIndex(index_1);
-        }
-        if (!control.enableVirtualization && !sf.base.isNullOrUndefined(row) || !sf.base.isNullOrUndefined(movableRow)) {
-            control.renderModule.cellRender({
-                data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
-                    : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
-                column: control.grid.getColumns()[control.treeColumnIndex],
-                requestType: action
-            });
-        }
-    }
-}
 
 /**
  * TreeGrid RowDragAndDrop module
@@ -6687,6 +6755,7 @@ var RowDD$1 = /** @class */ (function () {
     };
     RowDD$$1.prototype.rowDropped = function (args) {
         var tObj = this.parent;
+        var parentItem = 'parentItem';
         if (!tObj.rowDropSettings.targetID) {
             if (sf.grids.parentsUntil(args.target, 'e-content')) {
                 if (this.parent.element.querySelector('.e-errorelem')) {
@@ -6729,6 +6798,44 @@ var RowDD$1 = /** @class */ (function () {
         }
         else if (!sf.base.isNullOrUndefined(this.parent.element.getElementsByClassName('e-lastrow-border')[0])) {
             this.parent.element.getElementsByClassName('e-lastrow-border')[0].remove();
+        }
+        if (this.parent.enableImmutableMode && !this.parent.allowPaging && !sf.base.isNullOrUndefined(args.data[0][parentItem])) {
+            var index = this.parent.treeColumnIndex;
+            index = index + 1;
+            var primaryKeyField = this.parent.getPrimaryKeyFieldNames()[0];
+            var rowIndex = this.parent.grid.getRowIndexByPrimaryKey(args.data[0][primaryKeyField]);
+            var row = this.parent.getRows()[rowIndex];
+            var data = args.data[0];
+            if (this.dropPosition === 'middleSegment') {
+                var record = [];
+                var rows = [];
+                record.push(data);
+                rows.push(row);
+                data = args.data[0][parentItem];
+                rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[primaryKeyField]);
+                var parentrow = this.parent.getRows()[rowIndex];
+                record.push(data);
+                rows.push(parentrow);
+                for (var i = 0; i < record.length; i++) {
+                    this.parent.renderModule.cellRender({
+                        data: record[i], cell: rows[i].cells[index],
+                        column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
+                        requestType: 'rowDragAndDrop'
+                    });
+                }
+                var targetEle = parentrow.getElementsByClassName('e-treegridcollapse')[0];
+                if (!sf.base.isNullOrUndefined(targetEle)) {
+                    sf.base.removeClass([targetEle], 'e-treegridcollapse');
+                    sf.base.addClass([targetEle], 'e-treegridexpand');
+                }
+            }
+            else {
+                this.parent.renderModule.cellRender({
+                    data: data, cell: row.cells[index],
+                    column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
+                    requestType: 'rowDragAndDrop'
+                });
+            }
         }
     };
     RowDD$$1.prototype.dragDropGrid = function (args) {
@@ -7944,6 +8051,25 @@ var Page$1 = /** @class */ (function () {
             count: this.parent.flatData.length
         };
         sf.base.getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
+        if (this.parent.enableImmutableMode) {
+            var row = 'row';
+            var action = 'action';
+            var targetEle = void 0;
+            if (ret[action] === 'collapse') {
+                targetEle = ret[row].getElementsByClassName('e-treegridexpand')[0];
+                if (!sf.base.isNullOrUndefined(targetEle)) {
+                    sf.base.removeClass([targetEle], 'e-treegridexpand');
+                    sf.base.addClass([targetEle], 'e-treegridcollapse');
+                }
+            }
+            else if (ret[action] === 'expand') {
+                targetEle = ret[row].getElementsByClassName('e-treegridcollapse')[0];
+                if (!sf.base.isNullOrUndefined(targetEle)) {
+                    sf.base.removeClass([targetEle], 'e-treegridcollapse');
+                    sf.base.addClass([targetEle], 'e-treegridexpand');
+                }
+            }
+        }
     };
     Page$$1.prototype.pageRoot = function (pagedResults, temp, result) {
         var newResults = sf.base.isNullOrUndefined(result) ? [] : result;
@@ -8623,6 +8749,7 @@ var BatchEdit = /** @class */ (function () {
         this.parent.on(beforeBatchSave, this.beforeBatchSave, this);
         this.parent.on('batchPageAction', this.batchPageAction, this);
         this.parent.on('batchCancelAction', this.batchCancelAction, this);
+        this.parent.grid.on('immutable-batch-cancel', this.immutableBatchAction, this);
     };
     /**
      * @hidden
@@ -8639,6 +8766,7 @@ var BatchEdit = /** @class */ (function () {
         this.parent.off(beforeBatchSave, this.beforeBatchSave);
         this.parent.off('batchPageAction', this.batchPageAction);
         this.parent.off('batchCancelAction', this.batchCancelAction);
+        this.parent.grid.off('immutable-batch-cancel', this.immutableBatchAction);
     };
     /**
      * To destroy the editModule
@@ -9127,6 +9255,18 @@ var BatchEdit = /** @class */ (function () {
             this.batchChildCount = 0;
         }
         return index;
+    };
+    BatchEdit.prototype.immutableBatchAction = function (e) {
+        e.args.cancel = true;
+        var changes = this.parent.grid.getBatchChanges();
+        var addedRecords = [];
+        var index = 'index';
+        if (Object.keys(changes).length) {
+            addedRecords = changes.addedRecords;
+        }
+        for (var i = 0; i < addedRecords.length; i++) {
+            e.rows.splice(addedRecords[i][index], 1);
+        }
     };
     return BatchEdit;
 }());
@@ -9646,15 +9786,19 @@ var Edit$1 = /** @class */ (function () {
                 rows[index + 1][position](rows[0]);
                 sf.base.setValue('batchIndex', index + 1, this.batchEditModule);
                 var rowObjectIndex = this.parent.editSettings.newRowPosition === 'Above' ? index : index + 1;
-                this.parent.grid.contentModule[r].splice(0, 1);
-                this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
+                if (this.parent.editSettings.mode === 'Batch') {
+                    this.parent.grid.contentModule[r].splice(0, 1);
+                    this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
+                }
                 if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns) {
                     var movableRows = this.parent.getMovableDataRows();
                     var frows = 'freezeRows';
                     var newFreezeRowObject = this.parent.grid.getRowsObject()[0];
                     movableRows[index + 1][position](movableRows[0]);
-                    this.parent.grid.contentModule[frows].splice(0, 1);
-                    this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);
+                    if (this.parent.editSettings.mode === 'Batch') {
+                        this.parent.grid.contentModule[frows].splice(0, 1);
+                        this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);
+                    }
                     sf.base.setValue('batchIndex', index + 1, this.batchEditModule);
                 }
                 if (this.parent.editSettings.mode === 'Row' || this.parent.editSettings.mode === 'Cell') {

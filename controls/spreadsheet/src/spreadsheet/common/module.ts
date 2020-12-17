@@ -164,4 +164,7 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowImage) {
         modules.push({ member: 'spreadsheetImage', args: [context] });
     }
+    if (context.allowChart) {
+        modules.push({ member: 'spreadsheetChart', args: [context] });
+    }
 }

@@ -44,7 +44,7 @@ let filter: ColumnsModel [] = [
             let ds: string [] = ['ALFKI', 'BERGS', 'BLONP', 'OTTIK'];
             dropDownObj = new DropDownList({
                 dataSource: ds,
-                value: args.values ? args.values[0] : ds[0],
+                value: args.values ? args.values: ds[0],
                 change: (e: any) => {
                     queryBldrObj.notifyChange(e.itemData.value, e.element);
                 }

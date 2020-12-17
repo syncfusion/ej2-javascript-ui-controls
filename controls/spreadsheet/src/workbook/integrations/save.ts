@@ -49,14 +49,14 @@ export class WorkbookSave extends SaveWorker {
     /**
      * @hidden
      */
-    public addEventListener(): void {
+    private addEventListener(): void {
         this.parent.on(events.beginSave, this.initiateSave, this);
     }
 
     /**
      * @hidden
      */
-    public removeEventListener(): void {
+    private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(events.beginSave, this.initiateSave);
         }

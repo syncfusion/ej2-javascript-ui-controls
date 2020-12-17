@@ -33,14 +33,14 @@ export class WorkbookImage {
     /**
      * Adding event listener for number format.
      */
-    public addEventListener(): void {
+    private addEventListener(): void {
         this.parent.on(setImage, this.setImage, this);
     }
 
     /**
      * Removing event listener for number format.
      */
-    public removeEventListener(): void {
+    private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(setImage, this.setImage);
         }

@@ -29,6 +29,8 @@ export class VirtualContentRenderer {
     private blazorActiveKey: string = '';
     private nextRowToNavigate: number = 0;
     private isScrollFromFocus: boolean;
+    private  translateMaskY : number;
+    private  translateMaskX : number;
 
     /** @hidden */
     public virtualEle: VirtualElementHandler = new VirtualElementHandler();
@@ -133,7 +135,8 @@ export class VirtualContentRenderer {
                 endColumnIndex: viewInfo.columnIndexes[viewInfo.columnIndexes.length - 1],
                 axis: 'X',
                 VTablewidth: width,
-                translateX: this.getColumnOffset(viewInfo.columnIndexes[0] - 1)
+                translateX: this.getColumnOffset(viewInfo.columnIndexes[0] - 1),
+                translateY: this.parent.options.enableVirtualMaskRow ? this.translateMaskY : 0
             });
             this.setColVTableWidthAndTranslate();
         }
@@ -182,8 +185,10 @@ export class VirtualContentRenderer {
     //     return this.vHelper.isBlockAvailable(blk);
     // }
 
-	private keyDownHandler(e: KeyboardEventArgs): void {
-		this.blazorActiveKey = (e.key === 'ArrowDown' || e.key === 'ArrowUp') ? e.key : '';
+    private keyDownHandler(e: KeyboardEventArgs): void {
+        this.blazorActiveKey = (e.key === 'ArrowDown' || e.key === 'ArrowUp') ? e.key : '';
+        if (!isNullOrUndefined(this.observer))
+            this.observer.blazorActiveKey = this.blazorActiveKey;
     }
     
     public focusCell(cell: HTMLElement, action: string): void {
@@ -237,7 +242,27 @@ export class VirtualContentRenderer {
         let totalCount: number = this.parent.options.groupCount ? this.getVisibleGroupedRowCount() : this.count;
         if (infoType.direction === 'down' && !this.isScrollFromFocus) {
             let sIndex: number = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
-            if (isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
+            if (this.parent.options.enableVirtualMaskRow) {
+                noOfInViewIndexes = Math.ceil(noOfInViewIndexes) - 1;
+                let differenceOfRowIndex: number = Math.ceil(exactTopIndex) - this.preStartIndex;
+                if (differenceOfRowIndex >= noOfInViewIndexes) {
+                    infoType.startIndex = Math.ceil(exactTopIndex) >= 0 ? Math.ceil(exactTopIndex) : 0;
+                    let eIndex: number = infoType.startIndex + this.parent.options.pageSize;
+                    infoType.endIndex = eIndex < totalCount ? eIndex : totalCount;
+                    infoType.startIndex = eIndex >= totalCount ? infoType.endIndex - this.parent.options.pageSize : infoType.startIndex;
+                    infoType.currentPage = Math.ceil(infoType.endIndex / this.parent.options.pageSize);
+                    this.nextRowToNavigate = Math.floor(exactEndIndex - 1);
+                    this.isScrollFromFocus = false;
+                    this.preStartIndex = this.startIndex = infoType.startIndex;
+                    this.preEndIndex = infoType.endIndex;
+                } else {
+                    this.isScrollFromFocus = false;
+                    this.preStartIndex = this.preStartIndex;
+                    this.preEndIndex = this.preEndIndex;
+                }
+            }
+
+            if (!this.parent.options.enableVirtualMaskRow && isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
             (infoType.startIndex + Math.round((this.parent.options.pageSize / 2 + pageSizeBy4)))
             && infoType.endIndex !== totalCount)) {
                 infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
@@ -252,9 +277,33 @@ export class VirtualContentRenderer {
                 this.nextRowToNavigate = Math.floor(exactEndIndex - 1);
             }
         } else if (infoType.direction === 'up') {
-            if (infoType.startIndex && infoType.endIndex) {
+            if (infoType.startIndex && infoType.endIndex || this.parent.options.enableVirtualMaskRow) {
                 let loadAtIndex: number = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
-                if (exactTopIndex < loadAtIndex) {
+                if (this.parent.options.enableVirtualMaskRow) {
+                    noOfInViewIndexes = Math.ceil(noOfInViewIndexes);
+                    if (exactTopIndex < loadAtIndex || Math.ceil(exactTopIndex) > this.preStartIndex) {
+                        let startIndex: number = Math.ceil(exactTopIndex) > 0 ? Math.ceil(exactTopIndex) : 0;
+                        let customStartIndex: number = totalCount - this.parent.options.pageSize - (this.parent.options.pageSize / 2);
+                        if (exactTopIndex < totalCount && customStartIndex < exactTopIndex) {
+                            infoType.startIndex = startIndex > 0 ? startIndex - (this.parent.options.pageSize / 2) : 0;
+                        } else {
+                            infoType.startIndex = startIndex > 0 ? startIndex + this.parent.options.pageSize > totalCount ? totalCount - this.parent.options.pageSize : startIndex : 0;
+                        }
+                        infoType.startIndex = infoType.startIndex > 0 ? infoType.startIndex - 1 : infoType.startIndex;
+                        let eIndex: number = infoType.startIndex + this.parent.options.pageSize;
+                        infoType.endIndex = infoType.startIndex < 0 ? this.parent.options.pageSize : eIndex < totalCount ? eIndex : totalCount;
+                        infoType.currentPage = Math.ceil(infoType.startIndex / this.parent.options.pageSize);
+                        this.nextRowToNavigate = Math.ceil(exactTopIndex + 1);
+                        this.isScrollFromFocus = false;
+                        this.preStartIndex = this.startIndex = infoType.startIndex;
+                        this.preEndIndex = infoType.endIndex;
+                    } else {
+                        this.isScrollFromFocus = false;
+                        this.preStartIndex = this.preStartIndex;
+                        this.preEndIndex = this.preEndIndex;
+                    }
+                }
+                if (exactTopIndex < loadAtIndex && !this.parent.options.enableVirtualMaskRow) {
                     let idxAddedToExactTop: number = (pageSizeBy4) > noOfInViewIndexes ? pageSizeBy4 :
                     (noOfInViewIndexes + noOfInViewIndexes / 4);
                     let eIndex: number = Math.round(exactTopIndex + idxAddedToExactTop);
@@ -267,14 +316,16 @@ export class VirtualContentRenderer {
                 }
             }
         }
-        this.isScrollFromFocus = false;
-        this.preStartIndex = this.startIndex = infoType.startIndex;
-        this.preEndIndex = infoType.endIndex;
-
+        if (!this.parent.options.enableVirtualMaskRow) {
+            this.isScrollFromFocus = false;
+            this.preStartIndex = this.startIndex = infoType.startIndex;
+            this.preEndIndex = infoType.endIndex;
+        }
         return infoType;
     }
 
     public onDataReady(): void {
+        let _this: VirtualContentRenderer = this;
         this.bindScrollEvent();
         this.count =  this.parent.options.totalItemCount;
         this.maxPage = Math.ceil(this.count / this.parent.options.pageSize);
@@ -287,6 +338,20 @@ export class VirtualContentRenderer {
         this.setVirtualHeight();
         this.resetScrollPosition(this.parent.options.requestType);
         this.setColVTableWidthAndTranslate();
+        if (this.parent.options.enableVirtualMaskRow) {
+            let yValue: number = Math.min(Math.ceil(this.virtualEle.content.scrollTop), this.offsets[this.maxBlock]);
+            if (yValue == 0)
+                yValue = yValue - (this.parent.options.pageSize * (this.parent.options.rowHeight ? this.parent.options.rowHeight : 35));
+            else if (this.startIndex)
+                yValue = yValue - (this.parent.options.pageSize * (this.parent.options.rowHeight ? this.parent.options.rowHeight : 35)) - 10;
+            else
+                yValue = this.startIndex ? yValue : 0 - (this.parent.options.pageSize * (this.parent.options.rowHeight ? this.parent.options.rowHeight : 35));
+            setTimeout(()=> {
+                _this.translateMaskY = yValue;
+                _this.translateMaskX = isNullOrUndefined(_this.translateMaskX) ? 0 : _this.translateMaskX;
+                _this.virtualEle.wrapper.style.transform = "translate(" + _this.translateMaskX + "px," + yValue + "px)";
+            }, 0);
+        }
         this.prevInfo = this.prevInfo ? this.prevInfo : this.vHelper.getData();
     }
 
@@ -355,7 +420,11 @@ export class VirtualContentRenderer {
             if (this.currentInfo && this.currentInfo.startIndex && xAxis) {
                 y = this.currentInfo.startIndex * this.parent.getRowHeight();
             }
-            this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+            if (!this.parent.options.enableVirtualMaskRow) {
+                this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
+            } else if (this.offsets[this.maxBlock] > y) {
+                this.virtualEle.adjustTable(x, Math.min(direction == "right" || direction == "left" ? this.translateMaskY : y, this.offsets[this.maxBlock]));
+            }
             if (xAxis) {
                 this.setColVTableWidthAndTranslate({refresh: true});
             }
@@ -439,6 +508,14 @@ export class VirtualContentRenderer {
         if (this.parent.options.enableColumnVirtualization) {
             this.vHelper.refreshColOffsets();
         }
+    }
+
+    public updateTransform(x: number, y: number): void {
+        let _this: VirtualContentRenderer = this;
+        setTimeout(() => {
+            _this.translateMaskX = x;
+            _this.virtualEle.adjustTable(x, _this.translateMaskY);
+        }, 500);
     }
 
     public refreshColumnIndexes(): void {

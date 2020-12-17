@@ -32,8 +32,8 @@ describe('Drag module', () => {
         });
 
         it('Drag and drop property class testing', () => {
-            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(true);
-            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-lib')).toBe(true);
+            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-draggable')).toBe(true);
+            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-lib')).toBe(true);
         });
     });
 
@@ -49,8 +49,8 @@ describe('Drag module', () => {
         });
 
         it('Without Drag and drop property class testing', () => {
-            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toBe(false);
-            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-lib')).toBe(false);
+            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-draggable')).toBe(false);
+            expect(kanbanObj.element.querySelector('.e-card').classList.contains('e-lib')).toBe(false);
         });
     });
 
@@ -120,7 +120,7 @@ describe('Drag module', () => {
 
         it('Drag Possible testing when drag the card', () => {
             let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
-            expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(false);
+            expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(true);
@@ -303,7 +303,7 @@ describe('Drag module', () => {
         });
         it('Drag Possible testing when drag the card', () => {
             let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
-            expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(false);
+            expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(true);
@@ -443,8 +443,7 @@ describe('Drag module', () => {
 
         it('Drag Possible testing when drag the card', () => {
             let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
-            expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(false);
-            for (let i: number = 1; i < cells.length; i++) {
+            for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(true);
             }
         });
@@ -507,9 +506,7 @@ describe('Drag module', () => {
 
         it('Swilane to swimlane Drag Possible testing when drag the card', () => {
             let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
-            expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(false);
-            expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
-            for (let i: number = 2; i < cells.length; i++) {
+            for (let i: number = 0; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(true);
             }
         });
@@ -667,6 +664,7 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousedown');
             expect(key).toEqual('InProgress');
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
+            util.triggerMouseEvent(draggedElement, 'mousemove');
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
@@ -674,7 +672,7 @@ describe('Drag module', () => {
 
         it('Dropped clone behavior testing with multiple key testing', () => {
             droppedElement = kanbanObj.element.querySelectorAll('.e-card[data-id="1"] .e-card-content').item(0) as HTMLElement;
-            util.triggerMouseEvent(droppedElement, 'mousemove', 100, 100);
+            util.triggerMouseEvent(droppedElement, 'mousemove', 100, 200);
             expect(document.body.style.cursor).toBe('');
             expect(droppedElement.closest('.e-content-cells').lastElementChild.classList.contains('e-target-multi-clone')).toEqual(true);
         });
@@ -703,7 +701,7 @@ describe('Drag module', () => {
         it('Drag Possible testing when drag the card', () => {
             let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
-            expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(false);
+            expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(true);
         });
@@ -785,7 +783,7 @@ describe('Drag module', () => {
             let cells: NodeList = kanbanObj.element.querySelectorAll('.e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
-            expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(false);
+            expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(true);
         });
 
@@ -852,6 +850,7 @@ describe('Drag module', () => {
             util.triggerMouseEvent(draggedElement, 'mousedown');
             expect(key).toEqual('InProgress');
             util.triggerMouseEvent(draggedElement, 'mousemove', 100, 100);
+            util.triggerMouseEvent(draggedElement, 'mousemove');
             expect(draggedElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
             expect(draggedElement.nextElementSibling.classList.contains('e-target-dragged-clone')).toBeTruthy();
             expect(kanbanObj.element.querySelectorAll('.e-target-dragged-clone').length).toBe(1);
@@ -888,7 +887,7 @@ describe('Drag module', () => {
         it('Drag Possible testing when drag the card', () => {
             let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
-            expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(false);
+            expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(true);
             for (let i: number = 4; i < cells.length; i++) {
@@ -973,7 +972,7 @@ describe('Drag module', () => {
             let cells: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-content-row:not(.e-swimlane-row) .e-content-cells');
             expect((<HTMLElement>cells[0]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[1]).classList.contains('e-dropping')).toEqual(true);
-            expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(false);
+            expect((<HTMLElement>cells[2]).classList.contains('e-dropping')).toEqual(true);
             expect((<HTMLElement>cells[3]).classList.contains('e-dropping')).toEqual(true);
             for (let i: number = 4; i < cells.length; i++) {
                 expect((<HTMLElement>cells[i]).classList.contains('e-dropping')).toEqual(false);

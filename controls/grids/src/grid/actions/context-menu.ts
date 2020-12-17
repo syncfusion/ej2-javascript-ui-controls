@@ -402,7 +402,7 @@ export class ContextMenu implements IAction {
     }
 
     private ensureFrozenHeader(targetElement: HTMLElement): boolean {
-        return (this.parent.getFrozenColumns() || this.parent.frozenRows)
+        return (this.parent.isFrozenGrid() || this.parent.frozenRows)
             && closest(targetElement, menuClass.header) ? true : false;
     }
 

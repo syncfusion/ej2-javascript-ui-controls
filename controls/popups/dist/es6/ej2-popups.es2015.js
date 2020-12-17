@@ -1167,6 +1167,7 @@ let previousWidth = 0;
 let setWidth = true;
 // tslint:disable-next-line
 let proxy;
+let dialogBorderResize = ['north', 'west', 'east', 'south'];
 function createResize(args) {
     resizeStart = args.resizeBegin;
     resize = args.resizing;
@@ -1175,8 +1176,13 @@ function createResize(args) {
     containerElement = getDOMElement(args.boundary);
     let directions = args.direction.split(' ');
     for (let i = 0; i < directions.length; i++) {
-        let resizeHandler = createElement('div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] });
-        targetElement.appendChild(resizeHandler);
+        if (dialogBorderResize.indexOf(directions[i]) >= 0 && directions[i]) {
+            setBorderResizeElm(directions[i]);
+        }
+        else if (directions[i].trim() !== '') {
+            let resizeHandler = createElement('div', { className: 'e-icons ' + RESIZE_HANDLER + ' ' + 'e-' + directions[i] });
+            targetElement.appendChild(resizeHandler);
+        }
     }
     minHeight = args.minHeight;
     minWidth = args.minWidth;
@@ -1188,6 +1194,40 @@ function createResize(args) {
     else {
         wireEvents();
     }
+}
+function setBorderResizeElm(direction) {
+    calculateValues();
+    let borderBottom = createElement('span', {
+        attrs: {
+            'unselectable': 'on', 'contenteditable': 'false'
+        }
+    });
+    borderBottom.setAttribute('class', 'e-dialog-border-resize e-' + direction);
+    if (direction === 'south') {
+        borderBottom.style.height = '2px';
+        borderBottom.style.width = '100%';
+        borderBottom.style.bottom = '0px';
+        borderBottom.style.left = '0px';
+    }
+    if (direction === 'north') {
+        borderBottom.style.height = '2px';
+        borderBottom.style.width = '100%';
+        borderBottom.style.top = '0px';
+        borderBottom.style.left = '0px';
+    }
+    if (direction === 'east') {
+        borderBottom.style.height = '100%';
+        borderBottom.style.width = '2px';
+        borderBottom.style.right = '0px';
+        borderBottom.style.top = '0px';
+    }
+    if (direction === 'west') {
+        borderBottom.style.height = '100%';
+        borderBottom.style.width = '2px';
+        borderBottom.style.left = '0px';
+        borderBottom.style.top = '0px';
+    }
+    targetElement.appendChild(borderBottom);
 }
 function getDOMElement(element) {
     let domElement;
@@ -1212,6 +1252,15 @@ function wireEvents(args) {
         EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
         let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
         EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+    }
+    let borderResizers = targetElement.querySelectorAll('.e-dialog-border-resize');
+    if (!isNullOrUndefined(borderResizers)) {
+        for (let i = 0; i < borderResizers.length; i++) {
+            selectedHandler = borderResizers[i];
+            EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
+            let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
+            EventHandler.add(selectedHandler, eventName, onTouchStart, args);
+        }
     }
 }
 /* istanbul ignore next */
@@ -1415,10 +1464,6 @@ function resizeNorth(e) {
         calculateValue = true;
     }
     let currentHeight = originalHeight - (pageY - originalMouseY);
-    if ((getClientRectValues(targetElement).bottom + currentHeight) > maxHeight) {
-        calculateValue = false;
-        targetElement.style.height = maxHeight - getClientRectValues(targetElement).bottom + 'px';
-    }
     if (calculateValue) {
         if (currentHeight >= minHeight && currentHeight <= maxHeight) {
             let containerTop = 0;
@@ -1456,7 +1501,7 @@ function resizeWest(e) {
         }
     }
     if (!isNullOrUndefined(containerElement) &&
-        (((targetRectValues.left - rectValues.left) + targetRectValues.width +
+        (Math.floor((targetRectValues.left - rectValues.left) + targetRectValues.width +
             (rectValues.right - targetRectValues.right)) - borderValue) <= maxWidth) {
         calculateValue = true;
     }
@@ -1542,6 +1587,12 @@ function removeResize() {
     let handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i = 0; i < handlers.length; i++) {
         detach(handlers[i]);
+    }
+    let borderResizers = targetElement.querySelectorAll('.e-dialog-border-resize');
+    if (!isNullOrUndefined(borderResizers)) {
+        for (let i = 0; i < borderResizers.length; i++) {
+            detach(borderResizers[i]);
+        }
     }
 }
 
@@ -1723,7 +1774,7 @@ let Dialog = class Dialog extends Component {
         }
         let headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        setMinHeight(headerHeight + 30 + footerHeight);
+        setMinHeight(headerHeight + 30 + (isNaN(footerHeight) ? 0 : footerHeight));
         return (headerHeight + 30 + footerHeight);
     }
     onResizeStart(args, dialogObj) {
@@ -1744,7 +1795,40 @@ let Dialog = class Dialog extends Component {
             this.element.classList.add(DLG_RESIZABLE);
             let computedHeight = getComputedStyle(this.element).minHeight;
             let computedWidth = getComputedStyle(this.element).minWidth;
-            let direction = this.enableRtl ? 'south-west' : 'south-east';
+            let direction = '';
+            for (let i = 0; i < this.resizeHandles.length; i++) {
+                if (this.resizeHandles[i] === 'All') {
+                    direction = 'south north east west north-east north-west south-east south-west';
+                    break;
+                }
+                else {
+                    let directionValue = '';
+                    switch (this.resizeHandles[i].toString()) {
+                        case 'SouthEast':
+                            directionValue = 'south-east';
+                            break;
+                        case 'SouthWest':
+                            directionValue = 'south-west';
+                            break;
+                        case 'NorthEast':
+                            directionValue = 'north-east';
+                            break;
+                        case 'NorthWest':
+                            directionValue = 'north-west';
+                            break;
+                        default:
+                            directionValue = this.resizeHandles[i].toString();
+                            break;
+                    }
+                    direction += directionValue.toLocaleLowerCase() + ' ';
+                }
+            }
+            if (this.enableRtl && direction.trim() === 'south-east') {
+                direction = 'south-west';
+            }
+            else if (this.enableRtl && direction.trim() === 'south-west') {
+                direction = 'south-east';
+            }
             if (this.isModal && this.enableRtl) {
                 this.element.classList.add(DLG_RESTRICT_LEFT_VALUE);
             }
@@ -2344,6 +2428,10 @@ let Dialog = class Dialog extends Component {
     focusContent() {
         let element = this.getAutoFocusNode(this.element);
         let node = !isNullOrUndefined(element) ? element : this.element;
+        let userAgent = Browser.userAgent;
+        if (userAgent.indexOf('MSIE ') > 0 || userAgent.indexOf('Trident/') > 0) {
+            this.element.focus();
+        }
         node.focus();
         this.bindEvent(this.element);
     }
@@ -2902,6 +2990,9 @@ __decorate$1([
 __decorate$1([
     Property(false)
 ], Dialog.prototype, "enableResize", void 0);
+__decorate$1([
+    Property(['South-East'])
+], Dialog.prototype, "resizeHandles", void 0);
 __decorate$1([
     Property('auto')
 ], Dialog.prototype, "height", void 0);

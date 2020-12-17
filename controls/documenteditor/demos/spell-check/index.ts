@@ -277,7 +277,9 @@ L10n.load({
             'Left-to-right': 'من اليسار إلى اليمين',
             'Direction': 'الاتجاه',
             'Table direction': 'اتجاه الجدول',
-            'Indent from right': 'مسافة بادئه من اليمين'
+            'Indent from right': 'مسافة بادئه من اليمين',
+            'Insert Footnote': 'إدراج',
+            'Insert Endnote': 'أدخل حاشية'
         },
         'documenteditorcontainer': {
             'New': 'الجديد',
@@ -409,7 +411,9 @@ L10n.load({
             'Toggle between the internal clipboard and system clipboard': 'التبديل بين الحافظة الداخلية وحافظه النظام' + '</br>' +
                 'تم رفض الوصول إلى حافظه النظام من خلال البرنامج النصي بسبب نهج أمان المستعرضات. بدلا ' + '</br>' +
                 '1. يمكنك تمكين الحافظة الداخلية لقطع ونسخ ولصق داخل المكون' + '</br>' +
-                '2. يمكنك استخدام اختصارات لوحه المفاتيح (ctrl + X ، ctrl + C و ctrl + V) لقص ونسخ ولصق مع الحافظة النظام'
+                '2. يمكنك استخدام اختصارات لوحه المفاتيح (ctrl + X ، ctrl + C و ctrl + V) لقص ونسخ ولصق مع الحافظة النظام',
+            'Insert Footnote': 'إدراج',
+            'Insert Endnote': 'أدخل حاشية'
         },
         'colorpicker': {
             'Apply': 'تطبيق',

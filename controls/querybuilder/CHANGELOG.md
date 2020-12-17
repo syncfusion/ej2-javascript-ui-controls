@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 18.3.53 (2020-12-08)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- Issue with value template is fixed.
-
 ## 18.3.52 (2020-12-01)
 
 ### QueryBuilder

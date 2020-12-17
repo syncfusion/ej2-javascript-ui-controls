@@ -41,16 +41,15 @@ export function intToDate(val: number): Date {
  */
 /* tslint:disable no-any */
 export function dateToInt(val: any, isTime?: boolean): number {
-    let timeZoneOffset: number = new Date().getTimezoneOffset();
-    let startDateUTC: string = new Date('01/01/1900').toUTCString().replace(' GMT', '');
-    let startDate: Date = new Date(startDateUTC);
+    let startDate: Date = new Date('01/01/1900');
     let date: Date = isDateTime(val) ? val : new Date(val);
-    let dateDiff: number = (new Date(date.toUTCString().replace(' GMT', '')).getTime() - startDate.getTime());
-    let timeDiff: number = dateDiff;
-    if (!isTime) {
-        timeDiff = (timeZoneOffset > 0) ? dateDiff + (timeZoneOffset * 60 * 1000) : (dateDiff - (timeZoneOffset * 60 * 1000));
-    }
-    let diffDays: number = (timeDiff / (1000 * 3600 * 24));
+    let startDateUTC: number = Date.UTC(
+        startDate.getFullYear(), startDate.getMonth(), startDate.getDate(), startDate.getHours(),
+        startDate.getMinutes(), startDate.getSeconds(), startDate.getMilliseconds());
+    let dateUTC: number = Date.UTC(
+        date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(),
+        date.getSeconds(), date.getMilliseconds());
+    let diffDays: number = ((dateUTC - startDateUTC) / (1000 * 3600 * 24));
     return isTime ? diffDays : parseInt(diffDays.toString(), 10) + 2;
 }
 
@@ -71,44 +70,53 @@ export function isNumber(val: string | number): boolean {
 /**
  * @hidden
  */
-export function toDate(text: Date | string | number, intl: Internationalization): ToDateArgs {
+export function toDate(text: Date | string | number, intl: Internationalization, format?: string): ToDateArgs {
     let defaultDateFormats: Object = getDefaultDateObject();
     let availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
     let dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
     if (typeof text === 'string') {
         text = text.toUpperCase();
     }
-    for (let key of Object.keys((defaultDateFormats as any).dateFormats)) {
-        dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).dateFormats[key], skeleton: key });
+    if (format) {
+        dObj.dateObj = intl.parseDate(text as string, { format: format });
         if (dObj.dateObj) {
-            dObj.type = 'date';
-            dObj.isCustom = false;
-            break;
+            dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+            dObj.isCustom = true;
         }
     }
     if (isNullOrUndefined(dObj.dateObj)) {
-        for (let key of Object.keys(availabelDateTimeFormat)) {
-            dObj.dateObj = intl.parseDate(text as string, { format: availabelDateTimeFormat[key], skeleton: key });
+        for (let key of Object.keys((defaultDateFormats as any).dateFormats)) {
+            dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).dateFormats[key], skeleton: key });
             if (dObj.dateObj) {
-                dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
-                if (dObj.type === 'time') {
-                    let time: string = dObj.dateObj.toLocaleTimeString();
-                    dObj.dateObj = new Date('01/01/1900 ' + time);
-                }
-                dObj.isCustom = true;
+                dObj.type = 'date';
+                dObj.isCustom = false;
                 break;
             }
         }
-    }
-    if (isNullOrUndefined(dObj.dateObj)) {
-        for (let key of Object.keys((defaultDateFormats as any).timeFormats)) {
-            dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).timeFormats[key], skeleton: key });
-            if (dObj.dateObj) {
-                let time: string = dObj.dateObj.toLocaleTimeString();
-                dObj.dateObj = new Date('01/01/1900 ' + time);
-                dObj.type = 'time';
-                dObj.isCustom = false;
-                break;
+        if (isNullOrUndefined(dObj.dateObj)) {
+            for (let key of Object.keys(availabelDateTimeFormat)) {
+                dObj.dateObj = intl.parseDate(text as string, { format: availabelDateTimeFormat[key], skeleton: key });
+                if (dObj.dateObj) {
+                    dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+                    if (dObj.type === 'time') {
+                        let time: string = dObj.dateObj.toLocaleTimeString();
+                        dObj.dateObj = new Date('01/01/1900 ' + time);
+                    }
+                    dObj.isCustom = true;
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(dObj.dateObj)) {
+            for (let key of Object.keys((defaultDateFormats as any).timeFormats)) {
+                dObj.dateObj = intl.parseDate(text as string, { format: (defaultDateFormats as any).timeFormats[key], skeleton: key });
+                if (dObj.dateObj) {
+                    let time: string = dObj.dateObj.toLocaleTimeString();
+                    dObj.dateObj = new Date('01/01/1900 ' + time);
+                    dObj.type = 'time';
+                    dObj.isCustom = false;
+                    break;
+                }
             }
         }
     }

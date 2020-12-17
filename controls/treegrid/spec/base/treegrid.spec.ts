@@ -844,6 +844,46 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+  
+    describe('Checking setCellValue method', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Cell',
+            newRowPosition: 'Below'
+      
+        },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+            {
+                field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd'
+            },
+            { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+            ],
+        },
+        done
+      );
+    });
+    it('Checking Tree Grid data source value', () => {
+      gridObj.setCellValue(1, 'taskName', 'test')
+      expect(gridObj.dataSource[0].taskName === 'test').toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
     describe('EJ2-25984: check enablePersistence property in TreeGrid - sortSettings', () => {
     let gridObj: TreeGrid;
     let rows: Element[];

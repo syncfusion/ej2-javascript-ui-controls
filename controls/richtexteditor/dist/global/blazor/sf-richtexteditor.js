@@ -1852,7 +1852,21 @@ function updateTextNode$1(value) {
             }
             var tdElm = tableElm[i].querySelectorAll('td');
             for (var j = 0; j < tdElm.length; j++) {
-                tdElm[j].style.removeProperty('border');
+                if (tdElm[j].style.borderLeft === 'none') {
+                    tdElm[j].style.removeProperty('border-left');
+                }
+                if (tdElm[j].style.borderRight === 'none') {
+                    tdElm[j].style.removeProperty('border-right');
+                }
+                if (tdElm[j].style.borderBottom === 'none') {
+                    tdElm[j].style.removeProperty('border-bottom');
+                }
+                if (tdElm[j].style.borderTop === 'none') {
+                    tdElm[j].style.removeProperty('border-top');
+                }
+                if (tdElm[j].style.border === 'none') {
+                    tdElm[j].style.removeProperty('border');
+                }
             }
             if (!tableElm[i].classList.contains(CLS_TABLE$1)) {
                 tableElm[i].classList.add(CLS_TABLE$1);
@@ -6119,6 +6133,11 @@ var sourceCodeMouseDown$1 = 'sourceCodeMouseDown';
  * @deprecated
  */
 var checkUndo$1 = 'checkUndoStack';
+/**
+ * @hidden
+ * @deprecated
+ */
+
 /**
  * @hidden
  * @deprecated
@@ -10761,6 +10780,7 @@ var MsWordPaste = /** @class */ (function () {
             'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
             'object', 'ol', 'pre', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul',
             'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
+        this.borderStyle = ['border-top', 'border-right', 'border-bottom', 'border-left'];
         this.removableElements = ['o:p', 'style'];
         this.listContents = [];
         this.parent = parent;
@@ -10780,7 +10800,9 @@ var MsWordPaste = /** @class */ (function () {
         var patern = /class='?Mso|style='[^ ]*\bmso-/i;
         var patern2 = /class="?Mso|style="[^ ]*\bmso-/i;
         var patern3 = /(class="?Mso|class='?Mso|class="?Xl|class='?Xl|class=Xl|style="[^"]*\bmso-|style='[^']*\bmso-|w:WordDocument)/gi;
-        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent)) {
+        var pattern4 = /style='mso-width-source:/i;
+        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent) ||
+            pattern4.test(tempHTMLContent)) {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);
@@ -10794,10 +10816,29 @@ var MsWordPaste = /** @class */ (function () {
             this.removeEmptyElements(elm);
             this.breakLineAddition(elm);
             this.removeClassName(elm);
+            if (pattern4.test(tempHTMLContent)) {
+                this.addTableBorderClass(elm);
+            }
             e.callBack(elm.innerHTML);
         }
         else {
             e.callBack(elm.innerHTML);
+        }
+    };
+    MsWordPaste.prototype.addTableBorderClass = function (elm) {
+        var allTableElm = elm.querySelectorAll('table');
+        var hasTableBorder = false;
+        for (var i = 0; i < allTableElm.length; i++) {
+            for (var j = 0; j < this.borderStyle.length; j++) {
+                if (allTableElm[i].innerHTML.indexOf(this.borderStyle[j]) >= 0) {
+                    hasTableBorder = true;
+                    break;
+                }
+            }
+            if (hasTableBorder) {
+                allTableElm[i].classList.add('e-rte-table-border');
+                hasTableBorder = false;
+            }
         }
     };
     MsWordPaste.prototype.imageConversion = function (elm, rtfData) {
@@ -10889,21 +10930,23 @@ var MsWordPaste = /** @class */ (function () {
         var fullImg = rtfData.match(pic);
         var imgType;
         var result = [];
-        for (var i = 0; i < fullImg.length; i++) {
-            if (picHead.test(fullImg[i])) {
-                if (fullImg[i].indexOf('\\pngblip') !== -1) {
-                    imgType = 'image/png';
+        if (!sf.base.isNullOrUndefined(fullImg)) {
+            for (var i = 0; i < fullImg.length; i++) {
+                if (picHead.test(fullImg[i])) {
+                    if (fullImg[i].indexOf('\\pngblip') !== -1) {
+                        imgType = 'image/png';
+                    }
+                    else if (fullImg[i].indexOf('\\jpegblip') !== -1) {
+                        imgType = 'image/jpeg';
+                    }
+                    else {
+                        continue;
+                    }
+                    result.push({
+                        hex: imgType ? fullImg[i].replace(picHead, '').replace(/[^\da-fA-F]/g, '') : null,
+                        type: imgType
+                    });
                 }
-                else if (fullImg[i].indexOf('\\jpegblip') !== -1) {
-                    imgType = 'image/jpeg';
-                }
-                else {
-                    continue;
-                }
-                result.push({
-                    hex: imgType ? fullImg[i].replace(picHead, '').replace(/[^\da-fA-F]/g, '') : null,
-                    type: imgType
-                });
             }
         }
         return result;
@@ -10918,7 +10961,8 @@ var MsWordPaste = /** @class */ (function () {
         var allElements = elm.querySelectorAll('*');
         for (var i = 0; i < allElements.length; i++) {
             if (allElements[i].children.length === 0 && allElements[i].innerHTML === '&nbsp;' &&
-                (allElements[i].innerHTML === '&nbsp;' && !allElements[i].closest('li'))) {
+                (allElements[i].innerHTML === '&nbsp;' && !allElements[i].closest('li')) &&
+                !allElements[i].closest('td')) {
                 var detachableElement = this.findDetachElem(allElements[i]);
                 var brElement = sf.base.createElement('br');
                 if (!sf.base.isNullOrUndefined(detachableElement.parentElement)) {
@@ -10971,7 +11015,8 @@ var MsWordPaste = /** @class */ (function () {
         var emptyElements = element.querySelectorAll(':empty');
         for (var i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
-                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD' &&
+                emptyElements[i].tagName !== 'HR') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -10989,9 +11034,11 @@ var MsWordPaste = /** @class */ (function () {
             values = this.removeUnwantedStyle(values, wordPasteStyleConfig);
             this.filterStyles(elm, wordPasteStyleConfig);
             var resultElem = void 0;
+            var fromClass = false;
             for (var i = 0; i < keys.length; i++) {
                 if (keys[i].split('.')[0] === '') {
                     resultElem = elm.getElementsByClassName(keys[i].split('.')[1]);
+                    fromClass = true;
                 }
                 else if (keys[i].split('.').length === 1 && keys[i].split('.')[0].indexOf('@') >= 0) {
                     continue;
@@ -11006,20 +11053,23 @@ var MsWordPaste = /** @class */ (function () {
                     var styleProperty = resultElem[j].getAttribute('style');
                     if (!sf.base.isNullOrUndefined(styleProperty) && styleProperty.trim() !== '') {
                         var valueSplit = values[i].split(';');
-                        for (var k = 0; k < valueSplit.length; k++) {
-                            if (styleProperty.indexOf(valueSplit[k].split(':')[0]) >= 0) {
-                                valueSplit.splice(k, 1);
-                                k--;
+                        if (!fromClass) {
+                            for (var k = 0; k < valueSplit.length; k++) {
+                                if (styleProperty.indexOf(valueSplit[k].split(':')[0]) >= 0) {
+                                    valueSplit.splice(k, 1);
+                                    k--;
+                                }
                             }
                         }
                         values[i] = valueSplit.join(';') + ';';
-                        var changedValue = values[i] + styleProperty;
+                        var changedValue = styleProperty + values[i];
                         resultElem[j].setAttribute('style', changedValue);
                     }
                     else {
                         resultElem[j].setAttribute('style', values[i]);
                     }
                 }
+                fromClass = false;
             }
         }
     };
@@ -11392,6 +11442,11 @@ var EditorManager = /** @class */ (function () {
                 break;
             case 'links':
                 this.observer.notify(LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
+                break;
+            case 'files':
+                this.observer.notify(IMAGE, {
+                    command: command, value: 'Image', item: exeValue, event: event, callBack: callBack, selector: selector
+                });
                 break;
             case 'images':
                 this.observer.notify(IMAGE, {
@@ -12093,10 +12148,12 @@ var ViewSource = /** @class */ (function () {
         });
     };
     ViewSource.prototype.getTextAreaValue = function (element) {
+        var currentValue;
+        currentValue = this.parent.enableXhtml ? this.parent.getXhtmlString(this.parent.value) : this.parent.value;
         return (element.innerHTML === '<p><br></p>') ||
             (element.childNodes.length === 1 &&
                 element.childNodes[0].tagName === 'P' &&
-                element.innerHTML.length === 7) ? '' : this.parent.value;
+                element.innerHTML.length === 7) ? '' : currentValue;
     };
     ViewSource.prototype.getPanel = function () {
         return this.parent.element.querySelector('.e-rte-srctextarea');
@@ -12320,7 +12377,7 @@ var BaseQuickToolbar = /** @class */ (function () {
             this.checkCollision(showPopupData, 'parent', '');
         }
         this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : ''));
-        this.popupObj.element.classList.remove(CLS_POPUP_OPEN);
+        this.popupObj.element.classList.remove(CLS_POPUP_CLOSE);
         sf.base.removeClass([this.element], [CLS_HIDE]);
         this.popupObj.show({ name: 'ZoomIn', duration: (sf.base.Browser.isIE ? 250 : 400) });
         sf.base.setStyleAttribute(this.element, {
@@ -15756,6 +15813,9 @@ var SfRichTextEditor = /** @class */ (function () {
         }
         this.setPanelValue(this.value);
         this.observer.notify(initialEnd, {});
+        if (this.enableXhtml) {
+            this.value = this.getXhtml();
+        }
         this.wireEvents();
         if (this.createdEnabled) {
             this.dotNetRef.invokeMethodAsync('CreatedEvent');
@@ -15782,6 +15842,9 @@ var SfRichTextEditor = /** @class */ (function () {
         }
         this.updatePanelValue();
         if (this.value !== this.cloneValue) {
+            if (this.enableXhtml) {
+                this.valueContainer.value = this.getXhtmlString(this.valueContainer.value);
+            }
             dispatchEvent(this.valueContainer, 'change');
             if (!this.isInitial) {
                 this.dotNetRef.invokeMethodAsync('UpdateValue', this.value);
@@ -15906,6 +15969,13 @@ var SfRichTextEditor = /** @class */ (function () {
         }
         return currentValue;
     };
+    SfRichTextEditor.prototype.getXhtmlString = function (value) {
+        var currentValue = value;
+        if (this.enableXhtml) {
+            currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
+        }
+        return currentValue;
+    };
     SfRichTextEditor.prototype.getPanel = function () {
         return this.contentPanel;
     };
@@ -15940,6 +16010,9 @@ var SfRichTextEditor = /** @class */ (function () {
         return this.formatter.editorManager.nodeSelection.getRange(this.getDocument());
     };
     SfRichTextEditor.prototype.updateValueContainer = function (val) {
+        if (this.enableXhtml) {
+            val = this.getXhtmlString(val);
+        }
         this.valueContainer.value = val;
         dispatchEvent(this.valueContainer, 'change');
     };
@@ -16317,6 +16390,9 @@ var SfRichTextEditor = /** @class */ (function () {
         this.invokeChangeEvent();
     };
     SfRichTextEditor.prototype.invokeChangeEvent = function () {
+        if (this.enableXhtml) {
+            this.value = this.getXhtml();
+        }
         if (this.value !== this.cloneValue) {
             if (this.enablePersistence) {
                 window.localStorage.setItem(this.id, this.value);
@@ -16886,6 +16962,9 @@ var SfRichTextEditor = /** @class */ (function () {
             this.invokeChangeEvent();
             this.isFocusOut = true;
             this.isBlur = false;
+            if (this.enableXhtml) {
+                this.valueContainer.value = this.getXhtmlString(this.valueContainer.value);
+            }
             dispatchEvent(this.valueContainer, 'focusout');
             this.defaultResize(e, true);
             var args = { isInteracted: Object.keys(e).length === 0 ? false : true };
@@ -17130,6 +17209,9 @@ var SfRichTextEditor = /** @class */ (function () {
                 case 'enableHtmlSanitizer':
                 case 'value':
                     this.setPanelValue(this.value);
+                    if (this.enableXhtml) {
+                        this.value = this.getXhtml();
+                    }
                     break;
                 case 'height':
                     this.setHeight(this.height);
@@ -17482,7 +17564,7 @@ var RichTextEditor = {
         }
     },
     getXhtml: function (element) {
-        return element && element.blazor__instance.getXhtml();
+        return element.blazor__instance.getXhtml();
     },
     destroy: function (element) {
         if (element) {

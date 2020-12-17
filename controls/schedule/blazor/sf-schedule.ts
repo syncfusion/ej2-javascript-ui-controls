@@ -18,6 +18,7 @@ let Schedule: object = {
                 element.blazor__instance.options = options;
                 element.blazor__instance.activeViewOptions = viewOptions;
                 element.blazor__instance.render(true);
+                element.blazor__instance.setPersistence();
             } else {
                 new SfSchedule(element, options, viewOptions, dotnetRef);
                 dotnetRef.invokeMethodAsync('TriggerCreatedEvent');
@@ -71,9 +72,9 @@ let Schedule: object = {
             element.blazor__instance.scrollTo(hour, scrollDate);
         }
     },
-    destroy(element: BlazorScheduleElement, enablePersistence: boolean): void {
+    destroy(element: BlazorScheduleElement): void {
         if (element && element.blazor__instance) {
-            element.blazor__instance.destroy(enablePersistence);
+            element.blazor__instance.destroy();
         }
     },
     validation(element: BlazorScheduleElement, fieldName: string, isQuickPopup: boolean) {

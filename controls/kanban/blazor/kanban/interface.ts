@@ -54,6 +54,13 @@ export interface SortSettings {
     direction: SortDirection;
 }
 
+export interface DragEdges {
+    left: boolean;
+    right: boolean;
+    top: boolean;
+    bottom: boolean;
+}
+
 export interface DragArgs extends BaseEventArgs {
     element?: HTMLElement;
     cloneElement?: HTMLElement;
@@ -84,4 +91,8 @@ export interface ScrollPosition {
 export interface ScrollOffset {
     left?: number;
     top?: number;
+}
+
+export interface TransitionColumns {
+    transitionColumn?: string[];
 }

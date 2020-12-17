@@ -249,6 +249,8 @@ L10n.load({
             'Create New Style': 'إنشاء نمط جديد',
             'Modify Style': 'تعديل النمط',
             'New': 'الجديد',
+            'Insert Footnote': 'إدراج',
+            'Insert Endnote': 'أدخل حاشية',
             'Bullets': 'الرصاص',
             'Use bookmarks': 'استخدام الإشارات المرجعية',
             'Table of Contents': 'جدول المحتويات',
@@ -304,6 +306,8 @@ L10n.load({
         },
         'documenteditorcontainer': {
             'New': 'الجديد',
+            'Insert Footnote': 'إدراج',
+            'Insert Endnote': 'أدخل حاشية',
             'Open': 'فتح',
             'Undo': 'التراجع عن',
             'Redo': 'اعاده',

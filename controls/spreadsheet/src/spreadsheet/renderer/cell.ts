@@ -1,13 +1,13 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, checkConditionalFormat } from '../common/index';
 import { hasTemplate, createHyperlinkElement, checkPrevMerge, createImageElement } from '../common/index';
-import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
-import { CellStyleExtendedModel } from '../../workbook/common/index';
+import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress} from '../../workbook/common/index';
+import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress } from '../../workbook/common/index';
 import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol } from '../../workbook/base/index';
 import { getRowHeight, setRowHeight } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, cFRender } from '../../workbook/common/event';
-import { getTypeFromFormat} from '../../workbook/index';
+import { getTypeFromFormat } from '../../workbook/index';
 import { checkIsFormula } from '../../workbook/common/util';
 /**
  * CellRenderer class which responsible for building cell content.
@@ -18,6 +18,7 @@ export class CellRenderer implements ICellRenderer {
     private element: HTMLTableCellElement;
     private th: HTMLTableHeaderCellElement;
     private tableRow: HTMLElement;
+    private borderTd: CellModel;
     constructor(parent?: Spreadsheet) {
         this.parent = parent;
         this.element = this.parent.createElement('td') as HTMLTableCellElement;
@@ -25,6 +26,7 @@ export class CellRenderer implements ICellRenderer {
         this.tableRow = parent.createElement('tr', { className: 'e-row' });
         this.parent.on('updateView', this.updateView, this);
     }
+
     public renderColHeader(index: number): Element {
         let headerCell: Element = this.th.cloneNode() as Element;
         attributes(headerCell, { 'role': 'columnheader', 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
@@ -45,8 +47,16 @@ export class CellRenderer implements ICellRenderer {
         args.td = this.element.cloneNode() as HTMLTableCellElement;
         args.td.className = 'e-cell';
         attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
-        if (this.checkMerged(args)) { return args.td; }
-        args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (this.checkMerged(args)) {
+            return args.td;
+        }
+        let compiledTemplate: string = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+        if (typeof compiledTemplate === 'string') {
+            args.td.innerHTML = compiledTemplate;
+        } else {
+            args.td.appendChild(compiledTemplate);
+        }
         args.isRefresh = false;
         this.update(args);
         if (args.cell && args.td) {
@@ -79,6 +89,7 @@ export class CellRenderer implements ICellRenderer {
         }
         return evtArgs.element;
     }
+    // tslint:disable-next-line:max-func-body-length
     private update(args: CellRenderArgs): void {
         if (args.isRefresh) {
             if (args.td.rowSpan) { args.td.removeAttribute('rowSpan'); } if (args.td.colSpan) { args.td.removeAttribute('colSpan'); }
@@ -108,6 +119,9 @@ export class CellRenderer implements ICellRenderer {
                 if ((args.cell.style as CellStyleExtendedModel).properties) {
                     style = skipDefaultValue(args.cell.style, true);
                 } else { style = args.cell.style; }
+            }
+            if (args.cell.chart && args.cell.chart.length > 0) {
+                this.parent.notify(setChart, { chart : args.cell.chart, isInitCell: true, range: getCellAddress(args.rowIdx, args.colIdx)});
             }
             if (args.cell.hyperlink) {
                 this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
@@ -143,6 +157,11 @@ export class CellRenderer implements ICellRenderer {
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
         if (this.parent.allowConditionalFormat && args.lastCell) {
             this.parent.notify(checkConditionalFormat, { rowIdx: args.rowIdx , colIdx: args.colIdx, cell: args.cell });
+        }
+        if (this.parent.allowChart && args.lastCell) {
+            this.parent.notify(refreshChart, {
+                cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex
+            });
         }
         if (Object.keys(style).length || Object.keys(this.parent.commonCellStyle).length || args.lastCell) {
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
@@ -212,14 +231,20 @@ export class CellRenderer implements ICellRenderer {
     }
 
     private compileCellTemplate(template: string): string {
-        let templateString: string;
-        if (template.trim().indexOf('#') === 0) {
-            templateString = document.querySelector(template).innerHTML.trim();
+        let compiledStr: Function;
+        if (typeof template === 'string') {
+            let templateString: string;
+            if (template.trim().indexOf('#') === 0) {
+                templateString = document.querySelector(template).innerHTML.trim();
+            } else {
+                templateString = template;
+            }
+            compiledStr = compile(templateString);
+            return (compiledStr({}, null, null, '', true)[0] as HTMLElement).outerHTML;
         } else {
-            templateString = template;
+            compiledStr = compile(template);
+            return compiledStr({}, null, null, '')[0];
         }
-        let compiledStr: Function = compile(templateString);
-        return (compiledStr({}, null, null, '', true)[0] as HTMLElement).outerHTML;
     }
 
     private updateRowHeight(args: {

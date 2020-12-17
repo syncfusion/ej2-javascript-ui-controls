@@ -1358,10 +1358,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private checkTooltipPosition(args: TooltipEventArgs): void {
+        let tooltipClass: string = this.tooltipPositionCalculation(args.collidedPosition);
         if (this.tooltipCollidedPosition === undefined ||
-            this.tooltipCollidedPosition !== args.collidedPosition) {
+            this.tooltipCollidedPosition !== args.collidedPosition || !args.element.classList.contains(tooltipClass)) {
             if (this.isMaterialTooltip) {
-                let tooltipClass: string = this.tooltipPositionCalculation(args.collidedPosition);
                 if (tooltipClass !== undefined) {
                     args.element.classList.remove(this.previousTooltipClass);
                     args.element.classList.add(tooltipClass);
@@ -3163,6 +3163,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
+        }
+        if (isBlazor() && this.isMaterialTooltip && !isNullOrUndefined(this.materialHandle)) {
+            this.materialHandle.remove();
         }
         if (!isBlazor() && !this.isServerRendered) {
             this.element.innerHTML = '';

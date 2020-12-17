@@ -5,7 +5,7 @@ import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitb
 import { Button } from '@syncfusion/ej2-buttons';
 import { Toolbar, TabItemModel, Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { DialogUtility, Dialog } from '@syncfusion/ej2-popups';
-import { Dictionary, ReviewTabType, CommentDeleteEventArgs } from '../../base/index';
+import { Dictionary, ReviewTabType, CommentDeleteEventArgs, CommentActionEventArgs } from '../../base/index';
 import { HelperMethods } from '../editor/editor-helper';
 
 /**
@@ -853,7 +853,14 @@ export class CommentView {
         this.owner.editor.reopenComment(this.comment);
     }
     private deleteComment(): void {
-        let eventArgs: CommentDeleteEventArgs = { author: this.comment.author, cancel: false };
+        let eventArgs: CommentDeleteEventArgs = { author: this.comment.author, cancel: false};
+        this.owner.trigger('commentDelete', eventArgs);
+        let eventActionArgs: CommentActionEventArgs = { author: this.comment.author, cancel: eventArgs.cancel, type: 'Delete'};
+        this.owner.trigger('beforeCommentAction', eventActionArgs);
+        if (eventActionArgs.cancel) {
+            return;
+        }
+        this.owner.editorModule.deleteCommentInternal(this.comment);
         this.owner.trigger('commentDelete', eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -878,6 +885,11 @@ export class CommentView {
     }
 
     private enableReplyView(): void {
+        let eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Reply' };
+        this.owner.trigger('beforeCommentAction', eventArgs);
+        if (eventArgs.cancel && eventArgs.type === 'Reply') {
+            return;
+        }
         if (this.commentPane.isEditMode) {
             return;
         }
@@ -964,6 +976,11 @@ export class CommentView {
     }
 
     public editComment(): void {
+        let eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit' };
+        this.owner.trigger('beforeCommentAction', eventArgs);
+        if (eventArgs.cancel && eventArgs.type === 'Edit') {
+            return;
+        }
         this.commentPane.currentEditingComment = this;
         this.commentPane.isInsertingReply = false;
         this.commentPane.isEditMode = true;
@@ -998,6 +1015,11 @@ export class CommentView {
     }
 
     public postComment(): void {
+        let eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Post' };
+        this.owner.trigger('beforeCommentAction', eventArgs);
+        if (eventArgs.cancel && eventArgs.type === 'Post') {
+            return;
+        }
         let updatedText: string = this.textArea.value;
         this.commentText.innerText = updatedText;
         // tslint:disable-next-line:max-line-length

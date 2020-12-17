@@ -112,7 +112,6 @@ export class PdfGanttTaskbarCollection {
         let taskGraphics: PdfGraphics = page.graphics;
         let isNextPage: boolean = false;
         let pageSize: SizeF = page.getClientSize();
-        let taskPen: PdfPen = new PdfPen(taskbar.gridLineColor, 0.5);
         let yPoint: number = startPoint.y + rowHeight;
         //code for while current pdf page is exceed 
         if (yPoint > pageSize.height) {
@@ -123,7 +122,6 @@ export class PdfGanttTaskbarCollection {
                 this.parent.pdfExportModule.gantt.chartHeader.drawPageTimeline(page, startPoint, detail);
                 startPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
             }
-            yPoint = startPoint.y + rowHeight;
             isNextPage = true;
         }
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
@@ -166,7 +164,7 @@ export class PdfGanttTaskbarCollection {
                 this.endPage = pageIndex;
             }
             //Task start date is in the range of header split up start and end date
-            else if (detail.startDate <= startDate && detail.endDate >= startDate && !(endDate < detail.endDate)) {
+            else if (detail.startDate <= startDate && detail.endDate >= startDate && (endDate >= detail.endDate)) {
                 if (!this.isStartPoint) {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;

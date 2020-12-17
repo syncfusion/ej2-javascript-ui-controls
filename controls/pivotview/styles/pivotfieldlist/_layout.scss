@@ -135,13 +135,15 @@
       width: $format-preview-width;
     }
 
-    .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-btn .e-selected-color {
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-btn .e-selected-color,
+    .e-colorpicker-container .e-split-btn-wrapper .e-split-btn .e-selected-color {
       background: none;
       margin: 0 2px;
       width: 14px;
     }
 
-    .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn {
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn,
+    .e-colorpicker-container .e-split-btn-wrapper .e-btn.e-icon-btn {
       @if ($field-list-skin == 'bootstrap4') {
         padding: 4px 5px;
       }
@@ -260,7 +262,8 @@
       margin-right: 20px;
     }
 
-    .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn {
+    .e-colorpicker-wrapper .e-split-btn-wrapper .e-btn.e-icon-btn,
+    .e-colorpicker-container .e-split-btn-wrapper .e-btn.e-icon-btn {
       @if ($field-list-skin == 'bootstrap4') {
         padding: 4px 8px;
       }
@@ -619,7 +622,8 @@
               padding-right: $field-list-header-padding;
             }
 
-            .e-pivot-all-field-title-wrapper {
+            .e-pivot-all-field-title-wrapper,
+            .e-pivot-all-field-title-container {
               background-color: $field-list-header-background-color;
               color: $field-list-default-header-font-color;
               display: flex;
@@ -762,7 +766,8 @@
               padding-bottom: $pivot-calculated-bigger-header-padding;
             }
 
-            .e-pivot-all-field-title-wrapper {
+            .e-pivot-all-field-title-wrapper,
+            .e-pivot-all-field-title-container {
               font-size: $field-list-bigger-header-font-size;
             }
 
@@ -791,7 +796,8 @@
     // sass-lint:enable-all
   }
 
-  .e-pivotfieldlist-wrapper {
+  .e-pivotfieldlist-wrapper,
+  .e-pivotfieldlist-container {
     .e-adaptive-field-list-dialog,
     .e-member-editor-dialog,
     .e-value-field-settings {
@@ -828,7 +834,8 @@
         overflow: hidden;
         padding: 0;
 
-        .e-editor-label-wrapper {
+        .e-editor-label-wrapper,
+        .e-editor-label-container {
           background-color: $field-list-editor-label-fill;
           opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-padding-size;
@@ -847,8 +854,10 @@
         .e-value-field-div-content {
             padding: 0 $field-list-editor-search-padding-size 10px;          
 
-          .e-field-option-wrapper {
-            .e-field-name-text-wrapper {
+          .e-field-option-wrapper,
+          .e-field-option-container {
+            .e-field-name-text-wrapper,
+            .e-field-name-text-container {
               display: flex;
 
               .e-field-name-title,
@@ -868,9 +877,13 @@
             }
 
             .e-caption-input-wrapper,
+            .e-caption-input-container,
             .e-type-option-wrapper,
+            .e-type-option-container,
             .e-base-field-option-wrapper,
-            .e-base-item-option-wrapper {
+            .e-base-field-option-container,
+            .e-base-item-option-wrapper,
+            .e-base-item-option-container {
               padding-top: $field-list-editor-search-padding-size;
 
               .e-base-field-option-text,
@@ -889,8 +902,10 @@
         }
         // sass-lint:enable-all
 
-        .e-member-editor-wrapper {
-          .e-editor-search-wrapper {
+        .e-member-editor-wrapper,
+        .e-member-editor-outer-container {
+          .e-editor-search-wrapper,
+          .e-editor-search-container {
             display: flex;
             padding: 0 $field-list-editor-search-padding-size 10px;
 
@@ -976,6 +991,7 @@
           }
 
           .e-select-all-wrapper ul,
+          .e-select-all-container ul,
           .e-member-editor-container ul {
             margin-left: $field-list-member-filter-list-padding-size;
             overflow: hidden;
@@ -1012,7 +1028,8 @@
         }
 
         
-        .e-filter-tab-wrapper {
+        .e-filter-tab-wrapper,
+        .e-filter-tab-container {
           border: none;
           // sass-lint:enable-all
 
@@ -1069,6 +1086,8 @@
 
           .e-filter-option-wrapper-1,
           .e-filter-option-wrapper-2,
+          .e-filter-option-container-1,
+          .e-filter-option-container-2,
           .e-separator-div {
             padding-top: 20px;
           }
@@ -1106,15 +1125,18 @@
       }
 
       &.e-excel-filter {
-        .e-editor-label-wrapper {
+        .e-editor-label-wrapper,
+        .e-editor-label-container {
           opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-excel-padding-size;
         }
       }
 
       &.e-rtl {
-        .e-member-editor-wrapper {
-          .e-editor-search-wrapper {
+        .e-member-editor-wrapper,
+        .e-member-editor-outer-container {
+          .e-editor-search-wrapper,
+          .e-editor-search-container {
             .e-filter-sort {
               margin-left: 0;
               margin-right: $field-list-sort-wrapper-padding-size;
@@ -1135,8 +1157,10 @@
       }
 
       &.e-olap-editor-dialog {
-        .e-member-editor-wrapper {
+        .e-member-editor-wrapper,
+        .e-member-editor-outer-container {
           .e-select-all-wrapper ul,
+          .e-select-all-container ul,
           .e-member-editor-container ul {
             margin-left: 0;
           }
@@ -1146,14 +1170,15 @@
             padding-right: 10px;
           }
 
-          .e-editor-search-wrapper {
+          .e-editor-search-wrapper,
+          .e-editor-search-container {
             display: flex;
 
             .e-level-drop {
               margin: 0 5px;
 
               .e-caret {
-                display: none;
+                font-size: $field-list-icon-size;
               }
 
               li .e-disabled {
@@ -1166,8 +1191,10 @@
 
         // sass-lint:disable-all
         &.e-rtl {
-          .e-member-editor-wrapper {
-            .e-editor-search-wrapper {
+          .e-member-editor-wrapper,
+          .e-member-editor-outer-container {
+            .e-editor-search-wrapper,
+            .e-editor-search-container {
               .e-filter-sort {
                 margin-left: 0;
                 margin-right: $field-list-sort-wrapper-padding-size;
@@ -1215,7 +1242,8 @@
 
     .e-adaptive-field-list-dialog {
       .e-dlg-content {
-        .e-member-editor-wrapper {
+        .e-member-editor-wrapper,
+        .e-member-editor-outer-container {
           .e-member-editor-container-outer-div {
             height: $field-list-member-field-list-height;
           }
@@ -1401,15 +1429,22 @@
   .e-bigger .e-pivotfieldlist-wrapper,
   .e-bigger.e-pivotfieldlist-wrapper,
   .e-bigger .e-pivotfieldlist-wrapper,
-  .e-bigger.e-pivotfieldlist-wrapper {
+  .e-bigger.e-pivotfieldlist-wrapper,
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container,
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container {
     .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div ,
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div {
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div,
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div ,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div {
       height: $field-list-member-filter-list-bigger-height;
     }
 
     // sass-lint:disable-all
     .e-member-editor-dialog {
-      .e-editor-search-wrapper {
+      .e-editor-search-wrapper,
+      .e-editor-search-container {
         .e-filter-sort {
           .e-member-sort {
             .e-sort-ascend-icon,
@@ -1418,9 +1453,16 @@
             }
           }
         }
+
+        .e-level-drop {
+          .e-caret {
+            font-size: $field-list-bigger-icon-size !important;
+          }
+        }
       }
 
-      .e-member-editor-wrapper ul {
+      .e-member-editor-wrapper ul,
+      .e-member-editor-outer-container ul {
         @if ($field-list-skin == 'bootstrap4') {
           margin-left: -30px;
         }
@@ -1443,7 +1485,8 @@
       }
 
       &.e-rtl {
-        .e-member-editor-wrapper ul {
+        .e-member-editor-wrapper ul,
+        .e-member-editor-outer-container ul {
           @if ($field-list-skin == 'bootstrap4') {
             margin-right: -30px;
           }
@@ -1479,7 +1522,8 @@
       }
 
       .e-dlg-content {
-        .e-filter-tab-wrapper {
+        .e-filter-tab-wrapper,
+        .e-filter-tab-container {
           .e-tab-header {
             .e-toolbar-item .e-icon-left + .e-tab-text {
               margin: 0 0 0 6px;
@@ -1511,6 +1555,8 @@
 
           .e-filter-option-wrapper-1,
           .e-filter-option-wrapper-2,
+          .e-filter-option-container-1,
+          .e-filter-option-container-2,
           .e-separator-div {
             padding-top: 24px;
           }
@@ -1531,8 +1577,10 @@
       .e-value-field-div-content {
         padding: 0 $field-list-editor-search-padding-size 10px;
 
-        .e-field-option-wrapper {
-          .e-field-name-text-wrapper {
+        .e-field-option-wrapper,
+        .e-field-option-container {
+          .e-field-name-text-wrapper,
+          .e-field-name-text-container {
             display: flex;
 
             .e-field-name-title,
@@ -1542,9 +1590,13 @@
           }
 
           .e-caption-input-wrapper,
+          .e-caption-input-container,
           .e-type-option-wrapper,
+          .e-type-option-container,
           .e-base-field-option-wrapper,
-          .e-base-item-option-wrapper {
+          .e-base-field-option-container,
+          .e-base-item-option-wrapper,
+          .e-base-item-option-container {
             padding-top: 24px;
 
             .e-base-field-option-text,

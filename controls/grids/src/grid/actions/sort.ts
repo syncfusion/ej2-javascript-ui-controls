@@ -366,7 +366,7 @@ export class Sort implements IAction {
             !(e.target as Element).classList.contains('e-columnmenu') &&
             !(e.target as Element).classList.contains('e-filtermenudiv') &&
             !parentsUntil(e.target as Element, 'e-stackedheadercell') &&
-            !(gObj.allowSelection && gObj.selectionSettings.mode === 'Column' &&
+            !(gObj.allowSelection && gObj.selectionSettings.allowColumnSelection &&
                 (e.target as Element).classList.contains('e-headercell'))) {
             let gObj: IGrid = this.parent;
             let colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
@@ -382,10 +382,11 @@ export class Sort implements IAction {
         if (target) {
             target.classList.remove('e-resized');
         }
-        if ((e.target as Element).classList.contains('e-excel-ascending') ||
-            (e.target as Element).classList.contains('e-excel-descending')) {
+        if (parentsUntil(e.target as Element, 'e-excel-ascending') ||
+            parentsUntil(e.target as Element, 'e-excel-descending')) {
             let colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('uid');
-            let direction: SortDirection = (e.target as HTMLElement).classList.contains('e-excel-ascending') ? 'Ascending' : 'Descending';
+            let direction: SortDirection = isNullOrUndefined(parentsUntil(e.target as Element, 'e-excel-descending')) ?
+             'Ascending' : 'Descending';
             this.sortColumn(gObj.getColumnByUid(colUid).field, direction, false);
         }
     }

@@ -363,4 +363,32 @@ describe('ExcelCreation', () => {
             }
         });
     });
+    it('RTLView', (done) => {
+        let book: Workbook = new Workbook({
+           worksheets: [
+                {
+                    enableRtl: true,
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value:10000, style: { numberFormat:"C2" } }] },
+                        { index: 2, cells: [{ index: 1, value:250000, style: { numberFormat:"C3" } }] },
+                    ]
+                }
+            ],
+
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'RTLView.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

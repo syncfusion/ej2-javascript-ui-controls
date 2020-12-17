@@ -350,11 +350,13 @@ var Input;
             let parentElement = getParentNode(element);
             if (!isNullOrUndefined(parentElement)) {
                 let button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-                if (element.value && parentElement.classList.contains('e-input-focus')) {
-                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
-                else {
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                if (!isNullOrUndefined(button)) {
+                    if (element.value && parentElement.classList.contains('e-input-focus')) {
+                        removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
+                    else {
+                        addClass([button], CLASSNAMES.CLEARICONHIDE);
+                    }
                 }
             }
         }
@@ -821,6 +823,8 @@ let NumericTextBox = class NumericTextBox extends Component {
         super(options, element);
         this.isVue = false;
         this.preventChange = false;
+        this.isAngular = false;
+        this.isDynamicChange = false;
         this.numericOptions = options;
     }
     preRender() {
@@ -1418,6 +1422,8 @@ let NumericTextBox = class NumericTextBox extends Component {
     }
     ;
     inputHandler(event) {
+        // tslint:disable-next-line
+        let numerictextboxObj = this;
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -1425,6 +1431,15 @@ let NumericTextBox = class NumericTextBox extends Component {
         let fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
             this.preventHandler();
+        }
+        /* istanbul ignore next */
+        if (this.isAngular
+            && this.element.value !== getValue('decimal', getNumericObject(this.locale))
+            && this.element.value !== getValue('minusSign', getNumericObject(this.locale))) {
+            let parsedValue = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            parsedValue = isNaN(parsedValue) ? null : parsedValue;
+            numerictextboxObj.localChange({ value: parsedValue });
+            this.preventChange = true;
         }
         if (this.isVue) {
             let current = this.instance.getNumberParser({ format: 'n' })(this.element.value);
@@ -1496,7 +1511,8 @@ let NumericTextBox = class NumericTextBox extends Component {
             }
         }
         this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
-        if ((!this.isVue) || (this.isVue && !this.preventChange)) {
+        /* istanbul ignore next */
+        if (!this.isDynamicChange) {
             this.raiseChangeEvent(event);
         }
     }
@@ -1932,9 +1948,11 @@ let NumericTextBox = class NumericTextBox extends Component {
                     this.floatLabelTypeUpdate();
                     break;
                 case 'value':
+                    this.isDynamicChange = (this.isAngular || this.isVue) && this.preventChange;
                     this.updateValue(newProp.value);
-                    if (this.isVue && this.preventChange) {
+                    if (this.isDynamicChange) {
                         this.preventChange = false;
+                        this.isDynamicChange = false;
                     }
                     break;
                 case 'min':
@@ -2709,7 +2727,13 @@ function triggerMaskChangeEvent(event, oldValue) {
         this.value = this.changeEventArgs.value;
         this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
-        this.trigger('change', eventArgs);
+        /* istanbul ignore next */
+        if (this.isAngular && this.preventChange) {
+            this.preventChange = false;
+        }
+        else {
+            this.trigger('change', eventArgs);
+        }
     }
     this.preEleVal = this.element.value;
     this.prevValue = strippedValue.call(this, this.element);
@@ -3160,6 +3184,8 @@ let MaskedTextBox = class MaskedTextBox extends Component {
     constructor(options, element) {
         super(options, element);
         this.initInputValue = '';
+        this.isAngular = false;
+        this.preventChange = false;
         this.maskOptions = options;
     }
     /**
@@ -4483,10 +4509,10 @@ let Slider = class Slider extends Component {
         }
     }
     checkTooltipPosition(args) {
+        let tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
         if (this.tooltipCollidedPosition === undefined ||
-            this.tooltipCollidedPosition !== args.collidedPosition) {
+            this.tooltipCollidedPosition !== args.collidedPosition || !args.element.classList.contains(tooltipClass)) {
             if (this.isMaterialTooltip) {
-                let tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
                 if (tooltipClass !== undefined) {
                     args.element.classList.remove(this.previousTooltipClass);
                     args.element.classList.add(tooltipClass);
@@ -6281,6 +6307,9 @@ let Slider = class Slider extends Component {
         }
         if (this.tooltip.isVisible) {
             this.tooltipObj.destroy();
+        }
+        if (isBlazor() && this.isMaterialTooltip && !isNullOrUndefined(this.materialHandle)) {
+            this.materialHandle.remove();
         }
         if (!isBlazor() && !this.isServerRendered) {
             this.element.innerHTML = '';

@@ -1055,7 +1055,7 @@ export class QuickPopups {
         }
         this.parent.renderTemplates();
         let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
-        let popupType: PopupType = this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo';
+        let popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp: PopupOpenEventArgs = {
             type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
@@ -1283,7 +1283,7 @@ export class QuickPopups {
         }
         let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
         let args: PopupCloseEventArgs = {
-            type: this.parent.isAdaptive ? 'ViewEventInfo' : isEventPopup ? 'EditEventInfo' : 'QuickInfo',
+            type: this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo',
             cancel: false, data: popupData, element: this.quickPopup.element,
             target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element) as Element
         };

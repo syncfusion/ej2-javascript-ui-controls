@@ -553,7 +553,7 @@ describe('Infinite scroll with frozen columns => ', () => {
     });
 
     it('scroll to bottom', function (done) {
-        gridObj.getMovableVirtualContent().scrollTop = 15000;
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
         setTimeout(done, 400);
     });
 
@@ -658,7 +658,7 @@ describe('Infinite scroll cache mode with frozen columns => ', () => {
     });
 
     it('scroll to bottom', function (done) {
-        gridObj.getMovableVirtualContent().scrollTop = 15000;
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
         setTimeout(done, 200);
     });
 
@@ -777,7 +777,7 @@ describe('Infinite scroll cache mode with frozen rows => ', () => {
     });
 
     it('scroll to bottom', function (done) {
-        gridObj.getMovableVirtualContent().scrollTop = 15000;
+        gridObj.getContent().firstElementChild.scrollTop = 15000;
         setTimeout(done, 200);
     });
 

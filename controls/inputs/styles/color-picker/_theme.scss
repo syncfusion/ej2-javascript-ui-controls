@@ -50,7 +50,8 @@
     }
   }
 
-  .e-colorpicker-wrapper {
+  .e-colorpicker-wrapper,
+  .e-colorpicker-container {
     &.e-disabled {
       & .e-value-switch-btn,
       & .e-mode-switch-btn {

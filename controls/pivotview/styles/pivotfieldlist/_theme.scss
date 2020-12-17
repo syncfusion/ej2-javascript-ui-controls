@@ -61,7 +61,8 @@
     }
   }
 
-  .e-pivotfieldlist-wrapper {
+  .e-pivotfieldlist-wrapper,
+  .e-pivotfieldlist-container {
     font-family: $field-list-font-family;
     font-size: $field-list-content-font-size;
     max-width: 700px;
@@ -200,7 +201,8 @@
           }
         }
 
-        .e-field-header-wrapper {
+        .e-field-header-wrapper,
+        .e-field-header-container {
           background-color: $field-list-header-background-color;
           color: $field-list-default-header-font-color;
           display: flex;
@@ -371,7 +373,8 @@
           position: relative;
           width: 100%;
 
-          .e-axis-wrapper {
+          .e-axis-wrapper,
+          .e-axis-container {
             background-color: $field-list-header-background-color;
             border-bottom: $field-list-border-size $field-list-border-type $field-list-default-border-color;
             color: $field-list-default-header-font-color;
@@ -379,7 +382,8 @@
             height: $field-list-header-height;
             padding: 2px $field-list-header-padding 5px;
 
-            .e-axis-icon-wrapper {
+            .e-axis-icon-wrapper,
+            .e-axis-icon-container {
               height: 20px;
               padding-top: $field-list-header-icon-wrapper-padding;
               width: 20px;
@@ -684,7 +688,8 @@
           }
         }
 
-        .e-field-header-wrapper {
+        .e-field-header-wrapper,
+        .e-field-header-container {
           padding-left: $field-list-header-padding;
           padding-right: 0;
 
@@ -774,8 +779,10 @@
           .e-left-axis-fields .e-field-list-rows,
           .e-right-axis-fields .e-field-list-columns,
           .e-right-axis-fields .e-field-list-values {
-            .e-axis-wrapper {
-              .e-axis-icon-wrapper {
+            .e-axis-wrapper,
+            .e-axis-container {
+              .e-axis-icon-wrapper,
+              .e-axis-icon-container {
                 padding-top: $field-list-static-header-icon-wrapper-padding;
               }
             }
@@ -1302,7 +1309,11 @@
   .e-bigger .e-pivotfieldlist-wrapper,
   .e-bigger.e-pivotfieldlist-wrapper,
   .e-bigger .e-pivotfieldlist-wrapper,
-  .e-bigger.e-pivotfieldlist-wrapper {
+  .e-bigger.e-pivotfieldlist-wrapper,
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container,
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container {
     .e-field-table {
 
       .e-left-axis-fields,
@@ -1326,7 +1337,8 @@
         }
       }
 
-      .e-field-header-wrapper {
+      .e-field-header-wrapper,
+      .e-field-header-container {
         padding-right: $field-list-bigger-header-padding;
 
         .e-sort-none,
@@ -1392,11 +1404,13 @@
       .e-left-axis-fields .e-field-list-rows,
       .e-right-axis-fields .e-field-list-columns,
       .e-right-axis-fields .e-field-list-values {
-        .e-axis-wrapper {
+        .e-axis-wrapper,
+        .e-axis-container {
           height: $field-list-bigger-header-height;
           padding: 0 $field-list-bigger-header-padding 5px;
 
-          .e-axis-icon-wrapper {
+          .e-axis-icon-wrapper,
+          .e-axis-icon-container {
             height: 24px;
             padding-top: $field-list-bigger-header-icon-wrapper-padding;
             width: 24px;
@@ -1502,8 +1516,10 @@
           .e-left-axis-fields .e-field-list-rows,
           .e-right-axis-fields .e-field-list-columns,
           .e-right-axis-fields .e-field-list-values {
-            .e-axis-wrapper {
-              .e-axis-icon-wrapper {
+            .e-axis-wrapper,
+            .e-axis-container {
+              .e-axis-icon-wrapper,
+              .e-axis-icon-container {
                 padding-top: $field-list-static-bigger-header-icon-wrapper-padding;
               }
             }
@@ -1558,7 +1574,8 @@
           padding-right: $field-list-bigger-header-padding;
         }
 
-        .e-field-header-wrapper {
+        .e-field-header-wrapper,
+        .e-field-header-container {
           padding-left: $field-list-bigger-header-padding;
 
           .e-sort-none,

@@ -122,6 +122,10 @@ export class EditorManager {
             case 'links':
                 this.observer.notify(CONSTANT.LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
                 break;
+            case 'files':
+                this.observer.notify(CONSTANT.IMAGE, {
+                    command: command, value: 'Image', item: exeValue, event: event, callBack: callBack, selector: selector });
+                break;
             case 'images':
                 this.observer.notify(CONSTANT.IMAGE, {
                     command: command, value: value, item: exeValue, event: event, callBack: callBack, selector: selector });

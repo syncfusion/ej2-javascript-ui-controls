@@ -386,7 +386,7 @@ export class ColumnMenu implements IAction {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
-        if (!this.parent.getFrozenColumns()) {
+        if (!this.parent.isFrozenGrid()) {
             this.parent.notify(events.restoreFocus, {});
         }
     }

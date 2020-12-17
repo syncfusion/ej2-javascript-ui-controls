@@ -4,7 +4,6 @@ import { Kanban } from './kanban';
 import { ActionEventArgs, SaveChanges } from './interface';
 import { ReturnType } from './type';
 import * as events from './constant';
-import * as cls from '../base/css-constant';
 
 /**
  * Kanban data module
@@ -159,7 +158,6 @@ export class Data {
      * @private
      */
     private refreshUI(args: ActionEventArgs, index: number): void {
-        let field: string;
         this.parent.layoutModule.columnData = this.parent.layoutModule.getColumnCards();
         if (this.parent.swimlaneSettings.keyField) {
             this.parent.layoutModule.swimlaneData = this.parent.layoutModule.getSwimlaneCards();
@@ -168,11 +166,8 @@ export class Data {
             this.parent.layoutModule.renderCardBasedOnIndex(data);
         });
         args.changedRecords.forEach((data: { [key: string]: Object }) => {
-            let card: HTMLCollection = [].slice.call(this.parent.element
-                .querySelectorAll('.' + cls.CARD_CLASS + '[data-id="' + data[this.parent.cardSettings.headerField] + '"]'));
-            let updateIndex: number = [].slice.call(card[0].parentElement.children).indexOf(card[0]);
             this.parent.layoutModule.removeCard(data);
-            this.parent.layoutModule.renderCardBasedOnIndex(data, updateIndex);
+            this.parent.layoutModule.renderCardBasedOnIndex(data, index);
             if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index'
                 && this.parent.sortSettings.direction === 'Descending' && index > 0) {
                 --index;

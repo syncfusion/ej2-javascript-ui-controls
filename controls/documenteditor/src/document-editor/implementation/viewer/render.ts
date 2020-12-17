@@ -7,7 +7,7 @@ import {
     Page, Rect, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox
+    CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel } from '../../index';
 import { Layout } from './layout';
@@ -132,6 +132,12 @@ export class Renderer {
         }
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             this.render(page, page.bodyWidgets[i]);
+            if (page.footnoteWidget) {
+                this.renderfootNoteWidget(page, page.footnoteWidget);
+            }
+        }
+        if (page.endnoteWidget) {
+            this.renderfootNoteWidget(page, page.endnoteWidget);
         }
         if (this.documentHelper.owner.enableHeaderAndFooter && !this.isPrinting) {
             this.renderHeaderSeparator(page, this.pageLeft, this.pageTop, page.headerWidget);
@@ -278,6 +284,19 @@ export class Renderer {
         ctx.setLineDash([]);
         ctx.closePath();
     }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public renderSolidLine(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, fillStyle: string): void {
+        ctx.beginPath();
+        ctx.strokeStyle = fillStyle;
+        ctx.lineWidth = 0.5;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + width, y);
+        ctx.stroke();
+        ctx.closePath();
+    }
     private renderHeaderFooterMark(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
         ctx.beginPath();
         ctx.fillStyle = 'lightgray';
@@ -322,8 +341,10 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(shape.x, 1);
                 let shapeTop: number = this.getScaledValue(shape.y, 2);
                 this.pageContext.beginPath();
-                this.pageContext.fillStyle = 'white';
-                this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                if (shape.fillFormat && shape.fillFormat.fill) {
+                    this.pageContext.fillStyle = shape.fillFormat.color;
+                    this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                }
                 if (shape.lineFormat.lineFormatType !== 'None') {
                     this.pageContext.strokeStyle = shape.lineFormat.color;
                     this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
@@ -347,7 +368,6 @@ export class Renderer {
         if (widget instanceof ParagraphWidget) {
             this.renderParagraphWidget(page, widget as ParagraphWidget);
         } else {
-
             this.renderTableWidget(page, widget as TableWidget);
         }
     }
@@ -436,6 +456,32 @@ export class Renderer {
             this.renderLine(widget, page, left, top);
             top += widget.height;
         }
+    }
+    /**
+    * Renders paragraph widget.
+    * @param {Page} page
+    * @param {FootNoteWidget} paraWidget
+    */
+    private renderfootNoteWidget(page: Page, paraWidget: FootNoteWidget): void {
+        for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
+            let widget: BlockWidget = paraWidget.childWidgets[i] as BlockWidget;
+            if (i === 0) {
+                let ctx: CanvasRenderingContext2D = this.pageContext;
+                // tslint:disable-next-line:max-line-length
+                this.renderSolidLine(ctx, this.getScaledValue(widget.x, 1), this.getScaledValue(widget.y + widget.height / 2, 2), 300, '#000000');
+                continue;
+            }
+            // tslint:disable-next-line:max-line-length
+            if (!isNullOrUndefined(widget.footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox) {
+                // tslint:disable-next-line:max-line-length
+                if (i < 2 || (i > 1 && widget.footNoteReference !== (paraWidget.childWidgets[i - 1] as BlockWidget).footNoteReference)) {
+                    // tslint:disable-next-line:max-line-length
+                    ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text = ((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text.replace(((widget.childWidgets[0] as LineWidget).children[0] as TextElementBox).text, widget.footNoteReference.text);
+                }
+            }
+            this.renderWidget(page, widget);
+        }
+
     }
     /**
      * Renders table widget.

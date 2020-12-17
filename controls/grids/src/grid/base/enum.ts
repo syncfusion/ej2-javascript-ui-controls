@@ -215,9 +215,7 @@ export type SelectionMode =
     /**  Defines SelectionMode as Row */
     'Row' |
     /**  Defines SelectionMode as Both */
-    'Both' |
-    /**  Defines SelectionMode as Column */
-    'Column';
+    'Both';
 
 /** 
  * Print mode options are
@@ -695,3 +693,40 @@ export type ResizeMode =
     'Normal' |
     /**  Resized column width will be adjusted by other columns automatically */
     'Auto';
+
+/** 
+ * Defines freeze direction of the grid columns
+ * * Left
+ * * Right
+ */
+export type freezeDirection =
+    /**  freeze the columns at left */
+    'Left' |
+    /**  freeze the columns at right */
+    'Right';
+
+/** 
+ * Defines rendered part of the grid column
+ * @hidden
+ */
+export type freezeTable =
+    /**  Defines rendered the column at frozen left part */
+    'frozen-left' |
+    /**  Defines rendered the columns at frozen right part */
+    'frozen-right' |
+    /**  Defines rendered the columns at movable part */
+    'movable';
+
+/** 
+ * Defines name of the Grid frozen mode
+ * * Left
+ * * Right
+ * * Left-Right
+ */
+export type freezeMode =
+    /**  Left frozen mode */
+    'Left' |
+    /**  Right frozen mode */
+    'Right' |
+    /**  Left and right frozen mode */
+    'Left-Right';

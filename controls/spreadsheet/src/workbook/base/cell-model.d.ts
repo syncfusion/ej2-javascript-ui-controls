@@ -1,4 +1,4 @@
-import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { SheetModel } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';import { ImageModel, Image } from '../common/index';import { getRow } from './index';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
+import { extend, Property, ChildProperty, Complex, Collection, } from '@syncfusion/ej2-base';import { SheetModel } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel } from '../common/index';import { ImageModel, Image } from '../common/index';import { getRow } from './index';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
 
 /**
  * Interface for a class Cell
@@ -10,6 +10,12 @@ export interface CellModel {
      * @default []
      */
     image?: ImageModel[];
+
+    /**
+     * Specifies the chart of the cell.
+     * @default []
+     */
+    chart?: ChartModel[];
 
     /**
      * Defines the value of the cell which can be text or number.

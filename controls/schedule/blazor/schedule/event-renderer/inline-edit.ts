@@ -25,11 +25,15 @@ export class InlineEdit {
                 return;
             }
             let activeEvent: HTMLElement = this.parent.element.querySelector('.e-appointment[data-guid="' + guid + '"]');
+            if (this.parent.element.querySelector('.e-more-popup-wrapper') &&
+                this.parent.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')) {
+                activeEvent = this.parent.element.querySelector('.e-more-popup-wrapper .e-appointment[data-guid="' + guid + '"]');
+            }
             if (this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) !==
                 activeEvent.querySelector('.' + cls.INLINE_SUBJECT_CLASS)) {
                 this.removeInlineAppointmentElement();
             }
-            this.eventEdit(guid);
+            this.eventEdit(activeEvent);
         }
     }
 
@@ -176,13 +180,12 @@ export class InlineEdit {
         return saveObj;
     }
 
-    private eventEdit(guid: string): void {
+    private eventEdit(activeEvent: HTMLElement): void {
         let inlineSubject: HTMLInputElement = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) as HTMLInputElement;
         let subject: string;
         if (inlineSubject) {
             subject = inlineSubject.value;
         } else {
-            let activeEvent: HTMLElement = this.parent.element.querySelector('.e-appointment[data-guid="' + guid + '"]');
             let subEle: HTMLElement = activeEvent.querySelector('.' + cls.SUBJECT_CLASS);
             let timeEle: HTMLElement = activeEvent.querySelector('.' + cls.APPOINTMENT_TIME);
             subject = subEle.innerText;

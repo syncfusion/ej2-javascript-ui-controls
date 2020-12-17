@@ -17,6 +17,7 @@ export class Worksheet {
     public mergeCells: MergeCells;
     public hyperLinks: HyperLink[];
     public images: Image[];
+    public enableRtl: boolean = false;
 }
 /**
  * Hyperlink class

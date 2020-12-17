@@ -31,9 +31,44 @@
       }
     }
 
+    .e-editable-value-container {
+
+      .e-editable-value {
+        border-bottom: $editor-value-text-border;
+        color: $editor-value-text-color;
+      }
+
+      .e-editable-overlay-icon {
+        color: $editor-overlay-icon-color;
+      }
+
+      &.e-loading {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+
+      &:hover {
+        background: $editor-value-hover-bg;
+        border-radius: $editor-tip-content-bdr-radius;
+
+        .e-editable-value {
+          border-bottom-color: transparent;
+        }
+      }
+    }
+
     &[data-underline = 'false'] {
 
       .e-editable-value-wrapper {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+
+      .e-editable-value-container {
 
         .e-editable-value {
           border-bottom: 0;
@@ -46,6 +81,13 @@
       touch-action: none;
 
       .e-editable-value-wrapper {
+
+        .e-editable-value {
+          border-bottom-color: transparent;
+        }
+      }
+
+      .e-editable-value-container {
 
         .e-editable-value {
           border-bottom-color: transparent;

@@ -972,6 +972,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 remove(this.svgObject);
             }
         }
+        removeElement(this.element.id + '_svg');
         this.clearTemplate();
     }
 

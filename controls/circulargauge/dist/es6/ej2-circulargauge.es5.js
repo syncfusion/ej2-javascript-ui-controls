@@ -4949,6 +4949,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 remove(this.svgObject);
             }
         }
+        removeElement(this.element.id + '_svg');
         this.clearTemplate();
     };
     /**

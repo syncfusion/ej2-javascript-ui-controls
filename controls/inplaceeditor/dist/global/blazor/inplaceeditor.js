@@ -973,9 +973,6 @@ var InPlaceEditor = /** @class */ (function (_super) {
         var args;
         if (this.validationRules) {
             var rules = Object.keys(this.validationRules);
-            var templateCount_1 = Object.keys(this.validationRules).length;
-            var templateIndex_1 = 0;
-            var status_1 = true;
             var validationLength_1 = Object.keys(this.validationRules[rules[0]]).length;
             validationLength_1 = 'validateHidden' in this.validationRules[rules[0]] ? validationLength_1 - 1 : validationLength_1;
             var count_1 = 0;
@@ -989,7 +986,6 @@ var InPlaceEditor = /** @class */ (function (_super) {
                     };
                     _this.trigger('validating', args, function (validateArgs) {
                         if (e.status === 'failure') {
-                            status_1 = false;
                             e.errorElement.innerText = validateArgs.errorMessage;
                             _this.toggleErrorClass(true);
                         }
@@ -997,11 +993,8 @@ var InPlaceEditor = /** @class */ (function (_super) {
                             _this.toggleErrorClass(false);
                         }
                         if (!sf.base.isNullOrUndefined(fromSubmit) && fromSubmit && (validationLength_1 === count_1 || e.status === 'failure')) {
-                            templateIndex_1 = templateIndex_1 + 1;
-                            if (templateIndex_1 === templateCount_1 && status_1) {
-                                fromSubmit = false;
-                                _this.afterValidation(isValidate);
-                            }
+                            fromSubmit = false;
+                            _this.afterValidation(isValidate);
                             count_1 = 0;
                         }
                     });
@@ -1886,7 +1879,7 @@ var MultiSelect$1 = /** @class */ (function () {
 var Rte = /** @class */ (function () {
     function Rte(parent) {
         this.compObj = undefined;
-        sf.richtexteditor.RichTextEditor.Inject(sf.richtexteditor.HtmlEditor, sf.richtexteditor.MarkdownEditor, sf.richtexteditor.Toolbar, sf.richtexteditor.Link, sf.richtexteditor.Image, sf.richtexteditor.QuickToolbar, sf.richtexteditor.Table);
+        sf.richtexteditor.RichTextEditor.Inject(sf.richtexteditor.HtmlEditor, sf.richtexteditor.MarkdownEditor, sf.richtexteditor.Toolbar, sf.richtexteditor.Link, sf.richtexteditor.Image, sf.richtexteditor.QuickToolbar, sf.richtexteditor.Table, sf.richtexteditor.FileManager);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

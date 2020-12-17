@@ -6,7 +6,7 @@ import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfus
 import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, blankWorkbook } from '../common/index';
 import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage} from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
-import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems } from '../common/index';
+import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
 import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
@@ -35,7 +35,7 @@ import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups'
 import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight } from './../../workbook/base/index';
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
-import { Sort, Filter, SpreadsheetImage } from '../integrations/index';
+import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integrations/index';
 import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
@@ -43,7 +43,7 @@ import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
-import { WorkbookImage } from '../../workbook/integrations/index';
+import { WorkbookImage, WorkbookChart } from '../../workbook/integrations/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
 /**
  * Represents the Spreadsheet component. 
@@ -678,7 +678,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
             ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage,
-            ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat
+            ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat, SpreadsheetChart, WorkbookChart
         );
         if (element) {
             this.appendTo(element);
@@ -695,7 +695,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (!row) { row = this.getRow(rowIndex); }
         return row ? row.cells[colIndex] : row;
     }
-
     /**
      * Get cell element.
      * @returns HTMLTableRowElement
@@ -871,11 +870,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To replace the specified cell value.
      * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
-     * @param {string} args.replaceValue - Specifies the value to be replaced.
+     * @param {string} args.replaceValue - Specifies the replacing value.
      * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
+     * @param {string} args.value - Specifies the value to be replaced
      * @return {void}
      */
     public replace(args: FindOptions): void {
+        args = {
+            value: args.value, mode: args.mode ? args.mode : 'Sheet', isCSen: args.isCSen ? args.isCSen : false,
+            isEMatch: args.isEMatch ? args.isEMatch : false, searchBy: args.searchBy ? args.searchBy : 'By Row',
+            replaceValue: args.replaceValue, replaceBy: args.replaceBy,
+            sheetIndex: args.sheetIndex ? args.sheetIndex : this.activeSheetIndex, findOpt: args.findOpt ? args.findOpt : ''
+        };
         super.replaceHandler(args);
     }
     /**
@@ -1018,6 +1024,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} address - Specifies the range address.
      */
     public copy(address?: string): Promise<Object> {
+        let activeAddress: string = this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
+        address = !isNullOrUndefined(address) ? address : activeAddress;
         let promise: Promise<Object> =
             new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         this.notify(copy, address ? {
@@ -1042,11 +1050,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * To update the action which need to perform.
-     * @param {string} options - event options.
+     * @param {string} options - It describes an action and event args to perform.
+     * @param {string} options.action - specifies an action.
+     * @param {string} options.eventArgs - specifies an args to perform an action.
      */
-    public updateAction(options: string): void {
-        let model: CollaborativeEditArgs = JSON.parse(options) as CollaborativeEditArgs;
-        this.notify(collaborativeUpdate, { action: model.action, eventArgs: model.eventArgs });
+    public updateAction(options: CollaborativeEditArgs): void {
+        updateAction(options, this);
     }
 
     private setHeight(): void {
@@ -1385,7 +1394,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * This method is used to add conditional formatting.
-     * @param {CFRulesModel} rules - specifies the conditional formatting rule.
+     * @param  {string} type - Conditional formatting HighlightCell, TopBottom, DataBar, ColorScale, IconSet Type. 
+     * HighlightCell- 'GreaterThan' | 'LessThan' | 'Between' | 'EqualTo' | 'ContainsText' | 'DateOccur' | 'Duplicate' | 'Unique', 
+     * TopBottom - 'Top10Items' | 'Bottom10Items' | 'Top10Percentage' | 'Bottom10Percentage' | 'BelowAverage' | 'AboveAverage',
+     * DataBar - 'BlueDataBar' | 'GreenDataBar' | 'RedDataBar' | 'OrangeDataBar' | 'LightBlueDataBar' | 'PurpleDataBar',
+     * ColorScale - 'GYRColorScale' | 'RYGColorScale' | 'GWRColorScale' | 'RWGColorScale' | 'BWRColorScale' | 'RWBColorScale' |
+     * 'WRColorScale' | 'RWColorScale' | 'GWColorScale' | 'WGColorScale' | 'GYColorScale' | 'YGColorScale',
+     * IconSet - 'ThreeArrows' | 'ThreeArrowsGray' | 'FourArrowsGray' | 'FourArrows' | 'FiveArrowsGray' | 'FiveArrows' | 
+     * 'ThreeTrafficLights1' | 'ThreeTrafficLights2' | 'ThreeSigns' | 'FourTrafficLights' | 'FourRedToBlack' | 'ThreeSymbols' | 
+     * 'ThreeSymbols2' | 'ThreeFlags' | 'FourRating' | 'FiveQuarters' | 'FiveRating' | 'ThreeTriangles' | 'ThreeStars' | 'FiveBoxes';
+     * @param  {string} cFColor - Pass the cFcolor to set the conditional formatting.
+     * CFColor - 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT'.
+     * @param  {string} value - Pass the value to set the conditional formatting.
+     * @param  {string} range - Pass the range to set the conditional formatting.
      */
     public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
         super.conditionalFormat(conditionalFormat);
@@ -1901,6 +1922,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public enableRibbonTabs(tabs: string[], enable: boolean = true): void {
         this.notify(enableRibbonTabs, { tabs: tabs, enable: enable });
     }
+
 
     /**
      * To add custom ribbon tabs.

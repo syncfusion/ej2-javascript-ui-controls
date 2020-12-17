@@ -23,7 +23,7 @@ import { PivotUtil } from '../../base/util';
 import { OlapEngine, ITupInfo, IDrillInfo } from '../../base/olap/engine';
 import { SummaryTypes } from '../../base/types';
 import { ContextMenu, ContextMenuModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { OffsetPosition } from '@syncfusion/ej2-popups';
+import { hideSpinner, OffsetPosition } from '@syncfusion/ej2-popups';
 
 export class PivotChart {
     private chartSeries: SeriesModel[] | AccumulationSeriesModel[];
@@ -316,7 +316,7 @@ export class PivotChart {
         let columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
             (this.parent as PivotView).chartSettings.columnHeader.split(delimiter).join(' - ') : '';
         let chartType: ChartSeriesType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
-        if (this.accumulationType.indexOf(chartType) > -1) {
+        if (this.accumulationType.indexOf(chartType) > -1 && columnKeys.length > 0) {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             let currentSeries: AccumulationSeriesModel = {};
             currentSeries = this.persistSettings.chartSeries ? this.frameChartSeries(this.persistSettings.chartSeries) as AccumulationSeriesModel : currentSeries;
@@ -644,6 +644,12 @@ export class PivotChart {
                 }
             }
             this.parent.chart.refresh();
+            if ((this.accumulationType.indexOf(type) > -1) && this.parent.chart.getModuleName() === 'accumulationchart' && (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0)) {
+                this.parent.hideWaitingPopup();
+                if (this.parent.pivotFieldListModule) {
+                    hideSpinner(this.parent.pivotFieldListModule.fieldListSpinnerElement as HTMLElement);
+                }
+            }
         }
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultiAxis) {
             this.parent.chart.appendTo('#' + this.parent.element.id + '_chartInner');

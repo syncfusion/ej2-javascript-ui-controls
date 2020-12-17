@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Schedule
+
+#### New Features
+
+- Provided the event Drag and Drop and Resize support for Timeline Year view.
+
+#### Bug Fixes
+
+- `#159985` - An issue with `scrollToResource` public method not working properly has been fixed.
+- `#159896`- An issue with the appointments are misaligned when `rowAutoHeight` is true has been fixed.
+- `#18946` - An issue with displaying date twice for DST time-zones when switching between summer and winter time, has been fixed.
+- `#300527` - An issue with loose shadow event once new week opens issue has been fixed.
+- `#292074` - An issue with Schedule event dragging is not working fine when set up the `eventDragArea` property has been fixed.
+- `#303564` - An issue with Editor window throws script error has been fixed.
+- `#304988` - An issue with Scheduler throws script error when navigate form the scheduler to other component has been fixed.
+
 ## 18.3.53 (2020-12-08)
 
 ### Schedule
@@ -12,6 +30,7 @@
 - `#299009, #305259` - An issue with the `resourceHeaderTemplate` shows empty content when changing the properties of schedule if tooltip enabled has been fixed.
 - `#159749` - An issue with Scheduler is not refreshed properly while navigating has been fixed.
 - `#305387` - An issue with events not displayed on proper time has been fixed.
+- `#301811` - An issue with render RTE component as a additional field in the editor template has been fixed.
 
 ## 18.3.51 (2020-11-24)
 

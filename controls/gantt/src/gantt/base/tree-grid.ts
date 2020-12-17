@@ -1,7 +1,7 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject } from '@syncfusion/ej2-base';
-import { FilterEventArgs, SortEventArgs, FailureEventArgs, Column } from '@syncfusion/ej2-grids';
+import { FilterEventArgs, SortEventArgs, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { setValue, isBlazor, getElement } from '@syncfusion/ej2-base';
 import { Deferred, Query } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
@@ -76,9 +76,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
-        if (!isBlazor()) {
-            this.parent.treeGrid.searchSettings = this.parent.searchSettings;
-        } else if (this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
+        if (!isBlazor() || this.parent.searchSettings.fields.length !== 0 || this.parent.searchSettings.key !== '') {
             this.parent.treeGrid.searchSettings = this.parent.searchSettings;
         }
         let isJsComponent: string = 'isJsComponent';
@@ -141,8 +139,17 @@ export class GanttTreeGrid {
         this.parent.treeGrid.rowDataBound = this.rowDataBound.bind(this);
         this.parent.treeGrid.columnMenuOpen = this.columnMenuOpen.bind(this);
         this.parent.treeGrid.columnMenuClick = this.columnMenuClick.bind(this);
+        this.parent.treeGrid.beforeDataBound = this.beforeDataBound.bind(this);
     }
 
+    private beforeDataBound(args: object): void {
+        this.parent.updatedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+        getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
+        if (getValue('actionArgs.requestType', args) !== 'virtualscroll' && this.parent.virtualScrollModule &&
+        this.parent.enableVirtualization) {
+            this.parent.updateContentHeight(args);
+       }
+    }
     private dataBound(args: object): void {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
@@ -153,12 +160,12 @@ export class GanttTreeGrid {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             let collapsingArgs: object = this.createExpandCollapseArgs(args);
             if (isBlazor()) {
-                this.parent.trigger('collapsing', collapsingArgs, (args: object) => {
-                    callBackPromise.resolve(args);
-                    setValue('chartRow', getElement(getValue('chartRow', args)), args);
-                    setValue('gridRow', getElement(getValue('gridRow', args)), args);
-                    if (!getValue('cancel', args)) {
-                        this.parent.ganttChartModule.collapseGanttRow(args, true);
+                this.parent.trigger('collapsing', collapsingArgs, (arg: object) => {
+                    callBackPromise.resolve(arg);
+                    setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
+                    setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
+                    if (!getValue('cancel', arg)) {
+                        this.parent.ganttChartModule.collapseGanttRow(arg, true);
                     }
                 });
                 return callBackPromise;
@@ -174,12 +181,12 @@ export class GanttTreeGrid {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             let expandingArgs: object = this.createExpandCollapseArgs(args);
             if (isBlazor()) {
-                this.parent.trigger('expanding', expandingArgs, (args: object) => {
-                    callBackPromise.resolve(args);
-                    setValue('chartRow', getElement(getValue('chartRow', args)), args);
-                    setValue('gridRow', getElement(getValue('gridRow', args)), args);
-                    if (!getValue('cancel', args)) {
-                        this.parent.ganttChartModule.expandGanttRow(args, true);
+                this.parent.trigger('expanding', expandingArgs, (arg: object) => {
+                    callBackPromise.resolve(arg);
+                    setValue('chartRow', getElement(getValue('chartRow', arg)), arg);
+                    setValue('gridRow', getElement(getValue('gridRow', arg)), arg);
+                    if (!getValue('cancel', arg)) {
+                        this.parent.ganttChartModule.expandGanttRow(arg, true);
                     }
                 });
                 return callBackPromise;
@@ -256,7 +263,7 @@ export class GanttTreeGrid {
             deleteObject(updatedArgs, 'isFrozen');
         } else if (getValue('requestType', args) === 'filtering') {
             this.parent.notify('updateModel', {});
-            let focussedElement: HTMLElement = <HTMLElement>this.parent.element.querySelector('.e-treegrid');
+            let focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
             focussedElement.focus();
         } else if (getValue('type', args) === 'save') {
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {

@@ -48,15 +48,60 @@ require.config({
       main: 'ej2-lists.umd.min.js'
     },
     {
-        name: '@syncfusion/ej2-navigations',
-        location: 'node_modules/@syncfusion/ej2-navigations/dist',
-        main: 'ej2-navigations.umd.min.js'
+      name: '@syncfusion/ej2-navigations',
+      location: 'node_modules/@syncfusion/ej2-navigations/dist',
+      main: 'ej2-navigations.umd.min.js'
     },
     {
       name: '@syncfusion/ej2-splitbuttons',
       location: 'node_modules/@syncfusion/ej2-splitbuttons/dist',
-       main: 'ej2-splitbuttons.umd.min.js'
-  }
+      main: 'ej2-splitbuttons.umd.min.js'
+    },
+	{
+      name: '@syncfusion/ej2-layouts',
+	  location: 'node_modules/@syncfusion/ej2-layouts/dist',
+	  main: 'ej2-layouts.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-grids',
+	  location: 'node_modules/@syncfusion/ej2-grids/dist',
+      main: 'ej2-grids.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-dropdowns',
+	  location: 'node_modules/@syncfusion/ej2-dropdowns/dist',
+	  main: 'ej2-dropdowns.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-calendars',
+	  location: 'node_modules/@syncfusion/ej2-calendars/dist',
+	  main: 'ej2-calendars.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-excel-export',
+      location: 'node_modules/@syncfusion/ej2-excel-export/dist',
+	  main: 'ej2-excel-export.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-pdf-export',
+	  location: 'node_modules/@syncfusion/ej2-pdf-export/dist',
+	  main: 'ej2-pdf-export.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-compression',
+      location: 'node_modules/@syncfusion/ej2-compression/dist',
+	  main: 'ej2-compression.umd.min.js'
+	},
+	{
+	  name: '@syncfusion/ej2-file-utils',
+	  location: 'node_modules/@syncfusion/ej2-file-utils/dist',
+	  main: 'ej2-file-utils.umd.min.js'
+	},
+	{
+      name: '@syncfusion/ej2-filemanager',
+      location: 'node_modules/@syncfusion/ej2-filemanager/dist',
+      main: 'ej2-filemanager.umd.min.js'
+    },
     // Include dependent packages
   ],
 

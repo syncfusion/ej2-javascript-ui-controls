@@ -1,4 +1,5 @@
 @include export-module('grid-layout') {
+
   /*! Grid layout */
   .e-disableuserselect {
     user-select: none;
@@ -805,6 +806,11 @@
       width: 4px;
     }
 
+    & .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rhandler,
+    & .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rsuppress {
+      left: 0;
+    }
+
     &.e-device .e-gridheader .e-headercell .e-rhandler {
       width: 14px;
     }
@@ -817,6 +823,20 @@
 
     &.e-resize-lines .e-gridheader th.e-headercell.e-lastcell .e-rhandler {
       border-right-width: 0;
+    }
+
+    &.e-resize-lines .e-gridheader .e-frozen-right-header th.e-headercell .e-rhandler {
+        border-right-width: 0;
+    }
+
+    &.e-rtl .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rhandler,
+    &.e-rtl .e-gridheader .e-frozenheader.e-frozen-right-header .e-headercell .e-rsuppress {
+      right: 0;
+    }
+
+    &.e-rtl.e-resize-lines .e-gridheader .e-frozen-right-header th.e-headercell .e-rhandler {
+        border-right-width: 1px;
+        border-left-width: 0;
     }
 
     & .e-rhelper {
@@ -1076,15 +1096,24 @@
     }
 
     .e-summarycontent {
-
+        display: flex;
       & .e-frozenfootercontent {
         float: left;
         width: min-content;
       }
 
+      & .e-frozen-right-footercontent {
+          float: right;
+          & .e-firstsummarycell {
+            border-left: 1px solid;
+            border-color: #e0e0e0;
+          }
+      }
+
       & .e-movablefootercontent {
         height: inherit;
         overflow: hidden;
+        flex: 1;
       }
 
       & .e-indentcell {
@@ -2202,9 +2231,19 @@
       border-right: $frozen-border;
     }
 
+    .e-frozenheader.e-frozen-right-header > .e-table,
+    .e-frozencontent.e-frozen-right-content > .e-table {
+      border-left: $frozen-border;
+      border-right: 0;
+    }
+
     .e-frozenheader {
       float: left;
       width: min-content;
+    }
+
+    .e-frozenheader.e-frozen-right-header {
+      float: right;
     }
 
     &.e-rtl .e-frozenheader > .e-table,
@@ -2215,16 +2254,34 @@
       border-right: 0;
     }
 
+    &.e-rtl .e-frozenheader.e-frozen-right-header > .e-table,
+    &.e-rtl .e-frozencontent.e-frozen-right-content > .e-table {
+      border-left: 0;
+      border-right: $frozen-border;
+    }
+
     &.e-rtl .e-frozenheader {
       float: right;
+    }
+
+    &.e-rtl .e-frozenheader.e-frozen-right-header {
+      float: left;
     }
 
     &.e-rtl .e-frozencontent {
       float: right;
     }
 
+    &.e-rtl .e-frozen-right-content {
+      float: left;
+    }
+
     &.e-rtl .e-frozenfootercontent {
       float: right;
+    }
+
+    &.e-rtl .e-frozen-right-footercontent {
+      float: left;
     }
 
     .e-movableheader {
@@ -2237,17 +2294,28 @@
 
     .e-frozencontent {
       -ms-touch-action: none; // sass-lint:disable-line no-vendor-prefixes
-      border-bottom-style: $grid-border-type;
       border-bottom-width: $grid-border-size;
       float: left;
-      height: inherit;
-      overflow: hidden;
       width: min-content;
     }
 
+    .e-frozen-right-content {
+      float: right;
+    }
+
     .e-movablecontent {
-      height: inherit;
-      overflow: scroll;
+      flex: 1;
+      overflow-x: hidden;
+    }
+
+    .e-frozenscrollbar {
+      border-top: 1px solid $grid-cell-border-color;
+    }
+
+    .e-movablescrollbar {
+      flex: 1;
+      overflow: hidden;
+      overflow-x: scroll;
     }
 
     .e-columnchooser::before {
@@ -2817,6 +2885,25 @@
     }
 
     &.sf-grid {
+
+      .e-masked-cell.e-rowcell .e-virtualcell {
+        background-color: $grid-maskedcell-virtual-background-color;
+        display: inline-block;
+        height: 10px;
+        width: 80%;
+      }
+
+      .e-movablecontent {
+        height: inherit;
+        overflow: scroll;
+      }
+
+      .e-frozencontent {
+        border-bottom-style: $grid-border-type;
+        height: inherit;
+        overflow: hidden;
+      }
+
       .e-gridcontent .e-content,
       .e-gridcontent .e-content .e-movablecontent {
         overflow-y: auto;

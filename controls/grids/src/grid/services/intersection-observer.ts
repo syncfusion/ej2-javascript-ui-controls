@@ -9,7 +9,9 @@ export type ScrollDirection = 'up' | 'down' | 'right' | 'left';
  */
 export class InterSectionObserver {
     private containerRect: ClientRect;
+    private movableContainerRect: ClientRect;
     private element: HTMLElement;
+    private movableEle: HTMLElement;
     private fromWheel: boolean = false;
     private touchMove: boolean = false;
     private options: InterSection = {};
@@ -33,6 +35,10 @@ export class InterSectionObserver {
         'right': {
             check: (rect: ClientRect, info: SentinelType) => {
                 let right: number = rect.right;
+                if (this.movableEle) {
+                    info.entered = right < this.movableContainerRect.right;
+                    return right - this.movableContainerRect.width <= this.movableContainerRect.right;
+                }
                 info.entered = right < this.containerRect.right;
                 return right - this.containerRect.width <= this.containerRect.right;
             }, axis: 'X'
@@ -41,36 +47,49 @@ export class InterSectionObserver {
             check: (rect: ClientRect, info: SentinelType) => {
                 let left: number = rect.left;
                 info.entered = left > 0;
+                if (this.movableEle) {
+                    return left + this.movableContainerRect.width >= this.movableContainerRect.left;
+                }
                 return left + this.containerRect.width >= this.containerRect.left;
             }, axis: 'X'
         }
     };
-    constructor(element: HTMLElement, options: InterSection) {
+    constructor(element: HTMLElement, options: InterSection, movableEle?: HTMLElement) {
         this.element = element;
         this.options = options;
+        this.movableEle = movableEle;
     }
 
     public observe(callback: Function, onEnterCallback: Function): void {
         this.containerRect = this.options.container.getBoundingClientRect();
         EventHandler.add(this.options.container, 'wheel', () => this.fromWheel = true, this);
         EventHandler.add(this.options.container, 'scroll', this.virtualScrollHandler(callback, onEnterCallback), this);
+        if (this.options.movableContainer) {
+            this.movableContainerRect = this.options.movableContainer.getBoundingClientRect();
+            EventHandler.add(this.options.scrollbar, 'wheel', () => this.fromWheel = true, this);
+            EventHandler.add(this.options.scrollbar, 'scroll', this.virtualScrollHandler(callback, onEnterCallback), this);
+        }
     }
 
     public check(direction: ScrollDirection): boolean {
         let info: SentinelType = this.sentinelInfo[direction];
+        if (this.movableContainerRect && (direction === 'left' || direction === 'right')) {
+            return info.check(this.movableEle.getBoundingClientRect(), info);
+        }
         return info.check(this.element.getBoundingClientRect(), info);
     }
 
     private virtualScrollHandler(callback: Function, onEnterCallback: Function): Function {
         let delay: number = Browser.info.name === 'chrome' ? 200 : 100;
-        let prevTop: number = 0; let prevLeft: number = 0; let debounced100: Function = debounce(callback, delay);
+        let debounced100: Function = debounce(callback, delay);
         let debounced50: Function = debounce(callback, 50);
+        this.options.prevTop = this.options.prevLeft = 0;
         return (e: Event) => {
-            let top: number = (<HTMLElement>e.target).scrollTop;
-            let left: number = (<HTMLElement>e.target).scrollLeft;
-            let direction: ScrollDirection = prevTop < top ? 'down' : 'up';
-            direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
-            prevTop = top; prevLeft = left;
+            let top: number = this.options.movableContainer ? this.options.container.scrollTop : (<HTMLElement>e.target).scrollTop;
+            let left: number = this.options.movableContainer ? this.options.scrollbar.scrollLeft : (<HTMLElement>e.target).scrollLeft;
+            let direction: ScrollDirection = this.options.prevTop < top ? 'down' : 'up';
+            direction = this.options.prevLeft === left ? direction : this.options.prevLeft < left ? 'right' : 'left';
+            this.options.prevTop = top; this.options.prevLeft = left;
 
             let current: SentinelType = this.sentinelInfo[direction];
 
@@ -80,7 +99,11 @@ export class InterSectionObserver {
 
             let check: boolean = this.check(direction);
             if (current.entered) {
-                onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
+                if (this.movableEle && (direction === 'right' || direction === 'left')) {
+                    onEnterCallback(this.movableEle, current, direction, { top: top, left: left }, this.fromWheel, check);
+                } else {
+                    onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
+                }
             }
 
             if (check) {

@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, select, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -440,7 +440,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var ruleListElem = target.querySelector('.e-rule-list');
         var args;
         if (type === 'change') {
-            ruleElem = target.querySelector('[id="' + parentId + '"]');
+            ruleElem = select('#' + parentId, target);
         }
         else {
             ruleElem = this.createElement('div', { attrs: { class: 'e-rule-container' } });
@@ -459,7 +459,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             args.operators = this.getOperators(rule.field);
             args.operatorFields = { text: 'key', value: 'value' };
             // tslint:disable
-            if (this.isReact) {
+            if (this.isReact || this.isAngular) {
                 template = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
             }
             else {
@@ -558,7 +558,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     popupHeight: ((this.columns.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this), value: rule ? rule.field : null
                 });
-                dropDownList.appendTo('[id="' + ruleElem.id + '_filterkey"]');
+                dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
                 this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
                 if (Object.keys(rule).length) {
                     this.changeRule(rule, {
@@ -607,7 +607,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var parentId = closest(element, '.e-rule-container').id;
             if (this.previousColumn && this.previousColumn.ruleTemplate) {
                 detach(element.closest('[id="' + parentId + '"]').querySelector('.e-rule-field'));
-                this.clearTemplate([parentId]);
+                this.clearQBTemplate([parentId]);
             }
             if (column) {
                 var rule_1 = { field: column.field, label: column.label, operator: operVal[0].value, value: '' };
@@ -1269,7 +1269,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     index: 0,
                     value: value
                 });
-                dropDownList.appendTo('[id="' + ruleId + '_operatorkey"]');
+                dropDownList.appendTo('#' + ruleId + '_operatorkey');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value;
                 if (this.isImportRules) {
                     tempRule.type = this.selectedColumn.type;
@@ -1293,7 +1293,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0, len = inputElement.length; i < len; i++) {
             if (inputElement[i].classList.contains('e-textbox')) {
                 getComponent(inputElement[i], 'textbox').destroy();
-                detach(element.querySelector('input#' + inputElement[i].id));
+                detach(select('input#' + inputElement[i].id, element));
             }
             else if (inputElement[i].classList.contains('e-dropdownlist')) {
                 if (this.allowValidation && inputElement[i].parentElement.className.indexOf('e-tooltip') > -1) {
@@ -1306,7 +1306,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else if (inputElement[i].classList.contains('e-numerictextbox')) {
                 getComponent(inputElement[i], 'numerictextbox').destroy();
-                detach(element.querySelector('input#' + inputElement[i].id));
+                detach(select('input#' + inputElement[i].id, element));
             }
             else if (inputElement[i].classList.contains('e-datepicker')) {
                 getComponent(inputElement[i], 'datepicker').destroy();
@@ -1346,16 +1346,25 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
     };
     QueryBuilder.prototype.templateDestroy = function (column, elemId) {
-        var temp = column.template.destroy;
-        if (column.template && column.template.destroy) {
+        var template;
+        if (typeof column.template !== 'string' || column.template.destroy === undefined) {
+            template = column.template;
+        }
+        else {
+            return;
+        }
+        var temp = template.destroy;
+        if (template.destroy) {
             var templateElements = void 0;
-            templateElements = closest(document.getElementById(elemId), '.e-rule-field').querySelectorAll('.e-template');
+            if (document.getElementById(elemId)) {
+                templateElements = closest(document.getElementById(elemId), '.e-rule-field').querySelectorAll('.e-template');
+            }
             if (typeof temp === 'string') {
                 temp = getValue(temp, window);
                 temp({ field: column.field, elementId: elemId, elements: templateElements });
             }
             else {
-                column.template.destroy({ field: column.field, elementId: elemId, elements: templateElements });
+                template.destroy({ field: column.field, elementId: elemId, elements: templateElements });
             }
         }
     };
@@ -1465,7 +1474,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             close: this.closePopup.bind(this, i),
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
-        multiSelectObj.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
+        multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
         this.updateRules(multiSelectObj.element, selectedValue, 0);
     };
     QueryBuilder.prototype.multiSelectOpen = function (parentId, args) {
@@ -1545,24 +1554,20 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var tempElements = container.querySelectorAll('.e-template');
         ddlObj = getComponent(container.querySelector('.e-rule-filter .e-filter-input'), 'dropdownlist');
         var column = this.getColumn(ddlObj.value);
-        if (tempElements.length < 2) {
-            if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
-                    field: column.field, dataSource: column.values });
-            }
-            else if (itemData.template && itemData.template.write) {
-                itemData.template.write({ elements: tempElements[0], values: rule.value, operator: tempRule.operator,
-                    field: column.field, dataSource: column.values });
-            }
+        if (typeof itemData.template === 'string' || itemData.template.write === undefined) {
+            var args = { rule: rule, ruleID: container.id, operator: tempRule.operator, field: column.field,
+                requestType: 'value-template-create' };
+            this.trigger('actionBegin', args);
         }
         else {
-            if (itemData.template && typeof itemData.template.write === 'string') {
-                getValue(itemData.template.write, window)({ elements: tempElements, values: rule.value, operator: tempRule.operator,
-                    field: column.field, dataSource: column.values });
+            var template = itemData.template;
+            if (typeof template.write === 'string') {
+                getValue(template.write, window)({ elements: tempElements.length > 1 ? tempElements : tempElements[0], values: rule.value,
+                    operator: tempRule.operator, field: column.field, dataSource: column.values });
             }
-            else if (itemData.template && itemData.template.write) {
-                itemData.template.write({ elements: tempElements, values: rule.value, operator: tempRule.operator,
-                    field: column.field, dataSource: column.values });
+            else {
+                itemData.template.write({ elements: tempElements.length > 1 ? tempElements : tempElements[0],
+                    values: rule.value, operator: tempRule.operator, field: column.field, dataSource: column.values });
             }
         }
     };
@@ -1618,7 +1623,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
-            inputobj.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
+            inputobj.appendTo('#' + parentId + '_valuekey' + idx);
             inputobj.value = selectedValue;
             inputobj.dataBind();
         }
@@ -1644,7 +1649,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 placeholder: this.l10n.getConstant('SelectValue'),
                 input: this.changeValue.bind(this, idx)
             });
-            inputobj.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
+            inputobj.appendTo('#' + parentId + '_valuekey' + idx);
             inputobj.value = selVal;
             inputobj.dataBind();
         }
@@ -1663,7 +1668,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 step: itemData.step ? itemData.step : 1,
                 change: this.changeValue.bind(this, idx)
             });
-            numeric.appendTo('[id="' + parentId + '_valuekey' + idx + '"]');
+            numeric.appendTo('#' + parentId + '_valuekey' + idx);
         }
     };
     QueryBuilder.prototype.processValueString = function (value, type) {
@@ -1787,7 +1792,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                     datepick = new DatePicker({ locale: this.getLocale(),
                                         value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
                                 }
-                                datepick.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
+                                datepick.appendTo('#' + parentId + '_valuekey' + i);
                                 if (!rule.value) {
                                     this.updateRules(document.getElementById(parentId + '_valuekey' + i), selectedValue);
                                 }
@@ -1838,7 +1843,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             label: label, name: parentId + 'default', checked: isCheck, value: value,
             change: this.changeValue.bind(this, i)
         });
-        radiobutton.appendTo('[id="' + parentId + '_valuekey' + i + '"]');
+        radiobutton.appendTo('#' + parentId + '_valuekey' + i);
         if (isCheck) {
             this.updateRules(radiobutton.element, orgValue, 0);
         }
@@ -1897,7 +1902,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 else {
-                    detach(target.nextElementSibling.querySelector('[id="' + parentId + '_valuekey0"]'));
+                    var elem = select('#' + parentId + '_valuekey0', target.nextElementSibling);
+                    if (elem && !elem.classList.contains('e-control')) {
+                        detach(select('#' + parentId + '_valuekey0', target.nextElementSibling));
+                    }
+                }
+                if (typeof prevItemData.template === 'string' || prevItemData.template.create === undefined) {
+                    target.nextElementSibling.innerHTML = '';
+                    this.clearQBTemplate([parentId]);
                 }
             }
             if (isRender) {
@@ -1919,26 +1931,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
                 addClass([target.nextElementSibling], 'e-template-value');
                 itemData.template = column.template;
-                var valElem = void 0;
-                if (itemData.template && typeof itemData.template.create === 'string') {
-                    valElem = getValue(itemData.template.create, window)({ field: column.field, operator: itemData.value || operator });
-                }
-                else if (itemData.template && itemData.template.create) {
-                    valElem = itemData.template.create({ field: column.field, operator: itemData.value || operator });
-                }
-                if (valElem instanceof Element) {
-                    valElem.id = parentId + '_valuekey0';
-                    addClass([valElem], 'e-template');
-                    addClass([valElem], 'e-' + column.field);
-                    target.nextElementSibling.appendChild(valElem);
-                }
-                else if (valElem instanceof Array) {
-                    addClass(valElem, 'e-template');
-                    for (var i = 0, iLen = valElem.length; i < iLen; i++) {
-                        valElem[i].id = parentId + '_valuekey' + i;
-                        target.nextElementSibling.appendChild(valElem[i]);
-                    }
-                }
+                this.setColumnTemplate(itemData, parentId, column.field, itemData.value || operator, target, rule);
                 var parentElem = target.parentElement.querySelector('.e-rule-value');
                 if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                     parentElem.style.width = '100%';
@@ -1969,6 +1962,49 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (parentElem) {
                 removeClass([parentElem], 'e-show');
                 addClass([parentElem], 'e-hide');
+            }
+        }
+    };
+    QueryBuilder.prototype.setColumnTemplate = function (itemData, ruleID, field, operator, target, rule) {
+        var valElem;
+        var args;
+        if (itemData.template) {
+            if (typeof itemData.template === 'string' || itemData.template.create === undefined) {
+                args = { requestType: 'value-template-initialize', ruleID: ruleID, field: field, operator: operator, rule: rule };
+                this.trigger('actionBegin', args);
+                this.columnTemplateFn = this.templateParser(itemData.template);
+                var templateID = this.element.id + field;
+                // tslint:disable
+                if (this.isReact || this.isAngular) {
+                    valElem = this.columnTemplateFn(args, this, ruleID, templateID)[0];
+                }
+                else {
+                    valElem = this.columnTemplateFn(args, this, 'Template', templateID)[0];
+                }
+                target.nextElementSibling.appendChild(valElem);
+                this.renderReactTemplates();
+            }
+            else {
+                var template = itemData.template;
+                if (typeof template.create === 'string') {
+                    valElem = getValue(template.create, window)({ field: field, operator: operator });
+                }
+                else {
+                    valElem = template.create({ field: field, operator: operator });
+                }
+                if (valElem instanceof Element) {
+                    valElem.id = ruleID + '_valuekey0';
+                    addClass([valElem], 'e-template');
+                    addClass([valElem], 'e-' + field);
+                    target.nextElementSibling.appendChild(valElem);
+                }
+                else if (valElem instanceof Array) {
+                    addClass(valElem, 'e-template');
+                    for (var i = 0, iLen = valElem.length; i < iLen; i++) {
+                        valElem[i].id = ruleID + '_valuekey' + i;
+                        target.nextElementSibling.appendChild(valElem[i]);
+                    }
+                }
             }
         }
     };
@@ -2330,7 +2366,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.element.innerHTML = '';
         // tslint:disable
         if (this.portals && this.portals.length) {
-            this.clearTemplate();
+            this.clearQBTemplate();
         }
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
     };
@@ -2881,13 +2917,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var elem = groupElem.parentElement.parentElement.parentElement;
             var removeString = [];
             // tslint:disable
-            if (this.isReact) {
+            if (this.isReact || this.isAngular) {
                 var remRule = rule.rules[index];
                 var ruleElemColl = target.querySelectorAll('.e-rule-container');
                 if (remRule && remRule.rules) {
                     for (var r = 0; r < remRule.rules.length; r++) {
                         var column = this.getColumn(remRule.rules[r].field);
-                        if (column && column.ruleTemplate) {
+                        if (column && (column.ruleTemplate || this.isPlatformTemplate(column))) {
                             removeString.push(ruleElemColl[r].id);
                         }
                     }
@@ -2895,7 +2931,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             detach(target);
             if (removeString.length) {
-                this.clearTemplate(removeString);
+                this.clearQBTemplate(removeString);
             }
             rule.rules.splice(index, 1);
             delete this.levelColl[args.groupID];
@@ -2906,6 +2942,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteGroup');
         }
+    };
+    QueryBuilder.prototype.isPlatformTemplate = function (column) {
+        var isTemp = false;
+        isTemp = column.template && (typeof column.template === 'string' || column.template.create === undefined);
+        return isTemp;
     };
     QueryBuilder.prototype.deleteRule = function (target) {
         var _this = this;
@@ -2964,7 +3005,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             detach(clnruleElem);
             if (column && column.ruleTemplate) {
-                this.clearTemplate([ruleElem.id]);
+                this.clearQBTemplate([ruleElem.id]);
+            }
+            if (column && this.isPlatformTemplate(column)) {
+                this.clearQBTemplate([clnruleElem.id]);
             }
             rule.rules.splice(index, 1);
             if (!(rule.rules[0] && rule.rules[0].rules)) {
@@ -2989,6 +3033,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.keyBoardHandler = function (e) {
         if (this.readonly && (e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13)) {
             e.preventDefault();
+        }
+    };
+    QueryBuilder.prototype.clearQBTemplate = function (ruleElemColl) {
+        // tslint:disable
+        if (this.isReact || this.isAngular) {
+            this.clearTemplate(ruleElemColl);
         }
     };
     QueryBuilder.prototype.disableRuleCondition = function (groupElem, rules) {
@@ -4067,9 +4117,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return rules;
-    };
-    QueryBuilder.prototype.isBlazor = function () {
-        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     };
     __decorate([
         Event()

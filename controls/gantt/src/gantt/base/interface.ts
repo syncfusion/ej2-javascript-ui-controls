@@ -378,6 +378,8 @@ export interface IConnectorLineObject {
     connectorLineId?: string;
     milestoneParent?: boolean;
     milestoneChild?: boolean;
+    parentIndexInCurrentView?: number;
+    childIndexInCurrentView?: number;
 }
 
 export interface ISplitterResizedEventArgs {

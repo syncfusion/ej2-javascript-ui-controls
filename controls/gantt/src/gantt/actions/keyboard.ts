@@ -68,10 +68,10 @@ export class FocusModule {
             case 'end':
                 if (ganttObj.selectionModule && ganttObj.selectionSettings.mode !== 'Cell') {
                     let currentSelectingRecord: IGanttData = expandedRecords[expandedRecords.length - 1];
-                    if (ganttObj.selectedRowIndex === ganttObj.currentViewData.indexOf(currentSelectingRecord)) {
+                    if (ganttObj.selectedRowIndex === ganttObj.flatData.indexOf(currentSelectingRecord)) {
                         return;
                     }
-                    ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
+                    ganttObj.selectionModule.selectRow(ganttObj.flatData.indexOf(currentSelectingRecord), false, true);
                 }
                 break;
             case 'downArrow':
@@ -171,7 +171,9 @@ export class FocusModule {
                 }
                 break;
             case 'delete':
-                if (ganttObj.selectionModule && ganttObj.editModule && (!ganttObj.editSettings.allowTaskbarEditing
+                if (ganttObj.selectionModule && ganttObj.editModule && (!ganttObj.editModule.dialogModule.dialogObj ||
+                     (ganttObj.editModule.dialogModule.dialogObj &&
+                    !ganttObj.editModule.dialogModule.dialogObj.visible)) && (!ganttObj.editSettings.allowTaskbarEditing
                     || (ganttObj.editSettings.allowTaskbarEditing && !ganttObj.editModule.taskbarEditModule.touchEdit))) {
                     if ((ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectionModule.selectedRowIndexes.length)
                         || (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length)) {

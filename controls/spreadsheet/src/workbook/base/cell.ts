@@ -1,6 +1,6 @@
-import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { extend, Property, ChildProperty, Complex, Collection, } from '@syncfusion/ej2-base';
 import { SheetModel } from './index';
-import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';
+import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel } from '../common/index';
 import { ImageModel, Image } from '../common/index';
 import { getRow } from './index';
 import { RowModel } from './row-model';
@@ -18,6 +18,13 @@ export class Cell extends ChildProperty<RowModel> {
      */
     @Collection([], Image)
     public image: ImageModel[];
+
+    /**
+     * Specifies the chart of the cell.
+     * @default []
+     */
+    @Collection([], Chart)
+    public chart: ChartModel[];
 
     /**
      * Defines the value of the cell which can be text or number.

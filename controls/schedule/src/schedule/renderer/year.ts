@@ -193,7 +193,7 @@ export class Year extends ViewBase implements IRenderer {
         let startDate: Date = util.getWeekFirstDate(util.firstDateOfMonth(date), this.parent.firstDayOfWeek);
         let endDate: Date = util.addDays(new Date(+startDate), (6 * util.WEEK_LENGTH));
         let dateCollection: Date[] = [];
-        for (let start: number = startDate.getTime(); start < endDate.getTime(); start = start + util.MS_PER_DAY) {
+        for (let start: Date = startDate; start.getTime() < endDate.getTime(); start = util.addDays(start, 1)) {
             dateCollection.push(util.resetTime(new Date(start)));
         }
         return dateCollection;

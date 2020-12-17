@@ -81,7 +81,7 @@ export class PdfGantt extends PdfTreeGrid {
             isPageFinished = false;
             this.startPoint = new PointF(totalColumnWidth, 0);
         } else {
-            let nextPage: PdfPage = this.result.page.section.add() as PdfPage;
+            this.result.page.section.add();
             this.chartPageIndex = this.startPageIndex = this.totalPages;
             isPageFinished = true;
             this.startPoint = new PointF(point, 0);
@@ -212,9 +212,9 @@ export class PdfGantt extends PdfTreeGrid {
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
                 let task: PdfGanttTaskbarCollection = this.taskbarCollection[i];
                 let rowHeight: number = this.rows.getRow(i + 1).height;
-                let page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+                let pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
                 /* tslint:disable-next-line */
-                let isNextPage: boolean = task.drawTaskbar(page, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i]);
+                let isNextPage: boolean = task.drawTaskbar(pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight, this.taskbarCollection[i]);
                 if (isNextPage) {
                     if (this.enableHeader) {
                         taskbarPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
@@ -256,7 +256,7 @@ export class PdfGantt extends PdfTreeGrid {
                 taskbarPoint.y = 0;
             }
             if (this.headerDetails.indexOf(detail) !== this.headerDetails.length - 1) {
-                let nextPage: PdfPage = this.result.page.section.add() as PdfPage;
+                this.result.page.section.add();
                 this.startPageIndex = this.result.page.section.count - 1;
                 taskbarPoint = this.startPoint = new PointF(0, 0);
             }

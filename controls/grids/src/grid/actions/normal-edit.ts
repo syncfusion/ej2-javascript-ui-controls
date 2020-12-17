@@ -1,7 +1,7 @@
 import { extend, isBlazor, select } from '@syncfusion/ej2-base';
 import { remove, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
-import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
+import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject, gridActionHandler } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -11,6 +11,7 @@ import { Column } from '../models/column';
 import { ReturnType } from '../base/type';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { freezeTable } from '../base/enum';
 
 /**
  * `NormalEdit` module is used to handle normal('inline, dialog, external') editing actions.
@@ -209,7 +210,8 @@ export class NormalEdit {
         let gObj: IGrid = this.parent;
         let form1: boolean = gObj.editModule.formObj.validate();
         let form2: boolean = gObj.editModule.mFormObj ? gObj.editModule.mFormObj.validate() : true;
-        return (form1 && form2);
+        let form3: boolean = gObj.editModule.frFormObj ? gObj.editModule.frFormObj.validate() : true;
+        return (form1 && form2 && form3);
     }
 
     protected endEdit(): void {
@@ -222,9 +224,10 @@ export class NormalEdit {
             requestType: 'save', type: events.actionBegin, data: editedData, cancel: false,
             previousData: this.previousData, selectedRow: gObj.selectedRowIndex, foreignKeyData: {}
         });
+        let index: number = gObj.getFrozenMode() === 'Right' ? 1 : 0;
         let isDlg: Boolean = gObj.editSettings.mode === 'Dialog';
         let dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
-        let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelector('.e-gridform');
+        let dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.querySelectorAll('.e-gridform')[index];
         let data: { virtualData: Object, isAdd: boolean } = { virtualData: {}, isAdd: false };
         this.parent.notify(events.getVirtualData, data);
         if ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
@@ -235,16 +238,27 @@ export class NormalEdit {
         } else {
             editedData = gObj.editModule.getCurrentEditedData(dlgForm, editedData);
         }
-        if (gObj.getFrozenColumns() && gObj.editSettings.mode === 'Normal') {
-            let mForm: Element = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
-            if (gObj.frozenRows && mForm) {
-                editedData = gObj.editModule.getCurrentEditedData(mForm, editedData);
-            } else {
-                let form: Element = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
-                if (form) {
-                    editedData = gObj.editModule.getCurrentEditedData(form, editedData);
-                }
+        if (gObj.isFrozenGrid() && gObj.editSettings.mode === 'Normal') {
+            let mhdrFrm: Element = gObj.getMovableVirtualHeader().querySelector('.e-gridform');
+            let mCntFrm: Element = gObj.getMovableVirtualContent().querySelector('.e-gridform');
+            let mvblEle: Element[] = [mhdrFrm || mCntFrm];
+            let frHdrFrm: Element; let frCntFrm: Element; let frEle: Element[] = [];
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                frHdrFrm = gObj.getFrozenRightHeader().querySelector('.e-gridform');
+                frCntFrm = gObj.getFrozenRightContent().querySelector('.e-gridform');
+                frEle = [frHdrFrm || frCntFrm];
             }
+            gridActionHandler(
+                this.parent,
+                (tableName: freezeTable, elements: Element[]) => {
+                    for (let ele of elements) {
+                        if (ele) {
+                            editedData = gObj.editModule.getCurrentEditedData(ele, editedData);
+                        }
+                    }
+                },
+                [[], mvblEle, frEle]
+            );
         }
         if (isBlazor()) {
             let form: string = 'form';
@@ -381,7 +395,7 @@ export class NormalEdit {
             this.cloneRow = null;
             this.originalRow.classList.remove('e-hiddenrow');
         }
-        if (this.parent.getFrozenColumns() && this.cloneFrozen) {
+        if (this.parent.isFrozenGrid() && this.cloneFrozen) {
             this.cloneFrozen.remove();
             this.frozen.classList.remove('e-hiddenrow');
         }
@@ -420,7 +434,7 @@ export class NormalEdit {
     }
 
     private refreshRow(data: Object): void {
-        let frzCols: number = this.parent.getFrozenColumns();
+        let frzCols: boolean = this.parent.isFrozenGrid();
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.uid);
         if (rowObj) {
@@ -430,26 +444,17 @@ export class NormalEdit {
             if (this.needRefresh()) {
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);
             }
-            if (frzCols) {
-                let uid: string;
-                let tr: Element = this.parent.element.querySelector('[data-uid=' + rowObj.uid + ']');
-                if ((parentsUntil(tr, 'e-frozencontent')) || (parentsUntil(tr, 'e-frozenheader'))) {
-                    if (this.parent.infiniteScrollSettings.enableCache) {
-                        uid = this.parent.getMovableRowByIndex(rowObj.index).getAttribute('data-uid');
-                    } else {
-                        uid = this.parent.getMovableRows()[rowObj.index].getAttribute('data-uid');
-                    }
-                } else {
-                    if (this.parent.infiniteScrollSettings.enableCache) {
-                        uid = this.parent.getRowByIndex(rowObj.index).getAttribute('data-uid');
-                    } else {
-                        uid = this.parent.getRows()[rowObj.index].getAttribute('data-uid');
+            let tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + rowObj.index + '"]'));
+            if (frzCols && tr.length) {
+                for (let i: number = 0; i < tr.length; i++) {
+                    let rowUid: string = tr[i].getAttribute('data-uid');
+                    if (rowUid !== this.uid) {
+                        rowObj = this.parent.getRowObjectFromUID(rowUid);
+                        rowObj.changes = data;
+                        row.refresh(rowObj, this.parent.getColumns(), true);
+                        this.parent.editModule.checkLastRow(tr[i]);
                     }
                 }
-                rowObj = this.parent.getRowObjectFromUID(uid);
-                rowObj.changes = data;
-                row.refresh(rowObj, this.parent.columns as Column[], true);
-                this.parent.editModule.checkLastRow(tr);
             }
         }
     }
@@ -597,25 +602,13 @@ export class NormalEdit {
 
     private stopEditStatus(): void {
         let gObj: IGrid = this.parent;
-        let elem: Element = gObj.element.querySelector('.e-addedrow');
-        let mElem: Element;
-        let editMElem: Element;
-        if (gObj.getFrozenColumns()) {
-            mElem = gObj.element.querySelectorAll('.e-addedrow')[1];
-            editMElem = gObj.element.querySelectorAll('.e-editedrow')[1];
-            if (mElem) {
-                remove(mElem);
-            }
-            if (editMElem) {
-                editMElem.classList.remove('e-editedrow');
-            }
+        let addElements: Element[] = [].slice.call(gObj.element.querySelectorAll('.e-addedrow'));
+        let editElements: Element[] = [].slice.call(gObj.element.querySelectorAll('.e-editedrow'));
+        for (let i: number = 0; i < addElements.length; i++) {
+            remove(addElements[i]);
         }
-        if (elem) {
-            remove(elem);
-        }
-        elem = gObj.element.querySelector('.e-editedrow');
-        if (elem) {
-            elem.classList.remove('e-editedrow');
+        for (let i: number = 0; i < editElements.length; i++) {
+            editElements[i].classList.remove('e-editedrow');
         }
     }
 

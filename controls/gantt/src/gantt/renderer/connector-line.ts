@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, isObject, remove } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { IGanttData, ITaskData, IConnectorLineObject, IPredecessor } from '../base/interface';
@@ -64,15 +64,19 @@ export class ConnectorLine {
         IConnectorLineObject {
         let connectorObj: IConnectorLineObject = {} as IConnectorLineObject;
         let updatedRecords: IGanttData[] = this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport ?
-            this.parent.currentViewData : this.expandedRecords;
+            this.parent.flatData : this.expandedRecords;
         let parentIndex: number = updatedRecords.indexOf(parentGanttData);
         let childIndex: number = updatedRecords.indexOf(childGanttData);
         let parentGanttRecord: ITaskData = parentGanttData.ganttProperties;
         let childGanttRecord: ITaskData = childGanttData.ganttProperties;
+        let currentData: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        connectorObj.parentIndexInCurrentView = currentData.indexOf(parentGanttData);
+        connectorObj.childIndexInCurrentView = currentData.indexOf(childGanttData);
         let count: number = 0;
         let index: number = 0;
-
-        if (parentIndex === -1 || childIndex === -1) {
+        let isVirtualScroll: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
+        if ((!isVirtualScroll && (connectorObj.parentIndexInCurrentView === -1 || connectorObj.childIndexInCurrentView === -1)) ||
+        connectorObj.parentIndexInCurrentView === -1 && connectorObj.childIndexInCurrentView === -1) {
             return null;
         } else {
             connectorObj.parentLeft = parentGanttRecord.isMilestone ?
@@ -124,7 +128,11 @@ export class ConnectorLine {
                 (<HTMLElement>innerChild[j]).setAttribute('aria-label', ariaString);
             }
         }
-        this.parent.ganttChartModule.chartBodyContent.appendChild(this.dependencyViewContainer);
+        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            this.parent.ganttChartModule.virtualRender.appendChildElements(this.dependencyViewContainer);
+        } else {
+            this.parent.ganttChartModule.chartBodyContent.appendChild(this.dependencyViewContainer);
+        }
     }
 
     /**
@@ -347,10 +355,13 @@ export class ConnectorLine {
         let setInnerChildWidthSSType2: number = this.getInnerChildWidthSSType2(data);
         let setInnerElementWidthSSType2: number = this.getInnerElementWidthSSType2(data);
         let setInnerElementLeftSSType2: number = this.getInnerElementLeftSSType2(data);
-        let heightValue: number = this.getHeightValue(data);
+        let height: number = this.getHeightValue(data);
         let isMilestoneParent: boolean = data.milestoneParent ? true : false;
         let isMilestone: boolean = data.milestoneChild ? true : false;
         let connectorContainer: string = '';
+        let isVirtual: boolean = this.parent.virtualScrollModule && this.parent.enableVirtualization;
+        let connectorLine: { top: number, height: number } = this.getPosition(data, this.getParentPosition(data), height);
+        let heightValue: number = isVirtual ? connectorLine.height : height;
         if (this.getParentPosition(data)) {
             connectorContainer = '<div id="ConnectorLine' + data.connectorLineId + '" style="background-color:black">';
             let div: string = '<div class="' + cls.connectorLineContainer +
@@ -372,15 +383,14 @@ export class ConnectorLine {
                 'top:' + (- (13 + ((this.lineStroke - 1) * 2))) + 'px;width:0px;' + this.getBorderStyles('left', this.lineStroke) +
                 this.getBorderStyles('top', (heightValue - (this.lineStroke - 1))) + 'position:relative;"></div>';
             let duplicateStingFour: string = leftArrow + 'left:' +
-                (isMilestone ? (((data.childLeft + data.childWidth) - (data.parentLeft)) + 10) :
-                    (((data.childLeft + data.childWidth) - (data.parentLeft)) + 10)) + 'px;' +
+                (((data.childLeft + data.childWidth) - (data.parentLeft)) + 10) + 'px;' +
                 this.getBorderStyles('right', 10);
             let duplicateStingFive: string = 'top:' + (-(6 + (5 + this.lineStroke) + (this.lineStroke / 2))) + 'px;' +
                 this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>';
 
             if (this.getParentPosition(data) === 'FSType1') {
-                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' +
-                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType1">';
 
                 div = div + eLine;
@@ -390,12 +400,12 @@ export class ConnectorLine {
                     this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>';
 
                 div = div + eLine;
-                div = div + 'left:' + (((data.childLeft - (data.parentLeft + data.parentWidth + 10))) - 10) + 'px;' +
+                div = div + 'left:' + ((data.childLeft - (data.parentLeft + data.parentWidth + 10)) - 10) + 'px;' +
                     'width:0px;' + this.getBorderStyles('right', this.lineStroke) +
                     this.getBorderStyles('top', (heightValue - this.lineStroke)) + 'position:relative;"></div>';
 
                 div = div + eLine;
-                div = div + 'left:' + (((data.childLeft - (data.parentLeft + data.parentWidth + 10))) - 10) + 'px;width:10px;' +
+                div = div + 'left:' + ((data.childLeft - (data.parentLeft + data.parentWidth + 10)) - 10) + 'px;width:10px;' +
                     this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>';
 
                 div = div + rightArrow;
@@ -406,8 +416,8 @@ export class ConnectorLine {
 
 
             if (this.getParentPosition(data) === 'FSType2') {
-                div = div + 'left:' + data.parentLeft + 'px;top:' + ((data.parentIndex * data.rowHeight) +
-                    this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + data.parentLeft + 'px;top:' + (isVirtual ? connectorLine.top : ((data.parentIndex * data.rowHeight) +
+                    this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType2">';
 
                 div = div + eLine;
@@ -445,8 +455,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'FSType3') {
-                div = div + 'left:' + (data.childLeft - 20) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft - 20) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType3">';
 
                 div = div + rightArrow;
@@ -483,8 +493,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'FSType4') {
-                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FSType4">';
 
                 div = div + rightArrow;
@@ -514,8 +524,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SSType4') {
-                div = div + 'left:' + (data.parentLeft - 10) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.parentLeft - 10) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType4">';
 
                 div = div + rightArrow;
@@ -531,8 +541,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SSType3') {
-                div = div + 'left:' + (data.childLeft - 20) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft - 20) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType3">';
 
                 div = div + rightArrow;
@@ -548,8 +558,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SSType2') {
-                div = div + 'left:' + setInnerElementLeftSSType2 + 'px;top:' +
-                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + setInnerElementLeftSSType2 + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType2">';
 
                 div = div + eLine;
@@ -573,8 +583,9 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SSType1') {
-                div = div + 'left:' + (data.childLeft - 20) + 'px;top:' + ((data.parentIndex * data.rowHeight) +
-                    this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft - 20) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) +
+                    this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SSType1">';
 
                 div = div + eLine;
@@ -595,21 +606,20 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'FFType1') {
-                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' +
-                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType1">';
 
                 div = div + eLine;
                 div = div + 'left:' + (isMilestoneParent ? (((data.parentLeft + data.parentWidth) -
-                    (data.childLeft + data.childWidth)) - 1) : (((data.parentLeft + data.parentWidth) -
-                        (data.childLeft + data.childWidth)))) + 'px;' +
+                    (data.childLeft + data.childWidth)) - 1) : ((data.parentLeft + data.parentWidth) -
+                        (data.childLeft + data.childWidth))) + 'px;' +
                     'width:' + (isMilestoneParent ? (21 + this.lineStroke) : (20 + this.lineStroke)) + 'px;' +
                     this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>';
 
                 div = div + eLine;
-                div = div + 'left:' + (isMilestoneParent ? (((data.parentLeft + data.parentWidth) -
-                    (data.childLeft + data.childWidth)) + 20) : (((data.parentLeft + data.parentWidth) -
-                        (data.childLeft + data.childWidth)) + 20)) + 'px;width:0px;' + this.getBorderStyles('left', this.lineStroke) +
+                div = div + 'left:' + (((data.parentLeft + data.parentWidth) -
+                (data.childLeft + data.childWidth)) + 20) + 'px;width:0px;' + this.getBorderStyles('left', this.lineStroke) +
                     this.getBorderStyles('top', (heightValue - this.lineStroke)) + 'position:relative;"></div>';
 
                 div = div + eLine;
@@ -625,8 +635,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'FFType2') {
-                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' +
-                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType2">';
 
                 div = div + eLine;
@@ -649,16 +659,15 @@ export class ConnectorLine {
                     this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div>';
 
                 div = div + leftArrow;
-                div = div + 'left:' + (isMilestone ? (((data.childLeft + data.childWidth) - (data.parentLeft + data.parentWidth))) :
-                    (((data.childLeft + data.childWidth) - (data.parentLeft + data.parentWidth)))) + 'px;' +
+                div = div + 'left:' + ((data.childLeft + data.childWidth) - (data.parentLeft + data.parentWidth)) + 'px;' +
                     this.getBorderStyles('right', 10) + 'top:' + (-6 - this.lineStroke) + 'px;' +
                     'border-bottom-width:' + (5 + this.lineStroke) + 'px;border-top-width:' + (5 + this.lineStroke) +
                     'px;width:0;height:0;position:relative;"></div></div>';
             }
 
             if (this.getParentPosition(data) === 'FFType3') {
-                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType3">';
 
                 div = div + duplicateStingOne;
@@ -678,21 +687,20 @@ export class ConnectorLine {
 
                 div = div + eLine;
                 div = div + (isMilestoneParent ? ('left:' + (((data.parentLeft + data.parentWidth) -
-                    (data.childLeft + data.childWidth)) - 1) + 'px;width:21') : ('left:' + (((data.parentLeft + data.parentWidth) -
-                        (data.childLeft + data.childWidth))) + 'px;width:20')) +
+                    (data.childLeft + data.childWidth)) - 1) + 'px;width:21') : ('left:' + ((data.parentLeft + data.parentWidth) -
+                        (data.childLeft + data.childWidth)) + 'px;width:20')) +
                     'px;top:' + (- (13 + ((this.lineStroke - 1) * 2))) + 'px;' +
                     this.getBorderStyles('top', this.lineStroke) + 'position:relative;"></div></div>';
             }
 
             if (this.getParentPosition(data) === 'FFType4') {
-                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.parentLeft + data.parentWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="FFType4">';
 
                 div = div + leftArrow;
-                div = div + (isMilestone ? ('left:' + ((data.childLeft + data.childWidth) -
-                    (data.parentLeft + data.parentWidth))) :
-                    ('left:' + (((data.childLeft + data.childWidth) - (data.parentLeft + data.parentWidth))))) + 'px;' +
+                div = div + ('left:' + ((data.childLeft + data.childWidth) -
+                (data.parentLeft + data.parentWidth))) + 'px;' +
                     this.getBorderStyles('right', 10) + 'top:' + (-5 - this.lineStroke + (this.lineStroke - 1)) + 'px;' +
                     'border-bottom-width:' + (5 + this.lineStroke) +
                     'px;border-top-width:' + (5 + this.lineStroke) + 'px;width:0;height:0;' +
@@ -720,8 +728,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SFType4') {
-                div = div + 'left:' + (data.parentLeft - 10) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;width:1px;' +
+                div = div + 'left:' + (data.parentLeft - 10) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;width:1px;' +
                     'height:' + heightValue + 'px;position:absolute" data-connectortype="SFType4">';
 
                 div = div + duplicateStingFour + 'top:' + (-5 - this.lineStroke + (this.lineStroke - 1)) + 'px;' +
@@ -756,8 +764,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SFType3') {
-                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' +
-                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.childIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SFType3">';
 
                 div = div + duplicateStingOne;
@@ -779,8 +787,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SFType1') {
-                div = div + 'left:' + (data.parentLeft - 10) + 'px;top:' +
-                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.parentLeft - 10) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SFType1">';
 
                 div = div + eLine;
@@ -812,8 +820,8 @@ export class ConnectorLine {
             }
 
             if (this.getParentPosition(data) === 'SFType2') {
-                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' +
-                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1)) + 'px;' +
+                div = div + 'left:' + (data.childLeft + data.childWidth) + 'px;top:' + (isVirtual ? connectorLine.top :
+                    ((data.parentIndex * data.rowHeight) + this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1))) + 'px;' +
                     'width:1px;height:' + heightValue + 'px;position:absolute" data-connectortype="SFType2">';
 
                 div = div + eLine;
@@ -841,6 +849,43 @@ export class ConnectorLine {
             connectorContainer += '</div>';
         }
         return connectorContainer;
+    }
+    /**
+     * @private
+     */
+    private getPosition(data: IConnectorLineObject, type: string, heightValue: number): { top: number, height: number } {
+        let topPosition: number = 0; let lineHeight: number = 0;
+        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            let isMilestoneParent: boolean = data.milestoneParent ? true : false;
+            let isMilestone: boolean = data.milestoneChild ? true : false;
+            let midPointParent: number = this.getTaskbarMidpoint(isMilestoneParent) - (this.lineStroke - 1);
+            let midPoint: number = this.getTaskbarMidpoint(isMilestone) - (this.lineStroke - 1);
+            let isParentIndex: boolean = data.parentIndexInCurrentView !== -1;
+            let isChildIndex: boolean = data.childIndexInCurrentView !== -1;
+            let lastRowIndex: number = this.parent.currentViewData.length - 1;
+            if (type === 'SSType1' || type === 'SSType2' || type === 'FFType1' || type === 'FFType2' || type === 'SFType2') {
+                topPosition = isParentIndex ? (data.parentIndexInCurrentView * data.rowHeight) + midPointParent : 0;
+                lineHeight = (isParentIndex && isChildIndex) ? heightValue : isChildIndex ?
+                 (data.childIndexInCurrentView * data.rowHeight) + midPointParent : (lastRowIndex * data.rowHeight) + midPointParent;
+            } else if (type === 'SSType3' || type === 'SSType4' || type === 'FSType4' || type === 'FFType3' ||
+             type === 'FFType4' || type === 'SFType4' || type === 'SFType3') {
+                topPosition = isChildIndex ? (data.childIndexInCurrentView * data.rowHeight) + midPoint : 0;
+                lineHeight = (isParentIndex && isChildIndex) ? heightValue : isParentIndex ?
+                 (data.parentIndexInCurrentView * data.rowHeight) + midPoint :
+                    (lastRowIndex * data.rowHeight) + midPoint;
+            } else if (type === 'FSType3') {
+                topPosition = isChildIndex ? (data.childIndexInCurrentView * data.rowHeight) + midPointParent : 0;
+                lineHeight = (isParentIndex && isChildIndex) ? heightValue : isParentIndex ?
+                 (data.parentIndexInCurrentView * data.rowHeight) + midPoint :
+                    (lastRowIndex * data.rowHeight) + midPointParent;
+            } else if (type === 'SFType1' || type === 'FSType1' || type === 'FSType2') {
+                topPosition = isParentIndex ? (data.parentIndexInCurrentView * data.rowHeight) + midPoint : 0;
+                lineHeight = (isParentIndex && isChildIndex) ? heightValue : isChildIndex ?
+                 (data.childIndexInCurrentView * data.rowHeight) + midPoint :
+                    (lastRowIndex * data.rowHeight) + midPoint;
+            }
+        }
+        return { top: topPosition, height: lineHeight };
     }
     /**
      * @private
@@ -873,7 +918,7 @@ export class ConnectorLine {
      */
     public generateAriaLabel(data: IConnectorLineObject): string {
         let type: string = data.type;
-        let updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
+        let updatedRecords: IGanttData[] = this.expandedRecords;
         let fromName: string = updatedRecords[data.parentIndex].ganttProperties.taskName;
         let toName: string = updatedRecords[data.childIndex].ganttProperties.taskName;
         let start: string = this.parent.localeObj.getConstant('start');
@@ -901,4 +946,47 @@ export class ConnectorLine {
         return this.parent.viewType === 'ResourceView' ? this.parent.flatData[this.parent.getTaskIds().indexOf('T' + id.toString())] :
             this.parent.flatData[this.parent.ids.indexOf(id.toString())];
     }
+    /**
+     * Method to remove connector line from DOM
+     * @param records 
+     * @private
+     */
+    public removePreviousConnectorLines(records: IGanttData[] | object): void {
+        let isObjectType: boolean;
+        if (isObject(records) === true) {
+            isObjectType = true;
+        } else {
+            isObjectType = false;
+        }
+        let length: number = isObjectType ? Object.keys(records).length : (records as IGanttData[]).length;
+        let keys: string[] = Object.keys(records);
+        for (let i: number = 0; i < length; i++) {
+            let data: IGanttData;
+            let predecessors: IPredecessor[];
+            if (isObjectType) {
+                let uniqueId: string = keys[i];
+                data = records[uniqueId] as IGanttData;
+            } else {
+                data = records[i];
+            }
+
+            predecessors = data.ganttProperties && data.ganttProperties.predecessor;
+            if (predecessors && predecessors.length > 0) {
+                for (let pre: number = 0; pre < predecessors.length; pre++) {
+                    let lineId: string = 'parent' + predecessors[pre].from + 'child' + predecessors[pre].to;
+                    this.removeConnectorLineById(lineId);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public removeConnectorLineById(id: string): void {
+        let element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
+        if (!isNullOrUndefined(element)) {
+            remove(element);
+        }
+    }
+
 }

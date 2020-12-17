@@ -103,9 +103,10 @@ class SfListView {
         if (this.enableVirtualization) {
             EventHandler.add(this.element, 'scroll', this.scrollHandler, this);
             if (this.isWindow) { window.addEventListener('scroll', this.scrollHandler.bind(this)); }
+        } else {
+            EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
+            EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
         }
-        EventHandler.add(this.element, 'mouseover', this.mouseHoverHandler, this);
-        EventHandler.add(this.element, 'mouseout', this.mouseOutHandler, this);
     }
     private unWireEvents(): void {
         EventHandler.remove(this.element, 'keydown', this.keyActionHandler);
@@ -114,9 +115,10 @@ class SfListView {
         if (this.enableVirtualization) {
             EventHandler.remove(this.element, 'scroll', this.scrollHandler);
             if (this.isWindow) { window.removeEventListener('scroll', this.scrollHandler.bind(this)); }
+        } else {
+            EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
+            EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
         }
-        EventHandler.remove(this.element, 'mouseover', this.mouseHoverHandler);
-        EventHandler.remove(this.element, 'mouseout', this.mouseOutHandler);
         this.touchModule.destroy();
     }
 
@@ -256,6 +258,7 @@ class SfListView {
             }
             this.curDSKey = this.dataSourceLevel[this.dataSourceLevel.length - 1];
             if (this.dataSourceLevel.length === 1 && headerElement) { (headerElement.children[0] as HTMLElement).style.display = NONE; }
+
         }
     }
     private setHoverLI(li: Element): void {
@@ -476,12 +479,11 @@ class SfListView {
             for (let i: number = 0; i < liElementCount; i++) {
                 let checkIcon: Element = liCollection[i].querySelector('.' + CHECKBOXICON);
                 if (checkIcon) {
-                    if (isChecked) {
+                    if (isChecked && !checkIcon.classList.contains(CHECKED)) {
                         this.checkItem(liCollection[i]);
                     } else if (checkIcon.classList.contains(CHECKED)) { this.uncheckItem(liCollection[i]); }
                 }
             }
-            this.removeFocus();
         }
     }
     public checkItem(item: HTMLElement | Element): void {
@@ -491,7 +493,6 @@ class SfListView {
     public getCheckData(item: HTMLElement | Element, isCheck: boolean): void {
         let liItem: HTMLElement = <HTMLElement>this.curUlElement.querySelector('[data-uid=\'' + item.id + '\']');
         isCheck ? this.checkItem(liItem) : this.uncheckItem(liItem);
-        liItem.classList.remove(FOCUSED);
     }
 
     private spaceKeyHandler(e: KeyboardEventArgs): void {
@@ -523,8 +524,10 @@ class SfListView {
             if (!isNullOrUndefined(liElement)) {
                 let checkboxIconElement: Element = liElement.querySelector('.' + CHECKBOXICON);
                 this.addAriaAttribute(isChecked, liElement);
-                isChecked ? checkboxIconElement.classList.add(CHECKED) : checkboxIconElement.classList.remove(CHECKED);
-                checkboxIconElement.parentElement.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+                if (!isNullOrUndefined(checkboxIconElement)) {
+                    isChecked ? checkboxIconElement.classList.add(CHECKED) : checkboxIconElement.classList.remove(CHECKED);
+                    checkboxIconElement.parentElement.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+                }
             }
         }
     }
@@ -644,13 +647,17 @@ class SfListView {
 
     public setSelectedItems(selectedElementIdInfo: string[]): void {
         let headerElement: HTMLElement = this.element.querySelector('.' + HEADER);
-        this.selectedItems = { defaultData_Key: selectedElementIdInfo };
+        if (!isNullOrUndefined(selectedElementIdInfo)) {
+            this.selectedItems = { defaultData_Key: selectedElementIdInfo };
+        }
         this.dataSourceLevel = [DATASOURCEKEY];
         this.curDSKey = DATASOURCEKEY;
         this.curUlElement = this.element.querySelector('ul');
         this.curUlElement.style.removeProperty('display');
         this.addCheckClass();
-        this.removeFocus();
+        if (this.showCheckBox) {
+            this.removeFocus();
+        }
         this.headerTitleInfo = this.headerTitleInfo.splice(0, 1);
         if (this.headerElement) { this.headerElement.innerText = this.headerTitleInfo[this.headerTitleInfo.length - 1]; }
         if (this.dataSourceLevel.length === 1 && headerElement) {

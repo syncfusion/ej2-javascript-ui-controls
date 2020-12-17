@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Document Editor
+
+#### New Features
+
+- `227250`, `143540`, `234463`, `252453`, `267474`, `67852`, `268213`, `273871`, `285146`, `288507`, `290372`, `295055`, `295548` - Added support for Footnote and Endnote.
+
 ## 18.3.53 (2020-12-08)
 
 ### Document Editor
@@ -10,6 +18,7 @@
 
 - `305508` - Resolved page unresponsive error while selecting field.
 - `302470` - Chart series color now applied properly.
+- `292515` - Resolved paste option issue on IE.
 
 ## 18.3.52 (2020-12-01)
 

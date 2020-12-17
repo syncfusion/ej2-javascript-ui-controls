@@ -52,7 +52,6 @@ export class PdfTimeline {
     public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
         let remainWidth: number = Math.floor(detail.totalWidth);
         let renderWidth: number = 0;
-        let headerGraphics: PdfGraphics = page.graphics;
         this.topTierPoint.x = startPoint.x;
         this.topTierPoint.y = startPoint.y;
         this.prevTopTierIndex = this.topTierIndex;
@@ -120,7 +119,6 @@ export class PdfTimeline {
      * @private
      */
     public drawPageTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
-        let headerGraphics: PdfGraphics = page.graphics;
         this.topTierPoint = extend({}, {}, startPoint, true) as PointF;
         for (let index: number = this.prevTopTierIndex; index <= this.topTierIndex; index++) {
             if (this.topTier.length > index) {

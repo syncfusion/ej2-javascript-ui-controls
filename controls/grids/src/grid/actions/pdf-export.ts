@@ -224,6 +224,7 @@ export class PdfExport {
 
     private processGridExport(gObj: IGrid, returnType: ReturnType, pdfExportProperties: PdfExportProperties): PdfGrid {
         let allowHorizontalOverflow: boolean = true;
+        let isFrozen: boolean = this.parent.isFrozenGrid() && !this.parent.getFrozenColumns();
         if (!isNullOrUndefined(pdfExportProperties)) {
             this.gridTheme = pdfExportProperties.theme;
             if (isBlazor() && !isNullOrUndefined(this.gridTheme)) {
@@ -236,7 +237,7 @@ export class PdfExport {
         let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
         let columns: Column[] = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
-            helper.getGridExportColumns(gObj.columns as Column[]);
+            helper.getGridExportColumns(isFrozen ? gObj.getColumns() : gObj.columns as Column[]);
         columns = columns.filter((columns: Column) => { return isNullOrUndefined(columns.commands); });
         let isGrouping: boolean = false;
         if (gObj.groupSettings.columns.length) {

@@ -70,4 +70,25 @@ export class Columns extends ChildProperty<Columns> {
     @Property(false)
     public showAddButton: boolean;
 
+    /**
+     * Enable or disable column drag
+     * @default true
+     */
+    @Property(true)
+    public allowDrag: boolean;
+
+    /**
+     * Enable or disable column drop
+     * @default true
+     */
+    @Property(true)
+    public allowDrop: boolean;
+
+    /**
+     * Defines the column transition
+     * @default []
+     */
+    @Property([])
+    public transitionColumns: string[];
+
 }

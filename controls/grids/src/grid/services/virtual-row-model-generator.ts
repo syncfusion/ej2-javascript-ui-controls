@@ -19,6 +19,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     public parent: IGrid;
     public cOffsets: { [x: number]: number } = {};
     public cache: { [x: number]: Row<Column>[] } = {};
+    public movableCache: { [x: number]: Row<Column>[] } = {};
+    public frozenRightCache: { [x: number]: Row<Column>[] } = {};
     public rowCache: { [x: number]: Row<Column> } = {};
     public data: { [x: number]: Object[] } = {};
     public groups: { [x: number]: Object } = {};
@@ -29,13 +31,18 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         this.rowModelGenerator = this.parent.allowGrouping ? new GroupModelGenerator(this.parent) : new RowModelGenerator(this.parent);
     }
 
-    public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
-        let info: VirtualInfo = notifyArgs.virtualInfo = notifyArgs.virtualInfo || this.getData();
+    // tslint:disable-next-line:max-func-body-length
+    public generateRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
+        let isFrozen: boolean = this.parent.isFrozenGrid();
+        let info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
         let xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
         let page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         let result: Row<Column>[] = []; let center: number = ~~(this.model.pageSize / 2);
         let indexes: number[] = this.getBlockIndexes(page); let loadedBlocks: number[] = [];
-        this.checkAndResetCache(notifyArgs.requestType);
+        if ((isFrozen && (this.parent.getTablesCount() === 2 && !e.renderMovableContent)
+            || this.parent.getTablesCount() === 3 && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
+            this.checkAndResetCache(e.requestType);
+        }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
             return result = this.parent.vcRows;
         }
@@ -44,11 +51,17 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 if (this.isBlockAvailable(info.blockIndexes[i])) {
                     this.cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[i]]);
                 }
+                if ((e.renderMovableContent && this.isMovableBlockAvailable(info.blockIndexes[i]))
+                    || (e.renderFrozenRightContent && this.isFrozenRightBlockAvailable(info.blockIndexes[i]))) {
+                    let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                        ? this.movableCache : this.frozenRightCache;
+                    cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(cache[info.blockIndexes[i]]);
+                }
             }
         }
         if (isBlazor() && this.parent.isServerRendered) {
             let virtualStartIdx: string = 'virtualStartIndex'; let startIndex: string = 'startIndex'; let endIndex: string = 'endIndex';
-            if (!notifyArgs[virtualStartIdx] && Object.keys(this.rowCache).length === 0) {
+            if (!e[virtualStartIdx] && Object.keys(this.rowCache).length === 0) {
                 for (let i: number = 0 ; i < data.length; i++) {
                     let args: Object[] = [];
                     args.push(data[i]);
@@ -59,8 +72,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     result[j] = this.rowCache[i];
                     j++;
                 }
-            } else if (notifyArgs[virtualStartIdx]) {
-                let virtualStartIndex: number = notifyArgs[startIndex]; let cacheindex: number[] = [];
+            } else if (e[virtualStartIdx]) {
+                let virtualStartIndex: number = e[startIndex]; let cacheindex: number[] = [];
                 for (let i: number = 0; i < Object.keys(this.rowCache).length ; i++) {
                      cacheindex.push(Number(Object.keys(this.rowCache)[i]));
                 }
@@ -73,9 +86,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     virtualStartIndex++;
                 }
             }
-            if (!isNullOrUndefined(notifyArgs[virtualStartIdx])) {
+            if (!isNullOrUndefined(e[virtualStartIdx])) {
                 let j: number = 0;
-                for (let i: number = notifyArgs[startIndex]; i < notifyArgs[endIndex]; i++) {
+                for (let i: number = e[startIndex]; i < e[endIndex]; i++) {
                     result[j] = this.rowCache[i];
                     j++;
                 }
@@ -113,7 +126,32 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
                     this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
                 }
-                result.push(...this.cache[values[i]]);
+                if ((e.renderMovableContent && !this.isMovableBlockAvailable(values[i]))
+                    || (e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(values[i]))) {
+                    let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                        ? this.movableCache : this.frozenRightCache;
+                    let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
+                        virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
+                    });
+                    let median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[0]))
+                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[0]))) {
+                        cache[indexes[0]] = rows.slice(0, median);
+                    }
+                    if ((e.renderFrozenRightContent && !this.isFrozenRightBlockAvailable(indexes[1]))
+                        || (e.renderMovableContent && !this.isMovableBlockAvailable(indexes[1]))) {
+                        cache[indexes[1]] = rows.slice(median);
+                    }
+                }
+                if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[i]]) {
+                    result.push(...this.cache[values[i]]);
+                } else {
+                    let cache: { [x: number]: Row<Column>[] } = e.renderMovableContent
+                        ? this.movableCache : this.frozenRightCache;
+                    if (cache[values[i]]) {
+                        result.push(...cache[values[i]]);
+                    }
+                }
                 if (this.isBlockAvailable(values[i])) {
                     loadedBlocks.push(values[i]);
                 }
@@ -124,6 +162,11 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             let grouping: string = 'records';
             if (this.parent.allowGrouping) {
                 this.parent.currentViewData[grouping] = result.map((m: Row<Column>) => m.data);
+            } else if (isFrozen) {
+                if ((e.renderMovableContent && (this.parent.getFrozenMode() === 'Left'
+                    || this.parent.getFrozenMode() === 'Right' || this.parent.getFrozenColumns())) || e.renderFrozenRightContent) {
+                    this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
+                }
             } else {
                 this.parent.currentViewData = result.map((m: Row<Column>) => m.data);
             }
@@ -143,6 +186,14 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         return value in this.cache;
     }
 
+    public isMovableBlockAvailable(value: number): boolean {
+        return value in this.movableCache;
+    }
+
+    public isFrozenRightBlockAvailable(value: number): boolean {
+        return value in this.frozenRightCache;
+    }
+
     public getData(): VirtualInfo {
         return {
             page: this.model.currentPage,
@@ -160,7 +211,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public getColumnIndexes(content: HTMLElement =
         (<HTMLElement>this.parent.getHeaderContent().querySelector('.e-headercontent'))): number[] {
-        if (this.parent.getFrozenColumns()) {
+        if (this.parent.isFrozenGrid()) {
             content = content.querySelector('.e-movableheader');
         }
         let indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
@@ -199,7 +250,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         }
         let clear: boolean = actions.some((value: string) => action === value);
         if (clear) {
-            this.cache = {}; this.data = {}; this.groups = {};
+            this.cache = {}; this.data = {}; this.groups = {}; this.movableCache = {}; this.frozenRightCache = {};
         }
         return clear;
     }

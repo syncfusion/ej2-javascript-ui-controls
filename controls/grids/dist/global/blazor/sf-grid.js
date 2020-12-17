@@ -1912,11 +1912,15 @@ var Resize = /** @class */ (function () {
     };
     Resize.prototype.resizeStart = function (e) {
         if (e.target.classList.contains('e-rhandler')) {
+            var columnList = [];
+            var columnData = {};
             if (!this.helper) {
                 if (this.getScrollBarWidth() === 0) {
                     for (var _i = 0, _a = this.refreshColumnWidth(); _i < _a.length; _i++) {
                         var col = _a[_i];
                         this.widthService.setColumnWidth(col, null, null, false);
+                        columnData = { width: col.width, columnUid: col.uid };
+                        columnList.push(columnData);
                     }
                     this.widthService.setWidthToTable();
                 }
@@ -1971,7 +1975,7 @@ var Resize = /** @class */ (function () {
                 sf.base.EventHandler.add(this.parent.element, sf.base.Browser.touchMoveEvent, this.resizing, this);
                 this.updateCursor('add');
                 this.parent.dotNetRef.invokeMethodAsync("ResizeStarted", {
-                    columnUid: this.column.uid
+                    columnUid: this.column.uid, columnList: columnList
                 });
                 // });
             }
@@ -2133,7 +2137,7 @@ var Resize = /** @class */ (function () {
         }
         var width = this.column.width.toString();
         width = width.replace("px", "");
-        this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { width: width, columnUid: this.column.uid });
+        this.parent.dotNetRef.invokeMethodAsync("ColumnWidthChanged", { width: width, columnUid: this.column.uid, allowStopEvent: true });
         this.refresh();
         this.doubleTapEvent(e);
         this.isDblClk = true;
@@ -4491,10 +4495,11 @@ var InterSectionObserver = /** @class */ (function () {
                 return;
             }
             var check = _this.check(direction);
-            if (current.entered) {
+            var isMaskRow = _this.options.container.querySelectorAll('.e-masked-row').length && current.axis != 'X';
+            if (current.entered || ((sf.base.isNullOrUndefined(_this.blazorActiveKey) || _this.blazorActiveKey == '') && !_this.fromWheel && isMaskRow)) {
                 onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
             }
-            if (check) {
+            if (check || isMaskRow) {
                 var fn = debounced100;
                 //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
                 if (current.axis === 'X') {
@@ -4503,7 +4508,8 @@ var InterSectionObserver = /** @class */ (function () {
                 fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
                     focusElement: document.activeElement });
             }
-            _this.fromWheel = false;
+            if (!isMaskRow)
+                _this.fromWheel = false;
         };
     };
     InterSectionObserver.prototype.setPageHeight = function (value) {
@@ -4518,7 +4524,7 @@ var InterSectionObserver = /** @class */ (function () {
  */
 var VirtualContentRenderer = /** @class */ (function () {
     function VirtualContentRenderer(parent) {
-        var _this = this;
+        var _this_1 = this;
         this.prevHeight = 0;
         this.preStartIndex = 0;
         this.preventEvent = false;
@@ -4534,15 +4540,15 @@ var VirtualContentRenderer = /** @class */ (function () {
         /** @hidden */
         this.startIndex = 0;
         this.bindScrollEvent = function () {
-            _this.observer.observe(function (scrollArgs) { return _this.scrollListener(scrollArgs); }, _this.onEntered());
-            var gObj = _this.parent;
+            _this_1.observer.observe(function (scrollArgs) { return _this_1.scrollListener(scrollArgs); }, _this_1.onEntered());
+            var gObj = _this_1.parent;
             if (gObj.options.enablePersistence && gObj.scrollPosition) {
-                _this.content.scrollTop = gObj.scrollPosition.top;
-                var scrollValues = { direction: 'down', sentinel: _this.observer.sentinelInfo.down,
+                _this_1.content.scrollTop = gObj.scrollPosition.top;
+                var scrollValues = { direction: 'down', sentinel: _this_1.observer.sentinelInfo.down,
                     offset: gObj.scrollPosition, focusElement: gObj.element };
-                _this.scrollListener(scrollValues);
+                _this_1.scrollListener(scrollValues);
                 if (gObj.options.enableColumnVirtualization) {
-                    _this.content.scrollLeft = gObj.scrollPosition.left;
+                    _this_1.content.scrollLeft = gObj.scrollPosition.left;
                 }
             }
         };
@@ -4625,7 +4631,8 @@ var VirtualContentRenderer = /** @class */ (function () {
                 endColumnIndex: viewInfo.columnIndexes[viewInfo.columnIndexes.length - 1],
                 axis: 'X',
                 VTablewidth: width,
-                translateX: this.getColumnOffset(viewInfo.columnIndexes[0] - 1)
+                translateX: this.getColumnOffset(viewInfo.columnIndexes[0] - 1),
+                translateY: this.parent.options.enableVirtualMaskRow ? this.translateMaskY : 0
             });
             this.setColVTableWidthAndTranslate();
         }
@@ -4672,6 +4679,8 @@ var VirtualContentRenderer = /** @class */ (function () {
     // }
     VirtualContentRenderer.prototype.keyDownHandler = function (e) {
         this.blazorActiveKey = (e.key === 'ArrowDown' || e.key === 'ArrowUp') ? e.key : '';
+        if (!sf.base.isNullOrUndefined(this.observer))
+            this.observer.blazorActiveKey = this.blazorActiveKey;
     };
     VirtualContentRenderer.prototype.focusCell = function (cell, action) {
         cell.focus({ preventScroll: true });
@@ -4721,7 +4730,27 @@ var VirtualContentRenderer = /** @class */ (function () {
         var totalCount = this.parent.options.groupCount ? this.getVisibleGroupedRowCount() : this.count;
         if (infoType.direction === 'down' && !this.isScrollFromFocus) {
             var sIndex = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
-            if (sf.base.isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
+            if (this.parent.options.enableVirtualMaskRow) {
+                noOfInViewIndexes = Math.ceil(noOfInViewIndexes) - 1;
+                var differenceOfRowIndex = Math.ceil(exactTopIndex) - this.preStartIndex;
+                if (differenceOfRowIndex >= noOfInViewIndexes) {
+                    infoType.startIndex = Math.ceil(exactTopIndex) >= 0 ? Math.ceil(exactTopIndex) : 0;
+                    var eIndex = infoType.startIndex + this.parent.options.pageSize;
+                    infoType.endIndex = eIndex < totalCount ? eIndex : totalCount;
+                    infoType.startIndex = eIndex >= totalCount ? infoType.endIndex - this.parent.options.pageSize : infoType.startIndex;
+                    infoType.currentPage = Math.ceil(infoType.endIndex / this.parent.options.pageSize);
+                    this.nextRowToNavigate = Math.floor(exactEndIndex - 1);
+                    this.isScrollFromFocus = false;
+                    this.preStartIndex = this.startIndex = infoType.startIndex;
+                    this.preEndIndex = infoType.endIndex;
+                }
+                else {
+                    this.isScrollFromFocus = false;
+                    this.preStartIndex = this.preStartIndex;
+                    this.preEndIndex = this.preEndIndex;
+                }
+            }
+            if (!this.parent.options.enableVirtualMaskRow && sf.base.isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
                 (infoType.startIndex + Math.round((this.parent.options.pageSize / 2 + pageSizeBy4)))
                 && infoType.endIndex !== totalCount)) {
                 infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
@@ -4737,9 +4766,35 @@ var VirtualContentRenderer = /** @class */ (function () {
             }
         }
         else if (infoType.direction === 'up') {
-            if (infoType.startIndex && infoType.endIndex) {
+            if (infoType.startIndex && infoType.endIndex || this.parent.options.enableVirtualMaskRow) {
                 var loadAtIndex = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
-                if (exactTopIndex < loadAtIndex) {
+                if (this.parent.options.enableVirtualMaskRow) {
+                    noOfInViewIndexes = Math.ceil(noOfInViewIndexes);
+                    if (exactTopIndex < loadAtIndex || Math.ceil(exactTopIndex) > this.preStartIndex) {
+                        var startIndex = Math.ceil(exactTopIndex) > 0 ? Math.ceil(exactTopIndex) : 0;
+                        var customStartIndex = totalCount - this.parent.options.pageSize - (this.parent.options.pageSize / 2);
+                        if (exactTopIndex < totalCount && customStartIndex < exactTopIndex) {
+                            infoType.startIndex = startIndex > 0 ? startIndex - (this.parent.options.pageSize / 2) : 0;
+                        }
+                        else {
+                            infoType.startIndex = startIndex > 0 ? startIndex + this.parent.options.pageSize > totalCount ? totalCount - this.parent.options.pageSize : startIndex : 0;
+                        }
+                        infoType.startIndex = infoType.startIndex > 0 ? infoType.startIndex - 1 : infoType.startIndex;
+                        var eIndex = infoType.startIndex + this.parent.options.pageSize;
+                        infoType.endIndex = infoType.startIndex < 0 ? this.parent.options.pageSize : eIndex < totalCount ? eIndex : totalCount;
+                        infoType.currentPage = Math.ceil(infoType.startIndex / this.parent.options.pageSize);
+                        this.nextRowToNavigate = Math.ceil(exactTopIndex + 1);
+                        this.isScrollFromFocus = false;
+                        this.preStartIndex = this.startIndex = infoType.startIndex;
+                        this.preEndIndex = infoType.endIndex;
+                    }
+                    else {
+                        this.isScrollFromFocus = false;
+                        this.preStartIndex = this.preStartIndex;
+                        this.preEndIndex = this.preEndIndex;
+                    }
+                }
+                if (exactTopIndex < loadAtIndex && !this.parent.options.enableVirtualMaskRow) {
                     var idxAddedToExactTop = (pageSizeBy4) > noOfInViewIndexes ? pageSizeBy4 :
                         (noOfInViewIndexes + noOfInViewIndexes / 4);
                     var eIndex = Math.round(exactTopIndex + idxAddedToExactTop);
@@ -4752,12 +4807,15 @@ var VirtualContentRenderer = /** @class */ (function () {
                 }
             }
         }
-        this.isScrollFromFocus = false;
-        this.preStartIndex = this.startIndex = infoType.startIndex;
-        this.preEndIndex = infoType.endIndex;
+        if (!this.parent.options.enableVirtualMaskRow) {
+            this.isScrollFromFocus = false;
+            this.preStartIndex = this.startIndex = infoType.startIndex;
+            this.preEndIndex = infoType.endIndex;
+        }
         return infoType;
     };
     VirtualContentRenderer.prototype.onDataReady = function () {
+        var _this_1 = this;
         var _this = this;
         this.bindScrollEvent();
         this.count = this.parent.options.totalItemCount;
@@ -4765,12 +4823,26 @@ var VirtualContentRenderer = /** @class */ (function () {
         // this.vHelper.checkAndResetCache(this.parent.options.requestType);
         if (['Refresh', 'Filtering', 'Searching', 'Grouping', 'Ungrouping', 'Reorder',
             'refresh', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder', null]
-            .some(function (value) { return _this.parent.options.requestType === value; })) {
+            .some(function (value) { return _this_1.parent.options.requestType === value; })) {
             this.refreshOffsets();
         }
         this.setVirtualHeight();
         this.resetScrollPosition(this.parent.options.requestType);
         this.setColVTableWidthAndTranslate();
+        if (this.parent.options.enableVirtualMaskRow) {
+            var yValue_1 = Math.min(Math.ceil(this.virtualEle.content.scrollTop), this.offsets[this.maxBlock]);
+            if (yValue_1 == 0)
+                yValue_1 = yValue_1 - (this.parent.options.pageSize * (this.parent.options.rowHeight ? this.parent.options.rowHeight : 35));
+            else if (this.startIndex)
+                yValue_1 = yValue_1 - (this.parent.options.pageSize * (this.parent.options.rowHeight ? this.parent.options.rowHeight : 35)) - 10;
+            else
+                yValue_1 = this.startIndex ? yValue_1 : 0 - (this.parent.options.pageSize * (this.parent.options.rowHeight ? this.parent.options.rowHeight : 35));
+            setTimeout(function () {
+                _this.translateMaskY = yValue_1;
+                _this.translateMaskX = sf.base.isNullOrUndefined(_this.translateMaskX) ? 0 : _this.translateMaskX;
+                _this.virtualEle.wrapper.style.transform = "translate(" + _this.translateMaskX + "px," + yValue_1 + "px)";
+            }, 0);
+        }
         this.prevInfo = this.prevInfo ? this.prevInfo : this.vHelper.getData();
     };
     /** @hidden */
@@ -4785,16 +4857,16 @@ var VirtualContentRenderer = /** @class */ (function () {
         }
     };
     VirtualContentRenderer.prototype.getPageFromTop = function (sTop, info) {
-        var _this = this;
+        var _this_1 = this;
         var total = (isGroupAdaptive(this.parent)) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         var page = 0;
         var extra = this.offsets[total] - this.prevHeight;
         this.offsetKeys.some(function (offset) {
             var iOffset = Number(offset);
-            var border = sTop <= _this.offsets[offset] || (iOffset === total && sTop > _this.offsets[offset]);
+            var border = sTop <= _this_1.offsets[offset] || (iOffset === total && sTop > _this_1.offsets[offset]);
             if (border) {
                 info.block = iOffset % 2 === 0 ? 1 : 0;
-                page = Math.max(1, Math.min(_this.vHelper.getPage(iOffset), _this.maxPage));
+                page = Math.max(1, Math.min(_this_1.vHelper.getPage(iOffset), _this_1.maxPage));
             }
             return border;
         });
@@ -4824,23 +4896,28 @@ var VirtualContentRenderer = /** @class */ (function () {
         return Math.min(this.offsets[block] | 0, this.offsets[this.maxBlock] | 0);
     };
     VirtualContentRenderer.prototype.onEntered = function () {
-        var _this = this;
+        var _this_1 = this;
         return function (element, current, direction, e, isWheel, check) {
-            if (sf.base.Browser.isIE && !isWheel && check && !_this.preventEvent) {
+            if (sf.base.Browser.isIE && !isWheel && check && !_this_1.preventEvent) {
                 //ToDo
                 //this.parent.showSpinner();
             }
             var xAxis = current.axis === 'X';
-            var top = _this.prevInfo.offsets ? _this.prevInfo.offsets.top : null;
-            var height = _this.content.getBoundingClientRect().height;
-            var x = _this.getColumnOffset(xAxis ? _this.vHelper.getColumnIndexes()[0] - 1 : _this.prevInfo.columnIndexes[0] - 1);
-            var y = _this.getTranslateY(e.top, height, xAxis && top === e.top ? _this.prevInfo : undefined, true);
-            if (_this.currentInfo && _this.currentInfo.startIndex && xAxis) {
-                y = _this.currentInfo.startIndex * _this.parent.getRowHeight();
+            var top = _this_1.prevInfo.offsets ? _this_1.prevInfo.offsets.top : null;
+            var height = _this_1.content.getBoundingClientRect().height;
+            var x = _this_1.getColumnOffset(xAxis ? _this_1.vHelper.getColumnIndexes()[0] - 1 : _this_1.prevInfo.columnIndexes[0] - 1);
+            var y = _this_1.getTranslateY(e.top, height, xAxis && top === e.top ? _this_1.prevInfo : undefined, true);
+            if (_this_1.currentInfo && _this_1.currentInfo.startIndex && xAxis) {
+                y = _this_1.currentInfo.startIndex * _this_1.parent.getRowHeight();
             }
-            _this.virtualEle.adjustTable(x, Math.min(y, _this.offsets[_this.maxBlock]));
+            if (!_this_1.parent.options.enableVirtualMaskRow) {
+                _this_1.virtualEle.adjustTable(x, Math.min(y, _this_1.offsets[_this_1.maxBlock]));
+            }
+            else if (_this_1.offsets[_this_1.maxBlock] > y) {
+                _this_1.virtualEle.adjustTable(x, Math.min(direction == "right" || direction == "left" ? _this_1.translateMaskY : y, _this_1.offsets[_this_1.maxBlock]));
+            }
             if (xAxis) {
-                _this.setColVTableWidthAndTranslate({ refresh: true });
+                _this_1.setColVTableWidthAndTranslate({ refresh: true });
             }
         };
     };
@@ -4900,6 +4977,13 @@ var VirtualContentRenderer = /** @class */ (function () {
         if (this.parent.options.enableColumnVirtualization) {
             this.vHelper.refreshColOffsets();
         }
+    };
+    VirtualContentRenderer.prototype.updateTransform = function (x, y) {
+        var _this = this;
+        setTimeout(function () {
+            _this.translateMaskX = x;
+            _this.virtualEle.adjustTable(x, _this.translateMaskY);
+        }, 500);
     };
     VirtualContentRenderer.prototype.refreshColumnIndexes = function () {
         this.vHelper.refreshColOffsets();
@@ -5006,7 +5090,7 @@ var VirtualHelper = /** @class */ (function () {
     //     return full || !even ? index : index + ~~(this.model.pageSize / 2);
     // }
     VirtualHelper.prototype.getColumnIndexes = function (content) {
-        var _this = this;
+        var _this_1 = this;
         if (content === void 0) { content = this.parent.getHeaderContent(); }
         var indexes = [];
         var sLeft = content.scrollLeft | 0;
@@ -5018,7 +5102,7 @@ var VirtualHelper = /** @class */ (function () {
         var left = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);
         keys.some(function (offset, indx, input) {
             var iOffset = Number(offset);
-            var offsetVal = _this.cOffsets[offset];
+            var offsetVal = _this_1.cOffsets[offset];
             var border = sLeft - calWidth <= offsetVal && left + calWidth >= offsetVal;
             if (border) {
                 indexes.push(iOffset);
@@ -5431,7 +5515,7 @@ var SfGrid = /** @class */ (function () {
         this.dotNetRef.invokeMethodAsync('SetIndentWidth', indentWidth + 'px');
     };
     SfGrid.prototype.resetColumnWidth = function () {
-        if ((this.options.width === 'auto' || typeof (this.options.width) === 'string' && this.options.width.indexOf('%') !== -1)
+        if ((this.options.width === 'auto' || typeof (this.options.width) === 'string')
             && this.getColumns().filter(function (col) { return (!col.width || col.width === 'auto') && col.minWidth; }).length > 0) {
             var tgridWidth = this.widthService.getTableWidth(this.getColumns());
             this.widthService.setMinwidthBycalculation(tgridWidth);
@@ -5445,6 +5529,7 @@ var SfGrid = /** @class */ (function () {
         if (this.options.frozenColumns) {
             this.freezeModule.refreshRowHeight();
             this.freezeModule.setFrozenHeight();
+            this.freezeModule.refreshStackedHdrHgt();
         }
         if (this.options.enableVirtualization) {
             this.virtualContentModule.onDataReady();
@@ -5576,7 +5661,7 @@ var SfGrid = /** @class */ (function () {
         }
         //TODO: datepicker in dialog editing
         if ((e.key == "Tab" || e.key == 'Escape' || e.key == "shiftTab" || e.key == "Enter" || e.key == "shiftEnter")
-            && (e.target.classList.contains('e-datepicker') || e.target.classList.contains('e-datetimepicker'))) {
+            && (e.target.tagName == 'INPUT' || e.target.classList.contains('e-datepicker') || e.target.classList.contains('e-datetimepicker'))) {
             e.target.blur();
         }
         if (e.key == "Shift" || e.key == "Control" || e.key == "Alt") {
@@ -5809,6 +5894,11 @@ var Grid = {
     filterPopupRender: function filterPopupRender(element, dlgID, uid, type, isColumnMenu) {
         if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
             element.blazor__instance.filterModule.filterPopupRender(dlgID, uid, type, isColumnMenu);
+        }
+    },
+    clientTransformUpdate: function clientTransformUpdate(element, xPosition, yPosition) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.virtualContentModule.updateTransform(xPosition, yPosition);
         }
     },
     autoFitColumns: function (element, columns, fieldNames) {

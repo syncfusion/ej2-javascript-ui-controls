@@ -40,7 +40,11 @@ var POPUP_CONTENT_CLASS = 'e-popup-content';
 
 
 var bottomSpace = 25;
-
+var DRAGGABLE_CLASS = 'e-draggable';
+var DROPPABLE_CLASS = 'e-droppable';
+var DRAG_CLASS = 'e-drag';
+var DROP_CLASS = 'e-drop';
+var DISABLED_CLASS = 'e-disabled';
 var CLS_RTL = 'e-rtl';
 
 var SWIMLANE_OVERLAY_CLASS = 'e-swimlane-overlay';
@@ -61,7 +65,7 @@ var DragAndDrop = /** @class */ (function () {
             selectedCards: [], pageX: 0, pageY: 0, navigationInterval: null, cardDetails: [], modifiedData: []
         };
         this.isDragging = false;
-        this.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
+        this.dragEdges = { left: false, right: false, top: false, bottom: false };
     }
     DragAndDrop.prototype.wireDragEvents = function (element) {
         this.dragObj.instance = new sf.base.Draggable(element, {
@@ -83,8 +87,8 @@ var DragAndDrop = /** @class */ (function () {
             return null;
         }
         this.dragObj.element.style.width = sf.base.formatUnit(this.dragObj.element.offsetWidth);
-        var cloneContainer = sf.base.createElement('div', { innerHTML: this.dragObj.element.outerHTML });
-        this.dragObj.cloneElement = cloneContainer.children.item(0);
+        var cloneContainer = this.dragObj.element.cloneNode(true);
+        this.dragObj.cloneElement = cloneContainer;
         sf.base.addClass([this.dragObj.cloneElement], CLONED_CARD_CLASS);
         this.dragObj.element.parentElement.appendChild(this.dragObj.cloneElement);
         this.dragObj.targetCloneMulti = sf.base.createElement('div', { className: TARGET_MULTI_CLONE_CLASS });
@@ -139,7 +143,8 @@ var DragAndDrop = /** @class */ (function () {
         }
         var cardElement = sf.base.closest(e.target, '.' + CARD_CLASS);
         var target = cardElement || e.target;
-        var selector = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS;
+        var selector = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS
+            + '.' + DROPPABLE_CLASS;
         var contentCell = sf.base.closest(target, selector);
         this.calculateArgs(e);
         if (contentCell) {
@@ -173,14 +178,17 @@ var DragAndDrop = /** @class */ (function () {
                     target.appendChild(this.dragObj.targetClone);
                 }
             }
-            else if (keys.length > 1) {
+            else if (keys.length > 1 && contentCell.classList.contains(DROPPING_CLASS)) {
                 this.multiCloneCreate(keys, contentCell);
             }
         }
-        this.addDropping();
+        if (this.parent.element.querySelectorAll('.' + DROPPING_CLASS).length === 0) {
+            this.cellDropping();
+        }
         var multiKeyTarget = sf.base.closest(target, '.' + MULTI_COLUMN_KEY_CLASS);
         if (multiKeyTarget) {
-            var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS)).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
+            var columnKeys = [].slice.call(this.parent.element.querySelectorAll('.' + MULTI_COLUMN_KEY_CLASS + ':not(.' +
+                DISABLED_CLASS + ')')).filter(function (element) { return _this.getColumnKey(element) === _this.getColumnKey(multiKeyTarget); });
             if (columnKeys.length > 0) {
                 sf.base.addClass(columnKeys, MULTI_ACTIVE_CLASS);
                 if (columnKeys[0].previousElementSibling) {
@@ -188,31 +196,28 @@ var DragAndDrop = /** @class */ (function () {
                 }
             }
         }
-        document.body.style.cursor = contentCell ? (contentCell.classList.contains('e-collapsed') ? 'not-allowed' : '') : 'not-allowed';
-        if (this.parent.swimlaneSettings.keyField && !this.parent.swimlaneSettings.allowDragAndDrop) {
-            var dragElement = sf.base.closest(this.dragObj.element, '.' + CONTENT_ROW_CLASS);
-            var classSelector = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
-            var dropElement = sf.base.closest(target, classSelector);
-            if (dragElement && dropElement) {
-                if (dragElement.rowIndex !== dropElement.rowIndex) {
-                    document.body.style.cursor = 'not-allowed';
-                }
-            }
+        document.body.style.cursor = (contentCell && contentCell.classList.contains(DROPPING_CLASS)) ? '' : 'not-allowed';
+        if (cardElement && !(sf.base.closest(cardElement, '.' + CONTENT_CELLS_CLASS)).classList.contains(DROPPING_CLASS)) {
+            cardElement.style.cursor = 'not-allowed';
+            document.body.style.cursor = 'not-allowed';
         }
         if (document.body.style.cursor === 'not-allowed') {
             this.removeElement(this.dragObj.targetClone);
             this.multiCloneRemove();
         }
+        this.updateScrollPosition(e);
     };
     DragAndDrop.prototype.dragStop = function (e) {
         var contentCell = sf.base.closest(this.dragObj.targetClone, '.' + CONTENT_CELLS_CLASS);
         var columnKey;
-        var dropIndex;
+        var dropIndex = 0;
         if (this.dragObj.targetClone.parentElement) {
-            dropIndex = [].slice.call(this.dragObj.targetClone.parentElement.children).indexOf(this.dragObj.targetClone);
+            var className_1 = '.' + CARD_CLASS + ':not(.' + DRAGGED_CARD_CLASS + '),.' + DROPPED_CLONE_CLASS;
+            var element = [].slice.call(this.dragObj.targetClone.parentElement.querySelectorAll(className_1));
+            dropIndex = element.indexOf(this.dragObj.targetClone);
         }
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
-            columnKey = sf.base.closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
+            columnKey = sf.base.closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS + ':not(.' + DISABLED_CLASS + ')');
         }
         if (contentCell || columnKey) {
             var cardStatus = void 0;
@@ -253,6 +258,8 @@ var DragAndDrop = /** @class */ (function () {
         if (document.body.style.cursor === 'not-allowed') {
             document.body.style.cursor = '';
         }
+        var styleCards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS + '[style]'));
+        styleCards.forEach(function (styleCard) { styleCard.style.cursor = ''; });
         var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')';
         var cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
         cells.forEach(function (cell) { return sf.base.removeClass([cell], DROPPING_CLASS); });
@@ -323,32 +330,164 @@ var DragAndDrop = /** @class */ (function () {
         this.removeElement(this.dragObj.targetClone);
         for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
             var key = keys_1[_i];
-            var colKey = sf.base.createElement('div', {
-                className: MULTI_COLUMN_KEY_CLASS,
-                attrs: { 'data-key': key.trim() }
-            });
+            var dragCell = sf.base.closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
+            var transition = this.parent.transition[dragCell.cellIndex].transitionColumn;
+            var allowTransition = this.allowedTransition(this.dragObj.element.getAttribute('data-key'), key, transition);
+            var name_1 = allowTransition ? '' : ' ' + DISABLED_CLASS;
+            var colKey = sf.base.createElement('div', { className: MULTI_COLUMN_KEY_CLASS + name_1,
+                attrs: { 'data-key': key.trim() } });
             var text = sf.base.createElement('div', { className: 'e-text', innerHTML: key.trim() });
             contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
+            colKey.style.cursor = allowTransition ? '' : 'not-allowed';
             colKey.style.lineHeight = colKey.style.height = sf.base.formatUnit((offsetHeight / keys.length));
             text.style.top = sf.base.formatUnit((offsetHeight / 2) - (text.offsetHeight / 2));
         }
     };
-    DragAndDrop.prototype.addDropping = function () {
-        if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
-            var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
-            var cells = [].slice.call(this.parent.element.querySelectorAll(className + ' .' + CONTENT_CELLS_CLASS));
-            cells.forEach(function (cell) { return sf.base.addClass([cell], DROPPING_CLASS); });
-        }
-        else {
-            var row = sf.base.closest(this.dragObj.draggedClone, '.' + CONTENT_ROW_CLASS);
-            if (row) {
-                [].slice.call(row.children).forEach(function (cell) { return sf.base.addClass([cell], DROPPING_CLASS); });
+    DragAndDrop.prototype.allowedTransition = function (currentCardKey, targetCardKey, allowedKey) {
+        var allowTransition = true;
+        var targetKey = targetCardKey.split(',');
+        for (var i = 0; i < targetKey.length; i++) {
+            if (currentCardKey === targetKey[i].trim()) {
+                return true;
+            }
+            if (allowedKey) {
+                if (allowedKey.length === 1 && allowedKey[0].length === 0) {
+                    return true;
+                }
+                for (var j = 0; j < allowedKey.length; j++) {
+                    if (targetKey[i].trim() === allowedKey[j].trim()) {
+                        return true;
+                    }
+                    else {
+                        allowTransition = false;
+                    }
+                }
             }
         }
-        var cell = sf.base.closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
-        if (cell) {
-            sf.base.removeClass([cell], DROPPING_CLASS);
+        return allowTransition;
+    };
+    DragAndDrop.prototype.cellDropping = function () {
+        var _this = this;
+        var dragCell = sf.base.closest(this.dragObj.draggedClone, '.' + CONTENT_CELLS_CLASS);
+        var dragRow = sf.base.closest(this.dragObj.draggedClone, '.' + CONTENT_ROW_CLASS);
+        this.addDropping(dragRow, dragCell);
+        if (dragCell && dragCell.classList.contains(DROP_CLASS)) {
+            sf.base.addClass([dragCell], DROPPING_CLASS);
         }
+        if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
+            var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
+            var rows = [].slice.call(this.parent.element.querySelectorAll(className));
+            [].slice.call(rows).forEach(function (row) {
+                if (dragRow !== row) {
+                    _this.addDropping(row, dragCell);
+                }
+            });
+        }
+    };
+    DragAndDrop.prototype.addDropping = function (dragRow, dragCell) {
+        var _this = this;
+        if (dragCell && dragRow) {
+            [].slice.call(dragRow.children).forEach(function (cell) {
+                var transition = _this.parent.transition[dragCell.cellIndex].transitionColumn;
+                if (cell !== dragCell && cell.classList.contains(DROP_CLASS) &&
+                    _this.allowedTransition(dragCell.getAttribute('data-key'), cell.getAttribute('data-key'), transition)) {
+                    sf.base.addClass([cell], DROPPING_CLASS);
+                }
+            });
+        }
+    };
+    DragAndDrop.prototype.updateScrollPosition = function (e) {
+        var _this = this;
+        if (sf.base.isNullOrUndefined(this.dragObj.navigationInterval)) {
+            this.dragObj.navigationInterval = window.setInterval(function () { _this.autoScroll(); }, 100);
+        }
+    };
+    DragAndDrop.prototype.autoScrollValidation = function () {
+        var pageY = this.dragObj.pageY;
+        var pageX = this.dragObj.pageX;
+        var autoScrollDistance = 30;
+        var dragEdges = { left: false, right: false, top: false, bottom: false };
+        var viewBoundaries = this.parent.element.querySelector('.' + CONTENT_CLASS).getBoundingClientRect();
+        if ((pageY < viewBoundaries.top + autoScrollDistance + window.pageYOffset) &&
+            (pageY > viewBoundaries.top + window.pageYOffset)) {
+            dragEdges.top = true;
+        }
+        if ((pageY > (viewBoundaries.bottom - autoScrollDistance) + window.pageYOffset) &&
+            (pageY < viewBoundaries.bottom + window.pageYOffset)) {
+            dragEdges.bottom = true;
+        }
+        if ((pageX < viewBoundaries.left + autoScrollDistance + window.pageXOffset) &&
+            (pageX > viewBoundaries.left + window.pageXOffset)) {
+            dragEdges.left = true;
+        }
+        if ((pageX > (viewBoundaries.right - autoScrollDistance) + window.pageXOffset) &&
+            (pageX < viewBoundaries.right + window.pageXOffset)) {
+            dragEdges.right = true;
+        }
+        this.dragEdges = dragEdges;
+    };
+    DragAndDrop.prototype.autoScroll = function () {
+        this.autoScrollValidation();
+        var scrollSensitivity = 30;
+        if (this.parent.isAdaptive) {
+            var parent_1;
+            if (this.dragEdges.top || this.dragEdges.bottom) {
+                if (this.dragObj.targetClone) {
+                    parent_1 = sf.base.closest(this.dragObj.targetClone, '.' + CARD_CONTAINER_CLASS);
+                }
+                else {
+                    parent_1 = sf.base.closest(this.dragObj.draggedClone, '.' + CARD_CONTAINER_CLASS);
+                }
+            }
+            else if (this.dragEdges.right || this.dragEdges.left) {
+                parent_1 = this.parent.element.querySelector('.' + CONTENT_CLASS);
+            }
+            if (parent_1) {
+                var yIsScrollable = parent_1.offsetHeight <= parent_1.scrollHeight;
+                var xIsScrollable = parent_1.offsetWidth <= parent_1.scrollWidth;
+                var yInBounds = parent_1.scrollTop >= 0 && parent_1.scrollTop + parent_1.offsetHeight <= parent_1.scrollHeight;
+                var xInBounds = parent_1.scrollLeft >= 0 && parent_1.scrollLeft + parent_1.offsetWidth <= parent_1.scrollWidth;
+                if (yIsScrollable && yInBounds && (this.dragEdges.top || this.dragEdges.bottom)) {
+                    parent_1.scrollTop += this.dragEdges.top ? -(scrollSensitivity + 36) : scrollSensitivity;
+                }
+                if (xIsScrollable && xInBounds && (this.dragEdges.left || this.dragEdges.right)) {
+                    var scroll_1;
+                    scroll_1 = (this.getWidth() * (this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ')').childElementCount - 1)) > parent_1.scrollLeft;
+                    if (scroll_1 || this.dragEdges.left) {
+                        parent_1.scrollLeft += this.dragEdges.left ? -scrollSensitivity : scrollSensitivity;
+                    }
+                }
+            }
+        }
+        else {
+            var parent_2 = this.parent.element.querySelector('.' + CONTENT_CLASS);
+            var column = this.dragObj.targetClone.parentElement;
+            var yScrollable = parent_2.offsetHeight <= parent_2.scrollHeight;
+            var xScrollable = parent_2.offsetWidth <= parent_2.scrollWidth;
+            var yBounds = yScrollable && parent_2.scrollTop >= 0 && parent_2.scrollTop + parent_2.offsetHeight <= parent_2.scrollHeight;
+            var xBounds = xScrollable && parent_2.scrollLeft >= 0 && parent_2.scrollLeft + parent_2.offsetWidth <= parent_2.scrollWidth;
+            if (yBounds && (this.dragEdges.top || this.dragEdges.bottom)) {
+                parent_2.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
+                if (column) {
+                    column.scrollTop += this.dragEdges.top ? -scrollSensitivity : scrollSensitivity;
+                }
+            }
+            if (xBounds && (this.dragEdges.left || this.dragEdges.right)) {
+                parent_2.scrollLeft += this.dragEdges.left ? -scrollSensitivity : scrollSensitivity;
+                if (column) {
+                    column.scrollLeft += this.dragEdges.left ? -scrollSensitivity : scrollSensitivity;
+                }
+            }
+            if (this.dragObj.pageY - window.scrollY < scrollSensitivity) {
+                window.scrollTo(window.scrollX, window.scrollY - scrollSensitivity);
+            }
+            else if (window.innerHeight - (this.dragObj.pageY - window.scrollY) < scrollSensitivity) {
+                window.scrollTo(window.scrollX, window.scrollY + scrollSensitivity);
+            }
+        }
+    };
+    DragAndDrop.prototype.getWidth = function () {
+        return (window.innerWidth * 80) / 100;
     };
     DragAndDrop.prototype.unWireDragEvents = function () {
         if (this.dragObj.instance && !this.dragObj.instance.isDestroyed) {
@@ -718,6 +857,15 @@ var SfKanban = /** @class */ (function () {
             cards.forEach(function (card) { card.setAttribute('aria-selected', 'false'); });
         }
     };
+    SfKanban.prototype.wireDragEvent = function () {
+        var _this = this;
+        if (this.allowDragAndDrop) {
+            var cards = [].slice.call(this.element.querySelectorAll('.' + CONTENT_CELLS_CLASS
+                + '.' + DRAG_CLASS + ' .' + CARD_CLASS + ':not(' + DRAGGABLE_CLASS + ')'));
+            sf.base.addClass(cards, DROPPABLE_CLASS);
+            cards.forEach(function (card) { return _this.dragAndDropModule.wireDragEvents(card); });
+        }
+    };
     SfKanban.prototype.initializeSwimlaneTree = function () {
         if (this.swimlaneSettings.keyField && this.isAdaptive) {
             var treeWrapper = void 0;
@@ -891,6 +1039,7 @@ var SfKanban = /** @class */ (function () {
             }
             sf.base.EventHandler.add(container, 'scroll', _this.onColumnScroll, _this);
         });
+        this.wireDragEvent();
     };
     SfKanban.prototype.unWireEvents = function () {
         var _this = this;
@@ -1003,6 +1152,11 @@ var Kanban = {
     updateScrollPosition: function (element) {
         if (element && element.blazor__instance) {
             element.blazor__instance.updateScrollPosition();
+        }
+    },
+    wireDragEvents: function (element) {
+        if (element && element.blazor__instance) {
+            element.blazor__instance.wireDragEvent();
         }
     },
     propertyChanged: function (element, changedProps) {

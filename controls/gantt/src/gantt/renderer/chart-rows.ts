@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, extend, compile } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, extend, compile, getValue } from '@syncfusion/ej2-base';
 import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
@@ -83,7 +83,13 @@ export class ChartRows extends DateProcessor {
             id: this.parent.element.id + 'GanttTaskTableBody'
         });
         this.taskTable.appendChild(this.ganttChartTableBody);
-        this.parent.ganttChartModule.chartBodyContent.appendChild(this.taskTable);
+        if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            this.parent.ganttChartModule.virtualRender.renderWrapper();
+            let wrapper: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
+            wrapper.style.transform = 'translate(0px, 0px)';
+        } else {
+            this.parent.ganttChartModule.chartBodyContent.appendChild(this.taskTable);
+        }
     }
 
     public initiateTemplates(): void {
@@ -157,7 +163,7 @@ export class ChartRows extends DateProcessor {
                     '</div>');
 
             }
-            if (this.taskLabelTemplateFunction) {
+            if (this.taskLabelTemplateFunction && !isNullOrUndefined(progressDiv) && progressDiv.length > 0) {
                 let taskLabelTemplateNode: NodeList = this.taskLabelTemplateFunction(
                     extend({ index: i }, data), this.parent, 'TaskLabelTemplate',
                     this.getTemplateID('TaskLabelTemplate'), false, undefined, progressDiv[0]);
@@ -371,7 +377,7 @@ export class ChartRows extends DateProcessor {
         this.parent.dataOperation.updateWidthLeft(data);
         if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
-            this.parent.connectorLineEditModule.removePreviousConnectorLines(this.parent.flatData);
+            this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.flatData);
             this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.flatData);
             this.refreshRecords(this.parent.currentViewData);
         } else {
@@ -846,10 +852,8 @@ export class ChartRows extends DateProcessor {
 
     private isTemplate(template: string): boolean {
         let result: boolean = false;
-        if (typeof template !== 'string') {
-            result = true;
-        } else if (template.indexOf('#') === 0 || template.indexOf('<') > -1
-            || template.indexOf('$') > -1) {
+        if (typeof template !== 'string' || template.indexOf('#') === 0 || template.indexOf('<') > -1
+        || template.indexOf('$') > -1) {
             result = true;
         }
         return result;
@@ -1220,7 +1224,12 @@ export class ChartRows extends DateProcessor {
             if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
                 collapsedResourceRecord.push(tempTemplateData);
             }
-            this.ganttChartTableBody.appendChild(this.getGanttChartRow(i, tempTemplateData));
+            let tRow: Node = this.getGanttChartRow(i, tempTemplateData);
+            this.ganttChartTableBody.appendChild(tRow);
+            // To maintain selection when virtualization is enabled
+            if (this.parent.selectionModule && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+                this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
+            }
         }
         this.triggerQueryTaskbarInfo();
         if (collapsedResourceRecord.length) {
@@ -1353,9 +1362,23 @@ export class ChartRows extends DateProcessor {
         if (!isNullOrUndefined(taskBaselineTemplateNode)) {
             parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskBaselineTemplateNode)[0]);
         }
-        return parentTrNode[0].childNodes[0];
+        let tRow: Node = parentTrNode[0].childNodes[0];
+        this.setAriaRowIndex(tempTemplateData, tRow);
+        return tRow;
     }
+    /**
+     * To set aria-rowindex for chart rows
+     * @return {void}
+     * @private
+     */
 
+    public setAriaRowIndex(tempTemplateData: IGanttData, tRow: Node): void {
+        let dataSource: IGanttData[] = this.parent.treeGrid.getCurrentViewRecords() as IGanttData[];
+        let visualData: IGanttData[] = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
+         getValue('virtualScrollModule.visualData', this.parent.treeGrid) : dataSource;
+        let index: number = visualData.indexOf(tempTemplateData);
+        (tRow as Element).setAttribute('aria-rowindex', index.toString());
+    }
     /**
      * To trigger query taskbar info event.
      * @return {void}
@@ -1367,11 +1390,9 @@ export class ChartRows extends DateProcessor {
         }
         let length: number = this.ganttChartTableBody.querySelectorAll('tr').length;
         let trElement: Element;
-        let taskbarElement: Element;
         let data: IGanttData;
         for (let index: number = 0; index < length; index++) {
             trElement = this.ganttChartTableBody.querySelectorAll('tr')[index];
-            taskbarElement = trElement.querySelector('.' + cls.taskBarMainContainer);
             data = this.parent.currentViewData[index];
             let segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
             if (segmentLength > 0) {
@@ -1536,8 +1557,7 @@ export class ChartRows extends DateProcessor {
      */
     public templateCompiler(template: string): Function {
         if (!isNullOrUndefined(template) && template !== '') {
-            let e: Object;
-            try {
+           try {
                 if (document.querySelectorAll(template).length) {
                     return compile(document.querySelector(template).innerHTML.trim(), this.parent);
                 } else {
@@ -1608,7 +1628,7 @@ export class ChartRows extends DateProcessor {
         for (let i: number = 0; i < chartRows.length; i++) {
             if ((<HTMLElement>chartRows[i]).classList.contains('gridrowtaskId'
                 + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
-                let cloneElement: HTMLElement = chartRows[i].querySelector('.e-taskbar-main-container') as HTMLElement;
+                let cloneElement: HTMLElement = chartRows[i].querySelector('.e-taskbar-main-container');
                 addClass([cloneElement], 'collpse-parent-border');
                 let id: string = chartRows[i].querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
                 let ganttData: IGanttData = this.parent.getRecordByID(id);
