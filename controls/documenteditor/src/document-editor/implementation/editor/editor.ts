@@ -2614,7 +2614,7 @@ export class Editor {
                         // tslint:disable-next-line:max-line-length
                     } else if (currentRange instanceof WCharacterFormat) {
                         let paraWidget: ParagraphWidget = (currentRange as WCharacterFormat).ownerBase as ParagraphWidget;
-                        if ((paraWidget.lastChild as LineWidget).paragraph.bodyWidget) {
+                        if (paraWidget.lastChild && (paraWidget.lastChild as LineWidget).paragraph.bodyWidget) {
                             let offset: number = paraWidget.getLength();
                             let startPosition: TextPosition = new TextPosition(this.owner);
                             startPosition.setPositionParagraph(paraWidget.lastChild as LineWidget, offset);

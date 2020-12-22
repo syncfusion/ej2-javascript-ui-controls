@@ -5,7 +5,7 @@ import {
     AllowedInteraction
 } from '../index';
 import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
-import { ColorPicker, ChangeEventArgs } from '@syncfusion/ej2-inputs';
+import { ChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { AnnotationSelectorSettings } from '../pdfviewer';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 /**
@@ -510,7 +510,7 @@ export class TextMarkupAnnotation {
                             annotation.AnnotationSettings = this.getAnnotationSettings(annotation.TextMarkupAnnotationType);
                         }
                         // tslint:disable-next-line:max-line-length
-                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.Allowedinteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         // tslint:disable-next-line:max-line-length
                         annotationObject = {
                             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, allowedInteractions: annotation.allowedInteractions, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
@@ -1594,8 +1594,7 @@ export class TextMarkupAnnotation {
          }
         let markupStringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(markupStringArray[1])) {
-            let colorpick: ColorPicker = new ColorPicker();
-            colorString = colorpick.getValue(colorString, 'rgba');
+            colorString = this.pdfViewer.annotationModule.getValue(colorString, 'rgba');
             markupStringArray = colorString.split(',');
         }
         // tslint:disable-next-line:radix

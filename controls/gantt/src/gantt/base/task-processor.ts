@@ -43,6 +43,7 @@ export class TaskProcessor extends DateProcessor {
             this.hierarchyData = [];
             this.parent.predecessorsCollection = [];
             this.parent.treeGrid.parentData = [];
+            this.parent.taskIds = [];
         }
         if (isNullOrUndefined(this.parent.dataSource)) {
             this.parent.dataSource = [];

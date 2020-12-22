@@ -1225,4 +1225,130 @@ describe('DropDownList', () => {
             expect((listObj1 as any).popupObj.element.querySelectorAll('li')[0].textContent).toBe('Australia 2');
         });
     });
+    
+    describe('EJ2-44572- Dropdownlist', () => {
+        let ddlObj: DropDownList;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let sportsData: Array<string> = [
+            "Snooker",
+            "Tennis",
+            "Cricket",
+            "Football",
+            "Rugby"
+          ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Sortorder in string array type datasource', () => {
+            ddlObj = new DropDownList({
+                dataSource: sportsData,
+                sortOrder: "Ascending"
+            });
+            ddlObj.appendTo(element);
+            ddlObj.showPopup();
+            expect((ddlObj as any).liCollections[0].innerText).toBe("Cricket");
+            ddlObj.hidePopup();
+            ddlObj.sortOrder = "Descending";
+            ddlObj.dataBind();
+            ddlObj.showPopup();
+            expect((ddlObj as any).liCollections[0].innerText).toBe("Tennis");
+        });
+    });
+    
+    describe('EJ2-44588- Cannot select dropdown items after calling refresh method -', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            target: null
+        };
+        let ddlObj1: any;
+        let ddlEle1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl1' });
+        let empList: any = [ 
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+        { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+        { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+        { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+        { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle1);
+            ddlObj1 = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports' },
+                created  : function(){
+                      setTimeout(() => {
+                        (ddlObj1 as any).refresh();
+                      }, 400);
+                }
+            });
+            ddlObj1.appendTo(ddlEle1);
+        });
+        afterAll(() => {
+            ddlObj1.destroy();
+            ddlEle1.remove();
+        });
+        it('mouse click', (done) => {
+            setTimeout(() => {
+                mouseEventArgs.target = ddlObj1.inputWrapper.container;
+                ddlObj1.dropDownClick(mouseEventArgs);
+                done();
+            }, 800);
+            mouseEventArgs.target = ddlObj1.inputWrapper.container;
+            ddlObj1.dropDownClick(mouseEventArgs);
+            mouseEventArgs.target = ddlObj1.ulElement.querySelectorAll('li')[0];
+            ddlObj1.onMouseClick(mouseEventArgs);
+            expect(ddlObj1.inputElement.value).toBe("American Football");
+        });
+    });
+            
+    describe('EJ2-44462', () => {
+        let keyboardEventArgs: any = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+        };
+        let ddlObj1: any;
+        let ddlEle1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl1' });
+        let empList: any = [ 
+        { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+        { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+        { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+        { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+        { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle1);
+            ddlObj1 = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports', value: 'sports' },
+                itemTemplate: '<div class="ename"> ${sports}</div>',
+                allowFiltering: true,
+            });
+            ddlObj1.appendTo(ddlEle1);
+        });
+        afterAll(() => {
+            ddlObj1.destroy();
+            ddlEle1.remove();
+        });
+        it('Clearing filter input using clear icon not reset the popup', (done) => {
+            if (!ddlObj1.isPopupOpen) {
+                ddlObj1.showPopup();
+            }
+            setTimeout(() => {
+                (ddlObj1 as any).filterInput.focus();
+                (ddlObj1 as any).filterInput.value = (ddlObj1 as any).typedString = "a";
+                (ddlObj1 as any).searchLists(keyboardEventArgs);
+                expect((ddlObj1 as any).liCollections.length).toBe(1);
+                (ddlObj1 as any).clearIconElement.click();
+                expect((ddlObj1 as any).liCollections.length).toBe(empList.length);
+                done();
+            });
+        });
+    });
 });

@@ -28,7 +28,7 @@ import { DropDownList, ComboBox, ComboBoxModel, ChangeEventArgs, DropDownListMod
 import { isScheduledTask } from '../base/utils';
 import {
     TreeGridModel, ColumnModel as TreeGridColumnModel,
-    TreeGrid, Selection, Filter, Edit as TreeGridEdit
+    TreeGrid, Selection, Filter, Edit as TreeGridEdit, VirtualScroll
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
 interface EJ2Instance extends HTMLElement {
@@ -302,6 +302,9 @@ export class DialogEdit {
                 tempData[this.parent.ganttColumns[i].field] = '';
             }
         }
+        tempData.ganttProperties.isAutoSchedule = (this.parent.taskMode === 'Auto') ? true :
+            (this.parent.taskMode === 'Manual') ? false :
+            tempData[taskSettings.manual] === true ? false : true;
         return tempData;
     }
     /**
@@ -1643,7 +1646,7 @@ export class DialogEdit {
         };
 
         let divElement: HTMLElement = this.createDivElement('e-resource-div', resourceTreeGridId);
-        TreeGrid.Inject(Selection, Filter, TreeGridEdit);
+        TreeGrid.Inject(Selection, Filter, TreeGridEdit, VirtualScroll);
         let treeGridObj: TreeGrid = new TreeGrid(inputModel);
         let resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {

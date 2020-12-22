@@ -3583,8 +3583,11 @@ private getGridEditSettings(): GridEditModel {
   }
   private expandCollapse(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean): void {
     let expandingArgs: DataStateChangeEventArgs = { row: row, data: record, childData: [], requestType: action };
+    let childRecords: ITreeData[] = this.getCurrentViewRecords().filter((e: ITreeData) => {
+      return e.parentUniqueID === record.uniqueID ;
+    });
     let targetEle: Element;
-    if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this)) {
+    if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) {
       this.updateChildOnDemand(expandingArgs);
     }
     let gridRows: HTMLTableRowElement[] = this.getRows();
@@ -3657,7 +3660,7 @@ private getGridEditSettings(): GridEditModel {
       if (isRemoteData(this) && !isOffline(this)) {
         this.remoteExpand(action, row, record, isChild);
       } else {
-        if (!isCountRequired(this) || action === 'collapse') {
+        if ((!isCountRequired(this) || childRecords.length) || action === 'collapse') {
           this.localExpand(action, row, record, isChild);
         }
       }

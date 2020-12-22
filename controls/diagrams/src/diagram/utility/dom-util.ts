@@ -828,7 +828,7 @@ export function createMeasureElements(): void {
 
 /** @private */
 export function setChildPosition(temp: SubTextElement, childNodes: SubTextElement[], i: number, options: TextAttributes): number {
-    if (childNodes.length > 1 && temp.x === 0 &&
+    if (childNodes.length >= 1 && temp.x === 0 &&
         (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
         (options.textWrapping === 'Wrap' || options.textWrapping === 'WrapWithOverflow')) {
         temp.x = childNodes[i - 1] ? childNodes[i - 1].x : -(temp.width / 2);

@@ -383,6 +383,10 @@ export class Annotation {
             selectAnnotation.uniqueKey = annotation.id;
             delete selectAnnotation.id;
         }
+        // tslint:disable-next-line
+        if (selectAnnotation.customData && annotation.customData && JSON.stringify(selectAnnotation.customData) !== JSON.stringify(annotation.customData)) {
+            selectAnnotation.customData = annotation.customData;
+        }
         if (collectionDetails.isExisting) {
             this.pdfViewer.annotationCollection.splice(collectionDetails.position, 0, selectAnnotation);
         } else {
@@ -4128,6 +4132,7 @@ export class Annotation {
             newAnnotation.fontSize = annotation.fontSize;
             newAnnotation.fontColor = annotation.fontColor;
             newAnnotation.fillColor = annotation.fillColor;
+            newAnnotation.font = annotation.font;
             newAnnotation.textAlign = annotation.textAlign;
             newAnnotation.annotationSettings = annotation.annotationSettings;
             newAnnotation.allowedInteractions = annotation.allowedInteractions;
@@ -4283,6 +4288,8 @@ export class Annotation {
             return { isUnderline: true };
         } else if (fontStyle === 8) {
             return { isStrikeout: true };
+        } else {
+            return { isStrikeout: false, isItalic: false, isUnderline: false, isBold: false };
         }
     }
 
@@ -5101,24 +5108,214 @@ export class Annotation {
     }
     // tslint:disable-next-line
     private checkAllowedInteractionSettings(annotationInteraction: any, annotationAllowedInteraction: any): any {
-        if (annotationAllowedInteraction.length === 1) {
-            if (annotationAllowedInteraction[0] !== 'None') {
+        if (annotationAllowedInteraction) {
+            if (annotationAllowedInteraction.length === 1) {
+                if (annotationAllowedInteraction[0] !== 'None') {
+                    return annotationAllowedInteraction;
+                }
+            } else {
                 return annotationAllowedInteraction;
             }
-        } else {
-            return annotationAllowedInteraction;
         }
-        if (annotationInteraction.length === 1) {
-            if (annotationInteraction[0] !== 'None') {
+        if (annotationInteraction) {
+            if (annotationInteraction.length === 1) {
+                if (annotationInteraction[0] !== 'None') {
+                    return annotationInteraction;
+                }
+            } else {
                 return annotationInteraction;
             }
-        } else {
-            return annotationInteraction;
         }
         if (this.pdfViewer.annotationSettings.allowedInteractions) {
             return this.pdfViewer.annotationSettings.allowedInteractions;
         }
         return ['None'];
+    }
+
+    /**
+     * @private
+     */
+    public getValue(value?: string, type?: string): string {
+        type = !type ? 'hex' : type.toLowerCase();
+        if (value[0] === 'r') {
+            let cValue: number[] = this.convertRgbToNumberArray(value);
+            if (type === 'hex' || type === 'hexa') {
+                let hex: string = this.rgbToHex(cValue);
+                return type === 'hex' ? hex.slice(0, 7) : hex;
+            } else {
+                if (type === 'hsv') {
+                    return this.convertToHsvString(this.rgbToHsv.apply(this, cValue.slice(0, 3)));
+                } else {
+                    if (type === 'hsva') {
+                        return this.convertToHsvString(this.rgbToHsv.apply(this, cValue));
+                    } else {
+                        return 'null';
+                    }
+                }
+            }
+        } else {
+            if (value[0] === 'h') {
+                let cValue: number[] = this.hsvToRgb.apply(this, this.convertRgbToNumberArray(value));
+                if (type === 'rgba') {
+                    return this.convertToRgbString(cValue);
+                } else {
+                    if (type === 'hex' || type === 'hexa') {
+                        let hex: string = this.rgbToHex(cValue);
+                        return type === 'hex' ? hex.slice(0, 7) : hex;
+                    } else {
+                        if (type === 'rgb') {
+                            return this.convertToRgbString(cValue.slice(0, 3));
+                        } else {
+                            return 'null';
+                        }
+                    }
+                }
+            } else {
+                value = this.roundValue(value);
+                let rgb: number[] = this.hexToRgb(value);
+                if (type === 'rgb' || type === 'hsv') {
+                    rgb = rgb.slice(0, 3);
+                }
+                if (type === 'rgba' || type === 'rgb') {
+                    return this.convertToRgbString(rgb);
+                } else {
+                    if (type === 'hsva' || type === 'hsv') {
+                        return this.convertToHsvString(this.rgbToHsv.apply(this, rgb));
+                    } else {
+                        if (type === 'hex') {
+                            return value.slice(0, 7);
+                        } else {
+                            if (type === 'a') {
+                                return rgb[3].toString();
+                            } else {
+                                return 'null';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private convertRgbToNumberArray(value: string): number[] {
+        // tslint:disable-next-line:max-line-length
+        return (value.slice(value.indexOf('(') + 1, value.indexOf(')'))).split(',').map(
+            (n: string, i: number) => {
+                return (i !== 3) ? parseInt(n, 10) : parseFloat(n);
+            });
+    }
+
+    private convertToRgbString(rgb: number[]): string {
+        return rgb.length ? rgb.length === 4 ? 'rgba(' + rgb.join() + ')' : 'rgb(' + rgb.join() + ')' : '';
+    }
+
+    private convertToHsvString(hsv: number[]): string {
+        return hsv.length === 4 ? 'hsva(' + hsv.join() + ')' : 'hsv(' + hsv.join() + ')';
+    }
+
+    private roundValue(value: string): string {
+        if (!value) { return ''; }
+        if (value[0] !== '#') {
+            value = '#' + value;
+        }
+        let len: number = value.length;
+        if (len === 4) {
+            value += 'f';
+            len = 5;
+        }
+        if (len === 5) {
+            let tempValue: string = '';
+            for (let i: number = 1, len: number = value.length; i < len; i++) {
+                tempValue += (value.charAt(i) + value.charAt(i));
+            }
+            value = '#' + tempValue;
+            len = 9;
+        }
+        if (len === 7) {
+            value += 'ff';
+        }
+        return value;
+    }
+
+    private hexToRgb(hex: string): number[] {
+        if (!hex) { return []; }
+        hex = hex.trim();
+        if (hex.length !== 9) {
+            hex = this.roundValue(hex);
+        }
+        let opacity: number = Number((parseInt(hex.slice(-2), 16) / 255).toFixed(2));
+        hex = hex.slice(1, 7);
+        let bigInt: number = parseInt(hex, 16); let h: number[] = [];
+        h.push((bigInt >> 16) & 255);
+        h.push((bigInt >> 8) & 255);
+        h.push(bigInt & 255);
+        h.push(opacity);
+        return h;
+    }
+
+    private rgbToHsv(r: number, g: number, b: number, opacity?: number): number[] {
+        r /= 255; g /= 255; b /= 255;
+        let max: number = Math.max(r, g, b); let min: number = Math.min(r, g, b);
+        let h: number; let s: number; let v: number = max;
+
+        let d: number = max - min;
+        s = max === 0 ? 0 : d / max;
+
+        if (max === min) {
+            h = 0;
+        } else {
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        let hsv: number[] = [Math.round(h * 360), Math.round(s * 1000) / 10, Math.round(v * 1000) / 10];
+        if (!isNullOrUndefined(opacity)) {
+            hsv.push(opacity);
+        }
+        return hsv;
+    }
+
+    private hsvToRgb(h: number, s: number, v: number, opacity?: number): number[] {
+        let r: number; let g: number; let b: number;
+        let i: number;
+        let f: number; let p: number; let q: number; let t: number;
+        s /= 100; v /= 100;
+        if (s === 0) {
+            r = g = b = v;
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), opacity];
+        }
+        h /= 60;
+        i = Math.floor(h);
+        f = h - i;
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+        switch (i) {
+            case 0: r = v; g = t; b = p; break;
+            case 1: r = q; g = v; b = p; break;
+            case 2: r = p; g = v; b = t; break;
+            case 3: r = p; g = q; b = v; break;
+            case 4: r = t; g = p; b = v; break;
+            default: r = v; g = p; b = q;
+        }
+        let rgb: number[] = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        if (!isNullOrUndefined(opacity)) {
+            rgb.push(opacity);
+        }
+        return rgb;
+    }
+
+    private rgbToHex(rgb: number[]): string {
+        // tslint:disable-next-line:max-line-length
+        return rgb.length ? ('#' + this.hex(rgb[0]) + this.hex(rgb[1]) + this.hex(rgb[2]) +
+            (!isNullOrUndefined(rgb[3]) ? (rgb[3] !== 0 ? (Math.round(rgb[3] * 255) + 0x10000).toString(16).substr(-2) : '00') : '')) : '';
+    }
+
+    private hex(x: number): string {
+        return ('0' + x.toString(16)).slice(-2);
     }
 
     /**

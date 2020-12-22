@@ -100,7 +100,9 @@
 
       #{if(&, '&', '*')}.e-rtl .e-filter-parent .e-input-group.e-control-wrapper .e-input-filter,
       #{if(&, '&', '*')} .e-filter-parent .e-input-filter,
-      #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus {
+      #{if(&, '&', '*')} .e-filter-parent .e-input-filter:focus,
+      #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-input-focus .e-input-filter,
+      #{if(&, '&', '*')} .e-filter-parent .e-input-group.e-control-wrapper.e-input-focus .e-input-filter {
         padding: $ddl-list-filter-text-indent;
       }
 

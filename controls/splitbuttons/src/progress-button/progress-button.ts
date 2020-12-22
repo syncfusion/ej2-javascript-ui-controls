@@ -586,7 +586,11 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * @private
      */
     public onPropertyChanged(newProp: ProgressButtonModel, oldProp: ProgressButtonModel): void {
-        let ele: HTMLButtonElement = this.element;
+        let ele: HTMLButtonElement = this.element; let isSpinning: boolean = false;
+        let clsList: DOMTokenList = this.element.querySelector('.e-spinner-pane').classList;
+        if (clsList.contains('e-spin-show')) {
+            isSpinning = true;
+        }
         super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -605,6 +609,10 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
                     } else {
                         this.setContent();
                         this.createSpinner();
+                        if (isSpinning) {
+                            showSpinner(this.element);
+                            isSpinning = false;
+                        }
                         if (this.enableProgress) {
                             this.createProgress();
                         }

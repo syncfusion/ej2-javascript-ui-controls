@@ -727,8 +727,10 @@ export class PrintAndExport {
         let oldZoom: number = this.diagram.scrollSettings.currentZoom;
         let oldHorizontalOffset: number = this.diagram.scroller.horizontalOffset;
         let oldVerticalOffset: number = this.diagram.scroller.verticalOffset;
-        let oldWidth: number = Number(String(this.diagram.width).split('px')[0]);
-        let oldHeight: number = Number(String(this.diagram.height).split('px')[0]);
+        let oldWidth: number = Number(String(this.diagram.width).split('%')[0]) ?
+            container.clientWidth : Number(String(this.diagram.width).split('px')[0]);
+        let oldHeight: number = Number(String(this.diagram.height).split('%')[0]) ?
+            container.clientHeight : Number(String(this.diagram.height).split('px')[0]);
         let bounds: Rect = this.getDiagramBounds('', {});
         this.diagram.scroller.zoom((1 / oldZoom));
         let scrollX: number = 0;

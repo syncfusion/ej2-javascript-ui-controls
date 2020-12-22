@@ -4251,7 +4251,7 @@ function evalExp(str, nameSpace, helper) {
                     varCOunt = varCOunt + 1;
                     // tslint:disable-next-line
                     return 'var i' + varCOunt + '=0; i' + varCOunt + ' < ' + addNameSpace(rlStr[1], true, nameSpace, localKeys) + '.length; i' + varCOunt + '++';
-                }) + '{ \n ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys)
+                }) + '{ \n ' + 'var ' + rlStr[0] + '= ' + addNameSpace(rlStr[1], true, nameSpace, localKeys)
                     + '[i' + varCOunt + ']; \n var ' + rlStr[0] + 'Index=i' + varCOunt + '; \n str = str + "';
             }
             else {

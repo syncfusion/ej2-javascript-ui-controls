@@ -792,7 +792,9 @@ export class DiagramEventHandler {
                     button: (evt.button === 0) ? 'Left' : (evt.button === 1) ? 'Middle' : 'Right'
                 };
                 if (isBlazor() && this.diagram.click) { arg = this.getBlazorClickEventArgs(arg); }
-                this.diagram.triggerEvent(DiagramEvent.click, arg);
+                if (this.diagram.tool !== DiagramTools.ZoomPan) {
+                    this.diagram.triggerEvent(DiagramEvent.click, arg);
+                }
             }
             this.eventArgs = {};
         }

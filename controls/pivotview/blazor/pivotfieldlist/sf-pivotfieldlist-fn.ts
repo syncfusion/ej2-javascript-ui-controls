@@ -35,7 +35,6 @@ export class SfPivotFieldList {
         this.dotNetRef = dotnetRef;
         this.getOptions(element, options);
         this.dotNetRef = dotnetRef;
-        this.initModules();
     }
 
     public getOptions(element: BlazorPivotElement, options: IPivotOptions): void {
@@ -50,6 +49,9 @@ export class SfPivotFieldList {
         /* tslint:enable */
         this.fieldList = options.fieldList;
         this.dataSourceSettings = options.dataSourceSettings;
+        if (this.parentElement && this.parentElement.querySelector('#' + this.parentElement.id + '_title')) {
+            setStyleAttribute(this.parentElement.querySelector('#' + this.parentElement.id + '_title'), { 'width': '100%' });
+        }
     }
 
     private initModules(): void {
@@ -59,27 +61,15 @@ export class SfPivotFieldList {
         if (this.options.allowCalculatedField) {
             this.calculatedFieldModule = new CalculatedField(this);
         }
-        this.contentReady();
         this.unWireEvents();
         this.wireEvents();
     }
 
-    private updateModuleProperties(): void {
-        this.treeRendererModule.parent =
-            this.pivotButtonModule.parent =
-            this.commonActionModule.parent =
-            this.commonActionModule.keyboardModule.parent = this;
-        if (this.options.allowCalculatedField) {
-            this.calculatedFieldModule.parent = this;
-        }
-    }
-
     public contentReady(): void {
-        this.updateModuleProperties();
-        if (this.parentElement.querySelector('#' + this.parentElement.id + '_title')) {
+        this.initModules();
+        if (this.parentElement && this.parentElement.querySelector('#' + this.parentElement.id + '_title')) {
             setStyleAttribute(this.parentElement.querySelector('#' + this.parentElement.id + '_title'), { 'width': '100%' });
         }
-        this.pivotButtonModule.createPivotButtonDrop();
     }
 
     public onShowFieldList(element: HTMLElement, dialogElement: HTMLElement): void {

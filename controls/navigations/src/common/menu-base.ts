@@ -790,10 +790,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (isOpen && this.hamburgerMode && ulIndex && !(submenus.length)) {
                         this.afterCloseMenu(e as MouseEvent);
                     } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
-                        let ele: HTMLElement = e ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
+                        let ele: HTMLElement = (e && (e.target as Element).classList.contains('e-vscroll'))
+                            ? closest(e.target as Element, '.e-menu-wrapper') as HTMLElement : null;
                         if (ele) {
                             ele = ele.querySelector('.e-menu-item');
-                            if (ele && this.getIndex(ele.id, true).length <= this.navIdx.length) {
+                            if (this.showItemOnClick || (ele && this.getIndex(ele.id, true).length <= this.navIdx.length)) {
                                 this.closeMenu(this.navIdx[this.navIdx.length - 1], e, true);
                             }
                         } else {

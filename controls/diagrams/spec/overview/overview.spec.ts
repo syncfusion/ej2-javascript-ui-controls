@@ -1123,6 +1123,11 @@ describe('Overview', () => {
 
         it('Overview - For window resize', (done: Function) => {
             let htmlOverView = document.getElementById('overview_htmlLayer');
+            let overviewstyle = document.getElementById("overview_canvas").getAttribute("style")
+            console.log(overviewstyle)
+            console.log(htmlOverView.style.transform);
+                console.log("Overview - For window resize")
+            expect(overviewstyle==="position: relative; height: 150px; width: 100%; touch-action: none;" ).toBe(true);
             expect(htmlOverView.style.transform === "scale(0.0821449) translate(731.609px, 790.805px)" || htmlOverView.style.transform === "scale(0.0821449) translate(734.139px, 797.163px)").toBe(true);
             done();
         });

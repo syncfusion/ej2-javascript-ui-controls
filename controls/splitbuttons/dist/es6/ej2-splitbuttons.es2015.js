@@ -1512,6 +1512,11 @@ let ProgressButton = class ProgressButton extends Button {
      */
     onPropertyChanged(newProp, oldProp) {
         let ele = this.element;
+        let isSpinning = false;
+        let clsList = this.element.querySelector('.e-spinner-pane').classList;
+        if (clsList.contains('e-spin-show')) {
+            isSpinning = true;
+        }
         super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1533,6 +1538,10 @@ let ProgressButton = class ProgressButton extends Button {
                     else {
                         this.setContent();
                         this.createSpinner();
+                        if (isSpinning) {
+                            showSpinner(this.element);
+                            isSpinning = false;
+                        }
                         if (this.enableProgress) {
                             this.createProgress();
                         }

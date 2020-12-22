@@ -1,4 +1,4 @@
-import { BlazorDotnetObject, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, isNullOrUndefined, closest, loadCldr } from '@syncfusion/ej2-base';
 import { SfSchedule } from './schedule';
 import { BlazorScheduleElement, CellClickEventArgs, IScheduleOptions, ViewsModel } from './schedule/base/interface';
 import * as util from './schedule/base/util';
@@ -24,6 +24,9 @@ let Schedule: object = {
                 dotnetRef.invokeMethodAsync('TriggerCreatedEvent');
             }
         }
+    },
+    loadCldr(cultureData: string): void {
+        loadCldr(JSON.parse(cultureData));
     },
     createCalendarPopup(element: BlazorScheduleElement): void {
         if (element && element.blazor__instance) {

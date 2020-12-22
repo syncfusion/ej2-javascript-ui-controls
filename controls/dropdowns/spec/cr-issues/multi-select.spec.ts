@@ -2166,4 +2166,96 @@ describe('MultiSelect', () => {
             expect((<any>listObj).value[0]).toBe("AU");
         });
     });
+    describe('EJ2-44516', () => {
+        let listObj: any;
+        let listObj1: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let element1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect1', attrs: { type: "text" } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            document.body.appendChild(element1);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            if (element1) {
+                listObj1.destroy();
+                element1.remove();
+            }
+        });
+        it('Popup not closing when render multiple control.', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+            });
+            listObj.appendTo(element);
+            listObj1 = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+            });
+            listObj1.appendTo(element1);
+            listObj.showPopup();
+            keyboardEventArgs.keyCode = 40;
+            listObj.onKeyDown(keyboardEventArgs);
+            mouseEventArgs.target = document.body;
+            listObj.checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect(listObj.isPopupOpen()).toBe(false);
+        });
+    });
+    describe('EJ2-44639', () => {
+        let listObj: any;
+        let browserType: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        beforeAll(() => {
+            browserType = Browser.userAgent;
+            Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+            Browser.userAgent = browserType;
+        });
+        it('Arrow up not workig in firefox.', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            listObj.checkBoxSelectionModule.filterInput.focus();
+            keyboardEventArgs.keyCode = 40;
+            listObj.onKeyDown(keyboardEventArgs);
+            expect(listObj.popupWrapper.querySelector('.e-item-focus').innerText).toBe("Australia");
+            keyboardEventArgs.keyCode = 40;
+            listObj.onKeyDown(keyboardEventArgs);
+            expect(listObj.popupWrapper.querySelector('.e-item-focus').innerText).toBe("Bermuda");
+            keyboardEventArgs.keyCode = 40;
+            listObj.onKeyDown(keyboardEventArgs);
+            expect(listObj.popupWrapper.querySelector('.e-item-focus').innerText).toBe("United States");
+            keyboardEventArgs.keyCode = 38;
+            listObj.onKeyDown(keyboardEventArgs);
+            expect(listObj.popupWrapper.querySelector('.e-item-focus').innerText).toBe("Bermuda");
+            keyboardEventArgs.keyCode = 38;
+            listObj.onKeyDown(keyboardEventArgs);
+            expect(listObj.popupWrapper.querySelector('.e-item-focus').innerText).toBe("Australia");
+        });
+    });
 });

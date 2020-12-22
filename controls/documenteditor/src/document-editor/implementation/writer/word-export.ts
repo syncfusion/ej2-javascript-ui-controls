@@ -331,6 +331,7 @@ export class WordExport {
     private prevRevisionIds: any[] = [];
     private isRevisionContinuous: boolean = false;
     private formFieldShading: boolean;
+    private trackChanges: boolean;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -561,6 +562,7 @@ export class WordExport {
         this.saltValue = document.saltValue;
         this.protectionType = document.protectionType;
         this.formFieldShading = document.formFieldShading;
+        this.trackChanges = document.trackChanges;
     }
     // Clears the document
     private clearDocument(): void {
@@ -584,6 +586,7 @@ export class WordExport {
         this.defCharacterFormat = undefined;
         this.defParagraphFormat = undefined;
         this.defaultTabWidthValue = undefined;
+        this.trackChanges = undefined;
         this.customXMLProps = [];
         this.mRelationShipID = 0;
         this.eRelationShipId = 0;
@@ -5611,6 +5614,10 @@ export class WordExport {
         let tabWidth: number = Math.round(this.defaultTabWidthValue * this.twipsInOnePoint);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, tabWidth.toString());
         writer.writeEndElement();
+        if (this.trackChanges) {
+            writer.writeStartElement(undefined, 'trackRevisions', this.wNamespace);
+            writer.writeEndElement();
+        }
         //w:evenAndOddHeaders - Different Even/Odd Page Headers and Footers        
         if (this.mDifferentFirstPage) {
             writer.writeStartElement(undefined, 'evenAndOddHeaders', this.wNamespace);

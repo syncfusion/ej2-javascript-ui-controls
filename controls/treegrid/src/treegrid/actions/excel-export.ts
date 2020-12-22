@@ -69,7 +69,8 @@ export class ExcelExport {
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
         return new Promise((resolve: Function, reject: Function) => {
-          let dm: DataManager = this.isLocal() ? new DataManager(dataSource) : <DataManager>this.parent.dataSource;
+          let dm: DataManager = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
+                                                   : <DataManager>this.parent.dataSource;
           let query: Query = new Query();
           if (!this.isLocal()) {
             query = this.generateQuery(query);

@@ -125,7 +125,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public ids: string[];
     /** resource-task Ids */
-    private taskIds: string[];
+    /** @hidden */
+    public taskIds: string[];
     /** @hidden */
     public previousRecords: object = {};
     /** @hidden */
@@ -1647,8 +1648,9 @@ export class Gantt extends Component<HTMLElement>
         } else {
             let expandedRecords: IGanttData[] = this.getExpandedRecords(this.currentViewData);
             let height: number;
-            if (!isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
-                height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            let chartRow: Element = this.ganttChartModule.getChartRows()[0];
+            if (!isNullOrUndefined(chartRow) && chartRow.getBoundingClientRect().height > 0) {
+                height = chartRow.getBoundingClientRect().height;
             } else {
                 height = this.rowHeight;
             }
@@ -1934,6 +1936,9 @@ export class Gantt extends Component<HTMLElement>
             this.connectorLineModule.removePreviousConnectorLines(this.currentViewData);
         }
         this.updateCurrentViewData();
+        if (!this.enableVirtualization) {
+            this.updateContentHeight();
+        }
         this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();

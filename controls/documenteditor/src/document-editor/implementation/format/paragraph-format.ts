@@ -4,7 +4,7 @@ import { LineSpacingType, TextAlignment, OutlineLevel, TabJustification, TabLead
 import { WUniqueFormat } from '../../base/unique-format';
 import { WUniqueFormats } from '../../base/unique-formats';
 import { WListFormat } from './list-format';
-import { ParagraphWidget, BodyWidget } from '../viewer/page';
+import { ParagraphWidget, BodyWidget, TableCellWidget } from '../viewer/page';
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
 
@@ -245,7 +245,8 @@ export class WParagraphFormat {
         let docParagraphFormat: WParagraphFormat = this.documentParagraphFormat();
         let isInsideBodyWidget: boolean = true;
         if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
-            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget;
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget ||
+            this.ownerBase.containerWidget instanceof TableCellWidget;
         }
         if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) &&
             docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {

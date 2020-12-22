@@ -64,4 +64,6 @@ export interface IMulitSelect extends Component<HTMLElement> {
     pasteHandler?(e?: KeyboardEventArgs): void;
     cssClass: string;
     isDynamicDataChange?: boolean;
+    search?(e: KeyboardEventArgs): void;
+    allowFiltering?: boolean;
 }

@@ -632,3 +632,34 @@ describe('Hierarchy Search Mode Testing for expand icon - Child', () => {
       destroy(gridObj);
     });
   });
+describe('EJ2-44620: Collapsing and expanding the searched records with hierarchyMode as child', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowPaging: true,
+        toolbar: ['Search'],
+        searchSettings: { hierarchyMode: 'Child' },
+        columns: ['taskID', 'taskName', 'duration', 'progress'],
+      },
+      done
+    );
+  });
+
+  it('Check the searched records and collapse', () => {
+    gridObj.search("100");
+    expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Planning").toBe(true);
+    expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3].innerHTML === "100").toBe(true);
+    gridObj.collapseAll();
+    gridObj.expandAll();
+    expect(gridObj.getRowByIndex(0).getElementsByClassName('e-treegridexpand').length).toBe(1);
+    expect(gridObj.getCurrentViewRecords().length).toBe(8);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

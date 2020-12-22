@@ -484,3 +484,5 @@ export const refreshFrozenHeight: string = 'refresh-frozen-height';
 export const setHeightToFrozenElement: string = 'set-height-to-frozen-element';
 /** @hidden */
 export const preventFrozenScrollRefresh: string = 'prevent-frozen-scroll-refresh';
+/** @hidden */
+export const nextCellIndex: string = 'next-cell-index';

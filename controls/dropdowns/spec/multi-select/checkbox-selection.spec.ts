@@ -3310,3 +3310,131 @@ describe('EJ2-39868 Some items in the dropdown hides when using the header templ
         listObj.destroy();
     });
 });
+describe('EJ2-44277', () => {
+    let listObj: MultiSelect;
+    let count: number = 0;
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+    let datasource: { [key: string]: Object }[] = [
+        { Name: 'Australia', Code: 'AU' },
+        { Name: 'Bermuda', Code: 'BM' },
+        { Name: 'Canada', Code: 'CA' },
+        { Name: 'Cameroon', Code: 'CM' },
+        { Name: 'Denmark', Code: 'DK' },
+        { Name: 'France', Code: 'FR' },
+        { Name: 'Finland', Code: 'FI' },
+    ];
+    let originalTimeout: number;
+    beforeAll(() => {
+        document.body.appendChild(element);
+        listObj = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name', value: 'Code' },
+            showDropDownIcon: true,
+            allowFiltering: true,
+            mode: 'CheckBox',
+            filtering: function(e) {
+                count++;
+            }
+        });
+        listObj.appendTo(element);
+    });
+    afterAll(() => {
+        if (element) {
+            listObj.destroy();
+            element.remove();
+        }
+    });
+    it('filter event triggering on clear icon click after entering value', () => {
+        mouseEventArgs.type = 'click';
+        mouseEventArgs.target = (<any>listObj).overAllWrapper;
+        (<any>listObj).wrapperClick(mouseEventArgs);
+        (<any>listObj).checkBoxSelectionModule.filterInput.value = "A";
+        keyboardEventArgs.altKey = false;
+        keyboardEventArgs.keyCode = 65;
+        (<any>listObj).keyDownStatus = true;
+        (<any>listObj).onInput(keyboardEventArgs);
+        (<any>listObj).KeyUp(keyboardEventArgs);
+        expect(count).toBe(1);
+        (<any>listObj).checkBoxSelectionModule.clearText(mouseEventArgs);
+        expect(count).toBe(2);
+    });
+});
+
+describe('EJ2-44211- The focus class maintained after move the focus to another component in multiselect', () => {
+    let listObj1: MultiSelect;
+    let listObj2: MultiSelect;
+    let element1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect1', attrs: { type: "text" } });
+    let element2: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect2', attrs: { type: "text" } });
+    let datasource: { [key: string]: Object }[] = [
+        { Name: 'Australia', Code: 'AU' },
+        { Name: 'Bermuda', Code: 'BM' },
+        { Name: 'Canada', Code: 'CA' },
+        { Name: 'Cameroon', Code: 'CM' },
+        { Name: 'Denmark', Code: 'DK' },
+        { Name: 'France', Code: 'FR' },
+        { Name: 'Finland', Code: 'FI' },
+    ];
+    let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+    beforeEach(() => {
+        document.body.appendChild(element1);
+        document.body.appendChild(element2);
+        listObj1 = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name' },
+            mode: 'CheckBox',
+        });
+        listObj1.appendTo(element1);
+        listObj2 = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name' },
+            popupHeight: 50,
+            mode: 'CheckBox',
+        });
+        listObj2.appendTo(element2);
+    });
+    afterEach(() => {
+        if (element1) {
+            listObj1.destroy();
+            element1.remove();
+        }
+        if (element2) {
+            listObj2.destroy();
+            element2.remove();
+        }
+    });
+
+    it('remove focus class on focusing out the control', (done) => {
+        mouseEventArgs.type = 'click';
+        mouseEventArgs.target = (<any>listObj1).viewWrapper;
+        setTimeout(()=>{
+            (<any>listObj1).wrapperClick(mouseEventArgs);
+            mouseEventArgs.target = document.body;
+            (<any>listObj1).checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect((<any>listObj1).isPopupOpen()).toBe(false);
+            expect((<any>listObj1).overAllWrapper.classList.contains('e-input-focus')).toBe(false);
+        done();
+        }, 800);
+    });
+    it('remove focus from current control while focusing other control', (done) => {
+        mouseEventArgs.type = 'click';
+        mouseEventArgs.target = (<any>listObj1).overAllWrapper;
+        setTimeout(()=>{
+            (<any>listObj1).wrapperClick(mouseEventArgs);
+            expect((<any>listObj1).isPopupOpen()).toBe(true);
+            mouseEventArgs.target = (<any>listObj1).overAllWrapper;
+            (<any>listObj1).wrapperClick(mouseEventArgs);
+            expect((<any>listObj1).overAllWrapper.classList.contains('e-input-focus')).toBe(true);
+            mouseEventArgs.target = (<any>listObj2).overAllWrapper;
+            (<any>listObj2).wrapperClick(mouseEventArgs);
+            expect((<any>listObj1).overAllWrapper.classList.contains('e-input-focus')).toBe(false);
+            mouseEventArgs.target = (<any>listObj2).overAllWrapper;
+            (<any>listObj2).wrapperClick(mouseEventArgs);
+            expect((<any>listObj2).overAllWrapper.classList.contains('e-input-focus')).toBe(true);
+            mouseEventArgs.target = document.body;
+            (<any>listObj2).checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
+            expect((<any>listObj2).isPopupOpen()).toBe(false);
+            expect((<any>listObj2).overAllWrapper.classList.contains('e-input-focus')).toBe(false);
+        done();
+        }, 800);
+    });
+});

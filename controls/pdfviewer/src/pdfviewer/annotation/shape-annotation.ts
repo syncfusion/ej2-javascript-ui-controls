@@ -3,7 +3,6 @@ import {
     AnnotationType as AnnotType, LineHeadStyle, ShapeLabelSettingsModel, AllowedInteraction
 } from '../../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -758,8 +757,7 @@ export class ShapeAnnotation {
          }
         let stringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(stringArray[1])) {
-            let colorpick: ColorPicker = new ColorPicker();
-            colorString = colorpick.getValue(colorString, 'rgba');
+            colorString = this.pdfViewer.annotationModule.getValue(colorString, 'rgba');
             stringArray = colorString.split(',');
         }
         // tslint:disable-next-line:radix

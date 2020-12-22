@@ -42,7 +42,9 @@ var SfFileManager = /** @class */ (function () {
     SfFileManager.prototype.adjustHeight = function () {
         var toolbar = sf.base.select('#' + this.element.id + TOOLBAR_ID, this.element);
         var toolBarHeight = toolbar ? toolbar.offsetHeight : 0;
-        return sf.base.formatUnit(this.element.clientHeight - toolBarHeight);
+        var breadcrumbBarHeight = this.element.querySelector('.e-address').offsetHeight;
+        var gridHeight = this.element.clientHeight - toolBarHeight - breadcrumbBarHeight;
+        return sf.base.formatUnit(this.element.clientHeight - toolBarHeight) + ' ' + sf.base.formatUnit(gridHeight);
     };
     SfFileManager.prototype.createDragObj = function () {
         var _this = this;
@@ -728,22 +730,28 @@ var FileManager = {
             }
         }
     },
-    saveFile: function (filename, bytesBase64) {
-        var link;
-        link = sf.base.createElement('a');
-        var href = 'data:application/octet-stream;base64,' + bytesBase64;
-        link.setAttribute('href', href);
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // tslint:disable-next-line
+    saveFile: function (filename, url, element) {
+        // tslint:disable-next-line
+        var data = { 'action': 'download', 'path': filename.path, 'names': filename.names, 'data': filename.data };
+        var form = sf.base.createElement('form', {
+            id: element.id + '_downloadForm',
+            attrs: { action: url, method: 'post', name: 'downloadForm', 'download': '' }
+        });
+        var input = sf.base.createElement('input', {
+            id: element.id + '_hiddenForm',
+            attrs: { name: 'downloadInput', value: JSON.stringify(data), type: 'hidden' }
+        });
+        form.appendChild(input);
+        document.body.appendChild(form);
+        document.forms.namedItem('downloadForm').submit();
+        document.body.removeChild(form);
     },
     getTargetElement: function (view, x, y) {
-        var xValue = document.documentElement.scrollLeft ? x - document.documentElement.scrollLeft : x;
-        var yValue = document.documentElement.scrollTop ? y - document.documentElement.scrollTop : y;
-        var element = document.elementFromPoint(xValue, yValue);
+        var element = document.elementFromPoint(x, y);
         var targetElement;
         var menuModel;
+        var treeElement = sf.base.closest(element, 'li[role="treeitem"]');
         if (!element) {
             menuModel = { IsFile: false, RowIndex: null, IsFolder: false, IsLayout: false, IsTree: false };
         }
@@ -753,8 +761,9 @@ var FileManager = {
                 element.classList.contains('e-view-container')) {
                 menuModel = { IsFile: false, RowIndex: null, IsFolder: false, IsLayout: true, IsTree: false };
             }
-            else if (sf.base.closest(element, 'li[role="treeitem"]')) {
-                menuModel = { IsFile: false, RowIndex: null, IsFolder: true, IsLayout: false, IsTree: true };
+            else if (treeElement) {
+                var dataid = parseInt(treeElement.getAttribute('data-uid'), 10);
+                menuModel = { IsFile: false, RowIndex: dataid, IsFolder: true, IsLayout: false, IsTree: true };
             }
             else {
                 if (view === 'Details') {

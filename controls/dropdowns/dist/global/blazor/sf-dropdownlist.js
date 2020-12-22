@@ -170,6 +170,10 @@ var SfDropDownList = /** @class */ (function () {
         var listHeight = sf.base.formatUnit(this.options.popupHeight);
         var searchBoxContainer;
         this.wireListEvents();
+        var oldPopupEle = document.body.querySelector('.e-ddl.e-popup.e-popup-open');
+        if (oldPopupEle) {
+            sf.base.remove(oldPopupEle);
+        }
         document.body.appendChild(popupElement);
         popupElement.style.visibility = 'hidden';
         if (this.options.allowFiltering) {

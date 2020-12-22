@@ -795,6 +795,7 @@ export class GanttChart {
         }
         EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
         EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
+        EventHandler.add(document, 'mouseup', this.contextClick, this);
         EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     }
 
@@ -819,6 +820,7 @@ export class GanttChart {
         }
         EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(document.body, 'contextmenu', this.contextClick);
+        EventHandler.remove(document, 'mouseup', this.contextClick);
         EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     }
 

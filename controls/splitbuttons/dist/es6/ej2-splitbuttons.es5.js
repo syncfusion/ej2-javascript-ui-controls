@@ -1600,6 +1600,11 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
      */
     ProgressButton.prototype.onPropertyChanged = function (newProp, oldProp) {
         var ele = this.element;
+        var isSpinning = false;
+        var clsList = this.element.querySelector('.e-spinner-pane').classList;
+        if (clsList.contains('e-spin-show')) {
+            isSpinning = true;
+        }
         _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -1622,6 +1627,10 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
                     else {
                         this.setContent();
                         this.createSpinner();
+                        if (isSpinning) {
+                            showSpinner(this.element);
+                            isSpinning = false;
+                        }
                         if (this.enableProgress) {
                             this.createProgress();
                         }

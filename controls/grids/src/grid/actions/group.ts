@@ -867,6 +867,12 @@ export class Group implements IAction {
                         if (!this.isAppliedUnGroup) {
                             if (!this.isAppliedGroup) {
                                 this.updateGroupDropArea(true);
+                                for (let j: number = 0; j < this.parent.sortSettings.columns.length; j++) {
+                                    if (this.parent.sortSettings.columns[j].isFromGroup) {
+                                        this.parent.sortSettings.columns.splice(j, 1);
+                                        j--;
+                                    }
+                                }
                                 for (let i: number = 0; i < this.groupSettings.columns.length; i++) {
                                     this.colName = this.groupSettings.columns[i];
                                     let col: Column = this.parent.getColumnByField(this.colName);

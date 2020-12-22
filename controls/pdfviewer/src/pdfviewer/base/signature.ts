@@ -5,7 +5,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
-import { ColorPicker, TextBox } from '@syncfusion/ej2-inputs';
+import { TextBox } from '@syncfusion/ej2-inputs';
 import { cloneObject } from '../drawing/drawing-util';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -84,8 +84,11 @@ export class Signature {
     private isSaveSignature: boolean = false;
     // tslint:disable-next-line
     private saveSignatureString: string = '';
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private saveImageString: string = '';
+    public saveImageString: string = '';
     /**
      * @private
      */
@@ -109,7 +112,7 @@ export class Signature {
                 this.signatureDialog = new Dialog({
                     // tslint:disable-next-line:max-line-length
                     showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('Draw Signature'),
-                    target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true,
+                    target: this.pdfViewer.element, content: appearanceTab, width: '750px', visible: true, allowDragging: true,
                     beforeClose: (): void => {
                         this.clearSignatureCanvas();
                         this.signatureDialog.destroy();
@@ -221,16 +224,15 @@ export class Signature {
             } else {
                 checkbox = document.getElementById('checkbox');
             }
+            // tslint:disable-next-line
+            let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            this.saveImageString = canvas.toDataURL();
             if (checkbox.checked) {
                 this.isSaveSignature = true;
                 this.saveSignatureString = this.outputString;
-                // tslint:disable-next-line
-                let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-                this.saveImageString = canvas.toDataURL();
             } else {
                 this.isSaveSignature = false;
                 this.saveSignatureString = '';
-                this.saveImageString = '';
             }
             this.pdfViewer.formFieldsModule.drawSignature();
         }
@@ -879,8 +881,7 @@ export class Signature {
         }
         let stringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(stringArray[1])) {
-            let colorpick: ColorPicker = new ColorPicker();
-            colorString = colorpick.getValue(colorString, 'rgba');
+            colorString = this.pdfViewer.annotationModule.getValue(colorString, 'rgba');
             stringArray = colorString.split(',');
         }
         // tslint:disable-next-line:radix

@@ -136,10 +136,8 @@ export class PdfExport {
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
-            if (!(pdfExportProperties.dataSource instanceof DataManager)) {
-                pdfExportProperties.dataSource = new DataManager(pdfExportProperties.dataSource);
-            }
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
+            && pdfExportProperties.dataSource instanceof DataManager) {
             return new Promise((resolve: Function, reject: Function) => {
                 (<DataManager>pdfExportProperties.dataSource).executeQuery(new Query()).then((returnType: Object) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
@@ -284,6 +282,8 @@ export class PdfExport {
             if (!isNullOrUndefined(returnType.aggregates)) {
                 let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
                 let sRows: Row<AggregateColumnModel>[];
+                let column: Column[] =  summaryModel.getColumns();
+                column = column.filter((col: Column) => { return isNullOrUndefined(col.commands) && col.type !== 'checkbox'; });
                 if (gObj.aggregates.length && this.parent !== gObj) {
                     gObj.aggregateModule.prepareSummaryInfo();
                 }
@@ -294,7 +294,7 @@ export class PdfExport {
                 } else if (isGrouping) {
                     sRows = summaryModel.generateRows((<Group>dataSource).records, <SummaryData>returnType.aggregates);
                 } else {
-                    sRows = summaryModel.generateRows(returnType.result, <SummaryData>returnType.aggregates, null, null, columns);
+                    sRows = summaryModel.generateRows(returnType.result, <SummaryData>returnType.aggregates, null, null, column);
                 }
                 this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font,
                                        captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);

@@ -2639,6 +2639,13 @@ export interface PdfViewerModel extends ComponentModel{
     selectedItems?: SelectorModel;
 
     /**
+     * Triggers while created the PdfViewer component.
+     * @event
+     * @blazorProperty 'Created'
+     */
+    created?: EmitType<void>;
+
+    /**
      * Triggers while loading document into PdfViewer.
      * @event
      * @blazorProperty 'DocumentLoaded'

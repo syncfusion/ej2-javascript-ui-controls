@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.31 (2020-12-22)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#305640` -Track changes is now preserved properly on exported document.
+
 ## 18.4.30 (2020-12-17)
 
 ### Document Editor

@@ -84,7 +84,6 @@ export class CheckBoxSelection {
         this.parent.off('selectAllText', this.setLocale);
         this.parent.off('filterBarPlaceholder', this.setPlaceholder);
         this.parent.off('addItem', this.checboxCreate);
-        EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.parent.off('popupFullScreen', this.setPopupFullScreen);
     }
 
@@ -173,6 +172,7 @@ export class CheckBoxSelection {
 
     public destroy(): void {
         this.removeEventListener();
+        EventHandler.remove(document, 'mousedown', this.onDocumentClick);
     }
     public listSelection(args: IUpdateListArgs): void {
         let target: EventTarget;
@@ -320,6 +320,9 @@ export class CheckBoxSelection {
     }
     private clearText(e: MouseEvent): void {
         (this.parent.targetInputElement as HTMLInputElement).value = '';
+        if (this.parent.allowFiltering && (this.parent.targetInputElement as HTMLInputElement).value === '') {
+            this.parent.search(null);
+        }
         this.parent.refreshPopup();
         this.parent.refreshListItems(null);
         (this.clearIconElement as HTMLElement).style.visibility = 'hidden';

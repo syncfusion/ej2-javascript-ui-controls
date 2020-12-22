@@ -725,9 +725,13 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         let thumbnailButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_thumbnail-view' + '_icon', className: 'e-pv-thumbnail-view-disable-icon e-pv-icon' });
         this.thumbnailButton.appendChild(thumbnailButtonSpan);
-        // tslint:disable-next-line:max-line-length
-        let thumbnailTooltip: Tooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Page Thumbnails'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
-        thumbnailTooltip.appendTo(this.thumbnailButton);
+        if (!isBlazor()) {
+            // tslint:disable-next-line:max-line-length
+            let thumbnailTooltip: Tooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Page Thumbnails'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
+            thumbnailTooltip.appendTo(this.thumbnailButton);
+        } else {
+            thumbnailButtonSpan.title = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
+        }
         // tslint:disable-next-line:max-line-length
         this.bookmarkButton = createElement('button', { id: this.pdfViewer.element.id + '_bookmark', attrs: { 'disabled': 'disabled', 'aria-label': 'Bookmarks', 'tabindex': '-1' } });
         this.bookmarkButton.setAttribute('type', 'button');
@@ -735,9 +739,13 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         let buttonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_bookmark' + '_icon', className: 'e-pv-bookmark-disable-icon e-pv-icon' });
         this.bookmarkButton.appendChild(buttonSpan);
-        // tslint:disable-next-line:max-line-length
-        let bookMarkTooltip: Tooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Bookmarks'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
-        bookMarkTooltip.appendTo(this.bookmarkButton);
+        if (!isBlazor()) {
+            // tslint:disable-next-line:max-line-length
+            let bookMarkTooltip: Tooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Bookmarks'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
+            bookMarkTooltip.appendTo(this.bookmarkButton);
+        } else {
+            buttonSpan.title = this.pdfViewer.localeObj.getConstant('Bookmarks');
+        }
         this.sideBarToolbar.appendChild(this.thumbnailButton);
         this.sideBarToolbar.appendChild(this.bookmarkButton);
         this.thumbnailButton.addEventListener('click', this.sideToolbarOnClick);

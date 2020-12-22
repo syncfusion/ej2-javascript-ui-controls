@@ -18,6 +18,7 @@ import { cloneObject } from '../drawing/drawing-util';
 import { IContextMenu, MouseDownEventArgs } from './interfaces';
 import { BlazorContextMenu } from './blazor-context-menu';
 import { createSpinner, showSpinner, hideSpinner } from './spinner';
+import { BlazorUiAdaptor } from './blazor-ui-adaptor';
 /**
  * The `ISize` module is used to handle page size property of PDF viewer.
  * @hidden
@@ -99,6 +100,12 @@ export class PdfViewerBase {
      */
     public textLayer: TextLayer;
     private pdfViewer: PdfViewer;
+
+    /**
+     * @private
+     */
+    public blazorUIAdaptor: BlazorUiAdaptor;
+
     // tslint:disable-next-line
     private unload: any;
     /**
@@ -507,6 +514,7 @@ export class PdfViewerBase {
     public initializeComponent(): void {
         let element: HTMLElement = document.getElementById(this.pdfViewer.element.id);
         if (element) {
+            this.blazorUIAdaptor = isBlazor() ? new BlazorUiAdaptor(this.pdfViewer, this) : null;
             if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.element.classList.add('e-pv-mobile-view');
             }
@@ -846,6 +854,18 @@ export class PdfViewerBase {
             } else {
                 this.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Server error'));
             }
+            if (this.getElement('_notify')) {
+                this.getElement('_notify').classList.add('e-pv-notification-large-content');
+            }
+        }
+    }
+
+    /**
+     * @private
+     */
+    public showNotificationPopup(errorString: string): void {
+        if (!this.pdfViewer.showNotificationDialog && errorString !== '') {
+            this.textLayer.createNotificationPopup(errorString);
             if (this.getElement('_notify')) {
                 this.getElement('_notify').classList.add('e-pv-notification-large-content');
             }
@@ -3331,7 +3351,8 @@ public mouseDownHandler(event: MouseEvent): void {
                         if (!isBlazor()) {
                             this.pdfViewer.toolbarModule.showToolbar(this.isTapHidden);
                         } else {
-                            this.pdfViewer._dotnetInstance.invokeMethodAsync('TapOnMobileDevice', this.isTapHidden);
+                            //this.pdfViewer._dotnetInstance.invokeMethodAsync('TapOnMobileDevice', this.isTapHidden);
+                            this.blazorUIAdaptor.tapOnMobileDevice(this.isTapHidden);
                         }
                         this.isTapHidden = !this.isTapHidden;
                     }
@@ -6459,7 +6480,8 @@ public mouseDownHandler(event: MouseEvent): void {
                     this.mouseY = touches[0].clientY;
                 }
                 if (canvas && canvas.containsPoint({ x: this.mouseX, y: this.mouseY }) && freeTextAnnotModule.isNewAddedAnnot) {
-                    freeTextAnnotModule.addInuptElemet(this.currentPosition);
+                    let pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(evt);
+                    freeTextAnnotModule.addInuptElemet(this.currentPosition, null, pageIndex);
                     if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                         // tslint:disable-next-line
                         let annotModule: any = this.pdfViewer.toolbar.annotationToolbarModule;
@@ -8128,7 +8150,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 }
             }
             pdfAnnotation.pdfAnnotation = documentCollections;
-            this.pdfViewer.importAnnotations(pdfAnnotation);
+            this.pdfViewer.importAnnotation(pdfAnnotation);
         }
     }
 

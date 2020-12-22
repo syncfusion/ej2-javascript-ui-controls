@@ -1,6 +1,5 @@
 import { BlazorDotnetObject, Browser, isNullOrUndefined, Touch, formatUnit, remove, classList, closest } from '@syncfusion/ej2-base';
 import { EventHandler, Internationalization, TapEventArgs, removeClass, addClass, getElement, createElement } from '@syncfusion/ej2-base';
-import { IntlBase } from '@syncfusion/ej2-base';
 import { BlazorScheduleElement, IScheduleOptions, UIStateArgs, NotifyEventArgs, EventClickArgs } from './schedule/base/interface';
 import { ScrollCss, IRenderer, ResizeEdges, CellClickEventArgs } from './schedule/base/interface';
 import { Popup, isCollide } from '@syncfusion/ej2-popups';
@@ -225,10 +224,7 @@ export class SfSchedule {
         return new Date(+date - (date.getTimezoneOffset() * 60000)).getTime();
     }
     public getTimeString(date: Date): string {
-        let timeFormat: string = this.options.timeFormat ||
-            IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.options.locale).format;
-        let time: string = this.globalize.formatDate(date, { format: timeFormat, type: 'time' });
-        return time.toLocaleUpperCase();
+        return this.globalize.formatDate(date, { format: this.options.timeFormat, type: 'time' });
     }
     public getDateTime(date: Date): Date {
         return date instanceof Date ? new Date(date.getTime()) : new Date(date);

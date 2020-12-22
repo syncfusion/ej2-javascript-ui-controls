@@ -389,7 +389,7 @@ export class ExcelExport {
             } else {
                 let result: Object[] = ((returnType as ReturnType).result as Group).GroupGuid ?
                                        ((returnType as ReturnType).result as Group).records : (returnType as ReturnType).result;
-                this.processAggregates(gObj, result, excelRow, null, null, null, headerRow.columns );
+                this.processAggregates(gObj, result, excelRow );
             }
         }
         return excelRow;
@@ -588,8 +588,10 @@ export class ExcelExport {
 
     // tslint:disable-next-line:max-line-length
     private processAggregates(gObj: IGrid, rec: Object[], excelRows: ExcelRow[], currentViewRecords?: Object[], indent?: number,
-                              byGroup?: boolean, columns?: Column[]): ExcelRow[] {
+                              byGroup?: boolean): ExcelRow[] {
         let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
+        let columns: Column[] = summaryModel.getColumns();
+        columns = columns.filter((col: Column) => { return isNullOrUndefined(col.commands) && col.type !== 'checkbox'; });
         if (gObj.aggregates.length && this.parent !== gObj) {
             gObj.aggregateModule.prepareSummaryInfo();
         }

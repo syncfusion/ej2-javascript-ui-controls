@@ -1223,6 +1223,7 @@ export class Edit {
             }
         }
         if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
+            this.parent.treeGrid.parentData = [];
             this.parent.treeGrid.refresh();
             this.isTreeGridRefresh = false;
         }
@@ -1805,6 +1806,7 @@ export class Edit {
                     }
                 }
                 this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
+                this.parent.treeGrid.parentData = [];
                 this.parent.treeGrid.refresh();
             }
         }
@@ -1989,6 +1991,7 @@ export class Edit {
         if (this.parent.taskFields.dependency) {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
         }
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';

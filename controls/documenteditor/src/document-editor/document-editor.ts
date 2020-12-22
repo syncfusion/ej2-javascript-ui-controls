@@ -1931,6 +1931,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.documentHelper.triggerSpellCheck = true;
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
+                this.documentHelper.setDefaultDocumentFormat();
                 this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
                 if (this.editorModule) {
                     this.editorModule.intializeDefaultStyles();

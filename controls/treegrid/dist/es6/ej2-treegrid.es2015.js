@@ -1393,6 +1393,9 @@ class Render {
             container.appendChild(cellElement);
             args.cell.appendChild(container);
         }
+        else if (this.templateResult) {
+            this.templateResult = null;
+        }
         if (this.parent.frozenColumns > this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
             grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
@@ -2371,7 +2374,13 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                                     let editedData = getParentData(control, modifiedData[k].uniqueID);
                                     treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                     if (editedData && editedData.taskData) {
-                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                        if (isBlazor()) {
+                                            editedData.taskData[keys[j]] = editedData[keys[j]]
+                                                = control.grid.currentViewData[i][keys[j]] = treeData[i][keys[j]];
+                                        }
+                                        else {
+                                            editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                        }
                                     }
                                 }
                             }
@@ -5031,8 +5040,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     expandCollapse(action, row, record, isChild) {
         let expandingArgs = { row: row, data: record, childData: [], requestType: action };
+        let childRecords = this.getCurrentViewRecords().filter((e) => {
+            return e.parentUniqueID === record.uniqueID;
+        });
         let targetEle;
-        if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this)) {
+        if (!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) {
             this.updateChildOnDemand(expandingArgs);
         }
         let gridRows = this.getRows();
@@ -5104,7 +5116,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 this.remoteExpand(action, row, record, isChild);
             }
             else {
-                if (!isCountRequired(this) || action === 'collapse') {
+                if ((!isCountRequired(this) || childRecords.length) || action === 'collapse') {
                     this.localExpand(action, row, record, isChild);
                 }
             }
@@ -6100,10 +6112,12 @@ class RowDD$1 {
                     let index = record[0].childRecords.indexOf(draggedRecord);
                     let parentRecord = record[0];
                     if (index !== -1) {
-                        parentRecord.childRecords.splice(index, 1);
-                        if (!parentRecord.childRecords.length) {
-                            parentRecord.hasChildRecords = false;
-                            parentRecord.hasFilteredChildRecords = false;
+                        if (isNullOrUndefined(this.parent.idMapping)) {
+                            parentRecord.childRecords.splice(index, 1);
+                            if (!parentRecord.childRecords.length) {
+                                parentRecord.hasChildRecords = false;
+                                parentRecord.hasFilteredChildRecords = false;
+                            }
                         }
                         this.isDraggedWithChild = true;
                     }
@@ -6118,6 +6132,9 @@ class RowDD$1 {
             for (let i = dragLength - 1; i > -1; i--) {
                 draggedRecord = dragRecords[i];
                 let recordIndex1 = 0;
+                if (!isNullOrUndefined(tObj.parentIdMapping)) {
+                    tObj.childMapping = null;
+                }
                 if (!isNullOrUndefined(draggedRecord.taskData) &&
                     !draggedRecord.taskData.hasOwnProperty(tObj.childMapping)) {
                     draggedRecord.taskData[tObj.childMapping] = [];
@@ -6590,6 +6607,19 @@ class RowDD$1 {
             for (let i = 0; i < records.length; i++) {
                 indexes[i] = records[i].index;
             }
+            if (this.parent.idMapping != null && (isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment')) {
+                let actualData = [];
+                for (let i = 0; i < records.length; i++) {
+                    if (records[i].hasChildRecords) {
+                        actualData.push(records[i]);
+                        let child = records[i].childRecords;
+                        for (let i = 0; i < child.length; i++) {
+                            actualData.push(child[i]); // push child records to drop the parent record along with its child records
+                        }
+                        records = actualData;
+                    }
+                }
+            }
             tObj.notify(rowsRemove, { indexes: indexes, records: records });
             srcControl.notify(rowsAdd, { toIndex: targetIndex, records: records });
             let srcControlFlatData = srcControl.rowDragAndDropModule.treeGridData;
@@ -6672,6 +6702,9 @@ class RowDD$1 {
                 this.isaddtoBottom = addToBottom = multiplegrid && this.isDraggedWithChild;
             }
             let dragLength = dragRecords.length;
+            if (!isNullOrUndefined(this.parent.idMapping)) {
+                dragRecords.reverse();
+            }
             for (let i = 0; i < dragLength; i++) {
                 draggedRecord = dragRecords[i];
                 this.draggedRecord = draggedRecord;
@@ -6705,10 +6738,7 @@ class RowDD$1 {
                             }
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
-                        draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRecord.level = this.treeGridData[recordIndex1].level;
-                        if (draggedRecord.hasChildRecords) {
+                        if (draggedRecord.hasChildRecords && isNullOrUndefined(this.parent.idMapping)) {
                             let level = 1;
                             this.updateChildRecordLevel(draggedRecord, level);
                             this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
@@ -7412,7 +7442,8 @@ class ExcelExport$1 {
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
         return new Promise((resolve, reject) => {
-            let dm = this.isLocal() ? new DataManager(dataSource) : this.parent.dataSource;
+            let dm = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
+                : this.parent.dataSource;
             let query = new Query();
             if (!this.isLocal()) {
                 query = this.generateQuery(query);
@@ -7578,7 +7609,7 @@ class PdfExport$1 {
         let isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
         setValue('cancel', false, prop);
         return new Promise((resolve, reject) => {
-            let dm = isLocal ? new DataManager(dtSrc) : this.parent.dataSource;
+            let dm = isLocal && !(dtSrc instanceof DataManager) ? new DataManager(dtSrc) : this.parent.dataSource;
             let query = new Query();
             if (!isLocal) {
                 query = this.generateQuery(query);
@@ -7806,7 +7837,8 @@ class Page$1 {
             let expanded$$1 = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
             let parents = dm.executeLocal(new Query().where(expanded$$1));
             let visualData;
-            if (isFilterChildHierarchy(this.parent)) {
+            if (isFilterChildHierarchy(this.parent) && ((this.parent.searchSettings.key !== this.parent.grid.searchSettings.key) ||
+                (this.parent.filterSettings.columns.length !== this.parent.grid.filterSettings.columns.length))) {
                 visualData = parents;
             }
             else {

@@ -3,7 +3,7 @@ import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion,
 import { getActualProperties, IFilterMUI, Filter as GridFilter, IXLFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
-import { getValue, isNullOrUndefined, remove, createElement, addClass } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, remove, createElement, addClass, closest } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -192,7 +192,8 @@ export class Filter {
     }
     public closeFilterOnContextClick(element: Element): void {
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
-            if (!(this.filterMenuElement.contains(element))) {
+            let ganttElement: Element = closest(element, '#' + this.parent.element.id);
+            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || element.nodeName === 'HTML') {
                 remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;

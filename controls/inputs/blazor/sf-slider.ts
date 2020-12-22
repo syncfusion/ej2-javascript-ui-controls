@@ -29,6 +29,7 @@ class SfSlider {
     private hiddenInput: HTMLElement;
     private firstHandle: HTMLElement;
     private secondHandle: HTMLElement;
+    private materialHandle: HTMLElement;
     private rangeBar: HTMLElement;
     private handlePos1: number;
     private handlePos2: number;
@@ -52,6 +53,7 @@ class SfSlider {
     private firstPartRemain: number;
     private secondPartRemain: number;
     private minDiff: number;
+    private isMaterial: boolean;
     private onResize: EventListener;
     private transition: { [key: string]: string } = {
         handle: 'left .4s cubic-bezier(.25, .8, .25, 1), right .4s cubic-bezier(.25, .8, .25, 1), ' +
@@ -85,6 +87,13 @@ class SfSlider {
         if (!isNullOrUndefined(this.options.Limits)) {
             this.setLimitBarPosition();
         }
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
+        if (isNullOrUndefined(this.materialHandle) && this.isMaterial && this.options.Tooltip !== null &&
+            this.options.Type !== RANGESLIDER) {
+            this.materialHandle = document.createElement('div');
+            this.materialHandle.className = 'e-handle e-material-handle';
+            this.element.appendChild(this.materialHandle);
+        }
         this.setValue(false);
         this.updateColorRangeBarPos();
         if (this.initialRendering && this.options.Enabled && !this.options.ReadOnly) {
@@ -94,6 +103,7 @@ class SfSlider {
     }
     private rangeBarMousedown(event: MouseEvent & TouchEvent): void {
         event.preventDefault();
+        this.changedEventValue = this.options.Value;
         if (this.options.Type === 'Range' && event.target === this.rangeBar) {
             let xPostion: number; let yPostion: number;
             if (event.type === 'mousedown') {
@@ -119,6 +129,15 @@ class SfSlider {
         }
     }
     private dragRangeBarUp(event: MouseEvent & TouchEvent): void {
+        // tslint:disable-next-line:no-any
+        if (this.options.Events !== null && (this.options.Events as any).valueChange.hasDelegate &&
+            this.options.Value[0] !== this.changedEventValue as number[][0]) {
+            this.dotNetRef.invokeMethodAsync('TriggerEvent', {
+                PreviousValue: this.changedEventValue,
+                Value: this.options.Value,
+                isValueChanged: true
+            });
+        }
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
         this.isDragRange = true;
@@ -220,11 +239,21 @@ class SfSlider {
                 this.handleValueAdjust(this.handleVal1, this.options.Min, 1);
             }
         }
-
+        let previousVal: number | number[] = this.options.IsImmediateValue ? this.previousHandleVal : (this.changedEventValue ?
+            this.changedEventValue : this.previousHandleVal);
         this.setHandlePosition(event);
         this.updateValue();
         if (this.options.Type !== DEFAULTSLIDER) {
             this.setRangeBarPosition();
+        }
+        // tslint:disable-next-line:no-any
+        if (this.options.Events !== null && (this.options.Events as any).onChange.hasDelegate &&
+            previousVal as number[][0] !== this.options.Value[0]) {
+            this.dotNetRef.invokeMethodAsync('TriggerEvent', {
+                PreviousValue: previousVal,
+                Value: this.options.Value,
+                isValueChanged: false
+            });
         }
     }
     public wireEvents(): void {
@@ -265,6 +294,9 @@ class SfSlider {
     };
     private focusOut(): void {
         if (this.options.Tooltip !== null && this.options.Tooltip.isVisible) {
+            if (this.options.Type !== RANGESLIDER) {
+                this.materialHandle.style.transform = 'scale(1)';
+            }
             this.dotNetRef.invokeMethodAsync('CloseTooltip');
         }
     }
@@ -334,6 +366,7 @@ class SfSlider {
         this.setValue();
     }
     private handleFocusOut(): void {
+        this.element.focus();
         if (this.firstHandle.classList.contains(HANDLEFOCUSED)) {
             this.firstHandle.classList.remove(HANDLEFOCUSED);
         }
@@ -378,7 +411,6 @@ class SfSlider {
         }
         this.handlePos = this.xyToPosition(pos);
         this.handleVal = this.positionToValue(this.handlePos);
-        this.handleVal = this.options.EnableRtl ? this.options.Max - this.handleVal : this.handleVal;
         this.handlePos = this.checkHandlePosition(this.handleVal);
         this.firstHandle.style.transition = this.transition.scaleTransform;
         if (this.options.Type === RANGESLIDER) {
@@ -529,6 +561,9 @@ class SfSlider {
                     limitValue = [this.options.Limits.minStart, this.options.Limits.minEnd];
                     let valAndPos: number[] = this.updateNewHandleValue(this.handleVal, this.handlePos, limitValue);
                     this.updateHandleValue(this.firstHandle, valAndPos[0], valAndPos[1], true);
+                    if (this.isMaterial && !isNullOrUndefined(this.materialHandle) && this.options.Type !== RANGESLIDER) {
+                        this.updateHandleValue(this.materialHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                    }
                 } else if (this.activeHandle === 2 && !this.options.Limits.endHandleFixed) {
                     limitValue = [this.options.Limits.maxStart, this.options.Limits.maxEnd];
                     let valAndPos: number[] = this.updateNewHandleValue(this.handleVal, this.handlePos, limitValue);
@@ -536,7 +571,10 @@ class SfSlider {
                 }
             } else {
                 let currentActiveHandle: HTMLElement = this.activeHandle === 1 ? this.firstHandle : this.secondHandle;
-                this.updateHandleValue(currentActiveHandle, this.handleVal, this.handlePos, this.activeHandle === 1 ? true : false);
+                this.updateHandleValue(currentActiveHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                if (this.isMaterial && !isNullOrUndefined(this.materialHandle) && this.options.Type !== RANGESLIDER) {
+                    this.updateHandleValue(this.materialHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                }
             }
             if (this.options.Type !== DEFAULTSLIDER) {
                 this.setRangeBarPosition();
@@ -625,7 +663,9 @@ class SfSlider {
         } else if (val > 100) {
             val = 100;
         }
-
+        if (this.options.EnableRtl && this.options.Orientation === HORIZONTAL) {
+            val = 100 - val;
+        }
         if (this.options.Orientation === HORIZONTAL) {
             pos = elementAttr.width * (val / 100);
         } else {
@@ -873,6 +913,9 @@ class SfSlider {
         this.updateHandleAttributes('aria-valuemax', [this.options.Max.toString()]);
         let pos: number[] = [this.handlePos1, this.handlePos2];
         this.updateHandlePosition(this.firstHandle, pos[0]);
+        if (this.isMaterial && this.options.Type !== RANGESLIDER && !isNullOrUndefined(this.materialHandle)) {
+            this.updateHandlePosition(this.materialHandle, pos[0]);
+        }
         if (this.options.Type === RANGESLIDER) {
             this.updateHandlePosition(this.secondHandle, pos[1]);
         }
@@ -888,8 +931,6 @@ class SfSlider {
         }
         this.handlePos = this.xyToPosition(pos);
         this.handleVal = this.positionToValue(this.handlePos);
-        this.handleVal = this.options.EnableRtl ? this.options.Max - this.handleVal : this.handleVal;
-        this.handlePos = this.checkHandlePosition(this.handleVal);
         if (this.handleVal2 < this.handleVal) {
             this.activeHandle = 2;
         } else if (this.handleVal1 > this.handleVal) {
@@ -975,8 +1016,15 @@ class SfSlider {
         }
         if (!this.isClicked) { this.previousHandleVal = this.options.Value; }
         if (makeServerCall) {
-            setTimeout(() => { this.dotNetRef.invokeMethodAsync('UpdateValue', this.options.Value, this.activeHandle); }, 300);
-
+            setTimeout(
+                () => {
+                    if (this.isMaterial && this.options.Tooltip !== null && !isNullOrUndefined(this.materialHandle) &&
+                        this.options.Type !== RANGESLIDER) {
+                        this.materialHandle.style.transform = 'scale(0)';
+                    }
+                    this.dotNetRef.invokeMethodAsync('UpdateValue', this.options.Value, this.activeHandle);
+                },
+                300);
         }
     }
     // tslint:disable-next-line:no-any
@@ -1000,6 +1048,12 @@ class SfSlider {
     public destroy(): void {
         (this.element as HTMLElement).style.display = 'none';
         this.unWireEvents();
+    }
+    public updateTooltipPosition(id: string): void {
+        let tooltipContent: HTMLElement = document.getElementById(id);
+        if (tooltipContent !== null && this.options.Type !== RANGESLIDER) {
+            tooltipContent.style.transform = 'rotate(45deg)';
+        }
     }
     // tslint:disable-next-line:no-any
     public propertyChanges(properties: any): void {
@@ -1074,6 +1128,11 @@ let Slider: object = {
     destroy(element: BlazorSliderElement) {
         if (element && element.blazor__instance) {
             element.blazor__instance.destroy();
+        }
+    },
+    updateTooltipPosition(element: BlazorSliderElement, id: string) {
+        if (element && element.blazor__instance) {
+            element.blazor__instance.updateTooltipPosition(id);
         }
     }
 };

@@ -12,6 +12,7 @@ var BTN_CLICK = 'BtnClick';
 var DROPDOWN = 'e-dropdown-menu';
 var COLOR_PICKER = 'e-colorpicker-container';
 var HSV_MODEL = 'e-hsv-model';
+var MODEL = '.e-colorpicker.e-modal';
 var CONTAINER = '.e-container';
 var ITEM = 'e-item';
 var FOCUSED = 'e-focused';
@@ -47,9 +48,9 @@ var SfDropDownButton = /** @class */ (function () {
         var zIndex = sf.popups.getZindexPartial(this.element);
         var isColorPicker = this.element.parentElement.classList.contains(COLOR_PICKER);
         if (isColorPicker) {
-            this.element.parentElement.blazor__instance.setPaletteWidth(this.popup.querySelector(CONTAINER));
+            this.element.parentElement.blazor__instance.setPaletteWidth(this.popup.querySelector(CONTAINER), false, zIndex);
         }
-        this.setPosition();
+        this.setPosition(isColorPicker);
         sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
         this.popup.style.zIndex = zIndex + EMPTY;
@@ -61,19 +62,27 @@ var SfDropDownButton = /** @class */ (function () {
             this.popup.firstElementChild.focus();
         }
     };
-    SfDropDownButton.prototype.setPosition = function () {
+    SfDropDownButton.prototype.setPosition = function (isColorPicker) {
+        var left;
+        var top;
         var btnOffset = this.element.getBoundingClientRect();
-        var left = btnOffset.left + pageXOffset;
-        var top = btnOffset.bottom + pageYOffset;
         var popupOffset = this.popup.getBoundingClientRect();
-        if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
-            if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
-                top = top - btnOffset.height - popupOffset.height;
-            }
+        if (isColorPicker && sf.base.Browser.isDevice) {
+            left = ((document.documentElement.clientWidth / 2) - (popupOffset.width / 2)) + pageXOffset;
+            top = ((document.documentElement.clientHeight / 2) - (popupOffset.height / 2)) + pageYOffset;
         }
-        if (btnOffset.left + popupOffset.width > document.documentElement.clientWidth) {
-            if (btnOffset.right - popupOffset.width > document.documentElement.clientLeft) {
-                left = (left + btnOffset.width) - popupOffset.width;
+        else {
+            left = btnOffset.left + pageXOffset;
+            top = btnOffset.bottom + pageYOffset;
+            if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
+                if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
+                    top = top - btnOffset.height - popupOffset.height;
+                }
+            }
+            if (btnOffset.left + popupOffset.width > document.documentElement.clientWidth) {
+                if (btnOffset.right - popupOffset.width > document.documentElement.clientLeft) {
+                    left = (left + btnOffset.width) - popupOffset.width;
+                }
             }
         }
         this.popup.style.left = Math.ceil(left) + PIXEL;
@@ -83,13 +92,14 @@ var SfDropDownButton = /** @class */ (function () {
         if (this.popup.parentElement) {
             var target = e.target;
             var prevent = true;
-            if (target.classList.contains(HSV_MODEL)) {
+            if (!sf.base.Browser.isDevice && target.classList.contains(HSV_MODEL)) {
                 var ref = target.parentElement.getBoundingClientRect();
                 var btn = this.element.getBoundingClientRect();
                 prevent = (e.clientX >= ref.left && e.clientX <= ref.right && e.clientY >= ref.top && e.clientY <= ref.bottom) ||
                     (e.clientX >= btn.left && e.clientX <= btn.right && e.clientY >= btn.top && e.clientY <= btn.bottom);
             }
-            if (!prevent || (!sf.base.closest(target, HASH + this.getDropDownButton().id) && !sf.base.closest(e.target, HASH + this.popup.id))) {
+            if (!prevent || (!sf.base.closest(target, HASH + this.getDropDownButton().id) && !sf.base.closest(e.target, HASH + this.popup.id) &&
+                !sf.base.closest(e.target, MODEL))) {
                 this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 this.removeEventListener();
             }
@@ -164,8 +174,9 @@ var SfDropDownButton = /** @class */ (function () {
             }
             return;
         }
-        this.setPosition();
-        if (this.element.parentElement.classList.contains(COLOR_PICKER)) {
+        var isColorPicker = this.element.parentElement.classList.contains(COLOR_PICKER);
+        this.setPosition(isColorPicker);
+        if (isColorPicker) {
             this.element.parentElement.blazor__instance.setOffset(this.popup);
         }
     };

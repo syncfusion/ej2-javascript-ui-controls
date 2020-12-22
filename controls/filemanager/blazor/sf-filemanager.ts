@@ -69,7 +69,9 @@ class SfFileManager {
     public adjustHeight(): string {
         let toolbar: HTMLElement = <HTMLElement>select('#' + this.element.id + TOOLBAR_ID, this.element);
         let toolBarHeight: number = toolbar ? toolbar.offsetHeight : 0;
-        return formatUnit(this.element.clientHeight - toolBarHeight);
+        let breadcrumbBarHeight: number = (<HTMLElement>this.element.querySelector('.e-address')).offsetHeight;
+        let gridHeight: number = this.element.clientHeight - toolBarHeight - breadcrumbBarHeight;
+        return formatUnit(this.element.clientHeight - toolBarHeight) + ' ' + formatUnit(gridHeight);
     }
 
     public createDragObj(): void {
@@ -751,22 +753,28 @@ let FileManager: object = {
             }
         }
     },
-    saveFile(filename: string, bytesBase64: string): void {
-        let link: HTMLElement;
-        link = createElement('a');
-        let href: string = 'data:application/octet-stream;base64,' + bytesBase64;
-        link.setAttribute('href', href);
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    // tslint:disable-next-line
+    saveFile(filename: any, url: string, element: BlazorElement): void {
+        // tslint:disable-next-line
+        let data: object = { 'action': 'download', 'path': filename.path, 'names': filename.names, 'data': filename.data };
+        let form: HTMLElement = createElement('form', {
+            id: element.id + '_downloadForm',
+            attrs: { action: url, method: 'post', name: 'downloadForm', 'download': '' }
+        });
+        let input: HTMLElement = createElement('input', {
+            id: element.id + '_hiddenForm',
+            attrs: { name: 'downloadInput', value: JSON.stringify(data), type: 'hidden' }
+        });
+        form.appendChild(input);
+        document.body.appendChild(form);
+        document.forms.namedItem('downloadForm').submit();
+        document.body.removeChild(form);
     },
     getTargetElement(view: string, x: number, y: number): MenuOpenModel {
-        let xValue: number = document.documentElement.scrollLeft ? x - document.documentElement.scrollLeft : x;
-        let yValue: number = document.documentElement.scrollTop ? y - document.documentElement.scrollTop : y;
-        let element: Element = document.elementFromPoint(xValue, yValue);
+        let element: Element = document.elementFromPoint(x, y);
         let targetElement: Element;
         let menuModel: MenuOpenModel;
+        let treeElement: HTMLElement = closest(element, 'li[role="treeitem"]') as HTMLElement;
         if (!element) {
             menuModel = { IsFile: false, RowIndex: null, IsFolder: false, IsLayout: false, IsTree: false };
         } else {
@@ -774,8 +782,9 @@ let FileManager: object = {
                 (element.classList.contains('e-list-parent') && element.classList.contains('e-ul')) ||
                 element.classList.contains('e-view-container')) {
                 menuModel = { IsFile: false, RowIndex: null, IsFolder: false, IsLayout: true, IsTree: false };
-            } else if (closest(element, 'li[role="treeitem"]')) {
-                menuModel = { IsFile: false, RowIndex: null, IsFolder: true, IsLayout: false, IsTree: true };
+            } else if (treeElement) {
+                let dataid: number = parseInt(treeElement.getAttribute('data-uid'), 10);
+                menuModel = { IsFile: false, RowIndex: dataid, IsFolder: true, IsLayout: false, IsTree: true };
             } else {
                 if (view === 'Details') {
                     targetElement = closest(element, 'tr');

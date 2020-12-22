@@ -1314,6 +1314,7 @@ class TaskProcessor extends DateProcessor {
             this.hierarchyData = [];
             this.parent.predecessorsCollection = [];
             this.parent.treeGrid.parentData = [];
+            this.parent.taskIds = [];
         }
         if (isNullOrUndefined(this.parent.dataSource)) {
             this.parent.dataSource = [];
@@ -4438,6 +4439,7 @@ class GanttChart {
         }
         EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
         EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
+        EventHandler.add(document, 'mouseup', this.contextClick, this);
         EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     }
     unWireEvents() {
@@ -4461,6 +4463,7 @@ class GanttChart {
         }
         EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(document.body, 'contextmenu', this.contextClick);
+        EventHandler.remove(document, 'mouseup', this.contextClick);
         EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     }
     /**
@@ -11550,8 +11553,9 @@ let Gantt = class Gantt extends Component {
         else {
             let expandedRecords = this.getExpandedRecords(this.currentViewData);
             let height;
-            if (!isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
-                height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            let chartRow$$1 = this.ganttChartModule.getChartRows()[0];
+            if (!isNullOrUndefined(chartRow$$1) && chartRow$$1.getBoundingClientRect().height > 0) {
+                height = chartRow$$1.getBoundingClientRect().height;
             }
             else {
                 height = this.rowHeight;
@@ -11846,6 +11850,9 @@ let Gantt = class Gantt extends Component {
             this.connectorLineModule.removePreviousConnectorLines(this.currentViewData);
         }
         this.updateCurrentViewData();
+        if (!this.enableVirtualization) {
+            this.updateContentHeight();
+        }
         this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();
@@ -16753,6 +16760,9 @@ class DialogEdit {
                 tempData[this.parent.ganttColumns[i].field] = '';
             }
         }
+        tempData.ganttProperties.isAutoSchedule = (this.parent.taskMode === 'Auto') ? true :
+            (this.parent.taskMode === 'Manual') ? false :
+                tempData[taskSettings.manual] === true ? false : true;
         return tempData;
     }
     /**
@@ -18112,7 +18122,7 @@ class DialogEdit {
             this.updateResourceCollection(args, resourceTreeGridId);
         };
         let divElement = this.createDivElement('e-resource-div', resourceTreeGridId);
-        TreeGrid.Inject(Selection, Filter, Edit$1);
+        TreeGrid.Inject(Selection, Filter, Edit$1, VirtualScroll);
         let treeGridObj = new TreeGrid(inputModel);
         let resourceColumn = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
@@ -20509,6 +20519,7 @@ class Edit$2 {
             }
         }
         if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
+            this.parent.treeGrid.parentData = [];
             this.parent.treeGrid.refresh();
             this.isTreeGridRefresh = false;
         }
@@ -21093,6 +21104,7 @@ class Edit$2 {
                     }
                 }
                 this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
+                this.parent.treeGrid.parentData = [];
                 this.parent.treeGrid.refresh();
             }
         }
@@ -21288,6 +21300,7 @@ class Edit$2 {
         if (this.parent.taskFields.dependency) {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
         }
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';
@@ -22739,7 +22752,8 @@ class Filter$1 {
     }
     closeFilterOnContextClick(element) {
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
-            if (!(this.filterMenuElement.contains(element))) {
+            let ganttElement = closest(element, '#' + this.parent.element.id);
+            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || element.nodeName === 'HTML') {
                 remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;

@@ -151,7 +151,6 @@ export class CommentReviewPane {
         this.reviewPane.style.display = 'block';
         return this.reviewPane;
     }
-
     public closePane(): void {
         if (this.commentPane && this.commentPane.isEditMode) {
             if (!isNullOrUndefined(this.commentPane.currentEditingComment)

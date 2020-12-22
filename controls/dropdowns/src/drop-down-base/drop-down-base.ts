@@ -1184,6 +1184,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private getSortedDataSource(dataSource: { [key: string]: Object }[]): { [key: string]: Object }[] {
         if (dataSource && this.sortOrder !== 'None') {
             let textField: string = this.fields.text ? this.fields.text : 'text';
+            if (this.typeOfData(dataSource).typeof === 'string' || this.typeOfData(dataSource).typeof === 'number'
+            || this.typeOfData(dataSource).typeof === 'boolean') {
+                textField = '';
+            }
             dataSource = ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, textField));
         }
         return dataSource;

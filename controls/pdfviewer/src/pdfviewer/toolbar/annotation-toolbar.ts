@@ -350,10 +350,10 @@ export class AnnotationToolbar {
                         let collectionKey: any = signatureCollection["sign_" + collection];
                         if (collectionKey !== '') {
                             // tslint:disable-next-line:max-line-length
-                            args.element.innerHTML += '<span id="s' + collection + '"><span class="e-pv-align-border" id="sign_border' + collection + '"><img id="sign_' + collection + '" src="' + collectionKey + '" width="50" height="50" /><span class="e-pv-delete e-pv-align" id="delete' + collection + '"> </span> </span><br> </br></span>';
+                            args.element.innerHTML += '<div id="s' + collection + '"><span class="e-pv-align-border" id="sign_border' + collection + '"><img id="sign_' + collection + '" src="' + collectionKey + '" width="50" height="50" style="display: block;margin-left: auto;margin-right: auto;"/></span><span class="e-pv-delete e-pv-align" id="delete' + collection + '"> </span><br></br></div>';
                             args.element.style.pointerEvents = 'auto';
                             args.element.style.background = 'none';
-                            args.element.style.width = '240';
+                            this.pdfViewerBase.getElement('_annotation_signature-popup').style.width = '240px';
                         }
                     }
                 }
@@ -435,14 +435,14 @@ export class AnnotationToolbar {
         // tslint:disable-next-line
         let signaturecollection: any = this.pdfViewerBase.signatureModule.signaturecollection;
         for (let collection: number = 0; collection < signaturecollection.length; collection++) {
-            if (event.target.parentElement.children[0].id === 'sign_' + collection) {
+            if (event.target.parentElement.children[0].children[0].id === 'sign_' + collection) {
                 // tslint:disable-next-line
                 let RemoveSignature: any = signaturecollection[collection];
                 RemoveSignature['sign_' + collection] = '';
                 break;
             }
         }
-        event.target.parentElement.parentElement.remove();
+        event.target.parentElement.remove();
     }
     private getTemplate(elementName: string, id: string, className: string): string {
         let element: HTMLElement = createElement(elementName, { id: this.pdfViewer.element.id + id });
@@ -2705,7 +2705,8 @@ export class AnnotationToolbar {
                 this.toolbar.enableItems(this.textPropElement.parentElement, false);
             }
         } else {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('AnnotationSelect', 'TextMarkup');
+            // this.pdfViewer._dotnetInstance.invokeMethodAsync('AnnotationSelect', 'TextMarkup');
+            this.pdfViewerBase.blazorUIAdaptor.annotationSelect('TextMarkup');
         }
     }
 
@@ -2749,7 +2750,8 @@ export class AnnotationToolbar {
                 this.toolbar.enableItems(this.textPropElement.parentElement, false);
             }
         } else {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableAnnotationPropertiesTools', isEnable, isPropertiesChanges);
+            // this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableAnnotationPropertiesTools', isEnable, isPropertiesChanges);
+            this.pdfViewerBase.blazorUIAdaptor.enableAnnotationPropertiesTool(isEnable, isPropertiesChanges);
         }
     }
 
@@ -2775,7 +2777,8 @@ export class AnnotationToolbar {
                 this.toolbar.enableItems(this.textAlignElement.parentElement, false);
             }
         } else {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableSignaturePropertiesTools', isEnable, isPropertiesChanges);
+            //this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableSignaturePropertiesTools', isEnable, isPropertiesChanges);
+            this.pdfViewerBase.blazorUIAdaptor.enableSignaturePropertiesTools(isEnable, isPropertiesChanges);
         }
     }
 
@@ -2801,7 +2804,8 @@ export class AnnotationToolbar {
                 this.toolbar.enableItems(this.textPropElement.parentElement, false);
             }
         } else {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableStampAnnotationPropertiesTools', isEnable, isPropertiesChanges);
+            // this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableStampAnnotationPropertiesTools', isEnable, isPropertiesChanges);
+            this.pdfViewerBase.blazorUIAdaptor.enableStampAnnotationPropertiesTools(isEnable, isPropertiesChanges);
         }
     }
 
@@ -2826,7 +2830,8 @@ export class AnnotationToolbar {
                 this.toolbar.enableItems(this.textPropElement.parentElement, isEnable);
             }
         } else {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableFreeTextAnnotationPropertiesTools', isEnable, isPropertiesChanges);
+            //this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableFreeTextAnnotationPropertiesTools', isEnable, isPropertiesChanges);
+            this.pdfViewerBase.blazorUIAdaptor.enableFreeTextAnnotationPropertiesTools(isEnable, isPropertiesChanges);
         }
     }
 
@@ -2932,10 +2937,12 @@ export class AnnotationToolbar {
                  this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.strokeDropDownElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor'));
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     // tslint:disable-next-line
-                    this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontFamilyInIcon', this.pdfViewer.selectedItems.annotations[0].fontFamily);
-                    this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontSizeInIcon', this.pdfViewer.selectedItems.annotations[0].fontSize);
+                    this.pdfViewer.toolbar.annotationToolbarModule.updateColorInIcon(this.fontColorElementInBlazor, this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].fontColor, 'fontColor'));                   
+                    //this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontFamilyInIcon', this.pdfViewer.selectedItems.annotations[0].fontFamily);
+                     // tslint:disable-next-line:max-line-length
+                    this.pdfViewerBase.blazorUIAdaptor.updateFontFamilyInIcon(this.pdfViewer.selectedItems.annotations[0].fontFamily);
+                    // this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateFontSizeInIcon', this.pdfViewer.selectedItems.annotations[0].fontSize);
+                    this.pdfViewerBase.blazorUIAdaptor.updateFontSizeInIcon(this.pdfViewer.selectedItems.annotations[0].fontSize);
                     //this.pdfViewer.toolbar.annotationtoolbar.updateTextAlignInIcon(this.pdfViewer.selectedItems.annotations[0].textAlign);
                 }
             } else {

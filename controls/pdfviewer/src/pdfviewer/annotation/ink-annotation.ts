@@ -188,8 +188,12 @@ export class InkAnnotation {
      * @private
      */
     public setAnnotationMode(): void {
-        this.pdfViewerBase.isToolbarInkClicked = true;
-        this.drawInk();
+        if (this.pdfViewerBase.isToolbarInkClicked) {
+            this.drawInkAnnotation();
+        } else {
+            this.pdfViewerBase.isToolbarInkClicked = true;
+            this.drawInk();
+        }
     }
     public saveInkSignature(): string {
         // tslint:disable-next-line

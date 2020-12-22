@@ -1,4 +1,4 @@
-import { BlazorDotnetObject, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, closest, isNullOrUndefined, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { getScrollableParent, getZindexPartial } from '@syncfusion/ej2-popups';
 import { upDownKeyHandler, setBlankIconStyle } from '../src/common/common';
 
@@ -12,6 +12,7 @@ const BTN_CLICK: string = 'BtnClick';
 const DROPDOWN: string = 'e-dropdown-menu';
 const COLOR_PICKER: string = 'e-colorpicker-container';
 const HSV_MODEL: string = 'e-hsv-model';
+const MODEL: string = '.e-colorpicker.e-modal';
 const CONTAINER: string = '.e-container';
 const ITEM: string = 'e-item';
 const FOCUSED: string = 'e-focused';
@@ -47,11 +48,12 @@ class SfDropDownButton {
         if (blankIcon) { setBlankIconStyle(this.popup); }
         this.popup.classList.remove(TRANSPARENT);
         let zIndex: number = getZindexPartial(this.element);
-        let isColorPicker: Boolean = this.element.parentElement.classList.contains(COLOR_PICKER);
+        let isColorPicker: boolean = this.element.parentElement.classList.contains(COLOR_PICKER);
         if (isColorPicker) {
-            (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setPaletteWidth(this.popup.querySelector(CONTAINER));
+            (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setPaletteWidth(
+                this.popup.querySelector(CONTAINER), false, zIndex);
         }
-        this.setPosition();
+        this.setPosition(isColorPicker);
         EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
         this.addEventListener();
         this.popup.style.zIndex = zIndex + EMPTY;
@@ -59,19 +61,25 @@ class SfDropDownButton {
         if (isColorPicker) { (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setOffset(this.popup, zIndex); }
         if (this.popup.firstElementChild) { (this.popup.firstElementChild as HTMLElement).focus(); }
     }
-    private setPosition(): void {
+    private setPosition(isColorPicker?: boolean): void {
+        let left: number; let top: number;
         let btnOffset: ClientRect = this.element.getBoundingClientRect();
-        let left: number = btnOffset.left + pageXOffset;
-        let top: number = btnOffset.bottom + pageYOffset;
         let popupOffset: ClientRect = this.popup.getBoundingClientRect();
-        if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
-            if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
-                top = top - btnOffset.height - popupOffset.height;
+        if (isColorPicker && Browser.isDevice) {
+            left = ((document.documentElement.clientWidth / 2) - (popupOffset.width / 2)) + pageXOffset;
+            top = ((document.documentElement.clientHeight / 2) - (popupOffset.height / 2)) + pageYOffset;
+        } else {
+            left = btnOffset.left + pageXOffset;
+            top = btnOffset.bottom + pageYOffset;
+            if (btnOffset.bottom + popupOffset.height > document.documentElement.clientHeight) {
+                if (top - btnOffset.height - popupOffset.height > document.documentElement.clientTop) {
+                    top = top - btnOffset.height - popupOffset.height;
+                }
             }
-        }
-        if (btnOffset.left + popupOffset.width > document.documentElement.clientWidth) {
-            if (btnOffset.right - popupOffset.width > document.documentElement.clientLeft) {
-                left = (left + btnOffset.width) - popupOffset.width;
+            if (btnOffset.left + popupOffset.width > document.documentElement.clientWidth) {
+                if (btnOffset.right - popupOffset.width > document.documentElement.clientLeft) {
+                    left = (left + btnOffset.width) - popupOffset.width;
+                }
             }
         }
         this.popup.style.left = Math.ceil(left) + PIXEL;
@@ -81,13 +89,14 @@ class SfDropDownButton {
         if (this.popup.parentElement) {
             let target: Element = e.target as Element;
             let prevent: boolean = true;
-            if (target.classList.contains(HSV_MODEL)) {
+            if (!Browser.isDevice && target.classList.contains(HSV_MODEL)) {
                 let ref: ClientRect = target.parentElement.getBoundingClientRect();
                 let btn: ClientRect = this.element.getBoundingClientRect();
                 prevent = (e.clientX >= ref.left && e.clientX <= ref.right && e.clientY >= ref.top && e.clientY <= ref.bottom) ||
                     (e.clientX >= btn.left && e.clientX <= btn.right && e.clientY >= btn.top && e.clientY <= btn.bottom);
             }
-            if (!prevent || (!closest(target, HASH + this.getDropDownButton().id) && !closest(e.target as Element, HASH + this.popup.id))) {
+            if (!prevent || (!closest(target, HASH + this.getDropDownButton().id) && !closest(e.target as Element, HASH + this.popup.id) &&
+                !closest(e.target as Element, MODEL))) {
                 this.dotNetRef.invokeMethodAsync(BTN_CLICK, null);
                 this.removeEventListener();
             }
@@ -156,8 +165,9 @@ class SfDropDownButton {
             }
             return;
         }
-        this.setPosition();
-        if (this.element.parentElement.classList.contains(COLOR_PICKER)) {
+        let isColorPicker: boolean = this.element.parentElement.classList.contains(COLOR_PICKER);
+        this.setPosition(isColorPicker);
+        if (isColorPicker) {
             (this.element.parentElement as BlazorColorPickerElement).blazor__instance.setOffset(this.popup);
         }
     }

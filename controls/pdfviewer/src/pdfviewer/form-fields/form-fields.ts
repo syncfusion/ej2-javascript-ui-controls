@@ -449,6 +449,7 @@ export class FormFields {
         let currentLeft: number = parseFloat(currentField.style.left) / zoomvalue;
         let currentTop: number = parseFloat(currentField.style.top) / zoomvalue;
         let currentPage: number = parseFloat(currentField.id.split('_')[1]);
+        let signString: string = this.pdfViewerBase.signatureModule.saveImageString;
         let signatureFontFamily: string;
         let signatureFontSize: number;
         if (signatureType === 'Type') {
@@ -461,6 +462,7 @@ export class FormFields {
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
                 shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
             };
+            signString = annot.data;
             signatureFontFamily = annot.fontFamily;
             signatureFontSize = annot.fontSize;
         } else if (signatureType === 'Image') {
@@ -470,6 +472,7 @@ export class FormFields {
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
                 shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
+            signString = annot.data;
         } else {
             // tslint:disable-next-line
             if (this.pdfViewer.signatureFitMode === 'Default') {
@@ -496,7 +499,8 @@ export class FormFields {
         currentField.style.pointerEvents = 'none';
         currentField.parentElement.style.pointerEvents = 'none';
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
-        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity );
+        // tslint:disable-next-line
+        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString );
         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
     }
 

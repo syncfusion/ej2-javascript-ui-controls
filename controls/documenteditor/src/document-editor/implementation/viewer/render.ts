@@ -468,7 +468,7 @@ export class Renderer {
             if (i === 0) {
                 let ctx: CanvasRenderingContext2D = this.pageContext;
                 // tslint:disable-next-line:max-line-length
-                this.renderSolidLine(ctx, this.getScaledValue(widget.x, 1), this.getScaledValue(widget.y + widget.height / 2, 2), 300, '#000000');
+                this.renderSolidLine(ctx, this.getScaledValue(widget.x, 1), this.getScaledValue(widget.y + widget.height / 2, 2), 300 * this.documentHelper.zoomFactor, '#000000');
                 continue;
             }
             // tslint:disable-next-line:max-line-length
@@ -1256,6 +1256,7 @@ export class Renderer {
             }
         } else if (isHeightType) {
             let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
+            isClipped = true;
             // tslint:disable-next-line:max-line-length
             this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
         }

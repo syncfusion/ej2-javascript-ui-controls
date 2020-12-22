@@ -196,7 +196,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         }
         let attribute: Object = {
             'id': this.element.id + '_canvas', 'class': 'drawing',
-            'style': 'position:relative; margin-top:6px; height:' + this.getSizeValue(this.model.height) + '; width:' +
+            'style': 'position:relative; height:' + this.getSizeValue(this.model.height) + '; width:' +
                 this.getSizeValue(this.model.width) +
                 ';style:-ms-touch-action: none;touch-action: none;'
         };

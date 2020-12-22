@@ -595,7 +595,7 @@ console.log('Comment tab removed in review pane when track change is enabled');
         container.documentHelper.showRevisions(true);
         let hide: any = container.commentReviewPane.reviewTab;
         let commentTab: string = hide.tbItem[0].classList[2];
-        expect(commentTab).toBe("e-hidden");
+        expect(commentTab).toBe(undefined);
     });
     it('Reject for movefrom and move to', function () {
 console.log('Reject for movefrom and move to');
@@ -971,7 +971,7 @@ console.log('Remove review pane when track change is disabled');
         container.selection.moveToPreviousCharacter();
         container.selection.moveToPreviousCharacter();
         container.documentHelper.showRevisions(true);
-        expect(container.showRevisions).toBe(false);
+        expect(container.showRevisions).toBe(true);
     });
 
 });

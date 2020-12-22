@@ -841,6 +841,8 @@ var refreshFrozenHeight = 'refresh-frozen-height';
 var setHeightToFrozenElement = 'set-height-to-frozen-element';
 /** @hidden */
 var preventFrozenScrollRefresh = 'prevent-frozen-scroll-refresh';
+/** @hidden */
+var nextCellIndex = 'next-cell-index';
 
 /**
  * Defines types of Cell
@@ -4616,7 +4618,8 @@ var CellRenderer = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
         }
-        if (!cell.visible) {
+        if ((!cell.visible && !cell.isDataCell) ||
+            (!sf.base.isNullOrUndefined(cell.column.visible) && !cell.column.visible)) {
             classes.push('e-hide');
         }
         attr.class = classes;
@@ -23474,6 +23477,9 @@ var NumberFilterUI = /** @class */ (function () {
     NumberFilterUI.prototype.read = function (element, column, filterOptr, filterObj) {
         var numberuiObj = document.querySelector('#numberui-' + column.uid).ej2_instances[0];
         var filterValue = numberuiObj.value;
+        if (sf.base.isNullOrUndefined(filterValue)) {
+            filterValue = parseFloat(element.value);
+        }
         filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', true);
     };
     return NumberFilterUI;
@@ -26750,11 +26756,17 @@ var RowDD = /** @class */ (function () {
         }
         for (var i = 0, len = args.rows.length; i < len; i++) {
             if (frzCols) {
-                if (i % 2 === 0) {
+                if (args.rows.length === 1) {
                     args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+                    args.rows[i + 1] = mtbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
                 }
                 else {
-                    args.rows[i] = mtbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+                    if (i % 2 === 0) {
+                        args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+                    }
+                    else {
+                        args.rows[i] = mtbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
+                    }
                 }
             }
             else {
@@ -28080,6 +28092,12 @@ var Group = /** @class */ (function () {
                         if (!this.isAppliedUnGroup) {
                             if (!this.isAppliedGroup) {
                                 this.updateGroupDropArea(true);
+                                for (var j = 0; j < this.parent.sortSettings.columns.length; j++) {
+                                    if (this.parent.sortSettings.columns[j].isFromGroup) {
+                                        this.parent.sortSettings.columns.splice(j, 1);
+                                        j--;
+                                    }
+                                }
                                 for (var i = 0; i < this.groupSettings.columns.length; i++) {
                                     this.colName = this.groupSettings.columns[i];
                                     var col = this.parent.getColumnByField(this.colName);
@@ -34045,8 +34063,14 @@ var BatchEdit = /** @class */ (function () {
                 var index = this.findNextEditableCell(this.cellDetails.cellIndex + 1, true, true);
                 var col = gObj.getColumns()[index];
                 if (col) {
-                    this.parent.editSettings.newRowPosition === 'Bottom' ? this.editCell(btmIdx, col.field, true) :
-                        this.editCell(0, col.field, true);
+                    if (this.parent.editSettings.newRowPosition === 'Bottom') {
+                        this.editCell(btmIdx, col.field, true);
+                    }
+                    else {
+                        var args = { index: 0, column: col };
+                        this.parent.notify(nextCellIndex, args);
+                        this.editCell(args.index, col.field, true);
+                    }
                     this.saveCell();
                 }
             }
@@ -35155,12 +35179,18 @@ var Edit = /** @class */ (function () {
         return this.parent.editSettings.mode !== 'Dialog' ? isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable() :
             sf.base.select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     };
+    Edit.prototype.resetElemPosition = function (elem, args) {
+        if (args.element.offsetWidth < elem.offsetWidth) {
+            elem.style.left = args.element.getBoundingClientRect().left - ((elem.offsetWidth - args.element.offsetWidth) / 2) + 'px';
+        }
+    };
     Edit.prototype.validationComplete = function (args) {
         if (this.parent.isEdit) {
             var elem = this.getElemTable(args.element).querySelector('#' + args.inputName + '_Error');
             if (elem) {
                 if (args.status === 'failure') {
                     elem.style.display = '';
+                    this.resetElemPosition(elem, args);
                 }
                 else {
                     elem.style.display = 'none';
@@ -36725,7 +36755,7 @@ var ExcelExport = /** @class */ (function () {
             else {
                 var result = returnType.result.GroupGuid ?
                     returnType.result.records : returnType.result;
-                this.processAggregates(gObj, result, excelRow, null, null, null, headerRow.columns);
+                this.processAggregates(gObj, result, excelRow);
             }
         }
         return excelRow;
@@ -36922,8 +36952,10 @@ var ExcelExport = /** @class */ (function () {
         };
     };
     // tslint:disable-next-line:max-line-length
-    ExcelExport.prototype.processAggregates = function (gObj, rec, excelRows, currentViewRecords, indent, byGroup, columns) {
+    ExcelExport.prototype.processAggregates = function (gObj, rec, excelRows, currentViewRecords, indent, byGroup) {
         var summaryModel = new SummaryModelGenerator(gObj);
+        var columns = summaryModel.getColumns();
+        columns = columns.filter(function (col) { return sf.base.isNullOrUndefined(col.commands) && col.type !== 'checkbox'; });
         if (gObj.aggregates.length && this.parent !== gObj) {
             gObj.aggregateModule.prepareSummaryInfo();
         }
@@ -37417,10 +37449,8 @@ var PdfExport = /** @class */ (function () {
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!sf.base.isNullOrUndefined(pdfExportProperties) && !sf.base.isNullOrUndefined(pdfExportProperties.dataSource)) {
-            if (!(pdfExportProperties.dataSource instanceof sf.data.DataManager)) {
-                pdfExportProperties.dataSource = new sf.data.DataManager(pdfExportProperties.dataSource);
-            }
+        if (!sf.base.isNullOrUndefined(pdfExportProperties) && !sf.base.isNullOrUndefined(pdfExportProperties.dataSource)
+            && pdfExportProperties.dataSource instanceof sf.data.DataManager) {
             return new Promise(function (resolve, reject) {
                 pdfExportProperties.dataSource.executeQuery(new sf.data.Query()).then(function (returnType) {
                     _this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
@@ -37557,6 +37587,8 @@ var PdfExport = /** @class */ (function () {
             if (!sf.base.isNullOrUndefined(returnType.aggregates)) {
                 var summaryModel = new SummaryModelGenerator(gObj);
                 var sRows = void 0;
+                var column = summaryModel.getColumns();
+                column = column.filter(function (col) { return sf.base.isNullOrUndefined(col.commands) && col.type !== 'checkbox'; });
                 if (gObj.aggregates.length && this.parent !== gObj) {
                     gObj.aggregateModule.prepareSummaryInfo();
                 }
@@ -37570,7 +37602,7 @@ var PdfExport = /** @class */ (function () {
                     sRows = summaryModel.generateRows(dataSource.records, returnType.aggregates);
                 }
                 else {
-                    sRows = summaryModel.generateRows(returnType.result, returnType.aggregates, null, null, columns);
+                    sRows = summaryModel.generateRows(returnType.result, returnType.aggregates, null, null, column);
                 }
                 this.processAggregates(sRows, pdfGrid, border, captionThemeStyle.font, captionThemeStyle.brush, captionThemeStyle.backgroundBrush, false);
             }
@@ -45708,6 +45740,7 @@ exports.checkScrollReset = checkScrollReset;
 exports.refreshFrozenHeight = refreshFrozenHeight;
 exports.setHeightToFrozenElement = setHeightToFrozenElement;
 exports.preventFrozenScrollRefresh = preventFrozenScrollRefresh;
+exports.nextCellIndex = nextCellIndex;
 exports.Data = Data;
 exports.Sort = Sort;
 exports.Page = Page;

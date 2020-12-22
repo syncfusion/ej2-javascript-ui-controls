@@ -2,7 +2,7 @@
  * crud-actions.ts file
  */
 import { ITreeData } from '../base/interface';
-import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, getValue, isBlazor } from '@syncfusion/ej2-base';
 import { TreeGrid } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { extendArray, getPlainData, getParentData } from '../utils';
@@ -40,8 +40,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
             while (i-- && i >= 0) {
                 if (treeData[i][key] === modifiedData[k][key]) {
                     if (action === 'delete') {
-                        let currentData: Object = treeData[i];
-                        treeData.splice(i, 1);
+                        let currentData: Object = treeData[i]; treeData.splice(i, 1);
                         if (isSelfReference) {
                             if (!isNullOrUndefined(currentData[control.parentIdMapping])) {
                                 let parentData: ITreeData = control.flatData.filter((e: ITreeData) =>
@@ -69,7 +68,11 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                                     let editedData: ITreeData = getParentData(control, (<ITreeData>modifiedData[k]).uniqueID);
                                     treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                     if (editedData && editedData.taskData) {
-                                        editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                        if (isBlazor()) { editedData.taskData[keys[j]] = editedData[keys[j]]
+                                            = control.grid.currentViewData[i][keys[j]] = treeData[i][keys[j]];
+                                        } else {
+                                            editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
+                                        }
                                     }
                                 }
                             }
@@ -89,9 +92,7 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                             } else if (control.editSettings.newRowPosition === 'Below') {
                                 treeData.splice(i + 1, 0, originalData.taskData);
                                 updateParentRow(key, treeData[i + 1 ], action, control, isSelfReference, originalData);
-                            } else if (!addRowIndex) {
-                                index = 0;
-                                treeData.splice(index, 0, originalData.taskData);
+                            } else if (!addRowIndex) { index = 0; treeData.splice(index, 0, originalData.taskData);
                             } else if (control.editSettings.newRowPosition === 'Above') {
                                 treeData.splice(i, 0, originalData.taskData);
                                 updateParentRow(key, treeData[i], action, control, isSelfReference, originalData);

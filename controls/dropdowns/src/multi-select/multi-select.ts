@@ -1696,8 +1696,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (index <= 0 && (this.mode === 'CheckBox' && this.allowFiltering)) {
             this.keyAction = false;
             this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
-        } else {
-            this.list.focus();
         }
         this.moveByList(-1);
         this.updateAriaAttribute();
@@ -2358,6 +2356,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             },
             cancel: false
         };
+        this.isPreventChange = this.isAngular && this.preventChange;
         this.trigger('tagging', eventArgs, (eventArgs: TaggingEventArgs) => {
             if (!eventArgs.cancel) {
                 if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && (isBlazor() && this.isServerRendered)) {
@@ -2595,7 +2594,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
             this.updateDelimView();
         }
-        this.makeTextBoxEmpty();
+        if (this.inputElement.value !== '') {
+            this.makeTextBoxEmpty();
+            this.search(null);
+        }
         this.checkPlaceholderSize();
         if (this.isPopupOpen()) {
             this.refreshPopup();
@@ -2668,16 +2670,18 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.search(event);
         });
     }
-    private search(e: KeyboardEventArgs): void {
+    protected search(e: KeyboardEventArgs): void {
         if (!this.isPopupOpen() && this.openOnClick) {
             this.showPopup();
         }
         this.openClick(e);
-        if (this.checkTextLength() && !this.allowFiltering && (e.keyCode !== 8)) {
+        if (this.checkTextLength() && !this.allowFiltering && !isNullOrUndefined(e) && (e.keyCode !== 8)) {
             this.focusAtFirstListItem();
         } else {
             let text: string = this.targetElement();
-            this.keyCode = e.keyCode;
+            if (!isNullOrUndefined(e)) {
+                this.keyCode = e.keyCode;
+            }
             if (this.allowFiltering) {
                 let eventArgs: { [key: string]: Object } = {
                     preventDefaultAction: false,

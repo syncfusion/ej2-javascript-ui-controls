@@ -9,7 +9,6 @@ var ICON = 'e-icons';
 var ICON_HIDDEN = 'e-hide';
 var AXISFIELD_ICON_CLASS = 'e-dropdown-icon';
 var TOGGLE_FIELD_LIST_CLASS = 'e-toggle-field-list';
-var FIELD_LIST_TREE_CLASS = 'e-field-list-tree';
 var FIELD_LIST_FOOTER_CLASS = 'e-field-list-footer';
 var LEFT_AXIS_PANEL_CLASS = 'e-left-axis-fields';
 var RIGHT_AXIS_PANEL_CLASS = 'e-right-axis-fields';
@@ -2583,11 +2582,6 @@ var TreeRenderer = /** @class */ (function () {
                 }
             }
         }
-        /* tslint:disable-next-line:max-line-length */
-        if (sf.base.closest(treeElement, '.' + (this.parent.isAdaptive ? EDITOR_TREE_CONTAINER_CLASS : FIELD_LIST_TREE_CLASS) + '-outer-div')) {
-            /* tslint:disable-next-line:max-line-length */
-            sf.base.closest(treeElement, '.' + (this.parent.isAdaptive ? EDITOR_TREE_CONTAINER_CLASS : FIELD_LIST_TREE_CLASS) + '-outer-div').style.visibility = 'visible';
-        }
     };
     TreeRenderer.prototype.updateTreeNode = function (node, nodeData, dragText) {
         var allowDrag = false;
@@ -2671,7 +2665,6 @@ var SfPivotFieldList = /** @class */ (function () {
         this.dotNetRef = dotnetRef;
         this.getOptions(element, options);
         this.dotNetRef = dotnetRef;
-        this.initModules();
     }
     SfPivotFieldList.prototype.getOptions = function (element, options) {
         this.element = element;
@@ -2685,6 +2678,9 @@ var SfPivotFieldList = /** @class */ (function () {
         /* tslint:enable */
         this.fieldList = options.fieldList;
         this.dataSourceSettings = options.dataSourceSettings;
+        if (this.parentElement && this.parentElement.querySelector('#' + this.parentElement.id + '_title')) {
+            sf.base.setStyleAttribute(this.parentElement.querySelector('#' + this.parentElement.id + '_title'), { 'width': '100%' });
+        }
     };
     SfPivotFieldList.prototype.initModules = function () {
         this.treeRendererModule = new TreeRenderer(this);
@@ -2693,25 +2689,14 @@ var SfPivotFieldList = /** @class */ (function () {
         if (this.options.allowCalculatedField) {
             this.calculatedFieldModule = new CalculatedField(this);
         }
-        this.contentReady();
         this.unWireEvents();
         this.wireEvents();
     };
-    SfPivotFieldList.prototype.updateModuleProperties = function () {
-        this.treeRendererModule.parent =
-            this.pivotButtonModule.parent =
-                this.commonActionModule.parent =
-                    this.commonActionModule.keyboardModule.parent = this;
-        if (this.options.allowCalculatedField) {
-            this.calculatedFieldModule.parent = this;
-        }
-    };
     SfPivotFieldList.prototype.contentReady = function () {
-        this.updateModuleProperties();
-        if (this.parentElement.querySelector('#' + this.parentElement.id + '_title')) {
+        this.initModules();
+        if (this.parentElement && this.parentElement.querySelector('#' + this.parentElement.id + '_title')) {
             sf.base.setStyleAttribute(this.parentElement.querySelector('#' + this.parentElement.id + '_title'), { 'width': '100%' });
         }
-        this.pivotButtonModule.createPivotButtonDrop();
     };
     SfPivotFieldList.prototype.onShowFieldList = function (element, dialogElement) {
         if (element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)) {
@@ -2823,6 +2808,7 @@ var PivotView = {
         if (element && element.blazor__instance && element.blazor__instance.pivotButtonModule) {
             element.blazor__instance.options = options;
             element.blazor__instance.getOptions(element, options);
+            element.blazor__instance.pivotButtonModule.createPivotButtonDrop();
             element.blazor__instance.pivotButtonModule.setPivotButtonDrag();
         }
     },

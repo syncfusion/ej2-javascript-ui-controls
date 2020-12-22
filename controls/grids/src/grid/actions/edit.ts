@@ -866,12 +866,20 @@ export class Edit implements IAction {
             select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     }
 
+    public resetElemPosition(elem: HTMLElement, args: { status: string, inputName: string,
+        element: HTMLElement, message: string }): void {
+        if (args.element.offsetWidth < elem.offsetWidth) {
+            elem.style.left = args.element.getBoundingClientRect().left - ((elem.offsetWidth - args.element.offsetWidth) / 2) + 'px';
+        }
+    }
+
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
         if (this.parent.isEdit) {
             let elem: HTMLElement = this.getElemTable(args.element).querySelector('#' + args.inputName + '_Error') as HTMLElement;
             if (elem) {
                 if (args.status === 'failure') {
                     elem.style.display = '';
+                    this.resetElemPosition(elem, args);
                 } else {
                     elem.style.display = 'none';
                 }

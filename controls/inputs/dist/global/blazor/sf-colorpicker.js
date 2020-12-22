@@ -4,6 +4,8 @@ window.sfBlazor.ColorPicker = (function () {
 
 var HSV_CONTAINER = '.e-hsv-container';
 var COLOR_PICKER = '.e-split-colorpicker';
+var COLOR_PALETTE = 'e-color-palette';
+var PALETTE = '.e-palette';
 var HSV_COLOR = '.e-hsv-color';
 var SET_OFFSET = 'SetOffset';
 var DROPDOWN_BTN = '.e-dropdown-btn';
@@ -107,6 +109,28 @@ var SfColorPicker = /** @class */ (function () {
                 sf.base.EventHandler.remove(element, SCROLL, this.scrollHandler);
         }
     };
+    SfColorPicker.prototype.focusIn = function (element, inline) {
+        if (inline) {
+            var container = element.querySelector(CONTAINER);
+            if (container) {
+                if (container.classList.contains(COLOR_PALETTE)) {
+                    this.setFocus(PALETTE);
+                }
+                else {
+                    this.setFocus(HANDLER);
+                }
+            }
+        }
+        else {
+            this.setFocus(COLOR_PICKER);
+        }
+    };
+    SfColorPicker.prototype.setFocus = function (cls) {
+        var btn = this.element.querySelector(cls);
+        if (btn) {
+            btn.focus();
+        }
+    };
     return SfColorPicker;
 }());
 // tslint:disable-next-line:variable-name
@@ -124,6 +148,11 @@ var ColorPicker = {
             return element.blazor__instance.getOffset(container);
         }
         return null;
+    },
+    focusIn: function (element, inline) {
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.blazor__instance.focusIn(element, inline);
+        }
     },
     destroy: function (element) {
         if (!sf.base.isNullOrUndefined(element)) {

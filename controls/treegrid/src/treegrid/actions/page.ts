@@ -147,7 +147,8 @@ export class Page {
         let expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
         let parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
         let visualData: ITreeData[];
-        if (isFilterChildHierarchy(this.parent)) {
+        if (isFilterChildHierarchy(this.parent) && ((this.parent.searchSettings.key !== this.parent.grid.searchSettings.key) ||
+          (this.parent.filterSettings.columns.length !== this.parent.grid.filterSettings.columns.length))) {
           visualData = parents;
         } else {
           visualData = parents.filter((e: ITreeData) => {

@@ -6,7 +6,6 @@ export const ICON: string = 'e-icons';
 export const ICON_HIDDEN: string = 'e-hide';
 export const AXISFIELD_ICON_CLASS: string = 'e-dropdown-icon';
 export const TOGGLE_FIELD_LIST_CLASS: string = 'e-toggle-field-list';
-export const FIELD_LIST_TREE_CLASS: string = 'e-field-list-tree';
 export const FIELD_LIST_FOOTER_CLASS: string = 'e-field-list-footer';
 export const LEFT_AXIS_PANEL_CLASS: string = 'e-left-axis-fields';
 export const RIGHT_AXIS_PANEL_CLASS: string = 'e-right-axis-fields';

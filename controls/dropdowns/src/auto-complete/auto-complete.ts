@@ -34,6 +34,7 @@ dropDownListClasses.icon = 'e-input-group-icon e-ddl-icon e-search-icon';
 @NotifyPropertyChanges
 export class AutoComplete extends ComboBox {
     private isFiltered: boolean = false;
+    private searchList: boolean = false;
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item
@@ -304,6 +305,7 @@ export class AutoComplete extends ComboBox {
             };
             this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
                 if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
+                    this.searchList = true;
                     this.filterAction(this.dataSource, null, this.fields);
                 }
             });
@@ -357,9 +359,10 @@ export class AutoComplete extends ComboBox {
     }
 
     private postBackAction(): void {
-        if (this.autofill && !isNullOrUndefined(this.liCollections[0])) {
+        if (this.autofill && !isNullOrUndefined(this.liCollections[0]) && this.searchList) {
             let items: HTMLElement[] = [this.liCollections[0]];
             let searchItem: { [key: string]: number | Element } = Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase);
+            this.searchList = false;
             if (!isNullOrUndefined(searchItem.item)) {
                 super.setAutoFill(this.liCollections[0], true);
             }

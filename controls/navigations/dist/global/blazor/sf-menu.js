@@ -321,18 +321,28 @@ var SfMenu = /** @class */ (function () {
     };
     SfMenu.prototype.mouseDownHandler = function (e) {
         var target = e.target;
-        if (sf.base.isNullOrUndefined(this.element) || !document.body.contains(this.element)) {
+        var isEleAvailable = !document.body.contains(this.element);
+        if (sf.base.isNullOrUndefined(this.element) || isEleAvailable) {
             this.removeEventListener(false);
         }
         var scrollNav = sf.base.closest(target, SCROLLNAV);
         if (sf.base.isNullOrUndefined(this.popup) || (!sf.base.closest(target, HASH + this.popup.id) || scrollNav)) {
             var menuLength = sf.base.selectAll(MENU, this.element).length;
-            if ((sf.base.select(FOCUSED, this.element) || sf.base.select(SELECTED, this.element)) &&
+            if (isEleAvailable && (sf.base.select(FOCUSED, this.element) || sf.base.select(SELECTED, this.element)) &&
                 !sf.base.closest(e.target, HASH + this.element.id) && (!scrollNav || menuLength > 1)) {
                 this.dotnetRef.invokeMethodAsync(MOUSEDOWNHANDLER, true, false, !sf.base.isNullOrUndefined(scrollNav));
             }
-            if (!sf.base.isNullOrUndefined(this.popup) && !sf.base.closest(e.target, DOT + MENUITEM + SELECTED) && !scrollNav) {
-                this.destroyScroll(NONE);
+            if (!sf.base.isNullOrUndefined(this.popup) && !sf.base.isNullOrUndefined(this.popup.blazor__instance) &&
+                (!sf.base.closest(e.target, DOT + MENUITEM + SELECTED) || !this.popup.blazor__instance.subMenuOpen) && !scrollNav) {
+                if (!this.popup.blazor__instance.subMenuOpen) {
+                    var menu = sf.base.closest(e.target, MENU);
+                    if (sf.base.select(DOT + SCROLLMENU + VSCROLL, this.popup)) {
+                        this.destroyScroll(NONE, menu);
+                    }
+                }
+                else {
+                    this.destroyScroll(NONE);
+                }
             }
         }
     };

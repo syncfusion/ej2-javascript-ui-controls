@@ -23885,6 +23885,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
                 this.setCommonColumnsWidth(this.grid.columns, colWidth);
+                this.pivotColumns = [];
+                this.totColWidth = 0;
+                this.framePivotColumns(this.grid.columns);
                 this.posCount = 0;
                 if (!this.showGroupingBar) {
                     this.setGridColumns(this.grid.columns);

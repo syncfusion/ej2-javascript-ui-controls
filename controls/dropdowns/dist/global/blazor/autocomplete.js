@@ -45,6 +45,7 @@ var AutoComplete = /** @class */ (function (_super) {
     function AutoComplete(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.isFiltered = false;
+        _this.searchList = false;
         return _this;
     }
     
@@ -134,6 +135,7 @@ var AutoComplete = /** @class */ (function (_super) {
             };
             this.trigger('filtering', eventArgs_1, function (eventArgs) {
                 if (!eventArgs.cancel && !_this.isFiltered && !eventArgs.preventDefaultAction) {
+                    _this.searchList = true;
                     _this.filterAction(_this.dataSource, null, _this.fields);
                 }
             });
@@ -179,9 +181,10 @@ var AutoComplete = /** @class */ (function (_super) {
         this.postBackAction();
     };
     AutoComplete.prototype.postBackAction = function () {
-        if (this.autofill && !sf.base.isNullOrUndefined(this.liCollections[0])) {
+        if (this.autofill && !sf.base.isNullOrUndefined(this.liCollections[0]) && this.searchList) {
             var items = [this.liCollections[0]];
             var searchItem = sf.dropdowns.Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase);
+            this.searchList = false;
             if (!sf.base.isNullOrUndefined(searchItem.item)) {
                 _super.prototype.setAutoFill.call(this, this.liCollections[0], true);
             }

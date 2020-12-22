@@ -898,6 +898,10 @@ let DropDownBase = class DropDownBase extends Component {
     getSortedDataSource(dataSource) {
         if (dataSource && this.sortOrder !== 'None') {
             let textField = this.fields.text ? this.fields.text : 'text';
+            if (this.typeOfData(dataSource).typeof === 'string' || this.typeOfData(dataSource).typeof === 'number'
+                || this.typeOfData(dataSource).typeof === 'boolean') {
+                textField = '';
+            }
             dataSource = ListBase.getDataSource(dataSource, ListBase.addSorting(this.sortOrder, textField));
         }
         return dataSource;
@@ -3045,6 +3049,10 @@ let DropDownList = class DropDownList extends DropDownBase {
                 if (Browser.isDevice && this.isFilterLayout()) {
                     EventHandler.add(this.list, 'scroll', this.listScroll, this);
                 }
+                if (!isNullOrUndefined(this.list)) {
+                    this.unWireListEvents();
+                    this.wireListEvents();
+                }
                 attributes(this.targetElement(), { 'aria-expanded': 'true' });
                 let inputParent = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
@@ -3144,7 +3152,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.isDocumentClick = false;
                 this.destroyPopup();
                 let formElement = closest(this.inputElement, 'form');
-                if (this.isFiltering() && formElement && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+                if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
                     this.isActive = true;
                     this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
                 }
@@ -3307,7 +3315,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
     }
     clearText() {
-        this.filterInput.value = '';
+        this.filterInput.value = this.typedString = '';
         this.searchLists(null);
     }
     listScroll() {
@@ -3610,6 +3618,9 @@ let DropDownList = class DropDownList extends DropDownBase {
         let isChangeText = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
             this.itemData = null;
+        }
+        if (this.allowFiltering && newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
+            this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
     }
     updateDataSource(props) {
@@ -7949,6 +7960,7 @@ let AutoComplete = class AutoComplete extends ComboBox {
     constructor(options, element) {
         super(options, element);
         this.isFiltered = false;
+        this.searchList = false;
     }
     ;
     /**
@@ -8036,6 +8048,7 @@ let AutoComplete = class AutoComplete extends ComboBox {
             };
             this.trigger('filtering', eventArgs, (eventArgs) => {
                 if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
+                    this.searchList = true;
                     this.filterAction(this.dataSource, null, this.fields);
                 }
             });
@@ -8081,9 +8094,10 @@ let AutoComplete = class AutoComplete extends ComboBox {
         this.postBackAction();
     }
     postBackAction() {
-        if (this.autofill && !isNullOrUndefined(this.liCollections[0])) {
+        if (this.autofill && !isNullOrUndefined(this.liCollections[0]) && this.searchList) {
             let items = [this.liCollections[0]];
             let searchItem = Search(this.inputElement.value, items, 'StartsWith', this.ignoreCase);
+            this.searchList = false;
             if (!isNullOrUndefined(searchItem.item)) {
                 super.setAutoFill(this.liCollections[0], true);
             }
@@ -9583,9 +9597,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.keyAction = false;
             this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
         }
-        else {
-            this.list.focus();
-        }
         this.moveByList(-1);
         this.updateAriaAttribute();
     }
@@ -10260,6 +10271,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             },
             cancel: false
         };
+        this.isPreventChange = this.isAngular && this.preventChange;
         this.trigger('tagging', eventArgs, (eventArgs) => {
             if (!eventArgs.cancel) {
                 if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && (isBlazor() && this.isServerRendered)) {
@@ -10513,7 +10525,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
             this.updateDelimView();
         }
-        this.makeTextBoxEmpty();
+        if (this.inputElement.value !== '') {
+            this.makeTextBoxEmpty();
+            this.search(null);
+        }
         this.checkPlaceholderSize();
         if (this.isPopupOpen()) {
             this.refreshPopup();
@@ -10596,12 +10611,14 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.showPopup();
         }
         this.openClick(e);
-        if (this.checkTextLength() && !this.allowFiltering && (e.keyCode !== 8)) {
+        if (this.checkTextLength() && !this.allowFiltering && !isNullOrUndefined(e) && (e.keyCode !== 8)) {
             this.focusAtFirstListItem();
         }
         else {
             let text = this.targetElement();
-            this.keyCode = e.keyCode;
+            if (!isNullOrUndefined(e)) {
+                this.keyCode = e.keyCode;
+            }
             if (this.allowFiltering) {
                 let eventArgs = {
                     preventDefaultAction: false,
@@ -12388,7 +12405,6 @@ class CheckBoxSelection {
         this.parent.off('selectAllText', this.setLocale);
         this.parent.off('filterBarPlaceholder', this.setPlaceholder);
         this.parent.off('addItem', this.checboxCreate);
-        EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.parent.off('popupFullScreen', this.setPopupFullScreen);
     }
     listOption(args) {
@@ -12482,6 +12498,7 @@ class CheckBoxSelection {
     }
     destroy() {
         this.removeEventListener();
+        EventHandler.remove(document, 'mousedown', this.onDocumentClick);
     }
     listSelection(args) {
         let target;
@@ -12627,6 +12644,9 @@ class CheckBoxSelection {
     }
     clearText(e) {
         this.parent.targetInputElement.value = '';
+        if (this.parent.allowFiltering && this.parent.targetInputElement.value === '') {
+            this.parent.search(null);
+        }
         this.parent.refreshPopup();
         this.parent.refreshListItems(null);
         this.clearIconElement.style.visibility = 'hidden';
@@ -12895,6 +12915,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     constructor(options, element) {
         super(options, element);
         this.isValidKey = false;
+        this.isDataSourceUpdate = false;
         this.keyDownStatus = false;
     }
     /**
@@ -13198,6 +13219,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             }
         }
         else {
+            if (this.isDataSourceUpdate) {
+                this.jsonData = [];
+                extend(this.jsonData, list, []);
+                this.isDataSourceUpdate = false;
+            }
             if (this.allowFiltering) {
                 let filterElem = this.list.getElementsByClassName('e-input-filter')[0];
                 let txtLength = this.filterInput.value.length;
@@ -13603,7 +13629,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 this.listData.splice(removeIdxes[k], 1);
             }
             for (let k = removeLiIdxes.length - 1; k >= 0; k--) {
-                this.liCollections.splice(removeLiIdxes[k], 1);
+                this.updateLiCollection(removeLiIdxes[k]);
             }
         }
         else {
@@ -13666,8 +13692,10 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
      * @returns {void}
      */
     moveAllTo(targetId, index) {
-        let tlistbox = (targetId) ? getComponent(targetId, ListBox_1) : this.getScopedListBox();
-        this.moveAllData(this, tlistbox, false, index);
+        if (this.listData.length > 0) {
+            let tlistbox = (targetId) ? getComponent(targetId, ListBox_1) : this.getScopedListBox();
+            this.moveAllData(this, tlistbox, false, index);
+        }
     }
     /**
      * Returns the updated dataSource in ListBox
@@ -13924,7 +13952,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         let currSelIdx;
         let li = closest(e.target, '.' + 'e-list-item');
         let selectedLi = [li];
-        if (li) {
+        if (li && li.parentElement) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
             if (!this.selectionSettings.showCheckbox) {
                 if ((e.ctrlKey || Browser.isDevice) && this.isSelected(li)) {
@@ -14415,8 +14443,12 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         }
         return listObj;
     }
+    getGrabbedItems() {
+        let elems = Array.prototype.slice.call(this.element.querySelectorAll('.e-grabbed'));
+        return elems;
+    }
     getDragArgs(args, isDragEnd) {
-        let elems = this.getSelectedItems();
+        let elems = this.getGrabbedItems();
         if (elems.length) {
             if (isDragEnd) {
                 elems.push(args.target);
@@ -14708,7 +14740,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         this.checkSelectAll();
     }
     checkDisabledState(inst) {
-        return (isBlazor() ? inst.ulElement.querySelectorAll('.' + cssClass.li).length : inst.ulElement.childElementCount) === 0;
+        return inst.ulElement.querySelectorAll('.' + cssClass.li).length === 0;
     }
     updateToolBarState() {
         if (this.toolbarSettings.items.length) {
@@ -14976,6 +15008,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     }
                     break;
                 case 'dataSource':
+                    this.isDataSourceUpdate = true;
                     this.jsonData = [].slice.call(this.dataSource);
                     break;
             }

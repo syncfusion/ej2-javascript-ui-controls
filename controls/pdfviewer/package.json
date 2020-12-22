@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-pdfviewer",
-	"version": "18.3.52",
+	"version": "18.4.30",
 	"description": "Essential JS 2 PDF viewer Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -20,7 +20,14 @@
 		"@syncfusion/ej2-drawings": "*",
 		"@syncfusion/ej2-inplace-editor": "*",
 		"@syncfusion/ej2-calendars": "*",
-		"@syncfusion/ej2-richtexteditor": "*"
+		"@syncfusion/ej2-richtexteditor": "*",
+		"@syncfusion/ej2-filemanager": "*",
+		"@syncfusion/ej2-layouts": "*",
+		"@syncfusion/ej2-grids": "*",
+		"@syncfusion/ej2-excel-export": "*",
+		"@syncfusion/ej2-pdf-export": "*",
+		"@syncfusion/ej2-compression": "*",
+		"@syncfusion/ej2-file-utils": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

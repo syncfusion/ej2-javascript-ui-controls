@@ -915,6 +915,10 @@ var DropDownBase = /** @class */ (function (_super) {
     DropDownBase.prototype.getSortedDataSource = function (dataSource) {
         if (dataSource && this.sortOrder !== 'None') {
             var textField = this.fields.text ? this.fields.text : 'text';
+            if (this.typeOfData(dataSource).typeof === 'string' || this.typeOfData(dataSource).typeof === 'number'
+                || this.typeOfData(dataSource).typeof === 'boolean') {
+                textField = '';
+            }
             dataSource = sf.lists.ListBase.getDataSource(dataSource, sf.lists.ListBase.addSorting(this.sortOrder, textField));
         }
         return dataSource;

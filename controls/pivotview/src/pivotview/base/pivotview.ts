@@ -4222,6 +4222,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
                 this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
+                this.pivotColumns = [];
+                this.totColWidth = 0;
+                this.framePivotColumns(this.grid.columns as ColumnModel[]);
                 this.posCount = 0;
                 if (!this.showGroupingBar) {
                     this.setGridColumns(this.grid.columns as ColumnModel[]);

@@ -241,6 +241,11 @@
       .e-menu-vscroll ul.e-ul {
         width: inherit;
       }
+
+      .e-menu-vscroll {
+        border: $cmenu-ul-border;
+        box-shadow: $cmenu-sub-ul-box-shadow;
+      }
     }
   }
 

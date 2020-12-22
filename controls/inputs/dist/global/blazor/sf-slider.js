@@ -57,6 +57,13 @@ var SfSlider = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(this.options.Limits)) {
             this.setLimitBarPosition();
         }
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
+        if (sf.base.isNullOrUndefined(this.materialHandle) && this.isMaterial && this.options.Tooltip !== null &&
+            this.options.Type !== RANGESLIDER) {
+            this.materialHandle = document.createElement('div');
+            this.materialHandle.className = 'e-handle e-material-handle';
+            this.element.appendChild(this.materialHandle);
+        }
         this.setValue(false);
         this.updateColorRangeBarPos();
         if (this.initialRendering && this.options.Enabled && !this.options.ReadOnly) {
@@ -67,6 +74,7 @@ var SfSlider = /** @class */ (function () {
     SfSlider.prototype.rangeBarMousedown = function (event) {
         var _a, _b;
         event.preventDefault();
+        this.changedEventValue = this.options.Value;
         if (this.options.Type === 'Range' && event.target === this.rangeBar) {
             var xPostion = void 0;
             var yPostion = void 0;
@@ -94,6 +102,15 @@ var SfSlider = /** @class */ (function () {
         }
     };
     SfSlider.prototype.dragRangeBarUp = function (event) {
+        // tslint:disable-next-line:no-any
+        if (this.options.Events !== null && this.options.Events.valueChange.hasDelegate &&
+            this.options.Value[0] !== this.changedEventValue) {
+            this.dotNetRef.invokeMethodAsync('TriggerEvent', {
+                PreviousValue: this.changedEventValue,
+                Value: this.options.Value,
+                isValueChanged: true
+            });
+        }
         sf.base.EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         sf.base.EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
         this.isDragRange = true;
@@ -201,10 +218,21 @@ var SfSlider = /** @class */ (function () {
                 this.handleValueAdjust(this.handleVal1, this.options.Min, 1);
             }
         }
+        var previousVal = this.options.IsImmediateValue ? this.previousHandleVal : (this.changedEventValue ?
+            this.changedEventValue : this.previousHandleVal);
         this.setHandlePosition(event);
         this.updateValue();
         if (this.options.Type !== DEFAULTSLIDER) {
             this.setRangeBarPosition();
+        }
+        // tslint:disable-next-line:no-any
+        if (this.options.Events !== null && this.options.Events.onChange.hasDelegate &&
+            previousVal !== this.options.Value[0]) {
+            this.dotNetRef.invokeMethodAsync('TriggerEvent', {
+                PreviousValue: previousVal,
+                Value: this.options.Value,
+                isValueChanged: false
+            });
         }
     };
     SfSlider.prototype.wireEvents = function () {
@@ -248,6 +276,9 @@ var SfSlider = /** @class */ (function () {
     
     SfSlider.prototype.focusOut = function () {
         if (this.options.Tooltip !== null && this.options.Tooltip.isVisible) {
+            if (this.options.Type !== RANGESLIDER) {
+                this.materialHandle.style.transform = 'scale(1)';
+            }
             this.dotNetRef.invokeMethodAsync('CloseTooltip');
         }
     };
@@ -323,6 +354,7 @@ var SfSlider = /** @class */ (function () {
         this.setValue();
     };
     SfSlider.prototype.handleFocusOut = function () {
+        this.element.focus();
         if (this.firstHandle.classList.contains(HANDLEFOCUSED)) {
             this.firstHandle.classList.remove(HANDLEFOCUSED);
         }
@@ -367,7 +399,6 @@ var SfSlider = /** @class */ (function () {
         }
         this.handlePos = this.xyToPosition(pos);
         this.handleVal = this.positionToValue(this.handlePos);
-        this.handleVal = this.options.EnableRtl ? this.options.Max - this.handleVal : this.handleVal;
         this.handlePos = this.checkHandlePosition(this.handleVal);
         this.firstHandle.style.transition = this.transition.scaleTransform;
         if (this.options.Type === RANGESLIDER) {
@@ -532,6 +563,9 @@ var SfSlider = /** @class */ (function () {
                     limitValue = [this.options.Limits.minStart, this.options.Limits.minEnd];
                     var valAndPos = this.updateNewHandleValue(this.handleVal, this.handlePos, limitValue);
                     this.updateHandleValue(this.firstHandle, valAndPos[0], valAndPos[1], true);
+                    if (this.isMaterial && !sf.base.isNullOrUndefined(this.materialHandle) && this.options.Type !== RANGESLIDER) {
+                        this.updateHandleValue(this.materialHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                    }
                 }
                 else if (this.activeHandle === 2 && !this.options.Limits.endHandleFixed) {
                     limitValue = [this.options.Limits.maxStart, this.options.Limits.maxEnd];
@@ -541,7 +575,10 @@ var SfSlider = /** @class */ (function () {
             }
             else {
                 var currentActiveHandle = this.activeHandle === 1 ? this.firstHandle : this.secondHandle;
-                this.updateHandleValue(currentActiveHandle, this.handleVal, this.handlePos, this.activeHandle === 1 ? true : false);
+                this.updateHandleValue(currentActiveHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                if (this.isMaterial && !sf.base.isNullOrUndefined(this.materialHandle) && this.options.Type !== RANGESLIDER) {
+                    this.updateHandleValue(this.materialHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                }
             }
             if (this.options.Type !== DEFAULTSLIDER) {
                 this.setRangeBarPosition();
@@ -637,6 +674,9 @@ var SfSlider = /** @class */ (function () {
         }
         else if (val > 100) {
             val = 100;
+        }
+        if (this.options.EnableRtl && this.options.Orientation === HORIZONTAL) {
+            val = 100 - val;
         }
         if (this.options.Orientation === HORIZONTAL) {
             pos = elementAttr.width * (val / 100);
@@ -891,6 +931,9 @@ var SfSlider = /** @class */ (function () {
         this.updateHandleAttributes('aria-valuemax', [this.options.Max.toString()]);
         var pos = [this.handlePos1, this.handlePos2];
         this.updateHandlePosition(this.firstHandle, pos[0]);
+        if (this.isMaterial && this.options.Type !== RANGESLIDER && !sf.base.isNullOrUndefined(this.materialHandle)) {
+            this.updateHandlePosition(this.materialHandle, pos[0]);
+        }
         if (this.options.Type === RANGESLIDER) {
             this.updateHandlePosition(this.secondHandle, pos[1]);
         }
@@ -907,8 +950,6 @@ var SfSlider = /** @class */ (function () {
         }
         this.handlePos = this.xyToPosition(pos);
         this.handleVal = this.positionToValue(this.handlePos);
-        this.handleVal = this.options.EnableRtl ? this.options.Max - this.handleVal : this.handleVal;
-        this.handlePos = this.checkHandlePosition(this.handleVal);
         if (this.handleVal2 < this.handleVal) {
             this.activeHandle = 2;
         }
@@ -1004,7 +1045,13 @@ var SfSlider = /** @class */ (function () {
             this.previousHandleVal = this.options.Value;
         }
         if (makeServerCall) {
-            setTimeout(function () { _this.dotNetRef.invokeMethodAsync('UpdateValue', _this.options.Value, _this.activeHandle); }, 300);
+            setTimeout(function () {
+                if (_this.isMaterial && _this.options.Tooltip !== null && !sf.base.isNullOrUndefined(_this.materialHandle) &&
+                    _this.options.Type !== RANGESLIDER) {
+                    _this.materialHandle.style.transform = 'scale(0)';
+                }
+                _this.dotNetRef.invokeMethodAsync('UpdateValue', _this.options.Value, _this.activeHandle);
+            }, 300);
         }
     };
     // tslint:disable-next-line:no-any
@@ -1028,6 +1075,12 @@ var SfSlider = /** @class */ (function () {
     SfSlider.prototype.destroy = function () {
         this.element.style.display = 'none';
         this.unWireEvents();
+    };
+    SfSlider.prototype.updateTooltipPosition = function (id) {
+        var tooltipContent = document.getElementById(id);
+        if (tooltipContent !== null && this.options.Type !== RANGESLIDER) {
+            tooltipContent.style.transform = 'rotate(45deg)';
+        }
     };
     // tslint:disable-next-line:no-any
     SfSlider.prototype.propertyChanges = function (properties) {
@@ -1103,6 +1156,11 @@ var Slider = {
     destroy: function (element) {
         if (element && element.blazor__instance) {
             element.blazor__instance.destroy();
+        }
+    },
+    updateTooltipPosition: function (element, id) {
+        if (element && element.blazor__instance) {
+            element.blazor__instance.updateTooltipPosition(id);
         }
     }
 };

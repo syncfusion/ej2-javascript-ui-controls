@@ -1573,3 +1573,41 @@ describe('EJ2-43460-Ungrouping arguments => ', () => {
         gridObj = actionBegin = null;
     });
 });
+
+describe('EJ2-44597-Sorting not removed when groupsettings column is changed => ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                groupSettings: { showGroupedColumn: true , columns:['OrderID'] },
+                sortSettings: {columns:[{field:'CustomerID', direction:'Descending'}]},
+                columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' },
+                { field: 'Freight', headerText: 'Freight' },
+                { field: 'ShipCity', headerText: 'Ship City' }],
+                allowSorting: true,
+                allowPaging: true,
+                allowGrouping: true,
+                actionBegin: actionBegin,
+            }, done);
+    });
+    it('Checking initial Grouping sorting columns', () => {
+        expect(gridObj.sortSettings.columns.length).toBe(2);
+    });
+    it('Checking sorting columns after changing groupsetting columns', (done) => {
+        gridObj.actionBegin = (args?: any): void => {
+            expect(gridObj.sortSettings.columns.length).toBe(2);
+            done();
+        }
+        gridObj.groupSettings = { showGroupedColumn:true, columns : ['EmployeeID']};
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gridObj = actionBegin = null;
+    });
+});

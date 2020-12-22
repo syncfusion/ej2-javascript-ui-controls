@@ -1730,6 +1730,10 @@ var DropDownList = /** @class */ (function (_super) {
                 if (sf.base.Browser.isDevice && _this.isFilterLayout()) {
                     sf.base.EventHandler.add(_this.list, 'scroll', _this.listScroll, _this);
                 }
+                if (!sf.base.isNullOrUndefined(_this.list)) {
+                    _this.unWireListEvents();
+                    _this.wireListEvents();
+                }
                 sf.base.attributes(_this.targetElement(), { 'aria-expanded': 'true' });
                 var inputParent = _this.isFiltering() ? _this.filterInput.parentElement : _this.inputWrapper.container;
                 sf.base.addClass([inputParent], [dropDownListClasses.inputFocus]);
@@ -1830,7 +1834,7 @@ var DropDownList = /** @class */ (function (_super) {
                 _this.isDocumentClick = false;
                 _this.destroyPopup();
                 var formElement = sf.base.closest(_this.inputElement, 'form');
-                if (_this.isFiltering() && formElement && _this.actionCompleteData.list && _this.actionCompleteData.list[0]) {
+                if (_this.isFiltering() && _this.actionCompleteData.list && _this.actionCompleteData.list[0]) {
                     _this.isActive = true;
                     _this.onActionComplete(_this.actionCompleteData.ulElement, _this.actionCompleteData.list, null, true);
                 }
@@ -1993,7 +1997,7 @@ var DropDownList = /** @class */ (function (_super) {
         }
     };
     DropDownList.prototype.clearText = function () {
-        this.filterInput.value = '';
+        this.filterInput.value = this.typedString = '';
         this.searchLists(null);
     };
     DropDownList.prototype.listScroll = function () {
@@ -2298,6 +2302,9 @@ var DropDownList = /** @class */ (function (_super) {
         var isChangeText = Object.keys(newProp).indexOf('text') !== -1 && sf.base.isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
             this.itemData = null;
+        }
+        if (this.allowFiltering && newProp.dataSource && !sf.base.isNullOrUndefined(Object.keys(newProp.dataSource))) {
+            this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
     };
     DropDownList.prototype.updateDataSource = function (props) {

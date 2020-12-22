@@ -6884,11 +6884,19 @@ class TimelineEvent extends MonthEvent {
         }
         return false;
     }
+    getCellHeight(resIndex) {
+        let heightValue = 0;
+        for (let i = 0; i < resIndex; i++) {
+            heightValue += this.parent.element.querySelector('.' + WORK_CELLS_CLASS +
+                '[data-group-index="' + i.toString() + '"]').offsetHeight;
+        }
+        return heightValue;
+    }
     getRowTop(resIndex) {
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             return ((this.parent.activeViewOptions.group.resources.length > 1 || this.parent.virtualScrollModule ||
                 this.parent.rowAutoHeight) ? this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"]').offsetTop : this.cellHeight * resIndex);
+                ' ' + 'tbody td[data-group-index="' + resIndex.toString() + '"]').offsetTop : this.getCellHeight(resIndex));
         }
         return 0;
     }

@@ -112,6 +112,10 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
      * Action name in which the failure is thrown.
      */
     action: string;
+    /**
+     * Specifies the retry request for the failed requests.
+     */
+    retryCount?: boolean;
 }
 
 /**
@@ -520,6 +524,10 @@ export interface AddSignatureEventArgs extends BaseEventArgs {
      * Define the thickness of the signature added in the page of the PDF document.
      */
     thickness?: number;
+    /**
+     * Gets the base64 string of the signature path
+     */
+    data?: string;
 }
 
 /**

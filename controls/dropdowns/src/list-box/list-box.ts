@@ -131,6 +131,7 @@ export class ListBox extends DropDownBase {
     protected isCustomFiltering: boolean;
     private jsonData: { [key: string]: Object }[] | string[] | boolean[] | number[];
     private toolbarAction: string;
+    private isDataSourceUpdate: boolean = false;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -649,6 +650,10 @@ export class ListBox extends DropDownBase {
                 this.setFiltering();
             }
         } else {
+            if (this.isDataSourceUpdate) {
+                this.jsonData = []; extend(this.jsonData, list, []);
+                this.isDataSourceUpdate = false;
+            }
             if (this.allowFiltering) {
                 let filterElem: HTMLInputElement = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
                 let txtLength: number = this.filterInput.value.length;
@@ -1028,7 +1033,7 @@ export class ListBox extends DropDownBase {
                 (this.listData as { [key: string]: Object }[]).splice(removeIdxes[k], 1);
             }
             for (let k: number = removeLiIdxes.length - 1; k >= 0; k--) {
-                this.liCollections.splice(removeLiIdxes[k], 1);
+                this.updateLiCollection(removeLiIdxes[k]);
             }
         } else {
             itemIndex = itemIndex ? itemIndex : 0;
@@ -1090,8 +1095,10 @@ export class ListBox extends DropDownBase {
      * @returns {void}
      */
     public moveAllTo(targetId?: string, index?: number): void {
-        let tlistbox: ListBox = (targetId) ? getComponent(targetId, ListBox) : this.getScopedListBox();
-        this.moveAllData(this, tlistbox, false, index);
+        if (this.listData.length > 0) {
+            let tlistbox: ListBox = (targetId) ? getComponent(targetId, ListBox) : this.getScopedListBox();
+            this.moveAllData(this, tlistbox, false, index);
+        }
     }
     /**
      * Returns the updated dataSource in ListBox
@@ -1352,7 +1359,7 @@ export class ListBox extends DropDownBase {
         let currSelIdx: number;
         let li: Element = closest(e.target as Element, '.' + 'e-list-item');
         let selectedLi: Element[] = [li];
-        if (li) {
+        if (li && li.parentElement) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
             if (!this.selectionSettings.showCheckbox) {
                 if ((e.ctrlKey || Browser.isDevice) && this.isSelected(li)) {
@@ -1822,8 +1829,13 @@ export class ListBox extends DropDownBase {
         return listObj;
     }
 
+    private getGrabbedItems(): Element[] {
+        let elems: Element[] = Array.prototype.slice.call(this.element.querySelectorAll('.e-grabbed'));
+        return elems;
+    }
+
     private getDragArgs(args: DragEventArgs & BlazorDragEventArgs, isDragEnd?: boolean): DragEventArgs & BlazorDragEventArgs {
-        let elems: Element[] = this.getSelectedItems();
+        let elems: Element[] = this.getGrabbedItems();
         if (elems.length) {
             if (isDragEnd) {
                 elems.push(args.target);
@@ -2121,7 +2133,7 @@ export class ListBox extends DropDownBase {
     }
 
     private checkDisabledState(inst: ListBox): boolean {
-        return (isBlazor() ? inst.ulElement.querySelectorAll('.' + cssClass.li).length : inst.ulElement.childElementCount) === 0;
+        return inst.ulElement.querySelectorAll('.' + cssClass.li).length === 0;
     }
 
     private updateToolBarState(): void {
@@ -2391,6 +2403,7 @@ export class ListBox extends DropDownBase {
                     }
                     break;
                 case 'dataSource':
+                    this.isDataSourceUpdate = true;
                     this.jsonData = [].slice.call(this.dataSource);
                     break;
             }

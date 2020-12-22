@@ -1214,6 +1214,7 @@ var checkScrollReset = 'check-scroll-reset';
 
 /** @hidden */
 var preventFrozenScrollRefresh = 'prevent-frozen-scroll-refresh';
+/** @hidden */
 
 /**
  * Defines types of Cell
@@ -5948,7 +5949,8 @@ var CellRenderer = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
         }
-        if (!cell.visible) {
+        if ((!cell.visible && !cell.isDataCell) ||
+            (!sf.base.isNullOrUndefined(cell.column.visible) && !cell.column.visible)) {
             classes.push('e-hide');
         }
         attr.class = classes;

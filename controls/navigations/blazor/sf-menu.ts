@@ -192,16 +192,23 @@ class SfMenu {
 
     private mouseDownHandler(e: MouseEvent): void {
         let target: Element = e.target as Element;
-        if (isNullOrUndefined(this.element) || !document.body.contains(this.element)) { this.removeEventListener(false); }
+        let isEleAvailable: boolean = !document.body.contains(this.element);
+        if (isNullOrUndefined(this.element) || isEleAvailable) { this.removeEventListener(false); }
         let scrollNav: Element = closest(target, SCROLLNAV);
         if (isNullOrUndefined(this.popup) || (!closest(target, HASH + this.popup.id) || scrollNav)) {
             let menuLength: number = selectAll(MENU, this.element).length;
-            if ((select(FOCUSED, this.element) || select(SELECTED, this.element)) &&
+            if (isEleAvailable && (select(FOCUSED, this.element) || select(SELECTED, this.element)) &&
                 !closest(e.target as Element, HASH + this.element.id) && (!scrollNav || menuLength > 1)) {
                 this.dotnetRef.invokeMethodAsync(MOUSEDOWNHANDLER, true, false, !isNullOrUndefined(scrollNav));
             }
-            if (!isNullOrUndefined(this.popup) && !closest(e.target as Element, DOT + MENUITEM + SELECTED) && !scrollNav) {
-                this.destroyScroll(NONE);
+            if (!isNullOrUndefined(this.popup) && !isNullOrUndefined(this.popup.blazor__instance) &&
+                (!closest(e.target as Element, DOT + MENUITEM + SELECTED) || !this.popup.blazor__instance.subMenuOpen) && !scrollNav) {
+                if (!this.popup.blazor__instance.subMenuOpen) {
+                    let menu: HTMLElement = closest(e.target as Element, MENU) as HTMLElement;
+                    if (select(DOT + SCROLLMENU + VSCROLL, this.popup)) { this.destroyScroll(NONE, menu); }
+                } else {
+                    this.destroyScroll(NONE);
+                }
             }
         }
     }

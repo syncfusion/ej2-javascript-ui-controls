@@ -50,6 +50,7 @@ let PivotView: object = {
         if (element && element.blazor__instance && element.blazor__instance.pivotButtonModule) {
             element.blazor__instance.options = options;
             element.blazor__instance.getOptions(element, options);
+            element.blazor__instance.pivotButtonModule.createPivotButtonDrop();
             element.blazor__instance.pivotButtonModule.setPivotButtonDrag();
         }
     },

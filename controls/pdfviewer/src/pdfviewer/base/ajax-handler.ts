@@ -106,7 +106,7 @@ export class AjaxHandler {
         if (statusString === '5' || isSkip) {
             isSkip = true;
             this.retryCount--;
-            proxy.pdfViewer.fireAjaxRequestFailed(status, proxy.httpRequest.statusText, jsonObj.action);
+            proxy.pdfViewer.fireAjaxRequestFailed(status, proxy.httpRequest.statusText, jsonObj.action, true);
             proxy.send(jsonObj);
         }
         return isSkip;

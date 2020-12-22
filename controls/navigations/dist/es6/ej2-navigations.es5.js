@@ -1573,10 +1573,11 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.afterCloseMenu(e);
                     }
                     else if (isOpen && !_this.hamburgerMode && _this.navIdx.length && closedLi && !trgtLi) {
-                        var ele = e ? closest(e.target, '.e-menu-wrapper') : null;
+                        var ele = (e && e.target.classList.contains('e-vscroll'))
+                            ? closest(e.target, '.e-menu-wrapper') : null;
                         if (ele) {
                             ele = ele.querySelector('.e-menu-item');
-                            if (ele && _this.getIndex(ele.id, true).length <= _this.navIdx.length) {
+                            if (_this.showItemOnClick || (ele && _this.getIndex(ele.id, true).length <= _this.navIdx.length)) {
                                 _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e, true);
                             }
                         }

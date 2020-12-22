@@ -2305,19 +2305,17 @@
 
   .e-pv-align {
     cursor: pointer;
+    float: right;
     font-size: 20px;
-    padding-top: 15px;
-    position: absolute;
-    right: 15px;
+    margin-top: 15px;
   }
 
   .e-pv-align-border {
     border: $pv-signature-border-color;
     border-radius: 5px;
     cursor: pointer;
-    padding-left: 30%;
-    padding-right: 30%;
-    padding-top: 20%;
+    display: inline-block;
+    width: 170px;
   }
 
   .e-pv-align-sign {

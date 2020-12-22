@@ -3,6 +3,8 @@ import { getScrollableParent } from '@syncfusion/ej2-popups';
 
 const HSV_CONTAINER: string = '.e-hsv-container';
 const COLOR_PICKER: string = '.e-split-colorpicker';
+const COLOR_PALETTE: string = 'e-color-palette';
+const PALETTE: string = '.e-palette';
 const HSV_COLOR: string = '.e-hsv-color';
 const SET_OFFSET: string = 'SetOffset';
 const DROPDOWN_BTN: string = '.e-dropdown-btn';
@@ -96,6 +98,24 @@ class SfColorPicker {
                 EventHandler.remove(element, SCROLL, this.scrollHandler);
         }
     }
+    public focusIn(element: BlazorColorPickerElement, inline: boolean): void {
+        if (inline) {
+            let container: Element = element.querySelector(CONTAINER);
+            if (container) {
+                if (container.classList.contains(COLOR_PALETTE)) {
+                    this.setFocus(PALETTE);
+                } else {
+                    this.setFocus(HANDLER);
+                }
+            }
+        } else {
+            this.setFocus(COLOR_PICKER);
+        }
+    }
+    private setFocus(cls: string): void {
+        let btn: HTMLElement = this.element.querySelector(cls);
+        if (btn) { btn.focus(); }
+    }
 }
 interface BlazorColorPickerElement extends HTMLElement {
     blazor__instance: SfColorPicker;
@@ -126,6 +146,9 @@ let ColorPicker: object = {
             return element.blazor__instance.getOffset(container);
         }
         return null;
+    },
+    focusIn(element: BlazorColorPickerElement, inline: boolean): void {
+        if (!isNullOrUndefined(element)) { element.blazor__instance.focusIn(element, inline); }
     },
     destroy(element: BlazorColorPickerElement): void {
         if (!isNullOrUndefined(element)) { element.blazor__instance.addScrollEvents(false); }

@@ -128,10 +128,12 @@ export class RowDD {
                     let index: number = record[0].childRecords.indexOf(draggedRecord);
                     let parentRecord: ITreeData = record[0];
                     if (index !== -1) {
-                        parentRecord.childRecords.splice(index, 1);
-                        if (!parentRecord.childRecords.length) {
-                            parentRecord.hasChildRecords = false;
-                            parentRecord.hasFilteredChildRecords = false;
+                        if (isNullOrUndefined(this.parent.idMapping)) {
+                            parentRecord.childRecords.splice(index, 1);
+                            if (!parentRecord.childRecords.length) {
+                                parentRecord.hasChildRecords = false;
+                                parentRecord.hasFilteredChildRecords = false;
+                            }
                         }
                         this.isDraggedWithChild = true;
                     }
@@ -146,6 +148,9 @@ export class RowDD {
             for (let i: number = dragLength - 1; i > -1; i--) {
                 draggedRecord = dragRecords[i];
                 let recordIndex1: number = 0;
+                if (!isNullOrUndefined(tObj.parentIdMapping)) {
+                    tObj.childMapping = null;
+                }
                 if (!isNullOrUndefined(draggedRecord.taskData) &&
                     !(draggedRecord.taskData as Object).hasOwnProperty(tObj.childMapping)) {
                         draggedRecord.taskData[tObj.childMapping] = [];
@@ -623,6 +628,19 @@ export class RowDD {
             for (let i: number = 0; i < records.length; i++) {
                 indexes[i] = records[i].index;
             }
+            if (this.parent.idMapping != null && ( isNullOrUndefined(this.dropPosition) || this.dropPosition === 'bottomSegment')) {
+                let actualData: ITreeData[] = [];
+                for (let i: number = 0; i < records.length; i++) {
+                    if (records[i].hasChildRecords) {
+                        actualData.push(records[i]);
+                        let child: ITreeData[] = records[i].childRecords;
+                        for (let i: number = 0; i < child.length; i++) {
+                            actualData.push(child[i]); // push child records to drop the parent record along with its child records
+                        }
+                        records = actualData;
+                    }
+                }
+            }
             tObj.notify(events.rowsRemove, { indexes: indexes, records: records });
             srcControl.notify(events.rowsAdd, { toIndex: targetIndex, records: records });
             let srcControlFlatData: ITreeData[] = srcControl.rowDragAndDropModule.treeGridData;
@@ -704,6 +722,9 @@ export class RowDD {
                 this.isaddtoBottom = addToBottom = multiplegrid && this.isDraggedWithChild;
             }
             let dragLength: number = dragRecords.length;
+            if (!isNullOrUndefined(this.parent.idMapping)) {
+                dragRecords.reverse();
+            }
             for (let i: number = 0; i < dragLength; i++) {
                 draggedRecord = dragRecords[i];
                 this.draggedRecord = draggedRecord;
@@ -736,10 +757,7 @@ export class RowDD {
                             }
                             this.treeGridData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                         }
-                        draggedRecord.parentItem = this.treeGridData[recordIndex1].parentItem;
-                        draggedRecord.parentUniqueID = this.treeGridData[recordIndex1].parentUniqueID;
-                        draggedRecord.level = this.treeGridData[recordIndex1].level;
-                        if (draggedRecord.hasChildRecords) {
+                        if (draggedRecord.hasChildRecords && isNullOrUndefined(this.parent.idMapping)) {
                             let level: number = 1;
                             this.updateChildRecordLevel(draggedRecord, level);
                             this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);

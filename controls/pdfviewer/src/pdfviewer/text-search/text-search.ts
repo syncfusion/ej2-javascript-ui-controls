@@ -1,5 +1,5 @@
 import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
-import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
 
@@ -29,7 +29,6 @@ export class TextSearch {
     private searchBox: HTMLElement;
     private nextSearchBtn: HTMLElement;
     private prevSearchBtn: HTMLElement;
-    private checkBox: CheckBox;
     private searchIndex: number = 0;
     private currentSearchIndex: number = 0;
     private searchPageIndex: number = null;
@@ -104,13 +103,25 @@ export class TextSearch {
         let matchCaseContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_match_case_container', className: 'e-pv-match-case-container' });
         let matchCaseInput: HTMLElement = createElement('input', { id: this.pdfViewer.element.id + '_match_case' });
         (matchCaseInput as HTMLInputElement).type = 'checkbox';
+        if (isBlazor()) {
+            matchCaseInput.style.height = '17px';
+            matchCaseInput.style.width = '17px';
+            matchCaseInput.addEventListener('change', this.checkBoxOnChange.bind(this));
+        }
         matchCaseContainer.appendChild(matchCaseInput);
         this.searchBox.appendChild(searchElementsContainer);
         this.searchBox.appendChild(matchCaseContainer);
         this.pdfViewerBase.mainContainer.appendChild(this.searchBox);
-        // tslint:disable-next-line:max-line-length
-        this.checkBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), change: this.checkBoxOnChange.bind(this) });
-        this.checkBox.appendTo(matchCaseInput);
+        if (isBlazor()) {
+            // tslint:disable-next-line:max-line-length
+            let matchCaseText: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_search_box_text', styles: 'position: absolute; padding-top: 3px; padding-left: 8px; padding-right: 8px; font-size: 13px' });
+            matchCaseText.textContent = this.pdfViewer.localeObj.getConstant('Match case');
+            matchCaseContainer.appendChild(matchCaseText);
+        } else {
+            // tslint:disable-next-line:max-line-length
+            let checkBox: CheckBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), change: this.checkBoxOnChange.bind(this) });
+            checkBox.appendTo(matchCaseInput);
+        }
         this.showSearchBox(false);
         if (this.pdfViewer.enableRtl) {
             this.searchBox.classList.add('e-rtl');
@@ -998,11 +1009,20 @@ export class TextSearch {
         }
     }
 
-    private checkBoxOnChange = (event: ChangeEventArgs): void => {
-        if (event.checked) {
-            this.isMatchCase = true;
+    // tslint:disable-next-line
+    private checkBoxOnChange = (event: any): void => {
+        if (isBlazor()) {
+            if (event.currentTarget && event.currentTarget.checked) {
+                this.isMatchCase = true;
+            } else {
+                this.isMatchCase = false;
+            }
         } else {
-            this.isMatchCase = false;
+            if (event.checked) {
+                this.isMatchCase = true;
+            } else {
+                this.isMatchCase = false;
+            }
         }
         if (this.isTextSearch) {
             this.resetVariables();

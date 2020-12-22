@@ -947,6 +947,7 @@ export class DocumentHelper {
         }
         this.owner.commentReviewPane.reviewTab.hideTab(0, false);
         this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
+        this.owner.showRevisions = false;
     }
     /**
      * @private
@@ -956,17 +957,9 @@ export class DocumentHelper {
             let eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
-        if (!show && this.owner.showComments) {
-            this.owner.commentReviewPane.reviewTab.hideTab(0, false);
-            this.owner.commentReviewPane.showHidePane(true, 'Comments');
-        } else if (!this.showRevision && !this.owner.enableTrackChanges && this.owner.showRevisions) {
-            this.owner.commentReviewPane.showHidePane(!show, 'Changes');
-            this.owner.showRevisions = false;
-        } else {
-            this.owner.commentReviewPane.showHidePane(show, 'Changes');
-            this.owner.commentReviewPane.reviewTab.hideTab(0, true);
-            this.showRevision = false;
-        }
+        this.owner.commentReviewPane.reviewTab.hideTab(0, false);
+        this.owner.commentReviewPane.showHidePane(show && this.owner.enableTrackChanges, 'Changes');
+        this.owner.showComments = false;
     }
     /**
      * Initializes components.
@@ -1329,7 +1322,7 @@ export class DocumentHelper {
         if (Browser.isIE && alt && ctrl) {
             ctrl = false;
         }
-        if (ctrl && event.key === 'v' || ctrl && event.key === 'a') {
+        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || this.isControlPressed) && event.key === 'p') {
             return;
         }
         if (!this.owner.isReadOnlyMode) {

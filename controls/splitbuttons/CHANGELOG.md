@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.31 (2020-12-22)
+
+### ProgressButton
+
+#### Bug Fixes
+
+- Issue with setting content property in begin event has been resolved.
+
 ## 18.4.30 (2020-12-17)
 
 ### SplitButton

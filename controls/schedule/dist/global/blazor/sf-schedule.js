@@ -4115,11 +4115,17 @@ var Resize = /** @class */ (function (_super) {
             return;
         }
         var pages = this.getPageCoordinates(e);
-        var doc = document.documentElement;
-        var left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
-        var top = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
-        this.actionObj.pageX = pages.pageX - left;
-        this.actionObj.pageY = pages.pageY - top;
+        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear') {
+            var doc = document.documentElement;
+            var left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+            var top_1 = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+            this.actionObj.pageX = pages.pageX - left;
+            this.actionObj.pageY = pages.pageY - top_1;
+        }
+        else {
+            this.actionObj.pageX = pages.pageX;
+            this.actionObj.pageY = pages.pageY;
+        }
         this.updateScrollPosition(e);
         this.updateResizingDirection(e);
     };
@@ -6001,10 +6007,7 @@ var SfSchedule = /** @class */ (function () {
         return new Date(+date - (date.getTimezoneOffset() * 60000)).getTime();
     };
     SfSchedule.prototype.getTimeString = function (date) {
-        var timeFormat = this.options.timeFormat ||
-            sf.base.IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.options.locale).format;
-        var time = this.globalize.formatDate(date, { format: timeFormat, type: 'time' });
-        return time.toLocaleUpperCase();
+        return this.globalize.formatDate(date, { format: this.options.timeFormat, type: 'time' });
     };
     SfSchedule.prototype.getDateTime = function (date) {
         return date instanceof Date ? new Date(date.getTime()) : new Date(date);
@@ -6708,6 +6711,9 @@ var Schedule = {
                 dotnetRef.invokeMethodAsync('TriggerCreatedEvent');
             }
         }
+    },
+    loadCldr: function (cultureData) {
+        sf.base.loadCldr(JSON.parse(cultureData));
     },
     createCalendarPopup: function (element) {
         if (element && element.blazor__instance) {

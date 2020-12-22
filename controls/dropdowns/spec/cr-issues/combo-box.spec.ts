@@ -795,4 +795,44 @@ describe('ComboBox', () => {
             mouseEventArgs.type = 'click';
         });
     });
+    describe('EJ2-44588', () => {
+        let data: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' }
+        ];
+        let listObj: any;
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeAll(() => {
+            let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox' });
+            document.body.appendChild(comboEle);
+            listObj = new ComboBox({
+                dataSource: data,
+                fields: { text: "text", value: "id" },
+                created  : function(){
+                    setTimeout(() => {
+                      (listObj as any).refresh();
+                    }, 400);
+              }
+            });
+            listObj.appendTo('#ComboBox');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('Select item from list of calling refresh method', (done) => {
+            setTimeout(() => {
+                mouseEventArgs.target = listObj.inputWrapper.buttons[0];
+                listObj.dropDownClick(mouseEventArgs);
+                done();
+            }, 800);
+            mouseEventArgs.target = listObj.inputWrapper.buttons[0];
+            listObj.dropDownClick(mouseEventArgs);
+            mouseEventArgs.target = listObj.ulElement.querySelectorAll('li')[0];
+            listObj.onMouseClick(mouseEventArgs);
+            expect(listObj.inputElement.value).toBe("JAVA");
+        });
+    });
 });

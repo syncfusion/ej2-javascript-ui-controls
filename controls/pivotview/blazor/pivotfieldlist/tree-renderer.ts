@@ -25,11 +25,6 @@ export class TreeRenderer {
                 }
             }
         }
-        /* tslint:disable-next-line:max-line-length */
-        if (closest(treeElement, '.' + (this.parent.isAdaptive ? cls.EDITOR_TREE_CONTAINER_CLASS : cls.FIELD_LIST_TREE_CLASS) + '-outer-div')) {
-            /* tslint:disable-next-line:max-line-length */
-            (closest(treeElement, '.' + (this.parent.isAdaptive ? cls.EDITOR_TREE_CONTAINER_CLASS : cls.FIELD_LIST_TREE_CLASS) + '-outer-div') as HTMLElement).style.visibility = 'visible';
-        }
     }
 
     private updateTreeNode(node: HTMLElement, nodeData: TreeData, dragText: string): void {

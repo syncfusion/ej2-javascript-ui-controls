@@ -236,5 +236,5 @@ export type SignatureFitMode = 'Default' | 'Stretch' ;
  */
 export enum AnnotationDataFormat {
     Json = 'Json',
-    Xfdf = 'XFdf',
+    Xfdf = 'Xfdf',
 }

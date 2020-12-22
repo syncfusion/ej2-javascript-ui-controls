@@ -300,7 +300,8 @@ export class CellRenderer implements ICellRenderer<Column> {
             attr[prop.colindex] = cell.index;
         }
 
-        if (!cell.visible) {
+        if ((!cell.visible && !cell.isDataCell) ||
+            (!isNullOrUndefined((<{ visible?: string }>cell.column).visible) && !(<{ visible?: string }>cell.column).visible)) {
             classes.push('e-hide');
         }
 

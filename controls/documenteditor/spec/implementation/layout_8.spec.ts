@@ -28,9 +28,9 @@ describe('Table border render validation', () => {
             done();
         }, 1000);
     });
-    it('page count to be 1', () => {
-console.log('page count to be 1');
-      expect(editor.documentHelper.pages.length).toBe(1);
+    it('page count to be 2', () => {
+console.log('page count to be 2');
+      expect(editor.documentHelper.pages.length).toBe(2);
     });
     it('get adjacent bottom border to render', () => {
 console.log('get adjacent bottom border to render');

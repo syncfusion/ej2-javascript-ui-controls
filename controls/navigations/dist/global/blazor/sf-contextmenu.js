@@ -142,7 +142,7 @@ var SfContextMenu = /** @class */ (function () {
         this.dotnetRef = dotnetRef;
         this.element.blazor__instance = this;
         this.addContextMenuEvent();
-        sf.base.EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
+        this.addEventListener();
     }
     SfContextMenu.prototype.addContextMenuEvent = function (add) {
         if (add === void 0) { add = true; }
@@ -213,7 +213,6 @@ var SfContextMenu = /** @class */ (function () {
         keyActionHandler(this.element, e.target, e.keyCode, this.menuId);
     };
     SfContextMenu.prototype.cmenuHandler = function (e) {
-        var _this = this;
         if (this.filter) {
             var canOpen = false;
             var filter = this.filter.split(SPACE);
@@ -230,15 +229,14 @@ var SfContextMenu = /** @class */ (function () {
         e.preventDefault();
         var left = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
         var top = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-        // tslint:disable-next-line:no-any
-        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top)).then(function (rtl) { return _this.contextMenuPosition(left, top, rtl, false, false); });
+        this.dotnetRef.invokeMethodAsync(OPENMENU, Math.ceil(left), Math.ceil(top));
     };
     SfContextMenu.prototype.contextMenuPosition = function (left, top, rtl, subMenu, manualOpen) {
-        this.removeEventListener();
         var cmenu = this.hideMenu(true);
         if (!cmenu) {
             return;
         }
+        this.subMenuOpen = false;
         this.setBlankIconStyle(cmenu, rtl);
         var cmenuOffset = cmenu.getBoundingClientRect();
         var cmenuWidth = this.getMenuWidth(cmenu, cmenuOffset.width, rtl);
@@ -267,7 +265,6 @@ var SfContextMenu = /** @class */ (function () {
         this.element.style.zIndex = sf.popups.getZindexPartial(this.element).toString();
         cmenu.style.visibility = EMPTY;
         cmenu.focus();
-        this.addEventListener();
     };
     SfContextMenu.prototype.setBlankIconStyle = function (menu, isRtl) {
         var blankIconList = [].slice.call(menu.getElementsByClassName('e-blankicon'));
@@ -304,30 +301,37 @@ var SfContextMenu = /** @class */ (function () {
         return width < 120 ? 120 : width;
     };
     SfContextMenu.prototype.addEventListener = function () {
-        sf.base.EventHandler.add(document, MOUSEDOWN, this.mouseDownHandler, this);
-        sf.base.EventHandler.add(document, MOUSEOVER, this.mouseOverHandler, this);
+        this.delegateMouseDownHandler = this.mouseDownHandler.bind(this);
+        this.delegateMouseOverHandler = this.mouseOverHandler.bind(this);
+        sf.base.EventHandler.add(document, MOUSEDOWN, this.delegateMouseDownHandler, this);
+        sf.base.EventHandler.add(document, MOUSEOVER, this.delegateMouseOverHandler, this);
+        sf.base.EventHandler.add(this.element, KEYDOWN, this.keyDownHandler, this);
     };
     SfContextMenu.prototype.removeEventListener = function () {
-        sf.base.EventHandler.remove(document, MOUSEDOWN, this.mouseDownHandler);
-        sf.base.EventHandler.remove(document, MOUSEOVER, this.mouseOverHandler);
+        sf.base.EventHandler.remove(document, MOUSEDOWN, this.delegateMouseDownHandler);
+        sf.base.EventHandler.remove(document, MOUSEOVER, this.delegateMouseOverHandler);
+        sf.base.EventHandler.remove(this.element, KEYDOWN, this.keyDownHandler);
     };
     SfContextMenu.prototype.mouseDownHandler = function (e) {
-        if (!sf.base.select(DOT + MENU, this.element)) {
+        if (!document.getElementById(this.element.id)) {
             this.removeEventListener();
             return;
         }
         if (!sf.base.closest(e.target, HASH + this.element.id) && (sf.base.isNullOrUndefined(this.menuId) ||
-            !sf.base.closest(e.target, this.menuId))) {
+            !sf.base.closest(e.target, this.menuId)) && sf.base.select(DOT + MENU, this.element)) {
             this.dotnetRef.invokeMethodAsync(CLOSE, 0, false, true, false);
         }
     };
     SfContextMenu.prototype.mouseOverHandler = function (e) {
-        if (!sf.base.select(DOT + MENU, this.element)) {
+        if (!document.getElementById(this.element.id)) {
             this.removeEventListener();
             return;
         }
         var target = e.target;
         var menus = [].slice.call(sf.base.selectAll(DOT + MENU, this.element));
+        if (!menus.length) {
+            return;
+        }
         var scrollNav = sf.base.closest(target, SCROLLNAV);
         if (this.subMenuOpen && (menus.length > 1 || (!sf.base.isNullOrUndefined(this.menuId) && !scrollNav))) {
             if ((!sf.base.closest(target, HASH + this.element.id) && (sf.base.isNullOrUndefined(this.menuId) || !sf.base.closest(target, this.menuId))) ||
@@ -352,15 +356,13 @@ var SfContextMenu = /** @class */ (function () {
                 this.destroyMenuScroll(sf.base.closest(target, DOT + MENU));
             }
         }
-        var activeEle = document.activeElement;
-        if (!sf.base.closest(activeEle, "" + HASH + this.element.id) && menus.length) {
-            if (this.openAsMenu) {
-                this.openAsMenu = false;
-                sf.base.EventHandler.remove(document, MOUSEOVER, this.mouseOverHandler);
-            }
-            var lastChild = this.getLastMenu();
-            if (lastChild) {
-                lastChild.focus();
+        if (!this.openAsMenu) {
+            var activeEle = document.activeElement;
+            if (!sf.base.closest(activeEle, "" + HASH + this.element.id) && menus.length) {
+                var lastChild = this.getLastMenu();
+                if (lastChild) {
+                    lastChild.focus();
+                }
             }
         }
     };
@@ -451,8 +453,6 @@ var SfContextMenu = /** @class */ (function () {
         focusedLi ? focusedLi.focus() : menu.focus();
         if (isNull) {
             this.openAsMenu = true;
-            this.removeEventListener();
-            this.addEventListener();
         }
     };
     SfContextMenu.prototype.getLastMenu = function () {
@@ -474,7 +474,6 @@ var SfContextMenu = /** @class */ (function () {
     SfContextMenu.prototype.destroy = function (refElement) {
         this.removeEventListener();
         this.addContextMenuEvent(false);
-        sf.base.EventHandler.remove(this.element, KEYDOWN, this.keyDownHandler);
         if (refElement && refElement.parentElement && refElement.previousElementSibling !== this.element) {
             refElement.parentElement.insertBefore(this.element, refElement);
         }
@@ -486,11 +485,7 @@ var SfContextMenu = /** @class */ (function () {
         if (menu) {
             this.menuId = HASH + menu.id;
         }
-        if (!showItemOnClick) {
-            this.subMenuOpen = true;
-            this.removeEventListener();
-            this.addEventListener();
-        }
+        this.subMenuOpen = !showItemOnClick;
     };
     return SfContextMenu;
 }());

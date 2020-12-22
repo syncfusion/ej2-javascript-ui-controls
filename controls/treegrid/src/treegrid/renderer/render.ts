@@ -140,6 +140,8 @@ export class Render {
             this.updateTreeCell(args, cellElement, container);
             container.appendChild(cellElement);
             args.cell.appendChild(container);
+        } else if (this.templateResult) {
+            this.templateResult = null;
         }
         if (this.parent.frozenColumns > this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
             grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns) {

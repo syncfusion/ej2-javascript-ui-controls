@@ -601,14 +601,16 @@ export class Toolbar {
                 }
             } else {
                 if (isBlazor()) {
-                    this.pdfViewer._dotnetInstance.invokeMethodAsync('DisableUndoRedoButton', null);
+                    //this.pdfViewer._dotnetInstance.invokeMethodAsync('DisableUndoRedoButton', null);
+                    this.pdfViewerBase.blazorUIAdaptor.disableUndoRedoButton();
                 } else {
                     this.disableUndoRedoButtons();
                 }
             }
         } else {
             if (isBlazor()) {
-                this.pdfViewer._dotnetInstance.invokeMethodAsync('DisableUndoRedoButton', null);
+                //this.pdfViewer._dotnetInstance.invokeMethodAsync('DisableUndoRedoButton', null);
+                this.pdfViewerBase.blazorUIAdaptor.disableUndoRedoButton();
             } else {
                 this.disableUndoRedoButtons();
             }
@@ -627,9 +629,11 @@ export class Toolbar {
      // tslint:disable-next-line
      private enableCollectionAvailableInBlazor(collection: any[], item: string): void {
         if (collection.length > 0) {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateUndoRedoButton', item, true);
+            //this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateUndoRedoButton', item, true);
+            this.pdfViewerBase.blazorUIAdaptor.updateUndoRedoButton(item, true);
         } else {
-            this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateUndoRedoButton', item, false);
+            // this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateUndoRedoButton', item, false);
+            this.pdfViewerBase.blazorUIAdaptor.updateUndoRedoButton(item, false);
         }
     }
     private disableUndoRedoButtons(): void {
@@ -664,7 +668,8 @@ export class Toolbar {
                 }
                 this.currentPageBox.value = pageIndex;
             } else {
-                this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
+                //this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
+                this.pdfViewerBase.blazorUIAdaptor.pageChanged(pageIndex);
             }
             this.pdfViewerBase.currentPageNumber = pageIndex;
             this.pdfViewer.currentPageNumber = pageIndex;

@@ -384,7 +384,7 @@ describe('Symbol Palette', () => {
             diagram.drop = (arg) => {
                 console.log((arg.element as NodeModel).offsetX);
                 console.log((arg.element as NodeModel).offsetY);
-                expect(Math.round((arg.element as NodeModel).offsetX) === 311).toBe(true);
+                expect(Math.round((arg.element as NodeModel).offsetX) === 311||Math.round((arg.element as NodeModel).offsetX) === 311.5).toBe(true);
                 expect(Math.round((arg.element as NodeModel).offsetY) === 311).toBe(true);
                 expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
                 done();

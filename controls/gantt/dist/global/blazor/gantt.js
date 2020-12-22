@@ -1327,6 +1327,7 @@ var TaskProcessor = /** @class */ (function (_super) {
             this.hierarchyData = [];
             this.parent.predecessorsCollection = [];
             this.parent.treeGrid.parentData = [];
+            this.parent.taskIds = [];
         }
         if (sf.base.isNullOrUndefined(this.parent.dataSource)) {
             this.parent.dataSource = [];
@@ -4473,6 +4474,7 @@ var GanttChart = /** @class */ (function () {
         }
         sf.base.EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
         sf.base.EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
+        sf.base.EventHandler.add(document, 'mouseup', this.contextClick, this);
         sf.base.EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     };
     GanttChart.prototype.unWireEvents = function () {
@@ -4496,6 +4498,7 @@ var GanttChart = /** @class */ (function () {
         }
         sf.base.EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
         sf.base.EventHandler.remove(document.body, 'contextmenu', this.contextClick);
+        sf.base.EventHandler.remove(document, 'mouseup', this.contextClick);
         sf.base.EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
     };
     /**
@@ -11955,8 +11958,9 @@ var Gantt = /** @class */ (function (_super) {
         else {
             var expandedRecords = this.getExpandedRecords(this.currentViewData);
             var height = void 0;
-            if (!sf.base.isNullOrUndefined(this.ganttChartModule.getChartRows()[0])) {
-                height = this.ganttChartModule.getChartRows()[0].getBoundingClientRect().height;
+            var chartRow$$1 = this.ganttChartModule.getChartRows()[0];
+            if (!sf.base.isNullOrUndefined(chartRow$$1) && chartRow$$1.getBoundingClientRect().height > 0) {
+                height = chartRow$$1.getBoundingClientRect().height;
             }
             else {
                 height = this.rowHeight;
@@ -12252,6 +12256,9 @@ var Gantt = /** @class */ (function (_super) {
             this.connectorLineModule.removePreviousConnectorLines(this.currentViewData);
         }
         this.updateCurrentViewData();
+        if (!this.enableVirtualization) {
+            this.updateContentHeight();
+        }
         this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();
@@ -17199,6 +17206,9 @@ var DialogEdit = /** @class */ (function () {
                 tempData[this.parent.ganttColumns[i].field] = '';
             }
         }
+        tempData.ganttProperties.isAutoSchedule = (this.parent.taskMode === 'Auto') ? true :
+            (this.parent.taskMode === 'Manual') ? false :
+                tempData[taskSettings.manual] === true ? false : true;
         return tempData;
     };
     /**
@@ -18574,7 +18584,7 @@ var DialogEdit = /** @class */ (function () {
             _this.updateResourceCollection(args, resourceTreeGridId);
         };
         var divElement = this.createDivElement('e-resource-div', resourceTreeGridId);
-        sf.treegrid.TreeGrid.Inject(sf.treegrid.Selection, sf.treegrid.Filter, sf.treegrid.Edit);
+        sf.treegrid.TreeGrid.Inject(sf.treegrid.Selection, sf.treegrid.Filter, sf.treegrid.Edit, sf.treegrid.VirtualScroll);
         var treeGridObj = new sf.treegrid.TreeGrid(inputModel);
         var resourceColumn = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
@@ -21014,6 +21024,7 @@ var Edit$2 = /** @class */ (function () {
             }
         }
         if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
+            this.parent.treeGrid.parentData = [];
             this.parent.treeGrid.refresh();
             this.isTreeGridRefresh = false;
         }
@@ -21598,6 +21609,7 @@ var Edit$2 = /** @class */ (function () {
                     }
                 }
                 this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
+                this.parent.treeGrid.parentData = [];
                 this.parent.treeGrid.refresh();
             }
         }
@@ -21794,6 +21806,7 @@ var Edit$2 = /** @class */ (function () {
         if (this.parent.taskFields.dependency) {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
         }
+        this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';
@@ -23256,7 +23269,8 @@ var Filter$1 = /** @class */ (function () {
     };
     Filter$$1.prototype.closeFilterOnContextClick = function (element) {
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
-            if (!(this.filterMenuElement.contains(element))) {
+            var ganttElement = sf.base.closest(element, '#' + this.parent.element.id);
+            if ((!(this.filterMenuElement.contains(element)) && !sf.base.isNullOrUndefined(ganttElement)) || element.nodeName === 'HTML') {
                 sf.base.remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;

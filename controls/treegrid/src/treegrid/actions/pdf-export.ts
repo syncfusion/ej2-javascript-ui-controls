@@ -65,7 +65,7 @@ export class PdfExport {
         let isLocal: Boolean = !isRemoteData(this.parent) && isOffline(this.parent);
         setValue('cancel', false, prop);
         return new Promise((resolve: Function, reject: Function) => {
-          let dm: DataManager = isLocal ? new DataManager(dtSrc) : <DataManager>this.parent.dataSource;
+          let dm: DataManager = isLocal && !(dtSrc instanceof DataManager) ? new DataManager(dtSrc) : <DataManager>this.parent.dataSource;
           let query: Query = new Query();
           if (!isLocal) {
             query = this.generateQuery(query);

@@ -4,7 +4,7 @@ import { FilterSettings } from '../base/grid';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
-import { extend, isUndefined } from '@syncfusion/ej2-base';
+import { extend, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `numberfilterui` render number column.
@@ -51,6 +51,9 @@ export class NumberFilterUI implements IFilterMUI {
     public read(element: Element, column: Column, filterOptr: string, filterObj: Filter): void {
         let numberuiObj: NumericTextBox = (<EJ2Intance>document.querySelector('#numberui-' + column.uid)).ej2_instances[0];
         let filterValue: number = numberuiObj.value;
+        if (isNullOrUndefined(filterValue)) {
+            filterValue = parseFloat((<{ value?: string }>element).value);
+        }
         filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', true);
     }
 }

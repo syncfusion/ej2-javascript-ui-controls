@@ -18406,7 +18406,7 @@ function createMeasureElements() {
 }
 /** @private */
 function setChildPosition(temp, childNodes, i, options) {
-    if (childNodes.length > 1 && temp.x === 0 &&
+    if (childNodes.length >= 1 && temp.x === 0 &&
         (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
         (options.textWrapping === 'Wrap' || options.textWrapping === 'WrapWithOverflow')) {
         temp.x = childNodes[i - 1] ? childNodes[i - 1].x : -(temp.width / 2);
@@ -26312,7 +26312,9 @@ class DiagramEventHandler {
                 if (isBlazor() && this.diagram.click) {
                     arg = this.getBlazorClickEventArgs(arg);
                 }
-                this.diagram.triggerEvent(DiagramEvent.click, arg);
+                if (this.diagram.tool !== DiagramTools.ZoomPan) {
+                    this.diagram.triggerEvent(DiagramEvent.click, arg);
+                }
             }
             this.eventArgs = {};
         }
@@ -32372,8 +32374,11 @@ class CommandHandler {
     drop(source, target, position) {
         //drop
         if (this.diagram.bpmnModule) {
-            this.diagram.bpmnModule.dropBPMNchild(target, (source instanceof Node) ? source : source.nodes[0], this.diagram);
-            this.diagram.refreshDiagramLayer();
+            let sourcenode = (source instanceof Node) ? source : source.nodes[0];
+            if (sourcenode && sourcenode.shape.type === 'Bpmn' && target.shape.type === 'Bpmn') {
+                this.diagram.bpmnModule.dropBPMNchild(target, (source instanceof Node) ? source : source.nodes[0], this.diagram);
+                this.diagram.refreshDiagramLayer();
+            }
         }
     }
     /** @private */
@@ -43383,8 +43388,10 @@ class PrintAndExport {
         let oldZoom = this.diagram.scrollSettings.currentZoom;
         let oldHorizontalOffset = this.diagram.scroller.horizontalOffset;
         let oldVerticalOffset = this.diagram.scroller.verticalOffset;
-        let oldWidth = Number(String(this.diagram.width).split('px')[0]);
-        let oldHeight = Number(String(this.diagram.height).split('px')[0]);
+        let oldWidth = Number(String(this.diagram.width).split('%')[0]) ?
+            container.clientWidth : Number(String(this.diagram.width).split('px')[0]);
+        let oldHeight = Number(String(this.diagram.height).split('%')[0]) ?
+            container.clientHeight : Number(String(this.diagram.height).split('px')[0]);
         let bounds = this.getDiagramBounds('', {});
         this.diagram.scroller.zoom((1 / oldZoom));
         let scrollX = 0;
@@ -57806,7 +57813,7 @@ class Overview extends Component {
         }
         let attribute = {
             'id': this.element.id + '_canvas', 'class': 'drawing',
-            'style': 'position:relative; margin-top:6px; height:' + this.getSizeValue(this.model.height) + '; width:' +
+            'style': 'position:relative; height:' + this.getSizeValue(this.model.height) + '; width:' +
                 this.getSizeValue(this.model.width) +
                 ';style:-ms-touch-action: none;touch-action: none;'
         };

@@ -291,6 +291,10 @@
       }
     }
 
+    .e-view-container .e-grid .e-gridcontent .e-emptyrow {
+      display: table-row;
+    }
+
     .e-grid {
       @include checkbox($fe-cb-line-height);
       border-width: 0;
@@ -476,6 +480,14 @@
         margin: $fe-grid-icon-margin;
         vertical-align: middle;
         width: $fe-grid-icon-size;
+      }
+    }
+
+    .e-view-container {
+      .e-grid {
+        .e-gridheader {
+          padding-right: 0 !important; // sass-lint:disable-line no-important
+        }
       }
     }
 

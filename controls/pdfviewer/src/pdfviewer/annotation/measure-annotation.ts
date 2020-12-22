@@ -1,6 +1,6 @@
 import { PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, AnnotationType as AnnotType,
     ShapeLabelSettingsModel } from '../../index';
-import { ColorPicker, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationType } from '../drawing/enum';
@@ -1363,8 +1363,7 @@ export class MeasureAnnotation {
          }
         let stringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(stringArray[1])) {
-            let colorpick: ColorPicker = new ColorPicker();
-            colorString = colorpick.getValue(colorString, 'rgba');
+            colorString = this.pdfViewer.annotationModule.getValue(colorString, 'rgba');
             stringArray = colorString.split(',');
         }
         // tslint:disable-next-line:radix

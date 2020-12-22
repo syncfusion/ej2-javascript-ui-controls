@@ -1,6 +1,6 @@
 import { BlazorDotnetObject, Browser, Animation, select, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { formatUnit, attributes, EventHandler, isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
-import { AnimationModel, closest, setStyleAttribute, createElement, prepend } from '@syncfusion/ej2-base';
+import { AnimationModel, closest, setStyleAttribute, createElement, prepend, remove } from '@syncfusion/ej2-base';
 import { Popup, isCollide } from '@syncfusion/ej2-popups';
 
 const POPUP_CONTENT: string = 'e-content';
@@ -178,6 +178,10 @@ class SfDropDownList {
         let listHeight: string = formatUnit(this.options.popupHeight);
         let searchBoxContainer: HTMLElement;
         this.wireListEvents();
+        let oldPopupEle: HTMLElement = document.body.querySelector('.e-ddl.e-popup.e-popup-open');
+        if (oldPopupEle) {
+            remove(oldPopupEle);
+        }
         document.body.appendChild(popupElement);
         popupElement.style.visibility = 'hidden';
         if (this.options.allowFiltering) {

@@ -11,3 +11,4 @@ export * from './ajax-handler';
 export * from './signature';
 export * from './interfaces';
 export * from './spinner';
+export * from './blazor-ui-adaptor';

@@ -1984,9 +1984,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (Browser.isDevice) {
                     this.popupObj.element.classList.add(dropDownListClasses.device);
                     if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
-                        && !this.allowFiltering && this.isDropDownClick)) {
-                        this.popupObj.collision = { X: 'fit', Y: 'fit' };
-                    }
+                        && !this.allowFiltering && this.isDropDownClick)) { this.popupObj.collision = { X: 'fit', Y: 'fit' }; }
                     if (this.isFilterLayout()) {
                         this.popupObj.element.classList.add(dropDownListClasses.mobileFilter);
                         this.popupObj.position = { X: 0, Y: 0 };
@@ -2005,6 +2003,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 let scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);
                 for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
                 if (Browser.isDevice && this.isFilterLayout()) { EventHandler.add(this.list, 'scroll', this.listScroll, this); }
+                if (!isNullOrUndefined(this.list)) { this.unWireListEvents(); this.wireListEvents(); }
                 attributes(this.targetElement(), { 'aria-expanded': 'true' });
                 let inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
@@ -2094,7 +2093,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isDocumentClick = false;
                 this.destroyPopup();
                 let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
-                if (this.isFiltering() && formElement && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+                if (this.isFiltering() && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
                     this.isActive = true;
                     this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
                 }
@@ -2261,7 +2260,7 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private clearText(): void {
-        this.filterInput.value = '';
+        this.filterInput.value = this.typedString = '';
         this.searchLists(null);
     }
 
@@ -2564,6 +2563,9 @@ export class DropDownList extends DropDownBase implements IInput {
         let isChangeText: boolean = Object.keys(newProp).indexOf('text') !== -1 && isNullOrUndefined(newProp.text);
         if (this.getModuleName() !== 'autocomplete' && this.allowFiltering && (isChangeValue || isChangeText)) {
             this.itemData = null;
+        }
+        if (this.allowFiltering && newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
+            this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
     }
     protected updateDataSource(props?: DropDownListModel): void {

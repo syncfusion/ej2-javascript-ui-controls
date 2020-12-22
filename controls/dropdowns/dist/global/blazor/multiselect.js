@@ -1297,9 +1297,6 @@ var MultiSelect = /** @class */ (function (_super) {
             this.keyAction = false;
             this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
         }
-        else {
-            this.list.focus();
-        }
         this.moveByList(-1);
         this.updateAriaAttribute();
     };
@@ -1977,6 +1974,7 @@ var MultiSelect = /** @class */ (function (_super) {
             },
             cancel: false
         };
+        this.isPreventChange = this.isAngular && this.preventChange;
         this.trigger('tagging', eventArgs, function (eventArgs) {
             if (!eventArgs.cancel) {
                 if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && (sf.base.isBlazor() && _this.isServerRendered)) {
@@ -2231,7 +2229,10 @@ var MultiSelect = /** @class */ (function (_super) {
         if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
             this.updateDelimView();
         }
-        this.makeTextBoxEmpty();
+        if (this.inputElement.value !== '') {
+            this.makeTextBoxEmpty();
+            this.search(null);
+        }
         this.checkPlaceholderSize();
         if (this.isPopupOpen()) {
             this.refreshPopup();
@@ -2316,12 +2317,14 @@ var MultiSelect = /** @class */ (function (_super) {
             this.showPopup();
         }
         this.openClick(e);
-        if (this.checkTextLength() && !this.allowFiltering && (e.keyCode !== 8)) {
+        if (this.checkTextLength() && !this.allowFiltering && !sf.base.isNullOrUndefined(e) && (e.keyCode !== 8)) {
             this.focusAtFirstListItem();
         }
         else {
             var text = this.targetElement();
-            this.keyCode = e.keyCode;
+            if (!sf.base.isNullOrUndefined(e)) {
+                this.keyCode = e.keyCode;
+            }
             if (this.allowFiltering) {
                 var eventArgs_1 = {
                     preventDefaultAction: false,
@@ -4116,7 +4119,6 @@ var CheckBoxSelection = /** @class */ (function () {
         this.parent.off('selectAllText', this.setLocale);
         this.parent.off('filterBarPlaceholder', this.setPlaceholder);
         this.parent.off('addItem', this.checboxCreate);
-        sf.base.EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.parent.off('popupFullScreen', this.setPopupFullScreen);
     };
     CheckBoxSelection.prototype.listOption = function (args) {
@@ -4211,6 +4213,7 @@ var CheckBoxSelection = /** @class */ (function () {
     };
     CheckBoxSelection.prototype.destroy = function () {
         this.removeEventListener();
+        sf.base.EventHandler.remove(document, 'mousedown', this.onDocumentClick);
     };
     CheckBoxSelection.prototype.listSelection = function (args) {
         var target;
@@ -4356,6 +4359,9 @@ var CheckBoxSelection = /** @class */ (function () {
     };
     CheckBoxSelection.prototype.clearText = function (e) {
         this.parent.targetInputElement.value = '';
+        if (this.parent.allowFiltering && this.parent.targetInputElement.value === '') {
+            this.parent.search(null);
+        }
         this.parent.refreshPopup();
         this.parent.refreshListItems(null);
         this.clearIconElement.style.visibility = 'hidden';

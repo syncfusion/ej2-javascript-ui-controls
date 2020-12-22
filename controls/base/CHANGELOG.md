@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.31 (2020-12-22)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved unwanted window variable addition while iterating `for` template.
+
 ## 18.3.52 (2020-12-01)
 
 ### Common

@@ -2072,3 +2072,72 @@ describe('bug(EJ2-44058): When template is used, highlight is not working in the
         }, 450);
     });
 });
+describe('EJ2-44363- When setting value dynamically in remote data, text is autofilled', () => {
+    let mouseEventArgs: any = { which: 3, button: 2, preventDefault: function () { }, target: null };
+    let dropDowns: any;
+    let e: any = { preventDefault: function () { }, target: null };
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+    let countries: { [key: string]: Object }[] = [
+        { "Name": "Australia", "Code": "AU" },
+        { "Name": "Bermuda", "Code": "BM" },
+        { "Name": "Canada", "Code": "CA" },
+        { "Name": "Cameroon", "Code": "CM" },
+        { "Name": "Denmark", "Code": "DK" },
+        { "Name": "France", "Code": "FR" },
+        { "Name": "Finland", "Code": "FI" },
+        { "Name": "Germany", "Code": "DE" },
+        { "Name": "Greenland", "Code": "GL" },
+        { "Name": "Hong Kong", "Code": "HK" },
+        { "Name": "Switzerland", "Code": "CH" },
+        { "Name": "United Kingdom", "Code": "GB" },
+        { "Name": "United States", "Code": "US" }
+    ];
+    beforeEach(() => {
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        dropDowns.destroy();
+        element.remove();
+    });
+    it('custom value is set to the control with remote datasource', (done) => {
+        let remoteData: DataManager = new DataManager({ url: "https://ej2services.syncfusion.com/production/web-services/api/Employees",
+            adaptor: new ODataV4Adaptor, crossDomain: true });
+        dropDowns = new AutoComplete({
+            dataSource: remoteData,
+            fields: { value: 'FirstName' },
+            showPopupButton: true,
+            suggestionCount: 5,
+            query: new Query()
+                .select(["FirstName", "EmployeeID"])
+                .take(10)
+                .requiresCount(),
+            sortOrder: "Ascending",
+            autofill: true,
+            filterType: "StartsWith"
+        });
+        dropDowns.appendTo(element);
+        dropDowns.value = "a";
+        dropDowns.dataBind();
+        setTimeout(() => {
+            expect(dropDowns.inputElement.value).toBe("a");
+            done();
+        }, 800);
+    });
+    it('custom value is set to the control with local datasource', (done) => {
+        dropDowns = new AutoComplete({
+            dataSource: countries,
+            fields: { value: "Name" },
+            placeholder: "e.g. Australia",
+            sortOrder: "Ascending",
+            filterType: "StartsWith",
+            autofill: true
+        });
+        dropDowns.appendTo(element);
+        dropDowns.value = "a";
+        dropDowns.dataBind();
+        setTimeout(() => {
+            expect(dropDowns.inputElement.value).toBe("a");
+            done();
+        }, 800);
+    });
+});

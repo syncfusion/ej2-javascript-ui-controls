@@ -50,7 +50,7 @@ export type Action =
     /** Defines current Action as filterBeforeOpen */
     'filterBeforeOpen' |
     /** Defines current Action as filterChoiceRequest */
-    'filterChoiceRequest' |
+    'filterchoicerequest' |
     /** Defines current Action as filterAfterOpen */
     'filterAfterOpen' |
     /** Defines current Action as filterSearchBegin */

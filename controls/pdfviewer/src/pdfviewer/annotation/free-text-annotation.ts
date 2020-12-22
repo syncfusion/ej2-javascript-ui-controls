@@ -3,7 +3,6 @@ import {
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection, AllowedInteraction
 } from '../..';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -301,10 +300,10 @@ export class FreeTextAnnotation {
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
-                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         // tslint:disable-next-line
                         annot = {
-                            author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + i,
+                            author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + this.inputBoxCount,
                             rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                             thickness: annotation.Thickness, fillColor: annotation.FillColor,
                             bounds: {
@@ -330,6 +329,7 @@ export class FreeTextAnnotation {
                         }
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
+                        this.inputBoxCount += 1;
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
                         this.pdfViewer.nodePropertyChange(addedAnnot, {});
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
@@ -450,7 +450,6 @@ export class FreeTextAnnotation {
         }
         // tslint:disable-next-line
         let annotations: Array<any> = new Array();
-        let colorpick: ColorPicker = new ColorPicker();
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[j] = [];
         }
@@ -539,8 +538,7 @@ export class FreeTextAnnotation {
         }
         let stringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(stringArray[1])) {
-            let colorpick: ColorPicker = new ColorPicker();
-            colorString = colorpick.getValue(colorString, 'rgba');
+            colorString = this.pdfViewer.annotationModule.getValue(colorString, 'rgba');
             stringArray = colorString.split(',');
         }
         // tslint:disable-next-line:radix
@@ -560,7 +558,11 @@ export class FreeTextAnnotation {
     public onFocusOutInputBox(): void {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
-            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+            // tslint:disable-next-line
+            let pageIndex: number = parseInt(this.inputBoxElement.id.split('_')[2]);
+            if (isNullOrUndefined(pageIndex)) {
+                pageIndex = this.pdfViewerBase.currentPageNumber - 1;
+            }
             let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
@@ -713,10 +715,11 @@ export class FreeTextAnnotation {
 
     private updateFreeTextAnnotationSize(isSize : boolean): void {
         let inuptEleObj: FreeTextAnnotation = this;
-        if (!isSize) {
+        if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
             inuptEleObj.inputBoxElement.style.height = 'auto';
         }
-        inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
+        // tslint:disable-next-line:max-line-length
+        inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + 5 + 'px';
         let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
         let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
         inputEleHeight = ((inputEleHeight - 1) / inuptEleObj.pdfViewerBase.getZoomFactor());
@@ -761,8 +764,14 @@ export class FreeTextAnnotation {
     /**
      * @private
      */
-    public addInuptElemet(currentPosition: PointModel, annotation: PdfAnnotationBaseModel = null): void {
-        let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+    public addInuptElemet(currentPosition: PointModel, annotation: PdfAnnotationBaseModel = null, pageIndex?: number): void {
+        if (isNullOrUndefined(pageIndex)) {
+            pageIndex = this.pdfViewerBase.currentPageNumber - 1;
+        }
+        if (annotation) {
+            pageIndex = annotation.pageIndex;
+        }
+        this.inputBoxElement.id = this.pdfViewer.element.id + '_freeText_' + pageIndex + '_' + this.inputBoxCount;
         let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
         let canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
         let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
@@ -848,9 +857,8 @@ export class FreeTextAnnotation {
         }
         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
         pageDiv.appendChild(this.inputBoxElement);
-        if (this.defaultHeight < this.inputBoxElement.scrollHeight
-            // tslint:disable-next-line:radix
-            && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
+        // tslint:disable-next-line
+        if (this.defaultHeight < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height) < this.inputBoxElement.scrollHeight) {
             this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 5 + 'px';
         }
         this.isInuptBoxInFocus = true;

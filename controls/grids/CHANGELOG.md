@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.4.31 (2020-12-22)
+
+### Grid
+
+#### Bug Fixes
+
+- `#303869` - Event argument type issue has been fixed.
+- `#160246` - Sorting column not removed while changing `groupSettings` issue has been resolved.
+- `#296093` - Grouping with `virtualization` hide column issue has been fixed.
+
 ## 18.4.30 (2020-12-17)
 
 ### Grid

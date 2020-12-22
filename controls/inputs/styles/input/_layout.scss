@@ -3472,13 +3472,13 @@
     font-size: $input-bigger-small-clear-icon;
   }
 
-  .e-input:not(:valid):first-child ~ .e-clear-icon,
-  .e-input-group input.e-input:not(:valid):first-child ~ .e-clear-icon,
-  .e-input-group.e-control-wrapper input.e-input:not(:valid):first-child ~ .e-clear-icon,
-  .e-float-input input:not(:valid):first-child ~ .e-clear-icon,
-  .e-float-input.e-control-wrapper input:not(:valid):first-child ~ .e-clear-icon,
-  .e-float-input.e-input-group input:not(:valid):first-child ~ .e-clear-icon,
-  .e-float-input.e-input-group.e-control-wrapper input:not(:valid):first-child ~ .e-clear-icon {
+  .e-input:not(:valid):not(.e-control):first-child ~ .e-clear-icon,
+  .e-input-group input:not(.e-control).e-input:not(:valid):first-child ~ .e-clear-icon,
+  .e-input-group.e-control-wrapper input.e-input:not(:valid):not(.e-control):first-child ~ .e-clear-icon,
+  .e-float-input input:not(:valid):not(.e-control):first-child ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper input:not(:valid):not(.e-control):first-child ~ .e-clear-icon,
+  .e-float-input.e-input-group input:not(:valid):not(.e-control):first-child ~ .e-clear-icon,
+  .e-float-input.e-input-group.e-control-wrapper input:not(:valid):not(.e-control):first-child ~ .e-clear-icon {
     display: none;
   }
 

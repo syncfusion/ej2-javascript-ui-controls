@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.31 (2020-12-22)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#301175` - An issue with the appointment top value in timeline views for the appointment rendered in the last resource has been fixed.
+
 ## 18.4.30 (2020-12-17)
 
 ### Schedule

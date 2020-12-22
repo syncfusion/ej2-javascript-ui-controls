@@ -3249,6 +3249,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Triggers while created the PdfViewer component.
+     * @event
+     * @blazorProperty 'Created'
+     */
+    @Event()
+    public created: EmitType<void>;
+
+    /**
      * Triggers while loading document into PdfViewer.
      * @event
      * @blazorProperty 'DocumentLoaded'
@@ -4121,6 +4129,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Specifies the message to be displayed  in the popup.
+     * @returns void
+     */
+    public showNotificationPopup(errorString: string): void {
+        this.viewerBase.showNotificationPopup(errorString);
+    }
+
+    /**
      * Update the form field values from externally.
      * @returns void
      */
@@ -4176,6 +4192,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.toolbarModule.resetToolbar();
         } else {
             this._dotnetInstance.invokeMethodAsync('ResetToolbar');
+            this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
         this.magnificationModule.zoomTo(100);
     }
@@ -4201,7 +4218,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns void
      */
     // tslint:disable-next-line
-    public importAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
+    public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
            if (typeof(importData) === 'string') {
                if (importData.split('.')[1] === 'json') {
@@ -4219,9 +4236,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Perform export annotations action in the PDF Viewer
      * @returns void
      */
-    public exportAnnotations(annotationDataFormat?: AnnotationDataFormat): void {
+    public exportAnnotation(annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
-            if (annotationDataFormat && annotationDataFormat === 'XFdf') {
+            if (annotationDataFormat && annotationDataFormat === 'Xfdf') {
                 this.viewerBase.exportAnnotations(AnnotationDataFormat.Xfdf);
             } else {
                 this.viewerBase.exportAnnotations(AnnotationDataFormat.Json);
@@ -4360,7 +4377,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
         if (isBlazor()) {
-            this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
+            //this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
+            this.viewerBase.blazorUIAdaptor.loadDocument();
         }
     }
 
@@ -4384,9 +4402,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string, action: string): void {
+    public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string, action: string, retryCount?: boolean): void {
         // tslint:disable-next-line:max-line-length
         let eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage, action: action };
+        if (retryCount) {
+            eventArgs.retryCount = true;
+        }
         this.trigger('ajaxRequestFailed', eventArgs);
     }
 
@@ -4424,7 +4445,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.currentPageNumber, previousPageNumber: previousPageNumber };
         this.trigger('pageChange', eventArgs);
         if (isBlazor()) {
-            this._dotnetInstance.invokeMethodAsync('OnPageChanged', this.currentPageNumber);
+            //this._dotnetInstance.invokeMethodAsync('OnPageChanged', this.currentPageNumber);
+            this.viewerBase.blazorUIAdaptor.pageChanged(this.currentPageNumber);
         }
     }
 
@@ -4491,7 +4513,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.viewerBase.isAnnotationSelect = false;
         this.trigger('annotationAdd', eventArgs);
         if (isBlazor()) {
-            this._dotnetInstance.invokeMethodAsync('AnnotationAdd', null);
+            // this._dotnetInstance.invokeMethodAsync('AnnotationAdd', null);
+            this.viewerBase.blazorUIAdaptor.annotationAdd();
         }
     }
 
@@ -4602,13 +4625,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireSignatureAdd(pageNumber: number, index: string, type: any, bounds: any, opacity: number, strokeColor?: string, thickness?: number): void {
+    public fireSignatureAdd(pageNumber: number, index: string, type: any, bounds: any, opacity: number, strokeColor?: string, thickness?: number, data?: string): void {
         let eventArgs: AddSignatureEventArgs = { pageIndex: pageNumber, id: index, type: type, bounds: bounds, opacity: opacity };
         if (thickness) {
             eventArgs.thickness = thickness;
         }
         if (strokeColor) {
             eventArgs.strokeColor = strokeColor;
+        }
+        if (data) {
+            eventArgs.data = data;
         }
         this.trigger('addSignature', eventArgs);
     }
@@ -4694,7 +4720,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 annotation.fontStyle = fontStyle;
             }
-            this._dotnetInstance.invokeMethodAsync('AnnotationSelect', annotation.type);
+            //this._dotnetInstance.invokeMethodAsync('AnnotationSelect', annotation.type);
+            this.viewerBase.blazorUIAdaptor.annotationSelect(annotation.type);
         }
         this.trigger('annotationSelect', eventArgs);
     }
@@ -4704,6 +4731,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireAnnotationUnSelect(id: string, pageNumber: number, annotation: any): void {
+        if (isBlazor()) {
+            this.viewerBase.blazorUIAdaptor.annotationUnSelect();
+        }
         // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationUnSelectEventArgs = { name: 'annotationUnSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
         this.trigger('annotationUnSelect', eventArgs);

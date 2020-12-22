@@ -123,11 +123,16 @@ export class Resize extends ActionBase {
             return;
         }
         let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
-        let doc: HTMLElement = document.documentElement;
-        let left: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
-        let top: number = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
-        this.actionObj.pageX = pages.pageX - left;
-        this.actionObj.pageY = pages.pageY - top;
+        if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear') {
+            let doc: HTMLElement = document.documentElement;
+            let left: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+            let top: number = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
+            this.actionObj.pageX = pages.pageX - left;
+            this.actionObj.pageY = pages.pageY - top;
+        } else {
+            this.actionObj.pageX = pages.pageX;
+            this.actionObj.pageY = pages.pageY;
+        }
         this.updateScrollPosition(e);
         this.updateResizingDirection(e);
     }

@@ -4548,9 +4548,12 @@ export class CommandHandler {
     public drop(source: IElement, target: IElement, position: PointModel): void {
         //drop
         if (this.diagram.bpmnModule) {
-            this.diagram.bpmnModule.dropBPMNchild(
-                target as Node, (source instanceof Node) ? source : (source as Selector).nodes[0] as Node, this.diagram);
-            this.diagram.refreshDiagramLayer();
+            let sourcenode: Node = (source instanceof Node) ? source : (source as Selector).nodes[0] as Node;
+            if (sourcenode && sourcenode.shape.type === 'Bpmn' && (target as Node).shape.type === 'Bpmn') {
+                this.diagram.bpmnModule.dropBPMNchild(
+                    target as Node, (source instanceof Node) ? source : (source as Selector).nodes[0] as Node, this.diagram);
+                this.diagram.refreshDiagramLayer();
+            }
         }
     }
 

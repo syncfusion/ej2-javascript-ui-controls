@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.31 (2020-12-22)
+
+### Menu
+
+#### Bug Fixes
+
+- An issue with menu closing has been fixed.
+
 ## 18.3.50 (2020-11-17)
 
 ### Tab

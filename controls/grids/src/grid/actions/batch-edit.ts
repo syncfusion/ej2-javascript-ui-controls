@@ -1065,8 +1065,13 @@ export class BatchEdit {
                 let index: number = this.findNextEditableCell(this.cellDetails.cellIndex + 1, true, true);
                 let col: Column = (gObj.getColumns()[index] as Column);
                 if (col) {
-                    this.parent.editSettings.newRowPosition === 'Bottom' ? this.editCell(btmIdx, col.field, true) :
-                        this.editCell(0, col.field, true);
+                    if (this.parent.editSettings.newRowPosition === 'Bottom') {
+                        this.editCell(btmIdx, col.field, true);
+                    } else {
+                        let args: { index: number, column: Column } = { index: 0, column: col };
+                        this.parent.notify(events.nextCellIndex, args);
+                        this.editCell(args.index, col.field, true);
+                    }
                     this.saveCell();
                 }
             }
