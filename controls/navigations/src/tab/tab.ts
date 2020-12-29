@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, i
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { isBlazor, getRandomId, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { getRandomId, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -18,7 +18,6 @@ type Str = string;
 export type HeaderPosition = 'Top' | 'Bottom' | 'Left' | 'Right';
 /**
  * Options to set the content element height adjust modes.
- * @deprecated
  */
 export type HeightStyles = 'None' | 'Auto' | 'Content' | 'Fill';
 /**
@@ -119,7 +118,6 @@ export class TabActionSettings extends ChildProperty<TabActionSettings> {
      * Specifies the animation effect for displaying Tab content.
      * @default 'SlideLeftIn'
      * @aspType string
-     * @blazorType string
      */
     @Property('SlideLeftIn')
     public effect: 'None' | Effect;
@@ -365,7 +363,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * - Content: Based on the corresponding content height, the content panel height is set.
      * - Fill: Based on the parent height, the content panel height is set.
      * @default 'Content'
-     * @deprecated
      */
     @Property('Content')
     public heightAdjustMode: HeightStyles;
@@ -400,7 +397,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * Defines whether to allow the cross-scripting site or not.
      * @default false
-     * @deprecated
      */
     @Property(false)
     public enableHtmlSanitizer: boolean;
@@ -427,56 +423,48 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     /**
      * The event will be fired once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired before adding the item to the Tab.
      * @event
-     * @blazorProperty 'Adding'
      */
     @Event()
     public adding: EmitType<AddEventArgs>;
     /**
      * The event will be fired after adding the item to the Tab.
      * @event
-     * @blazorProperty 'Added'
      */
     @Event()
     public added: EmitType<AddEventArgs>;
     /**
      * The event will be fired before the item gets selected.
      * @event
-     * @blazorProperty 'Selecting'
      */
     @Event()
     public selecting: EmitType<SelectingEventArgs>;
     /**
      * The event will be fired after the item gets selected.
      * @event
-     * @blazorProperty 'Selected'
      */
     @Event()
     public selected: EmitType<SelectEventArgs>;
     /**
      * The event will be fired before removing the item from the Tab.
      * @event
-     * @blazorProperty 'Removing'
      */
     @Event()
     public removing: EmitType<RemoveEventArgs>;
     /**
      * The event will be fired after removing the item from the Tab.
      * @event
-     * @blazorProperty 'Removed'
      */
     @Event()
     public removed: EmitType<RemoveEventArgs>;
     /**
      * The event will be fired when the component gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
@@ -1039,7 +1027,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
     private compileElement(ele: HTEle, val: string, prop: string, index: number): void {
         let templateFn: Function;
-        if (typeof val === 'string' && isBlazor() && val.indexOf('<div>Blazor') !== 0) {
+        if (typeof val === 'string') {
             val = val.trim();
             ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
         } else {
@@ -1047,11 +1035,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
         let templateFUN: HTMLElement[];
         if (!isNOU(templateFn)) {
-            if (isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-                templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
-            } else {
-                templateFUN = templateFn({}, this, prop);
-            }
+            templateFUN = templateFn({}, this, prop);
         }
         if (!isNOU(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el: HTEle): void => {
@@ -1605,7 +1589,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if (this.templateEle.length > 0) { this.expTemplateContent(); }
                 this.templateEle = [];
                 let selectElement: HTEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
-                while (selectElement.firstElementChild && !isBlazor()) {
+                while (selectElement.firstElementChild) {
                     detach(selectElement.firstElementChild);
                 }
                 this.select(this.selectedItem);
@@ -1642,7 +1626,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @param  {TabItemsModel[]} items - An array of item that is added to the Tab.
      * @param  {number} index - Number value that determines where the items to be added. By default, index is 0.
      * @returns void.
-     * @deprecated
      */
     public addTab(items: TabItemModel[], index?: number): void {
         let addArgs: AddEventArgs = { addedItems: items, cancel: false };
@@ -1704,7 +1687,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * Removes the items in the Tab from the specified index.
      * @param  {number} index - Index of target item that is going to be removed.
      * @returns void.
-     * @deprecated
      */
     public removeTab(index: number): void {
         let trg: HTEle = selectAll('.' + CLS_TB_ITEM, this.element)[index];
@@ -1714,11 +1696,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
             if (!tabRemovingArgs.cancel) {
-                if (isBlazor() && this.isServerRendered) {
-                    // tslint:disable-next-line:no-any
-                    (this as any).interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
-                    return;
-                }
                 // tslint:disable-next-line:no-any
                 if ((this as any).isRect) { this.clearTemplate([], index); }
                 this.tbObj.removeItems(index);

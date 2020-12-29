@@ -1,5 +1,4 @@
-import { isNullOrUndefined, Internationalization, append, createElement, isBlazor, addClass } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Internationalization, append, createElement, addClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
 import { TdData, ResourceDetails, EventFieldsMapping } from '../base/interface';
@@ -15,7 +14,7 @@ export class EventTooltip {
     constructor(parent: Schedule) {
         this.parent = parent;
         this.tooltipObj = new Tooltip({
-            animation: { close: { effect: isBlazor() ? 'None' : 'FadeOut' } },
+            animation: { close: { effect: 'FadeOut' } },
             content: 'No title',
             position: 'BottomRight',
             offsetY: 10,
@@ -24,9 +23,7 @@ export class EventTooltip {
             cssClass: this.parent.cssClass + ' ' + cls.EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            enableRtl: this.parent.enableRtl,
-            beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this)
+            enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
@@ -41,28 +38,6 @@ export class EventTooltip {
             targets.push('.' + cls.APPOINTMENT_CLASS);
         }
         return targets.join(',');
-    }
-
-    private onBeforeOpen(): void {
-        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
-            let templateId: string = this.parent.element.id + '_headerTooltipTemplate';
-            updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
-        }
-        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
-            let templateId: string = this.parent.element.id + '_tooltipTemplate';
-            updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
-        }
-    }
-
-    private onBeforeClose(): void {
-        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
-            let templateId: string = this.parent.element.id + '_headerTooltipTemplate';
-            resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
-        }
-        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
-            let templateId: string = this.parent.element.id + '_tooltipTemplate';
-            resetBlazorTemplate(templateId, 'TooltipTemplate');
-        }
     }
 
     // tslint:disable-next-line:max-func-body-length
@@ -115,31 +90,20 @@ export class EventTooltip {
             let startMonthDate: string = '';
             let startMonthYearDate: string = '';
             let endMonthYearDate: string = '';
-            if (isBlazor()) {
-                startMonthDate = globalize.formatDate(eventStart, {
-                    type: 'date', format: 'MMM d', calendar: this.parent.getCalendarMode()
-                });
-                startMonthYearDate = globalize.formatDate(eventStart, {
-                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                });
-                endMonthYearDate = globalize.formatDate(eventEnd, {
-                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                });
-            } else {
-                startMonthDate = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
-                });
-                startMonthYearDate = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-                });
-                endMonthYearDate = globalize.formatDate(eventEnd, {
-                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-                });
-            }
+            startMonthDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+            });
+            startMonthYearDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            endMonthYearDate = globalize.formatDate(eventEnd, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+
             startMonthDate = util.capitalizeFirstWord(startMonthDate, 'single');
             startMonthYearDate = util.capitalizeFirstWord(startMonthYearDate, 'single');
             endMonthYearDate = util.capitalizeFirstWord(endMonthYearDate, 'single');
-            let skeleton: string = isBlazor() ? 't' : 'short';
+            let skeleton: string = 'short';
             let startTime: string = globalize.formatDate(eventStart, {
                 type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
@@ -148,10 +112,7 @@ export class EventTooltip {
             });
             let tooltipDetails: string;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = isBlazor() ?
-                    globalize.formatDate(eventStart, {
-                        type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                    }) :
+                tooltipDetails =
                     globalize.formatDate(eventStart, {
                         type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
                     });

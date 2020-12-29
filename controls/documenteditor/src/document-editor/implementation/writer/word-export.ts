@@ -1275,7 +1275,8 @@ export class WordExport {
                     this.serializeParagraph(writer, block, isLastSection);
                     this.paragraph = undefined;
                 } else if (block.hasOwnProperty('rowFormat')) {
-                    this.serializeRow(writer, block);
+                    let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+                    this.serializeRow(writer, block, mVerticalMerge);
                 } else if (block.hasOwnProperty('contentControlProperties')) {
                     this.serializeContentControl(writer, block.contentControlProperties, block, isLastSection);
                 } else {
@@ -1285,10 +1286,12 @@ export class WordExport {
             }
         } else if (items.hasOwnProperty('rowFormat')) {
             if (items.cells.length > 0) {
-                this.serializeRow(writer, items);
+                let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+                this.serializeRow(writer, items, mVerticalMerge);
             }
         } else if (items.hasOwnProperty('cellFormat')) {
-            this.serializeCell(writer, items);
+            let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
+            this.serializeCell(writer, items, mVerticalMerge);
         }
         writer.writeEndElement();
         writer.writeEndElement();
@@ -3680,6 +3683,7 @@ export class WordExport {
     }
     // Serialize the table rows
     private serializeTableRows(writer: XmlWriter, rows: any): void {
+        let mVerticalMerge: Dictionary<number, number> = new Dictionary<number, number>();
         if (rows.length > 0) {
             for (let i: number = 0; i < rows.length; i++) {
                 let row: any = rows[i];
@@ -3688,19 +3692,19 @@ export class WordExport {
                         this.serializeContentControl(writer, row.contentControlProperties, row);
                         continue;
                     }
-                    this.serializeRow(writer, row);
+                    this.serializeRow(writer, row, mVerticalMerge);
                 }
             }
         }
     }
     // Serialize the table row
-    private serializeRow(writer: XmlWriter, row: any): void {
+    private serializeRow(writer: XmlWriter, row: any, mVerticalMerge: Dictionary<number, number>): void {
         let owner: any = this.row;
         this.row = row;
         writer.writeStartElement(undefined, 'tr', this.wNamespace);
         this.serializeRowFormat(writer, row);
 
-        this.serializeCells(writer, row.cells);
+        this.serializeCells(writer, row.cells, mVerticalMerge);
 
         writer.writeEndElement(); //end od table row 'tr'
         this.row = owner;
@@ -3789,21 +3793,21 @@ export class WordExport {
         writer.writeEndElement();
     }
     // serialize the table cells
-    private serializeCells(writer: XmlWriter, cells: any): void {
+    private serializeCells(writer: XmlWriter, cells: any, mVerticalMerge: Dictionary<number, number>): void {
         for (let i: number = 0; i < cells.length; i++) {
             if (cells[i].hasOwnProperty('contentControlProperties')) {
                 this.serializeContentControl(writer, cells[i].contentControlProperties, cells[i]);
                 continue;
             }
-            this.serializeCell(writer, cells[i]);
+            this.serializeCell(writer, cells[i], mVerticalMerge);
         }
     }
     // Serialize the table cell
-    private serializeCell(writer: XmlWriter, cell: any): void {
+    private serializeCell(writer: XmlWriter, cell: any, mVerticalMerge: Dictionary<number, number>): void {
         let owner: any = this.blockOwner;
         this.blockOwner = cell;
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
-        this.serializeCellFormat(writer, cell.cellFormat, true, true);
+        mVerticalMerge = this.serializeCellFormat(writer, cell.cellFormat, true, true, mVerticalMerge);
         if (cell.blocks.length > 0) {
             let itemIndex: number = 0;
             let item: any = undefined;
@@ -3824,7 +3828,7 @@ export class WordExport {
         }
         writer.writeEndElement(); //end of table cell 'tc' 
         let increment: number = 1;
-        while (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment)
+        while (mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment)
             && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
             && cell.nextNode === undefined) {
             let collKey: number = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment;
@@ -3832,7 +3836,7 @@ export class WordExport {
             let endProperties: boolean = true;
             if (!isNullOrUndefined(this.spanCellFormat)) {
                 endProperties = false;
-                this.serializeCellFormat(writer, this.spanCellFormat, false, endProperties);
+                mVerticalMerge = this.serializeCellFormat(writer, this.spanCellFormat, false, endProperties, mVerticalMerge);
             } else {
                 writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
                 endProperties = false;
@@ -3844,7 +3848,7 @@ export class WordExport {
             if (!endProperties) {
                 writer.writeEndElement();
             }
-            this.checkMergeCell(collKey);
+            mVerticalMerge = this.checkMergeCell(collKey, mVerticalMerge);
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeEndElement(); //end of P
             writer.writeEndElement(); //end of table cell 'tc'  
@@ -3853,7 +3857,8 @@ export class WordExport {
         this.blockOwner = owner;
     }
     // Serialize the cell formatting
-    private serializeCellFormat(writer: XmlWriter, cellFormat: any, ensureMerge: boolean, endProperties: boolean): void {
+    // tslint:disable-next-line:max-line-length
+    private serializeCellFormat(writer: XmlWriter, cellFormat: any, ensureMerge: boolean, endProperties: boolean, mVerticalMerge: Dictionary<number, number>): Dictionary<number, number> {
 
         let cell: any = this.blockOwner;
         //Get the table fomat
@@ -3869,7 +3874,7 @@ export class WordExport {
         this.serializeCellMargins(writer, cellFormat);
         if (ensureMerge) {
             //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-            this.serializeCellMerge(writer, cellFormat);
+            mVerticalMerge = this.serializeCellMerge(writer, cellFormat, mVerticalMerge);
             //w:gridSpan -   Grid Columns Spanned by Current Table Cell
             this.serializeGridSpan(writer, cell);
         }
@@ -3936,6 +3941,7 @@ export class WordExport {
         if (endProperties) {
             writer.writeEndElement();
         }
+        return mVerticalMerge;
     }
     // Serialize the cell width
     private serializeCellWidth(writer: XmlWriter, cell: any): void {
@@ -3957,7 +3963,7 @@ export class WordExport {
         writer.writeEndElement();
     }
     // Serialize cell merge
-    private serializeCellMerge(writer: XmlWriter, cellFormat: any): void {
+    private serializeCellMerge(writer: XmlWriter, cellFormat: any, mVerticalMerge: Dictionary<number, number>): Dictionary<number, number> {
         let cell: any = this.blockOwner;
         let isserialized: boolean = false;
         let collKey: number;
@@ -3978,25 +3984,27 @@ export class WordExport {
             for (let i: number = prevIndex; i < currentIndex; i++) {
                 collKey = prevIndex + 1;
                 prevIndex += 1;
-                if (this.mVerticalMerge.containsKey(collKey)) {
-                    this.createMerge(writer, collKey, cell);
+                if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
+                    mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
                 }
             }
         }
         if (cellFormat.rowSpan > 1) {
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
             this.spanCellFormat = cellFormat;
-            this.mVerticalMerge.add(collKey, cellFormat.rowSpan - 1);
+            mVerticalMerge.add(collKey, cellFormat.rowSpan - 1);
             if (cellFormat.columnSpan > 1) {
                 this.mGridSpans.add(collKey, cellFormat.columnSpan);
             }
             writer.writeAttributeString('w', 'val', this.wNamespace, 'restart');
             writer.writeEndElement();
-        } else if (this.mVerticalMerge.containsKey(collKey) && isserialized) {
-            this.createMerge(writer, collKey, cell);
+        } else if (mVerticalMerge.containsKey(collKey) && isserialized) {
+            mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
         }
+        return mVerticalMerge;
     }
-    private createMerge(writer: XmlWriter, collKey: number, cell: any): void {
+    // tslint:disable-next-line:max-line-length
+    private createMerge(writer: XmlWriter, collKey: number, cell: any, mVerticalMerge: Dictionary<number, number>): Dictionary<number, number> {
         this.serializeColumnSpan(collKey, writer);
         writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
         writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
@@ -4008,7 +4016,8 @@ export class WordExport {
         writer.writeStartElement(undefined, 'tc', this.wNamespace);
         writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
         this.serializeCellWidth(writer, cell);
-        this.checkMergeCell(collKey);
+        mVerticalMerge = this.checkMergeCell(collKey, mVerticalMerge);
+        return mVerticalMerge;
     }
     private serializeColumnSpan(collKey: number, writer: XmlWriter): void {
         if (this.mGridSpans.keys.length > 0 && this.mGridSpans.containsKey(collKey)) {
@@ -4017,16 +4026,17 @@ export class WordExport {
             writer.writeEndElement();
         }
     }
-    private checkMergeCell(collKey: number): void {
-        if ((this.mVerticalMerge.get(collKey) - 1) === 0) {
-            this.mVerticalMerge.remove(collKey);
+    private checkMergeCell(collKey: number, mVerticalMerge: Dictionary<number, number>): Dictionary<number, number> {
+        if ((mVerticalMerge.get(collKey) - 1) === 0) {
+            mVerticalMerge.remove(collKey);
             this.spanCellFormat = undefined;
             if (this.mGridSpans.keys.length > 0 && this.mGridSpans.containsKey(collKey)) {
                 this.mGridSpans.remove(collKey);
             }
         } else {
-            this.mVerticalMerge.set(collKey, this.mVerticalMerge.get(collKey) - 1);
+            mVerticalMerge.set(collKey, mVerticalMerge.get(collKey) - 1);
         }
+        return mVerticalMerge;
     }
     // Serialize the grid span element of cell.
     private serializeGridSpan(writer: XmlWriter, cell: any): void {

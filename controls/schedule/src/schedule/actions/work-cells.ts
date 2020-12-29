@@ -1,4 +1,4 @@
-import { extend, closest, isNullOrUndefined, getElement, isBlazor, EventHandler } from '@syncfusion/ej2-base';
+import { extend, closest, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { CellClickEventArgs, HoverEventArgs, InlineClickArgs } from '../base/interface';
 import { View } from '../base/type';
@@ -107,16 +107,6 @@ export class WorkCellInteraction {
     }
 
     private serializingData(clickArgs: CellClickEventArgs, e: Event): CellClickEventArgs {
-        if (isBlazor()) {
-            clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
-            clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
-            if (clickArgs.element) {
-                clickArgs.element = getElement(clickArgs.element);
-            }
-            if (clickArgs.event) {
-                clickArgs.event = e;
-            }
-        }
         return clickArgs;
     }
 

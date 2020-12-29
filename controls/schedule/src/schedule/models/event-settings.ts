@@ -33,7 +33,6 @@ export class EventSettings extends ChildProperty<EventSettings> {
      * Defines the external [`query`](http://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with the data processing.    
      * @default null
-     * @blazorType Syncfusion.Blazor.Data.Query
      */
     @Property()
     public query: Query;

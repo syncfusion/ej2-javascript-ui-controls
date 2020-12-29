@@ -613,9 +613,6 @@ export class HierarchicalTree {
             let align: boolean;
             let rows: string[][] = this.splitChildrenInRows(layout, shape);
             let unique: boolean = info.tree.children.length === 5 && rows[0].length === 3;
-            if (info.tree.children.length > 5) {
-                unique = rows[0].length === Math.round(info.tree.children.length / 2);
-            }
             let leftTree: string[][] = []; let rightTree: string[][] = [];
 
             if (!unique) {
@@ -771,9 +768,6 @@ export class HierarchicalTree {
         let dimensions: Dimensions = treeInfo.dimensions;
         let lev: number = treeInfo.level;
         let unique: boolean = info.tree.children.length === 5 && rows[0].length === 3;
-        if (info.tree.children.length > 5) {
-            unique = rows[0].length === Math.round(info.tree.children.length / 2);
-        }
         if (unique && i === 1) {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }
@@ -973,7 +967,9 @@ export class HierarchicalTree {
         while (childNodes > 0) {
             rows[rows.length] = children.splice(0, column);
             childNodes -= column;
-            if (childNodes < column) {
+            if (childNodes === 3) {
+                column = 2;
+            } else if (childNodes < column) {
                 column = childNodes;
             }
         }

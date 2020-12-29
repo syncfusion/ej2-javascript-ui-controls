@@ -88,6 +88,7 @@ export class VerticalEvent {
             EventHandler.clearEvents(moreIndicatorElement[i]);
             EventHandler.add(moreIndicatorElement[i], 'click', this.rowExpandCollapse, this);
         }
+        this.parent.setDimensions();
     }
     private getAppWidth(overlapEvents: number): string {
         let width: number = this.parent.options.currentView === 'Day' ? 97 : 94;
@@ -145,6 +146,7 @@ export class VerticalEvent {
         }
         this.setAllDayRowHeight(rowHeight);
         this.addOrRemoveClass();
+        this.parent.setDimensions();
     }
     private addOrRemoveClass(): void {
         let moreEvents: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-more-event'));

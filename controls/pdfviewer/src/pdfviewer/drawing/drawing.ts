@@ -1538,6 +1538,15 @@ export class Drawing {
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
         let shapeType: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel;
+        // tslint:disable-next-line
+        let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+        // tslint:disable-next-line
+        let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        let isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
+        let allowPermission: boolean = false;
+        if ((isLock || annotation.annotationSettings.isLock) &&  this.getAllowedInteractions(allowedInteraction)) {
+            allowPermission = true;
+        }
         let resizerLocation: AnnotationResizerLocation = this.getResizerLocation(shapeType, currentSelector);
         if (resizerLocation < 1 || resizerLocation > 3) {
             resizerLocation = 3;
@@ -1547,7 +1556,7 @@ export class Drawing {
         if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink')) {
             isNodeShape = true;
         }
-        if (!nodeConstraints && !isSticky && !isPath) {
+        if (!nodeConstraints && !isSticky && !isPath && !allowPermission) {
             // tslint:disable-next-line:max-line-length
             if ( isStamp || (isNodeShape && (nodeWidth >= 40 && nodeHeight >= 40) && (resizerLocation === 1 || resizerLocation === 3))) {
                 //Hide corners when the size is less than 40
@@ -1605,6 +1614,18 @@ export class Drawing {
                     'e-pv-diagram-resize-handle e-east', currentSelector);
             }
         }
+    }
+
+    // tslint:disable-next-line
+    private getAllowedInteractions (allowedInteraction: any): boolean {
+        if (allowedInteraction && allowedInteraction.length > 0) {
+            for (let i: number = 0; i < allowedInteraction.length; i++) {
+                if (allowedInteraction[0] !== 'None' && allowedInteraction[i] === 'Resize') {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

@@ -1916,6 +1916,8 @@ var focusBorder = 'focusBorder';
 var clearChartBorder = 'clearChartBorder';
 /** @hidden */
 var insertChart = 'insertChart';
+/** @hidden */
+var chartRangeSelection = 'chartRangeSelection';
 
 /**
  * Open properties.
@@ -7593,13 +7595,23 @@ var Calculate = /** @class */ (function (_super) {
         num1 = num1 === this.emptyString ? '0' : num1;
         var num = Number(num1);
         if (isNaN(num)) {
-            throw this.getErrorStrings()[exports.CommonErrors.value];
+            if (num1 === this.getErrorStrings()[exports.CommonErrors.divzero]) {
+                throw this.getErrorStrings()[exports.CommonErrors.divzero];
+            }
+            else {
+                throw this.getErrorStrings()[exports.CommonErrors.value];
+            }
         }
         var num2 = stack.pop();
         num2 = num2 === this.emptyString ? '0' : num2;
         num = Number(num2);
         if (isNaN(num)) {
-            throw this.getErrorStrings()[exports.CommonErrors.value];
+            if (num1 === this.getErrorStrings()[exports.CommonErrors.divzero]) {
+                throw this.getErrorStrings()[exports.CommonErrors.divzero];
+            }
+            else {
+                throw this.getErrorStrings()[exports.CommonErrors.value];
+            }
         }
         if (operator === 'add') {
             stack.push((Number(num2) + Number(num1)).toString());
@@ -7686,6 +7698,9 @@ var Calculate = /** @class */ (function (_super) {
         if (operator === 'equal') {
             val1 = stack.pop().toString();
             val2 = stack.pop().toString();
+            if (val2 === '' && val1 !== '') {
+                val2 = '0';
+            }
             result = val1 === val2 ? this.trueValue : this.falseValue;
         }
         if (operator === 'or') {
@@ -10107,6 +10122,9 @@ var WorkbookChart = /** @class */ (function () {
                 chart[i].type = chart[i].type || 'Line';
                 chart[i].isSeriesInRows = chart[i].isSeriesInRows || false;
                 chart[i].range = chart[i].range || this.parent.getActiveSheet().selectedRange;
+                if (chart[i].range.indexOf('!') < 0) {
+                    chart[i].range = this.parent.getActiveSheet().name + '!' + chart[i].range;
+                }
                 if (sf.base.isNullOrUndefined(chart[i].id)) {
                     chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
                     idAvailable = false;
@@ -10146,10 +10164,10 @@ var WorkbookChart = /** @class */ (function () {
             if (i) {
                 while (i--) {
                     var chart = this.parent.chartColl[i];
-                    var isInRange = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx)
-                        && (chart.range.indexOf('!') > -1 ?
-                            getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) !== this.parent.activeSheetIndex : true);
-                    if (isInRange) {
+                    var isInRange = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx);
+                    var rangeSheetIdx = chart.range.indexOf('!') > -1 ?
+                        getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
+                    if (isInRange && rangeSheetIdx === this.parent.activeSheetIndex) {
                         this.parent.notify(updateChart, { chart: chart });
                     }
                 }
@@ -16154,7 +16172,7 @@ var Column = /** @class */ (function (_super) {
         sf.base.Complex({}, Format)
     ], Column.prototype, "format", void 0);
     __decorate$6([
-        sf.base.Property(null)
+        sf.base.Property(true)
     ], Column.prototype, "isLocked", void 0);
     return Column;
 }(sf.base.ChildProperty));
@@ -18932,6 +18950,13 @@ var Edit = /** @class */ (function () {
     };
     Edit.prototype.endEdit = function (refreshFormulaBar, event) {
         if (refreshFormulaBar === void 0) { refreshFormulaBar = false; }
+        var sheet = this.parent.getActiveSheet();
+        var actCell = getCellIndexes(sheet.activeCell);
+        var cell = this.parent.getCell(actCell[0], actCell[1]);
+        var fSize = '';
+        if (this.editCellData.element.children[0] && this.editCellData.element.children[0].className === 'e-cf-databar') {
+            fSize = cell.children[0].querySelector('.e-databar-value').style.fontSize;
+        }
         if (refreshFormulaBar) {
             this.refreshEditor(this.editCellData.oldValue, false, true, false, false);
         }
@@ -18947,6 +18972,9 @@ var Edit = /** @class */ (function () {
         }
         else if (event) {
             event.preventDefault();
+        }
+        if (fSize !== '') {
+            cell.children[0].querySelector('.e-databar-value').style.fontSize = fSize;
         }
         this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
     };
@@ -19035,10 +19063,12 @@ var Edit = /** @class */ (function () {
         this.parent.notify(formulaOperation, { action: 'endEdit' });
     };
     Edit.prototype.refSelectionRender = function () {
-        if (checkIsFormula(this.editorElem.textContent)) {
-            this.parent.notify(initiateFormulaReference, {
-                range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
-            });
+        if (this.editorElem) {
+            if (checkIsFormula(this.editorElem.textContent)) {
+                this.parent.notify(initiateFormulaReference, {
+                    range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
+                });
+            }
         }
     };
     // Start edit the formula cell and set cursor position
@@ -19290,9 +19320,6 @@ var Selection = /** @class */ (function () {
             }
             if (sf.base.closest(e.target, '.e-datavisualization-chart')) {
                 return;
-            }
-            else {
-                this.parent.notify(clearChartBorder, {});
             }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
@@ -19612,6 +19639,7 @@ var Selection = /** @class */ (function () {
         }
         this.parent.notify(showAggregate, {});
         this.parent.notify(refreshImgElem, {});
+        this.parent.notify(clearChartBorder, {});
     };
     Selection.prototype.UpdateRowColSelected = function (indexes) {
         var sheet = this.parent.getActiveSheet();
@@ -21190,7 +21218,14 @@ var CellFormat = /** @class */ (function () {
                         if (!this.checkHeight) {
                             this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
                         }
-                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
+                        var isFontSize = false;
+                        if (args.style.fontSize) {
+                            isFontSize = true;
+                        }
+                        if (cell && cell.children[0] && cell.children[0].className === 'e-cf-databar' && args.style.fontSize) {
+                            cell.children[0].querySelector('.e-databar-value').style.fontSize = args.style.fontSize;
+                        }
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, 0, isFontSize);
                     }
                 }
             }
@@ -21199,13 +21234,14 @@ var CellFormat = /** @class */ (function () {
             this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
         }
     };
-    CellFormat.prototype.updateRowHeight = function (rowIdx, colIdx, isLastCell, onActionUpdate, borderSize) {
+    CellFormat.prototype.updateRowHeight = function (rowIdx, colIdx, isLastCell, onActionUpdate, borderSize, isFontSize) {
         if (borderSize === void 0) { borderSize = 0; }
         if (this.checkHeight) {
             var hgt = 0;
             var maxHgt = void 0;
             var sheet = this.parent.getActiveSheet();
             var cell = getCell(rowIdx, colIdx, sheet);
+            var td = this.parent.getCell(rowIdx, colIdx);
             hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
             if (cell && !sf.base.isNullOrUndefined(cell.value)) {
@@ -21224,6 +21260,13 @@ var CellFormat = /** @class */ (function () {
                     }
                     hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
                 }
+            }
+            if (hgt + borderSize < 20 && isFontSize && getMaxHgt(sheet, rowIdx) >= 20) {
+                hgt = 20; // default height
+            }
+            if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {
+                td.children[0].style.height = '100%';
+                td.children[0].firstElementChild.nextElementSibling.style.height = '100%';
             }
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
@@ -24548,8 +24591,8 @@ var DataValidation = /** @class */ (function () {
             var maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            var minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
-            var maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            var minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
+            var maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             var minimumInp = this.parent.createElement('input', {
                 id: 'minvalue',
                 className: 'e-input', attrs: { value: value1 }
@@ -24631,8 +24674,8 @@ var DataValidation = /** @class */ (function () {
             var maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            var minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
-            var maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            var minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
+            var maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             var minimumInp = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
             var maximumInp = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
             var numericMin = new sf.inputs.NumericTextBox({
@@ -26362,7 +26405,7 @@ var ConditionalFormatting = /** @class */ (function () {
         var value1Text = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
         var value1Inp = this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } });
         var duplicateSelectEle = this.parent.createElement('input', { className: 'e-select' });
-        var subDivText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'with' });
+        var subDivText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
         var colorSelectEle = this.parent.createElement('input', { className: 'e-select' });
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
@@ -28354,7 +28397,7 @@ var Ribbon$$1 = /** @class */ (function () {
         }
         if (this.parent.allowChart) {
             items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Insert'); }).content.push({ type: 'Separator', id: id + '_separator_11' }, {
-                template: this.getChartDBB(id), text: this.getLocaleText('Chart'),
+                template: this.getChartDBB(id), text: l10n.getConstant('Chart'),
                 tooltipText: l10n.getConstant('Chart'), id: id + '_chart'
             });
         }
@@ -31788,7 +31831,8 @@ var SheetTabs = /** @class */ (function () {
     SheetTabs.prototype.addSheetTab = function () {
         var eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        var isFormulaEdit = checkIsFormula(eventArgs.editedValue) || eventArgs.editedValue.toString().indexOf('=') === 0;
+        var val = eventArgs.editedValue;
+        var isFormulaEdit = checkIsFormula(val) || val && val !== '' ? val.indexOf('=') === 0 : false;
         this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
         this.parent.element.focus();
     };
@@ -33531,7 +33575,7 @@ var Filter = /** @class */ (function () {
      */
     Filter.prototype.processRange = function (sheet, sheetIdx, filterRange) {
         var range = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
-        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
+        if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
             range[2] = sheet.usedRange.rowIndex;
@@ -34312,6 +34356,7 @@ var SpreadsheetChart = /** @class */ (function () {
         this.parent.on(deleteChart, this.deleteChart, this);
         this.parent.on(clearChartBorder, this.clearBorder, this);
         this.parent.on(insertChart, this.insertChartHandler, this);
+        this.parent.on(chartRangeSelection, this.chartRangeHandler, this);
     };
     SpreadsheetChart.prototype.insertChartHandler = function (args) {
         var chartType = 'Column';
@@ -34371,6 +34416,22 @@ var SpreadsheetChart = /** @class */ (function () {
         var chart = [{ type: chartType }];
         this.parent.notify(setChart, { chart: chart });
     };
+    SpreadsheetChart.prototype.chartRangeHandler = function () {
+        var overlayEle = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active');
+        if (overlayEle) {
+            var chartId = overlayEle.getElementsByClassName('e-control')[0].id;
+            var chartColl = this.parent.chartColl;
+            var chartCollLen = chartColl.length;
+            for (var idx = 0; idx < chartCollLen; idx++) {
+                var chartEle = document.getElementById(chartColl[idx].id);
+                if (overlayEle && chartEle && chartColl[idx].id === chartId) {
+                    this.parent.notify(initiateChart, {
+                        option: chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
+                    });
+                }
+            }
+        }
+    };
     SpreadsheetChart.prototype.getPropertyValue = function (rIdx, cIdx, sheetIndex) {
         var sheets = this.parent.sheets;
         if (sheets[sheetIndex] && sheets[sheetIndex].rows[rIdx] && sheets[sheetIndex].rows[rIdx].cells[cIdx]) {
@@ -34409,8 +34470,10 @@ var SpreadsheetChart = /** @class */ (function () {
     SpreadsheetChart.prototype.updateChartHandler = function (args) {
         var series = this.initiateChartHandler({ option: args.chart, isRefresh: true });
         var chartObj = this.parent.element.querySelector('.' + args.chart.id);
-        var excelFilter = sf.base.getComponent(chartObj, 'chart');
-        excelFilter.series = series;
+        if (chartObj) {
+            var chartComp = sf.base.getComponent(chartObj, 'chart');
+            chartComp.series = series;
+        }
     };
     SpreadsheetChart.prototype.refreshChartCellObj = function (args) {
         var currRowIdx = { clientY: args.currentTop, isImage: true };
@@ -35003,6 +35066,7 @@ var SpreadsheetChart = /** @class */ (function () {
             this.parent.off(deleteChart, this.deleteChart);
             this.parent.off(clearChartBorder, this.clearBorder);
             this.parent.off(insertChart, this.insertChartHandler);
+            this.parent.off(chartRangeSelection, this.chartRangeHandler);
         }
     };
     /**
@@ -35511,7 +35575,7 @@ var defaultLocale = {
     DataBars: 'Data Bars',
     ColorScales: 'Color Scales',
     IconSets: 'Icon Sets',
-    ClearRules: 'ClearRules',
+    ClearRules: 'Clear Rules',
     SelectedCells: 'Clear Rules from Selected Cells',
     EntireSheet: 'Clear Rules from Entire Sheet',
     ISNUMBER: 'Returns true when the value parses as a numeric value.',
@@ -35897,6 +35961,12 @@ var SheetRender = /** @class */ (function () {
             removeAllChildren(table);
             table.appendChild(frag);
             _this.parent.notify(virtualContentLoaded, { refresh: 'Column' });
+            if (_this.parent.isEdit) {
+                _this.parent.notify(forRefSelRender, {});
+            }
+            if (_this.parent.allowChart) {
+                _this.parent.notify(chartRangeSelection, null);
+            }
             if (!_this.parent.isOpen) {
                 _this.parent.hideSpinner();
             }
@@ -35953,6 +36023,12 @@ var SheetRender = /** @class */ (function () {
             this.getContentTable().appendChild(frag);
         }
         this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
+        if (this.parent.allowChart) {
+            this.parent.notify(chartRangeSelection, {});
+        }
+        if (this.parent.isEdit) {
+            this.parent.notify(forRefSelRender, null);
+        }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
         }
@@ -36049,6 +36125,12 @@ var SheetRender = /** @class */ (function () {
             if (_this.parent.scrollSettings.enableVirtualization) {
                 _this.parent.notify(virtualContentLoaded, { refresh: 'Column' });
             }
+            if (_this.parent.allowChart) {
+                _this.parent.notify(chartRangeSelection, null);
+            }
+            if (_this.parent.isEdit) {
+                _this.parent.notify(forRefSelRender, {});
+            }
             if (!_this.parent.isOpen) {
                 _this.parent.hideSpinner();
             }
@@ -36123,11 +36205,11 @@ var SheetRender = /** @class */ (function () {
         if (this.parent.scrollSettings.enableVirtualization) {
             this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         }
-        if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
-            var editCellVal = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent;
-            if (checkIsFormula(editCellVal) || editCellVal.indexOf('=') === 0) {
-                this.parent.notify(forRefSelRender, null);
-            }
+        if (this.parent.isEdit) {
+            this.parent.notify(forRefSelRender, null);
+        }
+        if (this.parent.allowChart) {
+            this.parent.notify(chartRangeSelection, {});
         }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
@@ -36423,6 +36505,13 @@ var CellRenderer = /** @class */ (function () {
         this.update(args);
         if (args.cell && args.td) {
             this.parent.notify(cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
+            if (args.td && args.td.children[0] && args.td.children[0].className === 'e-cf-databar') {
+                if (args.cell.style && args.cell.style.fontSize) {
+                    args.td.children[0].querySelector('.e-databar-value').style.fontSize = args.cell.style.fontSize;
+                }
+                args.td.children[0].style.height = '100%';
+                args.td.children[0].firstElementChild.nextElementSibling.style.height = '100%';
+            }
         }
         if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
@@ -37156,7 +37245,7 @@ var Overlay = /** @class */ (function () {
                     if (height1 > 180 && top_1 > -1) {
                         overlayElem.style.height = height1 + 'px';
                         overlayElem.style.top = top_1 + 'px';
-                        this.resizedReorderTop = e.clientX; // resized divTop
+                        this.resizedReorderTop = top_1; // resized divTop
                         this.currenHeight = height1;
                         this.parent.notify(refreshChartSize, {
                             height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem
@@ -39335,6 +39424,7 @@ exports.updateTableWidth = updateTableWidth;
 exports.focusBorder = focusBorder;
 exports.clearChartBorder = clearChartBorder;
 exports.insertChart = insertChart;
+exports.chartRangeSelection = chartRangeSelection;
 exports.getUpdateUsingRaf = getUpdateUsingRaf;
 exports.removeAllChildren = removeAllChildren;
 exports.getColGroupWidth = getColGroupWidth;

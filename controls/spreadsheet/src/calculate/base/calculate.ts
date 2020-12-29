@@ -1500,13 +1500,21 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         num1 = num1 === this.emptyString ? '0' : num1;
         let num: number = Number(num1);
         if (isNaN(num)) {
-            throw this.getErrorStrings()[CommonErrors.value];
+            if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
+                throw this.getErrorStrings()[CommonErrors.divzero];
+            } else {
+                throw this.getErrorStrings()[CommonErrors.value];
+            }
         }
         let num2: string = stack.pop();
         num2 = num2 === this.emptyString ? '0' : num2;
         num = Number(num2);
         if (isNaN(num)) {
-            throw this.getErrorStrings()[CommonErrors.value];
+            if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
+                throw this.getErrorStrings()[CommonErrors.divzero];
+            } else {
+                throw this.getErrorStrings()[CommonErrors.value];
+            }
         }
         if (operator === 'add') {
             stack.push((Number(num2) + Number(num1)).toString());
@@ -1588,6 +1596,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (operator === 'equal') {
             val1 = stack.pop().toString();
             val2 = stack.pop().toString();
+            if (val2 === '' && val1 !== '') {
+                val2 = '0';
+            }
             result = val1 === val2 ? this.trueValue : this.falseValue;
         }
         if (operator === 'or') {

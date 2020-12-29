@@ -13,7 +13,6 @@ export interface ActionEventArgs extends ToolbarActionArgs {
     requestType: string;
     /**
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
      */
     event?: Event;
     /** Defines the cancel option for the action taking place. */
@@ -56,14 +55,12 @@ export interface CellClickEventArgs extends BaseEventArgs {
     /** Returns true or false, based on whether the clicked cell is all-day or not. */
     isAllDay: boolean;
     /** Returns the single or collection of HTML element(s).
-     * @blazorType DOM
      */
     element?: HTMLElement | HTMLElement[];
     /** Defines the cancel option. */
     cancel?: boolean;
     /**
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
      */
     event?: Event;
     /** Returns the group index of the cell. */
@@ -77,14 +74,12 @@ export interface MoreEventsClickArgs extends BaseEventArgs {
     /** Returns the end time of the cell. */
     endTime: Date;
     /** Returns the single or collection of HTML element(s).
-     * @blazorType DOM
      */
     element: Element;
     /** Defines the cancel option. */
     cancel: boolean;
     /**
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
      */
     event: Event;
     /** Returns the group index of the cell. */
@@ -101,7 +96,6 @@ export interface SelectEventArgs extends BaseEventArgs {
     requestType: string;
     /** 
      * Defines the type of the event.
-     * @blazorType MouseEventArgs
      */
     event?: Event;
     /** Returns the single or collection of HTML element(s). */
@@ -244,18 +238,14 @@ export interface NavigatingEventArgs extends BaseEventArgs {
 /** An interface that holds options to control the rendering of all cells (work, time, resource, header, and more). */
 export interface RenderCellEventArgs extends BaseEventArgs {
     /** Returns the type of the elements which is currently being rendered on the UI. 
-     * @blazorDefaultValue new ElementType()
-     * @blazorType ElementType
      */
     elementType: string;
     /** Returns the actual HTML element on which the required custom styling can be applied. 
-     * @blazorType CellDOM
      */
     element: Element;
     /** Returns the date value of the cell that is currently rendering on UI. */
     date?: Date;
     /** Returns the group index of the cell.
-     * @blazorType double?
      */
     groupIndex?: number;
 }
@@ -271,7 +261,6 @@ export interface ResizeEventArgs extends BaseEventArgs {
     data: { [key: string]: Object };
     /**
      * Returns the mouse event.
-     * @blazorType MouseEventArgs
      */
     event: MouseEvent;
     /** Defines the cancel option. */
@@ -299,7 +288,6 @@ export interface DragEventArgs extends BaseEventArgs {
     data: { [key: string]: Object };
     /**
      * Returns the mouse event.
-     * @blazorType MouseEventArgs
      */
     event: MouseEvent;
     /** Defines the cancel option. */

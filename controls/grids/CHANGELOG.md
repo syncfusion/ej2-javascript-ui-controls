@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### Grid
+
+#### Bug Fixes
+
+- `#160497` - `PageSizes` dropdown showing empty string issue has been resolved.
+- `#308117` - Changing `PageSettings` dynamically issue has been fixed.
+- `#305463, #307312` - Filter icon updated issue has been resolved.
+- `#307775, #307812, #306656` - Script error throws when update the react state value issue has been fixed.
+- `#308510` - where property type changed to `Predicate` in `dataStateChangeEventArgs`.
+
 ## 18.4.31 (2020-12-22)
 
 ### Grid
@@ -11,6 +23,11 @@
 - `#303869` - Event argument type issue has been fixed.
 - `#160246` - Sorting column not removed while changing `groupSettings` issue has been resolved.
 - `#296093` - Grouping with `virtualization` hide column issue has been fixed.
+- `#301282` - Export `aggregations` misalignment while using the custom datasource, issue has been fixed.
+- `#305619` - Export `aggregations` misalignment while using the stacked header, issue has been fixed.
+- `#306030` - Filtering numeric column by pressing `Enter Key` is not working, has been fixed.
+- `#306032` - custom validation message misalignment issue has been fixed.
+- `#306282` - sort icon alignment issue in `bootstap4` has been fixed.
 
 ## 18.4.30 (2020-12-17)
 

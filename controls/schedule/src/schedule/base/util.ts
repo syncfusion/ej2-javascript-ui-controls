@@ -1,4 +1,4 @@
-import { createElement, remove, isBlazor, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EventFieldsMapping } from '../base/interface';
 import { ResourcesModel } from '../models/resources-model';
 
@@ -176,22 +176,10 @@ export function isDaylightSavingTime(date: Date): boolean {
 }
 
 export function addLocalOffset(date: Date): Date {
-    if (isBlazor()) {
-        let dateValue: Date = new Date(+date - (date.getTimezoneOffset() * 60000));
-        return dateValue;
-    }
     return date;
 }
 
 export function addLocalOffsetToEvent(event: { [key: string]: Object }, eventFields: EventFieldsMapping): { [key: string]: Object } {
-    if (isBlazor()) {
-        let eventObj: { [key: string]: Date } = extend({}, event, null, true) as { [key: string]: Date };
-        eventObj[eventFields.startTime] =
-            new Date(+event[eventFields.startTime] - ((eventObj[eventFields.startTime]).getTimezoneOffset() * 60000));
-        eventObj[eventFields.endTime] =
-            new Date(+event[eventFields.endTime] - ((eventObj[eventFields.endTime]).getTimezoneOffset() * 60000));
-        return eventObj;
-    }
     return event;
 }
 

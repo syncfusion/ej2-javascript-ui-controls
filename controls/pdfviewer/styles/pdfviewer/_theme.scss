@@ -1101,6 +1101,13 @@
     }
   }
 
+  .e-pv-toolbar .e-pv-zoom-drop-down-container .e-ddl.e-input-group.e-control-wrapper .e-ddl-icon:hover {
+    @if $skin-name == 'bootstrap4' {
+      background-color: $pv-zoom-drop-down-bgcolor;
+      color: $pv-icon-color-hover;
+    }
+  }
+
   .e-pv-print-popup-container {
     height: $pv-print-popup-container-height;
     left: $pv-print-popup-container-left;
@@ -2341,7 +2348,7 @@
     margin-top: 25px;
     padding-top: 40px;
     text-align: center;
-    width: 200px;
+    width: 320px;
     word-wrap: break-word;
  }
 

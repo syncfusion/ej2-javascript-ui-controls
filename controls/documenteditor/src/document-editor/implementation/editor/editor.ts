@@ -355,7 +355,17 @@ export class Editor {
 
     private insertCommentInternal(text: string): void {
         if (this.selection.isEmpty) {
+            // If selection is at paragraph end, move selection to previous word similar to MS Word
+            if (this.selection.start.isAtSamePosition(this.selection.end) && this.selection.start.isAtParagraphEnd) {
+                let startOffset: number = this.selection.start.offset;
+                this.selection.start.offset = startOffset - 1 !== -1 ? startOffset - 1 : startOffset;
+            }
             this.selection.selectCurrentWord();
+            // If paragraph mark selected, remove paragraph mark selection
+            if (this.selection.isParagraphLastLine(this.selection.end.currentWidget)
+                && this.selection.end.offset === this.selection.getLineLength(this.selection.end.currentWidget) + 1) {
+                this.selection.end.offset -= 1;
+            }
         }
         let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
         let startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
@@ -386,7 +396,6 @@ export class Editor {
         startPosition.setPositionInternal(position);
         endPosition.setPositionInternal(position);
         this.initInsertInline(commentRangeEnd);
-
         let commentAdv: CommentElementBox = new CommentElementBox(new Date().toISOString());
         if (this.owner.editorHistory) {
             this.initHistory('InsertCommentWidget');
@@ -4770,7 +4779,8 @@ export class Editor {
             curInline = element[i];
             insertIndex++;
         }
-        if (paragraphFormat) {
+        if (paragraphFormat && (isNullOrUndefined(paragraph.paragraphFormat.listFormat.list) ||
+           (!isNullOrUndefined(paragraph.paragraphFormat.listFormat) && paragraph.paragraphFormat.listFormat.listId === -1))) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         // tslint:disable-next-line:max-line-length
@@ -14155,16 +14165,6 @@ export class Editor {
         this.documentHelper = undefined;
         this.nodes = [];
     }
-    private isTocField(element: FieldElementBox): boolean {
-        if (element instanceof FieldElementBox) {
-            let nextElement: ElementBox = element.nextNode;
-            if (element instanceof FieldElementBox && element.fieldType === 0 && nextElement instanceof TextElementBox
-                && nextElement.text.trim().toLowerCase().indexOf('toc') === 0) {
-                return true;
-            }
-        }
-        return false;
-    }
     /**
      * Updates the table of contents.
      * @private
@@ -14173,7 +14173,7 @@ export class Editor {
         if (isNullOrUndefined(tocField)) {
             tocField = this.selection.getTocFieldInternal();
         }
-        if (!this.isTocField(tocField)) {
+        if (!this.documentHelper.layout.isTocField(tocField)) {
             return;
         }
         // Decode field code to get parameters
@@ -14677,15 +14677,17 @@ export class Editor {
 
     private updatePageRef(): void {
         for (let key of Object.keys(this.pageRefFields)) {
-            let bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(key);
-            let pageRef: string = (bookmark.paragraph.bodyWidget.page.index + 1).toString();
-            let span: FieldTextElementBox = this.pageRefFields[key];
-            if (pageRef !== span.text) {
-                span.text = pageRef;
-                let paragraph: ParagraphWidget = span.paragraph;
-                let lineIndex: number = paragraph.childWidgets.indexOf(span.line);
-                let elementIndex: number = span.line.children.indexOf(span);
-                this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+            if (this.documentHelper.bookmarks.containsKey(key)) {
+                let bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(key);
+                let pageRef: string = (bookmark.paragraph.bodyWidget.page.index + 1).toString();
+                let span: FieldTextElementBox = this.pageRefFields[key];
+                if (pageRef !== span.text) {
+                    span.text = pageRef;
+                    let paragraph: ParagraphWidget = span.paragraph;
+                    let lineIndex: number = paragraph.childWidgets.indexOf(span.line);
+                    let elementIndex: number = span.line.children.indexOf(span);
+                    this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                }
             }
         }
     }

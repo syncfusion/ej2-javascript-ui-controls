@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, IntlBase, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, blazorTemplates, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getElement, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, IntlBase, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getElement, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -250,21 +250,9 @@ function isDaylightSavingTime(date) {
     return date.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 function addLocalOffset(date) {
-    if (isBlazor()) {
-        let dateValue = new Date(+date - (date.getTimezoneOffset() * 60000));
-        return dateValue;
-    }
     return date;
 }
 function addLocalOffsetToEvent(event, eventFields) {
-    if (isBlazor()) {
-        let eventObj = extend({}, event, null, true);
-        eventObj[eventFields.startTime] =
-            new Date(+event[eventFields.startTime] - ((eventObj[eventFields.startTime]).getTimezoneOffset() * 60000));
-        eventObj[eventFields.endTime] =
-            new Date(+event[eventFields.endTime] - ((eventObj[eventFields.endTime]).getTimezoneOffset() * 60000));
-        return eventObj;
-    }
     return event;
 }
 function capitalizeFirstWord(inputString, type) {
@@ -778,9 +766,7 @@ class HeaderRenderer {
     renderToolbar() {
         let items = this.getItems();
         let args = { requestType: 'toolbarItemRendering', items: items };
-        if (!isBlazor()) {
-            this.parent.trigger(actionBegin, args);
-        }
+        this.parent.trigger(actionBegin, args);
         this.toolbarObj = new Toolbar({
             items: args.items,
             overflowMode: 'Popup',
@@ -799,27 +785,21 @@ class HeaderRenderer {
             nextNavEle.firstElementChild.setAttribute('title', this.l10n.getConstant('next'));
         }
         this.updateActiveView();
-        if (!isBlazor()) {
-            this.parent.trigger(actionComplete, {
-                requestType: 'toolBarItemRendered', items: this.toolbarObj.items
-            });
-        }
+        this.parent.trigger(actionComplete, {
+            requestType: 'toolBarItemRendered', items: this.toolbarObj.items
+        });
     }
     updateItems() {
         if (this.toolbarObj) {
             let items = this.getItems();
             let args = { requestType: 'toolbarItemRendering', items: items };
-            if (!isBlazor()) {
-                this.parent.trigger(actionBegin, args);
-            }
+            this.parent.trigger(actionBegin, args);
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
-            if (!isBlazor()) {
-                this.parent.trigger(actionComplete, {
-                    requestType: 'toolBarItemRendered',
-                    items: this.toolbarObj.items
-                });
-            }
+            this.parent.trigger(actionComplete, {
+                requestType: 'toolBarItemRendered',
+                items: this.toolbarObj.items
+            });
         }
     }
     getPopUpRelativeElement() {
@@ -1308,7 +1288,7 @@ class ScheduleTouch {
         this.touchRightDirection = this.parent.enableRtl ? 'Left' : 'Right';
     }
     scrollHandler(e) {
-        if (isBlazor() || this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
+        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
             (e.originalEvent && (e.originalEvent.target.classList.contains(APPOINTMENT_CLASS) ||
                 closest(e.originalEvent.target, '.' + APPOINTMENT_CLASS)))) {
             return;
@@ -1499,9 +1479,7 @@ class ScheduleTouch {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        if (!isBlazor()) {
-            removeChildren(this.element);
-        }
+        removeChildren(this.element);
         removeClass([this.element], TRANSLATE_CLASS);
     }
     /**
@@ -2947,16 +2925,14 @@ function generateSummary(rule, localeObject, locale, calendarType = 'Gregorian')
     let cldrObj1;
     let calendarMode = calendarType.toLowerCase();
     if (locale === 'en' || locale === 'en-US') {
-        let nameSpace1 = isBlazor() ? 'months.abbreviated' : 'months.stand-alone.abbreviated';
-        let nameSpace = isBlazor() ? 'days.abbreviated' : 'days.stand-alone.abbreviated';
+        let nameSpace1 = 'months.stand-alone.abbreviated';
+        let nameSpace = 'days.stand-alone.abbreviated';
         cldrObj1 = (getValue(nameSpace1, getDefaultDateObject(calendarMode)));
         cldrObj = (getValue(nameSpace, getDefaultDateObject(calendarMode)));
     }
     else {
-        let nameSpace1 = isBlazor() ? locale + '.dates.months.abbreviated' :
-            'main.' + locale + '.dates.calendars.' + calendarMode + '.months.stand-alone.abbreviated';
-        let nameSpace = isBlazor() ? locale + '.dates.days.abbreviated' :
-            'main.' + locale + '.dates.calendars.' + calendarMode + '.days.stand-alone.abbreviated';
+        let nameSpace1 = 'main.' + locale + '.dates.calendars.' + calendarMode + '.months.stand-alone.abbreviated';
+        let nameSpace = 'main.' + locale + '.dates.calendars.' + calendarMode + '.days.stand-alone.abbreviated';
         cldrObj1 =
             (getValue(nameSpace1, cldrData));
         cldrObj =
@@ -4792,15 +4768,6 @@ class EventBase {
             this.parent.trigger(select, selectEventArgs);
             let args = extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
             this.parent.trigger(eventClick, args, (eventClickArgs) => {
-                if (isBlazor()) {
-                    let eventFields = this.parent.eventFields;
-                    let eventObj = eventClickArgs.event;
-                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
-                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
-                    if (eventClickArgs.element) {
-                        eventClickArgs.element = getElement(eventClickArgs.element);
-                    }
-                }
                 if (eventClickArgs.cancel) {
                     this.removeSelectedAppointmentClass();
                     if (this.parent.quickPopup) {
@@ -6430,11 +6397,6 @@ class MonthEvent extends EventBase {
             moreArgs.groupIndex = parseInt(groupIndex, 10);
         }
         this.parent.trigger(moreEventsClick, moreArgs, (clickArgs) => {
-            if (isBlazor()) {
-                clickArgs.startTime = new Date('' + clickArgs.startTime);
-                clickArgs.endTime = new Date('' + clickArgs.endTime);
-                clickArgs.element = getElement(clickArgs.element);
-            }
             if (!clickArgs.cancel) {
                 if (clickArgs.isPopupOpen) {
                     let filteredEvents = this.getFilteredEvents(startDate, endDate, groupIndex);
@@ -8056,7 +8018,6 @@ class QuickPopups {
             }
         }
         this.parent.renderTemplates();
-        this.parent.updateEventTemplates();
         let eventProp = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
             eventProp.data = data;
@@ -8626,7 +8587,7 @@ class EventTooltip {
     constructor(parent) {
         this.parent = parent;
         this.tooltipObj = new Tooltip({
-            animation: { close: { effect: isBlazor() ? 'None' : 'FadeOut' } },
+            animation: { close: { effect: 'FadeOut' } },
             content: 'No title',
             position: 'BottomRight',
             offsetY: 10,
@@ -8635,9 +8596,7 @@ class EventTooltip {
             cssClass: this.parent.cssClass + ' ' + EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            enableRtl: this.parent.enableRtl,
-            beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this)
+            enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
@@ -8651,26 +8610,6 @@ class EventTooltip {
             targets.push('.' + APPOINTMENT_CLASS);
         }
         return targets.join(',');
-    }
-    onBeforeOpen() {
-        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
-            let templateId = this.parent.element.id + '_headerTooltipTemplate';
-            updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
-        }
-        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
-            let templateId = this.parent.element.id + '_tooltipTemplate';
-            updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
-        }
-    }
-    onBeforeClose() {
-        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
-            let templateId = this.parent.element.id + '_headerTooltipTemplate';
-            resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
-        }
-        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
-            let templateId = this.parent.element.id + '_tooltipTemplate';
-            resetBlazorTemplate(templateId, 'TooltipTemplate');
-        }
     }
     // tslint:disable-next-line:max-func-body-length
     onBeforeRender(args) {
@@ -8721,32 +8660,19 @@ class EventTooltip {
             let startMonthDate = '';
             let startMonthYearDate = '';
             let endMonthYearDate = '';
-            if (isBlazor()) {
-                startMonthDate = globalize.formatDate(eventStart, {
-                    type: 'date', format: 'MMM d', calendar: this.parent.getCalendarMode()
-                });
-                startMonthYearDate = globalize.formatDate(eventStart, {
-                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                });
-                endMonthYearDate = globalize.formatDate(eventEnd, {
-                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                });
-            }
-            else {
-                startMonthDate = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
-                });
-                startMonthYearDate = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-                });
-                endMonthYearDate = globalize.formatDate(eventEnd, {
-                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-                });
-            }
+            startMonthDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+            });
+            startMonthYearDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            endMonthYearDate = globalize.formatDate(eventEnd, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
             startMonthDate = capitalizeFirstWord(startMonthDate, 'single');
             startMonthYearDate = capitalizeFirstWord(startMonthYearDate, 'single');
             endMonthYearDate = capitalizeFirstWord(endMonthYearDate, 'single');
-            let skeleton = isBlazor() ? 't' : 'short';
+            let skeleton = 'short';
             let startTime = globalize.formatDate(eventStart, {
                 type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
@@ -8755,10 +8681,7 @@ class EventTooltip {
             });
             let tooltipDetails;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = isBlazor() ?
-                    globalize.formatDate(eventStart, {
-                        type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                    }) :
+                tooltipDetails =
                     globalize.formatDate(eventStart, {
                         type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
                     });
@@ -9261,12 +9184,6 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         this.untilDateObj.appendTo(this.element.querySelector('.' + UNTILDATE));
     }
     getFormat(formatType) {
-        if (isBlazor()) {
-            if (formatType === 'dateFormats') {
-                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.locale).format;
-            }
-            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
-        }
         let format;
         if (this.locale === 'en' || this.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.getCalendarMode()));
@@ -9433,20 +9350,16 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         return dataSource;
     }
     getDayData(format) {
-        if (isBlazor() && format === 'narrow') {
-            format = 'short';
-        }
         let weekday = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
         let dayData = [];
         let cldrObj;
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            let nameSpaceString = isBlazor() ? 'days.' : 'days.stand-alone.';
+            let nameSpaceString = 'days.stand-alone.';
             cldrObj = (getValue(nameSpaceString + format, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
-            let nameSpaceString = isBlazor() ? this.locale + '.dates.days.' + format :
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
+            let nameSpaceString = 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
             cldrObj = (getValue(nameSpaceString, cldrData));
         }
         for (let obj of weekday) {
@@ -9459,12 +9372,11 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         let monthData = [];
         let cldrObj;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            let nameSpaceString = isBlazor() ? 'months.wide' : 'months.stand-alone.wide';
+            let nameSpaceString = 'months.stand-alone.wide';
             cldrObj = (getValue(nameSpaceString, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
-            let nameSpaceString = isBlazor() ? this.locale + '.dates.months.wide' :
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
+            let nameSpaceString = 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
             cldrObj = (getValue(nameSpaceString, cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
@@ -9684,12 +9596,6 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     }
     getRecurrenceDates(startDate, rule, excludeDate, maximumCount, viewDate) {
-        if (isBlazor()) {
-            startDate = new Date('' + startDate);
-            if (viewDate) {
-                viewDate = new Date('' + viewDate);
-            }
-        }
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
         return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     }
@@ -9723,9 +9629,6 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         return ruleData;
     }
     setRecurrenceRule(rule, startDate = this.startDate) {
-        if (isBlazor()) {
-            startDate = new Date('' + startDate);
-        }
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
             return;
@@ -11656,11 +11559,6 @@ class VirtualScroll {
         this.parent.off(virtualScroll, this.virtualScrolling);
     }
     getRenderedCount() {
-        if (isBlazor()) {
-            let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
-            this.renderedLength = conTable.querySelector('tbody').children.length;
-            return this.renderedLength;
-        }
         this.setItemSize();
         return Math.ceil(this.parent.element.clientHeight / this.itemSize) + this.bufferCount;
     }
@@ -11707,7 +11605,7 @@ class VirtualScroll {
         let virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
         let lastResourceIndex = this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
         let lastRenderIndex = this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
-        if (lastRenderIndex !== lastResourceIndex || isBlazor()) {
+        if (lastRenderIndex !== lastResourceIndex) {
             let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
             this.renderedLength = conTable.querySelector('tbody').children.length;
             virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
@@ -11741,12 +11639,7 @@ class VirtualScroll {
         this.itemSize = getElementHeightFromClass(this.parent.activeView.element, WORK_CELLS_CLASS) || this.itemSize;
     }
     beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator) {
-        if (isBlazor()) {
-            window.clearTimeout(this.timeValue);
-            this.timeValue = window.setTimeout(() => { this.triggerScrolling(); }, 250);
-            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-            this.previousTop = conWrap.scrollTop;
-        }
+        //code
     }
     virtualScrolling() {
         this.parent.quickPopup.quickPopupHide();
@@ -11761,9 +11654,6 @@ class VirtualScroll {
         let scrollHeight = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
-        if (isBlazor()) {
-            this.setItemSize();
-        }
         let resCollection = [];
         if ((conWrap.scrollTop) - this.translateY < 0) {
             resCollection = this.upScroll(conWrap, firstTDIndex);
@@ -11775,28 +11665,21 @@ class VirtualScroll {
                 this.beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator);
             }
         }
-        if (!isBlazor()) {
-            if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
-                this.parent.showSpinner();
-                this.updateContent(resWrap, conWrap, eventWrap, resCollection);
-                this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-                this.parent.notify(dataReady, {});
-                if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
-                    this.parent.dragAndDropModule.navigationWrapper();
-                }
-                window.clearTimeout(this.timeValue);
-                this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); }, 250);
+        if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+            this.parent.showSpinner();
+            this.updateContent(resWrap, conWrap, eventWrap, resCollection);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+            this.parent.notify(dataReady, {});
+            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
+                this.parent.dragAndDropModule.navigationWrapper();
             }
+            window.clearTimeout(this.timeValue);
+            this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); }, 250);
         }
     }
     upScroll(conWrap, firstTDIndex) {
         let index = 0;
-        if (isBlazor()) {
-            index = ~~(conWrap.scrollTop / this.itemSize);
-        }
-        else {
-            index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
-        }
+        index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
         if (this.parent.rowAutoHeight) {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
@@ -11811,9 +11694,6 @@ class VirtualScroll {
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
-        if (isBlazor()) {
-            this.startIndex = index;
-        }
         return prevSetCollection;
     }
     downScroll(conWrap, firstTDIndex) {
@@ -11825,28 +11705,16 @@ class VirtualScroll {
         }
         let nextSetResIndex = 0;
         let height = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
-        if (isBlazor()) {
-            nextSetResIndex = ~~(conWrap.scrollTop / height);
-        }
-        else {
-            nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
-            if (this.parent.rowAutoHeight) {
-                nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
-                nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
-            }
+        nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
+        if (this.parent.rowAutoHeight) {
+            nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
+            nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
         }
         let lastIndex = nextSetResIndex + this.renderedLength;
         lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
             nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;
         let nextSetCollection = this.getBufferCollection(lastIndex - this.renderedLength, lastIndex);
         this.translateY = conWrap.scrollTop;
-        if (isBlazor()) {
-            if (this.translateY > (this.parent.resourceBase.expandedResources.length * height) - (this.renderedLength * height)) {
-                this.translateY = (this.parent.resourceBase.expandedResources.length * height) - (this.renderedLength * height);
-            }
-            this.startIndex = lastIndex - this.renderedLength;
-            this.parent.resourceBase.renderedResources = nextSetCollection;
-        }
         return nextSetCollection;
     }
     updateContent(resWrap, conWrap, eventWrap, resCollection) {
@@ -11954,7 +11822,6 @@ class Render {
             let firstView = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
-                this.parent.onServerDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -12021,11 +11888,6 @@ class Render {
         }
         this.parent.trigger(dataBinding, e, (args) => {
             let resultData = extend([], args.result, null, true);
-            if (isBlazor()) {
-                for (let data of resultData) {
-                    delete data.BlazId;
-                }
-            }
             this.parent.eventsData = resultData.filter((data) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data) => data[this.parent.eventFields.isBlock]);
             let processed = this.parent.eventBase.processData(resultData);
@@ -12042,7 +11904,7 @@ class Render {
             return;
         }
         // tslint:disable:no-any
-        this.parent.trigger(actionFailure, { error: isBlazor() ? e.error ? e.error.toString() : e.toString() : e }, () => this.parent.hideSpinner());
+        this.parent.trigger(actionFailure, { error: e }, () => this.parent.hideSpinner());
         // tslint:disable:no-any
     }
 }
@@ -12209,7 +12071,7 @@ class Crud {
                     return;
                 }
                 // tslint:disable:no-any
-                this.parent.trigger(actionFailure, { error: isBlazor() ? e.error.toString() : e });
+                this.parent.trigger(actionFailure, { error: e });
                 // tslint:disable:no-any
             });
         }
@@ -12226,11 +12088,8 @@ class Crud {
                 requestType: 'eventCreate', cancel: false,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
-            if (!isBlazor()) {
-                args.data = addEvents;
-            }
+            args.data = addEvents;
             this.parent.trigger(actionBegin, args, (addArgs) => {
-                this.serializeData(addArgs.addedRecords);
                 if (!addArgs.cancel) {
                     let fields = this.parent.eventFields;
                     let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12282,11 +12141,8 @@ class Crud {
                     requestType: 'eventChange', cancel: false,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
-                if (!isBlazor()) {
-                    args.data = eventData;
-                }
+                args.data = eventData;
                 this.parent.trigger(actionBegin, args, (saveArgs) => {
-                    this.serializeData(saveArgs.changedRecords);
                     if (!saveArgs.cancel) {
                         let promise;
                         let fields = this.parent.eventFields;
@@ -12345,11 +12201,8 @@ class Crud {
                     requestType: 'eventRemove', cancel: false,
                     addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
-                if (!isBlazor()) {
-                    args.data = eventData;
-                }
+                args.data = eventData;
                 this.parent.trigger(actionBegin, args, (deleteArgs) => {
-                    this.serializeData(deleteArgs.deletedRecords);
                     if (!deleteArgs.cancel) {
                         let promise;
                         let fields = this.parent.eventFields;
@@ -12391,11 +12244,8 @@ class Crud {
             requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = occurenceData;
-        }
+        args.data = occurenceData;
         this.parent.trigger(actionBegin, args, (occurenceArgs) => {
-            this.serializeData(occurenceArgs.changedRecords);
             if (!occurenceArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12460,11 +12310,8 @@ class Crud {
             requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = followData;
-        }
+        args.data = followData;
         this.parent.trigger(actionBegin, args, (followArgs) => {
-            this.serializeData(followArgs.changedRecords);
             if (!followArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12534,11 +12381,8 @@ class Crud {
             requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = seriesData;
-        }
+        args.data = seriesData;
         this.parent.trigger(actionBegin, args, (seriesArgs) => {
-            this.serializeData(seriesArgs.changedRecords);
             if (!seriesArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12601,11 +12445,8 @@ class Crud {
             requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
-        if (!isBlazor()) {
-            args.data = deleteData;
-        }
+        args.data = deleteData;
         this.parent.trigger(actionBegin, args, (deleteArgs) => {
-            this.serializeData(deleteArgs.deletedRecords);
             if (!deleteArgs.cancel) {
                 let fields = this.parent.eventFields;
                 let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12641,15 +12482,6 @@ class Crud {
                 this.refreshData(crudArgs);
             }
         });
-    }
-    serializeData(eventData) {
-        if (isBlazor()) {
-            let eventFields = this.parent.eventFields;
-            for (let event of eventData) {
-                event[eventFields.startTime] = this.parent.getDateTime(event[eventFields.startTime]);
-                event[eventFields.endTime] = this.parent.getDateTime(event[eventFields.endTime]);
-            }
-        }
     }
     getParentEvent(event, isParent = false) {
         let parentEvent = this.parent.eventBase.getParentEvent(event, isParent) || event;
@@ -12817,16 +12649,6 @@ class WorkCellInteraction {
         });
     }
     serializingData(clickArgs, e) {
-        if (isBlazor()) {
-            clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
-            clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
-            if (clickArgs.element) {
-                clickArgs.element = getElement(clickArgs.element);
-            }
-            if (clickArgs.event) {
-                clickArgs.event = e;
-            }
-        }
         return clickArgs;
     }
     onHover(e) {
@@ -13274,9 +13096,6 @@ class ResourceBase {
                 }
                 if (this.parent.virtualScrollModule) {
                     this.updateVirtualContent(index, hide, e, target);
-                    if (isBlazor()) {
-                        return;
-                    }
                 }
                 else {
                     this.updateContent(index, hide);
@@ -13346,40 +13165,6 @@ class ResourceBase {
         }
     }
     updateVirtualContent(index, expand, e, target) {
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            let scheduleObj = this.parent;
-            let adaptor = 'interopAdaptor';
-            let invokeMethodAsync = 'invokeMethodAsync';
-            scheduleObj[adaptor][invokeMethodAsync]('UpdateVirtualContent', index, expand).then(() => {
-                this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
-                this.setExpandedResources();
-                let resourcesCount = this.parent.virtualScrollModule.getRenderedCount();
-                let startIndex = this.expandedResources.indexOf(this.renderedResources[0]);
-                this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourcesCount);
-                if (this.renderedResources.length < resourcesCount) {
-                    let sIndex = this.expandedResources.length - resourcesCount;
-                    sIndex = (sIndex > 0) ? sIndex : 0;
-                    this.renderedResources = this.expandedResources.slice(sIndex, this.expandedResources.length);
-                }
-                let virtualTrack = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
-                this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
-                let timeIndicator = this.parent.element.querySelector('.' + CURRENT_TIMELINE_CLASS);
-                if (!isNullOrUndefined(timeIndicator)) {
-                    timeIndicator.style.height =
-                        this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS).offsetHeight + 'px';
-                }
-                let data = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
-                this.parent.notify(scrollUiUpdate, data);
-                let args = {
-                    cancel: false, event: e, groupIndex: index,
-                    requestType: target.classList.contains(RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
-                };
-                this.parent.notify(dataReady, {});
-                this.parent.trigger(actionComplete, args);
-            });
-            return;
-        }
         this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
         this.setExpandedResources();
         let resourceCount = this.parent.virtualScrollModule.getRenderedCount();
@@ -13592,20 +13377,6 @@ class ResourceBase {
     }
     bindResourcesData(isSetModel) {
         this.parent.showSpinner();
-        if (isBlazor()) {
-            if (!this.parent.isServerRenderer() && this.parent.tempResourceCollection) {
-                this.parent.resourceCollection = this.parent.tempResourceCollection || [];
-                this.refreshLayout(false);
-            }
-            // the resourceCollection will be updated in layoutReady method
-            // tslint:disable-next-line:no-any
-            // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
-            //     if (this.parent.isDestroyed) { return; }
-            //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
-            //     this.refreshLayout(isSetModel);
-            // }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
-            return;
-        }
         let promises = [];
         for (let i = 0; i < this.parent.resources.length; i++) {
             let dataModule = new Data(this.parent.resources[i].dataSource, this.parent.resources[i].query);
@@ -14093,10 +13864,6 @@ let Schedule = class Schedule extends Component {
      * @private
      */
     render() {
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            this.interopAdaptor.invokeMethodAsync('SetAdaptive', this.isAdaptive);
-        }
         let addClasses = [];
         let removeClasses = [];
         addClasses.push(ROOT);
@@ -14137,8 +13904,6 @@ let Schedule = class Schedule extends Component {
         }
         this.inlineModule = new InlineEdit(this);
         this.initializeDataModule();
-        this.on(dataReady, this.resetEventTemplates, this);
-        this.on(eventsLoaded, this.updateEventTemplates, this);
         this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
@@ -14152,10 +13917,6 @@ let Schedule = class Schedule extends Component {
     /** @hidden */
     isServerRenderer(view = this.currentView) {
         // tslint:disable-next-line:max-line-length
-        let views = ['Day', 'Week', 'WorkWeek', 'Month', 'MonthAgenda', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
-        if (isBlazor() && (views.indexOf(view) !== -1)) {
-            return true;
-        }
         return false;
     }
     /** @hidden */
@@ -14186,120 +13947,6 @@ let Schedule = class Schedule extends Component {
         this.resourceCollection = args;
         this.renderElements(true);
         this.layoutReady();
-    }
-    /** @hidden */
-    updateLayoutTemplates() {
-        let view = this.views[this.viewIndex];
-        if (this.isServerRenderer(view.option)) {
-            return;
-        }
-        if (this.cellHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.cellHeaderTemplateName !== '') {
-            let tempID = this.element.id + '_' + this.activeViewOptions.cellHeaderTemplateName + 'cellHeaderTemplate';
-            updateBlazorTemplate(tempID, 'CellHeaderTemplate', view);
-        }
-        if (this.dateHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.dateHeaderTemplateName !== '') {
-            let templateName = 'dateHeaderTemplate';
-            let tempID = this.element.id + '_' + this.activeViewOptions.dateHeaderTemplateName + templateName;
-            updateBlazorTemplate(tempID, 'DateHeaderTemplate', view);
-        }
-        if (this.cellTemplate) {
-            updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
-        }
-        if (this.activeViewOptions.cellTemplateName !== '') {
-            let tempID = this.element.id + '_' + this.activeViewOptions.cellTemplateName + 'cellTemplate';
-            updateBlazorTemplate(tempID, 'CellTemplate', view);
-        }
-        if (this.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.resourceHeaderTemplateName !== '') {
-            let templateName = 'resourceHeaderTemplate';
-            let tempID = this.element.id + '_' + this.activeViewOptions.resourceHeaderTemplateName + templateName;
-            updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
-        }
-        if (this.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this.timeScale);
-        }
-        if (this.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this.timeScale);
-        }
-    }
-    /** @hidden */
-    resetLayoutTemplates() {
-        let view = this.viewCollections[this.activeView.viewIndex];
-        if (this.isServerRenderer(view.option)) {
-            return;
-        }
-        if (this.cellHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate');
-        }
-        if (view.cellHeaderTemplate !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.cellHeaderTemplateName + 'cellHeaderTemplate', 'CellHeaderTemplate');
-        }
-        if (this.dateHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (view.dateHeaderTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.dateHeaderTemplateName + 'dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (this.cellTemplate) {
-            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
-        }
-        if (view.cellTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.cellTemplateName + 'cellTemplate', 'CellTemplate');
-        }
-        if (this.resourceHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
-        }
-        if (view.resourceHeaderTemplateName !== '') {
-            let templateName = 'ResourceHeaderTemplate';
-            resetBlazorTemplate(this.element.id + '_' + view.resourceHeaderTemplateName + 'resourceHeaderTemplate', templateName);
-        }
-        if (this.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate');
-        }
-        if (this.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate');
-        }
-    }
-    /** @hidden */
-    updateEventTemplates() {
-        let view = this.views[this.viewIndex];
-        let viewCollections = this.viewCollections[this.viewIndex];
-        if (this.eventSettings.template) {
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings, false);
-        }
-        if (this.activeViewOptions.eventTemplateName !== '') {
-            let tempID = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
-            updateBlazorTemplate(tempID, 'EventTemplate', view, false);
-        }
-        if (viewCollections.option === 'Agenda' || viewCollections.option === 'MonthAgenda' || viewCollections.option === 'TimelineYear') {
-            this.updateLayoutTemplates();
-        }
-    }
-    /** @hidden */
-    resetEventTemplates() {
-        let view = this.viewCollections[this.activeView.viewIndex];
-        if (this.eventSettings.template) {
-            // tslint:disable-next-line:no-any
-            blazorTemplates[this.element.id + '_eventTemplate'] = [];
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
-        }
-        if (view.eventTemplateName !== '') {
-            let tempID = this.element.id + '_' + view.eventTemplateName + 'eventTemplate';
-            // tslint:disable-next-line:no-any
-            blazorTemplates[tempID] = [];
-            updateBlazorTemplate(tempID, 'EventTemplate', this.views[this.activeView.viewIndex]);
-        }
-        if (view.option === 'Agenda' || view.option === 'MonthAgenda' || view.option === 'TimelineYear') {
-            this.resetLayoutTemplates();
-        }
     }
     /**
      * To render the react templates
@@ -14429,21 +14076,12 @@ let Schedule = class Schedule extends Component {
         }
         if (!isModuleLoad && selectedView) {
             this.setScheduleProperties({ currentView: selectedView });
-            this.onServerDataBind();
         }
         if (this.viewIndex === -1) {
             let currentIndex = this.getViewIndex(this.currentView);
             this.viewIndex = ((typeof this.views[0] !== 'string') && (!isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
                 (currentIndex === -1) ? 0 : currentIndex;
         }
-    }
-    /** @hidden */
-    onServerDataBind() {
-        //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
-        if (this.bulkChanges && this.bulkChanges.selectedDate) {
-            this.bulkChanges.selectedDate = addLocalOffset(this.bulkChanges.selectedDate);
-        }
-        this.serverDataBind();
     }
     getActiveViewOptions() {
         let timeScale = {
@@ -14553,18 +14191,15 @@ let Schedule = class Schedule extends Component {
     }
     /** @hidden */
     getDayNames(type) {
-        if (isBlazor() && type === 'narrow') {
-            type = 'short';
-        }
         let culShortNames = [];
         let cldrObj;
         let nameSpace = '';
         if (this.locale === 'en' || this.locale === 'en-US') {
-            nameSpace = isBlazor() ? 'days.' : 'days.stand-alone.';
+            nameSpace = 'days.stand-alone.';
             cldrObj = (getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
-            nameSpace = isBlazor() ? '' + this.locale + '.dates.days.' + type :
+            nameSpace =
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type;
             cldrObj = (getValue(nameSpace, cldrData));
         }
@@ -14574,10 +14209,6 @@ let Schedule = class Schedule extends Component {
         return culShortNames;
     }
     setCldrTimeFormat() {
-        if (isBlazor()) {
-            this.timeFormat = IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
-            return;
-        }
         if (this.locale === 'en' || this.locale === 'en-US') {
             this.timeFormat = (getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         }
@@ -14621,10 +14252,6 @@ let Schedule = class Schedule extends Component {
             return;
         }
         this.viewIndex = index;
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            this.interopAdaptor.invokeMethodAsync('SetViewIndex', this.viewIndex);
-        }
         let args = { requestType: 'viewNavigate', cancel: false, event: event };
         this.trigger(actionBegin, args, (actionArgs) => {
             if (!actionArgs.cancel) {
@@ -14641,11 +14268,7 @@ let Schedule = class Schedule extends Component {
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
-                        this.onServerDataBind();
                         this.animateLayout();
-                        if (isBlazor() && this.virtualScrollModule) {
-                            this.resetScrollTop();
-                        }
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(actionComplete, args);
                     }
@@ -14670,11 +14293,7 @@ let Schedule = class Schedule extends Component {
                             this.headerModule.setCalendarDate(navigationArgs.currentDate);
                         }
                         this.initializeView(this.currentView);
-                        this.onServerDataBind();
                         this.animateLayout();
-                        if (isBlazor() && this.virtualScrollModule) {
-                            this.resetScrollTop();
-                        }
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         this.trigger(actionComplete, args);
                     }
@@ -14716,7 +14335,7 @@ let Schedule = class Schedule extends Component {
         return 'Day';
     }
     animateLayout() {
-        if (isBlazor() || !this.activeView.element) {
+        if (!this.activeView.element) {
             return;
         }
         new Animation({ duration: 600, name: 'FadeIn', timingFunction: 'easeIn' }).animate(this.activeView.element);
@@ -14739,9 +14358,7 @@ let Schedule = class Schedule extends Component {
         if (this.allowResizing) {
             modules.push({ member: 'resize', args: [this] });
         }
-        if (!isBlazor() || isBlazor() && this.isServerRendered && this.allowExcelExport) {
-            modules.push({ member: 'excelExport', args: [this] });
-        }
+        modules.push({ member: 'excelExport', args: [this] });
         modules.push({ member: 'iCalendarExport', args: [this] });
         modules.push({ member: 'iCalendarImport', args: [this] });
         modules.push({ member: 'print', args: [this] });
@@ -15071,7 +14688,7 @@ let Schedule = class Schedule extends Component {
             resourceName = this.quickPopup.getResourceText({ event: event }, 'event') + constantText;
         }
         let recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
-        let skeleton = isBlazor() ? 'F' : 'full';
+        let skeleton = 'full';
         let startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
@@ -15596,7 +15213,7 @@ let Schedule = class Schedule extends Component {
             startTime: startTime,
             endTime: endTime,
             isAllDay: this.isAllDayCell(firstTd),
-            element: isBlazor() ? firstTd : tdCol
+            element: tdCol
         };
         let groupIndex = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
@@ -15616,10 +15233,17 @@ let Schedule = class Schedule extends Component {
      * To get the resource collection
      * @method getResourceCollections
      * @return {ResourcesModel[]}
-     * @deprecated
      */
     getResourceCollections() {
         return this.resourceCollection;
+    }
+    /**
+     * To set the resource collection
+     * @method setResourceCollections
+     * @param {ResourcesModel[]} resourceCol Accepts the resource collections in ResourcesModel type
+     */
+    setResourceCollections(resourceCol) {
+        this.setProperties({ resources: resourceCol }, false);
     }
     /**
      * Current View could be change based on the provided parameters.
@@ -16069,9 +15693,6 @@ let Schedule = class Schedule extends Component {
      * @return {void}
      */
     destroy() {
-        if (isBlazor()) {
-            this.isDestroyed = true;
-        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;
@@ -16356,10 +15977,6 @@ class ActionBase {
     saveChangedData(eventArgs) {
         this.parent.activeEventData.event = this.actionObj.event;
         this.parent.currentAction = 'Save';
-        if (isBlazor()) {
-            eventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(eventArgs.data[this.parent.eventFields.startTime]);
-            eventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(eventArgs.data[this.parent.eventFields.endTime]);
-        }
         let eventObj = eventArgs.data;
         let isSameResource = (this.parent.activeViewOptions.group.resources.length > 0) ?
             parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
@@ -16763,13 +16380,6 @@ class Resize extends ActionBase {
         this.parent.trigger(resizeStart, resizeArgs, (resizeEventArgs) => {
             if (resizeEventArgs.cancel) {
                 return;
-            }
-            if (isBlazor()) {
-                if (resizeEventArgs.element) {
-                    resizeEventArgs.element = getElement(resizeEventArgs.element);
-                }
-                resizeEventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(resizeEventArgs.data[this.parent.eventFields.startTime]);
-                resizeEventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(resizeEventArgs.data[this.parent.eventFields.endTime]);
             }
             this.actionClass('addClass');
             this.parent.uiStateValues.action = true;
@@ -17808,14 +17418,6 @@ class DragAndDrop extends ActionBase {
                 this.removeCloneElement();
                 return;
             }
-            else if (isBlazor()) {
-                e.bindEvents(e.dragElement);
-                if (dragEventArgs.element) {
-                    dragEventArgs.element = getElement(dragEventArgs.element);
-                }
-                dragEventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(dragEventArgs.data[this.parent.eventFields.startTime]);
-                dragEventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(dragEventArgs.data[this.parent.eventFields.endTime]);
-            }
             this.actionClass('addClass');
             this.parent.uiStateValues.action = true;
             this.actionObj.start = eventObj[this.parent.eventFields.startTime];
@@ -18596,14 +18198,12 @@ var ViewHelper;
             if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
-            return isBlazor() ?
-                proxy.globalize.formatDate(date, { format: 'h', calendar: proxy.getCalendarMode() }) :
-                proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
+            return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
         }
         return proxy.getTimeString(date);
     };
     ViewHelper.getTimelineDate = (proxy, date) => {
-        let skeleton = isBlazor() ? 'M' : 'MMMd';
+        let skeleton = 'MMMd';
         let text = proxy.globalize.formatDate(date, { skeleton: skeleton, calendar: proxy.getCalendarMode() }) + ', ' +
             proxy.getDayNames('wide')[date.getDay()];
         return capitalizeFirstWord(text, 'multiple');
@@ -18726,7 +18326,7 @@ class ViewBase {
         return headerBarHeight;
     }
     renderPanel(type) {
-        if (type === PREVIOUS_PANEL_CLASS || isBlazor()) {
+        if (type === PREVIOUS_PANEL_CLASS) {
             prepend([this.element], this.parent.element.querySelector('.' + TABLE_CONTAINER_CLASS));
         }
         else {
@@ -18881,9 +18481,7 @@ class ViewBase {
     }
     getLabelText(view) {
         let viewStr = view.charAt(0).toLowerCase() + view.substring(1);
-        return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(isBlazor() ?
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }), 'single');
+        return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }), 'single');
     }
     getDateRangeText() {
         if (this.parent.isAdaptive) {
@@ -18910,16 +18508,11 @@ class ViewBase {
         }
         let formattedStr;
         let longDateFormat;
-        if (isBlazor()) {
-            longDateFormat = 'MMMM d, y';
+        if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
+            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
         }
         else {
-            if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-                longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
-            }
-            else {
-                longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
-            }
+            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
             return capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
@@ -19453,7 +19046,6 @@ class VerticalView extends ViewBase {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
-        this.parent.updateLayoutTemplates();
     }
     renderHeader() {
         let tr = createElement('tr');
@@ -19812,23 +19404,7 @@ class VerticalView extends ViewBase {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                let view = this.parent.viewCollections[this.viewIndex].option;
-                if (this.parent.isServerRenderer(view)) {
-                    if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'TimelineYear') {
-                        this.element.style.display = 'none';
-                    }
-                    this.parent.resetEventTemplates();
-                }
-                else {
-                    this.parent.resetLayoutTemplates();
-                    this.parent.resetEventTemplates();
-                    remove(this.element);
-                }
-            }
-            else {
-                remove(this.element);
-            }
+            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();
@@ -20123,7 +19699,6 @@ class Month extends ViewBase {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
-        this.parent.updateLayoutTemplates();
     }
     wireCellEvents(element) {
         EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
@@ -20231,23 +19806,19 @@ class Month extends ViewBase {
             }
             else {
                 let ele = createElement('span', { className: NAVIGATE_CLASS });
-                let skeleton = isBlazor() ? 'D' : 'full';
+                let skeleton = 'full';
                 let title = this.parent.globalize.formatDate(td.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', capitalizeFirstWord(title, 'multiple'));
                 let innerText = (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                    isBlazor() ?
-                        this.parent.globalize.formatDate(td.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
-                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                    this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 ele.innerHTML = capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
         }
         let args = { elementType: td.type, element: tdEle, date: td.date, groupIndex: td.groupIndex };
-        if (!isBlazor()) {
-            this.parent.trigger(renderCell, args);
-        }
+        this.parent.trigger(renderCell, args);
         return tdEle;
     }
     getContentSlots() {
@@ -20385,9 +19956,7 @@ class Month extends ViewBase {
             append(cellTemplate, ntd);
         }
         let args = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
-        if (!isBlazor()) {
-            this.parent.trigger(renderCell, args);
-        }
+        this.parent.trigger(renderCell, args);
         return ntd;
     }
     renderDateHeaderElement(data, ntd) {
@@ -20407,14 +19976,13 @@ class Month extends ViewBase {
         else {
             let innerText = (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
                 this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                isBlazor() ? this.parent.globalize.formatDate(data.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
-                    this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
             dateHeader.innerHTML = capitalizeFirstWord(innerText, 'single');
         }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
-            let skeleton = isBlazor() ? 'D' : 'full';
+            let skeleton = 'full';
             let annocementText = this.parent.globalize.formatDate(data.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
             dateHeader.setAttribute('aria-label', annocementText);
         }
@@ -20500,9 +20068,7 @@ class Month extends ViewBase {
         });
         tr.appendChild(td);
         let args = { elementType: 'weekNumberCell', element: td };
-        if (!isBlazor()) {
-            this.parent.trigger(renderCell, args);
-        }
+        this.parent.trigger(renderCell, args);
         return tr;
     }
     unwireEvents() {
@@ -20528,23 +20094,7 @@ class Month extends ViewBase {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                let view = this.parent.viewCollections[this.viewIndex].option;
-                if (!this.parent.isServerRenderer(view)) {
-                    this.parent.resetLayoutTemplates();
-                    this.parent.resetEventTemplates();
-                    remove(this.element);
-                }
-                else {
-                    if (['Month', 'MonthAgenda', 'TimelineMonth'].indexOf(this.parent.currentView) === -1) {
-                        this.element.style.display = 'none';
-                    }
-                    this.parent.resetEventTemplates();
-                }
-            }
-            else {
-                remove(this.element);
-            }
+            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();
@@ -20715,8 +20265,8 @@ class Year extends ViewBase {
     getDateSlots(renderDates, workDays, startHour = this.parent.workHours.start, endHour = this.parent.workHours.end) {
         let dateCol = [{
                 date: renderDates[0], type: 'dateHeader', className: [HEADER_CELLS_CLASS], colSpan: 1, workDays: workDays,
-                startHour: new Date(+this.parent.globalize.parseDate(startHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' })),
-                endHour: new Date(+this.parent.globalize.parseDate(endHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' }))
+                startHour: new Date(+this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' })),
+                endHour: new Date(+this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' }))
             }];
         return dateCol;
     }
@@ -20821,7 +20371,7 @@ class Year extends ViewBase {
         return addYears(this.parent.selectedDate, ((type === 'next') ? 1 : -1));
     }
     getDateRangeText() {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, isBlazor() ? { format: 'yyyy' } : { skeleton: 'y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
     }
     addEventListener() {
         this.parent.on(scrollUiUpdate, this.onScrollUiUpdate, this);
@@ -20870,10 +20420,6 @@ class Year extends ViewBase {
         if (this.element) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
-            }
-            if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
             }
             remove(this.element);
             this.element = null;
@@ -21664,10 +21210,6 @@ class Agenda extends ViewBase {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
-            }
             remove(this.element);
             this.element = null;
             if (this.parent.headerModule && this.parent.activeViewOptions.allowVirtualScrolling) {
@@ -21752,7 +21294,6 @@ class MonthAgenda extends Month {
     onCellClick(event) {
         this.parent.quickPopup.quickPopupHide();
         let filterData = this.appointmentFiltering(event.startTime);
-        this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
         this.parent.notify(eventsLoaded, {});
         this.monthAgendaDate = new Date('' + event.startTime);
@@ -22493,7 +22034,7 @@ class TimelineYear extends Year {
                     className: DATE_HEADER_CLASS + ' ' + NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
-                let skeleton = isBlazor() ? 'D' : 'full';
+                let skeleton = 'full';
                 let annocementText = this.parent.globalize.formatDate(date, {
                     skeleton: skeleton,
                     calendar: this.parent.getCalendarMode()

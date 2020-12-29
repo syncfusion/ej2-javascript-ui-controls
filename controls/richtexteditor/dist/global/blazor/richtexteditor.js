@@ -11583,6 +11583,11 @@ var TableCommand = /** @class */ (function () {
         InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
         this.removeEmptyNode();
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
+        if (table.nextElementSibling === null) {
+            var emptyPara = sf.base.createElement('p');
+            emptyPara.appendChild(sf.base.createElement('br'));
+            this.insertAfter(emptyPara, table);
+        }
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
             e.callBack({
@@ -11741,7 +11746,7 @@ var TableCommand = /** @class */ (function () {
     TableCommand.prototype.deleteRow = function (e) {
         var selectedCell = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
-        var selectedRowIndex = selectedCell.parentNode.rowIndex;
+        var selectedRowIndex = sf.base.closest(selectedCell, 'tr').rowIndex;
         var parentTable = sf.base.closest(selectedCell, 'table');
         if (parentTable.rows.length === 1) {
             e.item.selection.restore();
@@ -15718,7 +15723,7 @@ var Resize = /** @class */ (function () {
  */
 var FileManager$1 = /** @class */ (function () {
     function FileManager$$1(parent, locator) {
-        ej2Filemanager.FileManager.Inject(ej2Filemanager.ContextMenu, ej2Filemanager.DetailsView, ej2Filemanager.NavigationPane, ej2Filemanager.Toolbar);
+        sf.filemanager.FileManager.Inject(sf.filemanager.ContextMenu, sf.filemanager.DetailsView, sf.filemanager.NavigationPane, sf.filemanager.Toolbar);
         this.parent = parent;
         this.i10n = locator.getService('rteLocale');
         this.dialogRenderObj = locator.getService('dialogRenderObject');
@@ -15787,7 +15792,7 @@ var FileManager$1 = /** @class */ (function () {
     FileManager$$1.prototype.renderFileManager = function () {
         var _this = this;
         var proxy = this;
-        this.fileObj = new ej2Filemanager.FileManager({
+        this.fileObj = new sf.filemanager.FileManager({
             allowMultiSelection: false,
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
@@ -20298,25 +20303,25 @@ var FileManagerSettings = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        sf.base.Complex({ getImageUrl: null, url: null, uploadUrl: null }, ej2Filemanager.AjaxSettings)
+        sf.base.Complex({ getImageUrl: null, url: null, uploadUrl: null }, sf.filemanager.AjaxSettings)
     ], FileManagerSettings.prototype, "ajaxSettings", void 0);
     __decorate$2([
         sf.base.Property(false)
     ], FileManagerSettings.prototype, "allowDragAndDrop", void 0);
     __decorate$2([
-        sf.base.Complex({ visible: true, file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'], folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'], layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'] }, ej2Filemanager.ContextMenuSettings)
+        sf.base.Complex({ visible: true, file: ['Open', '|', 'Cut', 'Copy', '|', 'Delete', 'Rename', '|', 'Details'], folder: ['Open', '|', 'Cut', 'Copy', 'Paste', '|', 'Delete', 'Rename', '|', 'Details'], layout: ['SortBy', 'View', 'Refresh', '|', 'Paste', '|', 'NewFolder', 'Upload', '|', 'Details', '|', 'SelectAll'] }, sf.filemanager.ContextMenuSettings)
     ], FileManagerSettings.prototype, "contextMenuSettings", void 0);
     __decorate$2([
         sf.base.Property('')
     ], FileManagerSettings.prototype, "cssClass", void 0);
     __decorate$2([
-        sf.base.Complex({}, ej2Filemanager.DetailsViewSettings)
+        sf.base.Complex({}, sf.filemanager.DetailsViewSettings)
     ], FileManagerSettings.prototype, "detailsViewSettings", void 0);
     __decorate$2([
         sf.base.Property(false)
     ], FileManagerSettings.prototype, "enable", void 0);
     __decorate$2([
-        sf.base.Complex({ maxWidth: '650px', minWidth: '240px', visible: true }, ej2Filemanager.NavigationPaneSettings)
+        sf.base.Complex({ maxWidth: '650px', minWidth: '240px', visible: true }, sf.filemanager.NavigationPaneSettings)
     ], FileManagerSettings.prototype, "navigationPaneSettings", void 0);
     __decorate$2([
         sf.base.Property('/')
@@ -20325,7 +20330,7 @@ var FileManagerSettings = /** @class */ (function (_super) {
         sf.base.Property(null)
     ], FileManagerSettings.prototype, "rootAliasName", void 0);
     __decorate$2([
-        sf.base.Complex({}, ej2Filemanager.SearchSettings)
+        sf.base.Complex({}, sf.filemanager.SearchSettings)
     ], FileManagerSettings.prototype, "searchSettings", void 0);
     __decorate$2([
         sf.base.Property(true)
@@ -20340,10 +20345,10 @@ var FileManagerSettings = /** @class */ (function (_super) {
         sf.base.Property('Ascending')
     ], FileManagerSettings.prototype, "sortOrder", void 0);
     __decorate$2([
-        sf.base.Complex({ visible: true, items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'] }, ej2Filemanager.ToolbarSettings)
+        sf.base.Complex({ visible: true, items: ['NewFolder', 'Upload', 'Cut', 'Copy', 'Paste', 'Delete', 'Download', 'Rename', 'SortBy', 'Refresh', 'Selection', 'View', 'Details'] }, sf.filemanager.ToolbarSettings)
     ], FileManagerSettings.prototype, "toolbarSettings", void 0);
     __decorate$2([
-        sf.base.Complex({ autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }, ej2Filemanager.UploadSettings)
+        sf.base.Complex({ autoUpload: true, minFileSize: 0, maxFileSize: 30000000, allowedExtensions: '', autoClose: false }, sf.filemanager.UploadSettings)
     ], FileManagerSettings.prototype, "uploadSettings", void 0);
     __decorate$2([
         sf.base.Property('LargeIcons')

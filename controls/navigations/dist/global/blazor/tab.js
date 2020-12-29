@@ -780,7 +780,7 @@ var Tab = /** @class */ (function (_super) {
     };
     Tab.prototype.compileElement = function (ele, val, prop, index) {
         var templateFn;
-        if (typeof val === 'string' && sf.base.isBlazor() && val.indexOf('<div>Blazor') !== 0) {
+        if (typeof val === 'string') {
             val = val.trim();
             ele.innerHTML = sf.base.SanitizeHtmlHelper.sanitize(val);
         }
@@ -789,12 +789,7 @@ var Tab = /** @class */ (function (_super) {
         }
         var templateFUN;
         if (!sf.base.isNullOrUndefined(templateFn)) {
-            if (sf.base.isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-                templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
-            }
-            else {
-                templateFUN = templateFn({}, this, prop);
-            }
+            templateFUN = templateFn({}, this, prop);
         }
         if (!sf.base.isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
@@ -1429,7 +1424,7 @@ var Tab = /** @class */ (function (_super) {
                 }
                 this.templateEle = [];
                 var selectElement = sf.base.select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
-                while (selectElement.firstElementChild && !sf.base.isBlazor()) {
+                while (selectElement.firstElementChild) {
                     sf.base.detach(selectElement.firstElementChild);
                 }
                 this.select(this.selectedItem);
@@ -1470,7 +1465,6 @@ var Tab = /** @class */ (function (_super) {
      * @param  {TabItemsModel[]} items - An array of item that is added to the Tab.
      * @param  {number} index - Number value that determines where the items to be added. By default, index is 0.
      * @returns void.
-     * @deprecated
      */
     Tab.prototype.addTab = function (items, index) {
         var _this = this;
@@ -1555,7 +1549,6 @@ var Tab = /** @class */ (function (_super) {
      * Removes the items in the Tab from the specified index.
      * @param  {number} index - Index of target item that is going to be removed.
      * @returns void.
-     * @deprecated
      */
     Tab.prototype.removeTab = function (index) {
         var _this = this;
@@ -1566,11 +1559,6 @@ var Tab = /** @class */ (function (_super) {
         var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, function (tabRemovingArgs) {
             if (!tabRemovingArgs.cancel) {
-                if (sf.base.isBlazor() && _this.isServerRendered) {
-                    // tslint:disable-next-line:no-any
-                    _this.interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
-                    return;
-                }
                 // tslint:disable-next-line:no-any
                 if (_this.isRect) {
                     _this.clearTemplate([], index);

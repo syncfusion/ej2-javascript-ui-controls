@@ -1,6 +1,6 @@
 import {
     createElement, append, prepend, isNullOrUndefined, getValue, getDefaultDateObject,
-    cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, isBlazor, EventHandler
+    cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, EventHandler
 } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { TdData, ResourceDetails } from '../base/interface';
@@ -23,14 +23,12 @@ export namespace ViewHelper {
             if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
-            return isBlazor() ?
-                proxy.globalize.formatDate(date, { format: 'h', calendar: proxy.getCalendarMode() }) :
-                proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
+            return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
         }
         return proxy.getTimeString(date);
     };
     export const getTimelineDate: Function = (proxy: Schedule, date: Date) => {
-        let skeleton: string = isBlazor() ? 'M' : 'MMMd';
+        let skeleton: string = 'MMMd';
         let text: string = proxy.globalize.formatDate(date, { skeleton: skeleton, calendar: proxy.getCalendarMode() }) + ', ' +
             proxy.getDayNames('wide')[date.getDay()];
         return util.capitalizeFirstWord(text, 'multiple');
@@ -152,7 +150,7 @@ export class ViewBase {
         return headerBarHeight;
     }
     public renderPanel(type: string): void {
-        if (type === cls.PREVIOUS_PANEL_CLASS || isBlazor()) {
+        if (type === cls.PREVIOUS_PANEL_CLASS) {
             prepend([this.element], this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS));
         } else {
             this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS).appendChild(this.element);
@@ -301,9 +299,7 @@ export class ViewBase {
     public getLabelText(view: string): string {
         let viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
         return this.parent.localeObj.getConstant(viewStr) + ' of ' + util.capitalizeFirstWord(
-            isBlazor() ?
-                this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
-                this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
+            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
             'single');
     }
     public getDateRangeText(): string {
@@ -333,14 +329,10 @@ export class ViewBase {
         }
         let formattedStr: string;
         let longDateFormat: string;
-        if (isBlazor()) {
-            longDateFormat = 'MMMM d, y';
+        if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
+            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
         } else {
-            if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-                longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
-            } else {
-                longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
-            }
+            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
             return util.capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');

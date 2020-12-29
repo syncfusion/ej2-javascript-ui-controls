@@ -1441,8 +1441,8 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
             content = htmlContent;
             updateShapeContent(content, actualObject, diagram);
     }
-    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity' ) ) {
-        updateContent(node, actualObject, diagram);
+    if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity')) {
+        updateContent(node, actualObject, diagram, oldObject);
     } else {
         content.width = actualObject.wrapper.children[0].width;
         content.height = actualObject.wrapper.children[0].height;
@@ -1454,7 +1454,7 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
     }
 }
 /** @private */
-export function updateContent(newValues: Node, actualObject: Node, diagram: Diagram): void {
+export function updateContent(newValues: Node, actualObject: Node, diagram: Diagram, oldObject: Node): void {
     if (Object.keys(newValues.shape).length > 0) {
         if (actualObject.shape.type === 'Path' && (newValues.shape as PathModel).data !== undefined) {
             (actualObject.wrapper.children[0] as PathModel).data = (newValues.shape as PathModel).data;
@@ -1497,6 +1497,13 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             updateUmlActivityNode(actualObject, newValues);
         } else if ((newValues.shape as BasicShapeModel).cornerRadius !== undefined) {
             (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
+        } else if (actualObject.shape.type === 'Basic' && (oldObject && (oldObject.shape as BasicShape).shape === 'Rectangle')) {
+            let basicshape: PathElement = new PathElement();
+            let basicshapedata: string = getBasicShape((isBlazor()) ? (actualObject.shape as DiagramShape).basicShape :
+                (actualObject.shape as BasicShape).shape);
+            basicshape.data = basicshapedata;
+            let content: DiagramElement = basicshape;
+            updateShapeContent(content, actualObject, diagram);
         } else if (((isBlazor() && (newValues.shape as DiagramShapeModel).basicShape !== undefined) ||
             (newValues.shape as FlowShapeModel).shape !== undefined)) {
             (actualObject.shape as BasicShapeModel).shape = isBlazor() ? (newValues.shape as DiagramShapeModel).basicShape :

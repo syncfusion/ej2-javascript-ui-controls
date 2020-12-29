@@ -522,9 +522,25 @@ var SfListView = /** @class */ (function () {
     SfListView.prototype.checkItem = function (item) {
         this.toggleCheckBox(item, true);
     };
-    SfListView.prototype.getCheckData = function (item, isCheck) {
-        var liItem = this.curUlElement.querySelector('[data-uid=\'' + item.id + '\']');
+    //tslint:disable-next-line
+    SfListView.prototype.getCheckData = function (item, isCheck, fieldId) {
+        var id = item.id;
+        if (fieldId !== item.id || sf.base.isNullOrUndefined(item.id)) {
+            fieldId = fieldId.toLowerCase();
+            //tslint:disable-next-line
+            for (var _i = 0, _a = Object.entries(item); _i < _a.length; _i++) {
+                var _b = _a[_i], key = _b[0], value = _b[1];
+                var tempItem = "" + key;
+                var tempVal = "" + value;
+                tempItem = tempItem.toLowerCase();
+                if (tempItem === fieldId) {
+                    id = tempVal;
+                }
+            }
+        }
+        var liItem = this.curUlElement.querySelector('[data-uid=\'' + id + '\']');
         isCheck ? this.checkItem(liItem) : this.uncheckItem(liItem);
+        this.removeFocus();
     };
     SfListView.prototype.spaceKeyHandler = function (e) {
         if (this.enable && this.showCheckBox && this.curUlElement) {
@@ -770,11 +786,11 @@ var listView = {
         }
     },
     // tslint:disable
-    getCheckData: function (element, item, isCheck) {
+    getCheckData: function (element, item, isCheck, fieldId) {
         // tslint:enable
         if (this.isValid(element) && item != null) {
             for (var i = 0; i < item.length; i++) {
-                element.blazor__instance.getCheckData(item[i], isCheck);
+                element.blazor__instance.getCheckData(item[i], isCheck, fieldId);
             }
         }
     },

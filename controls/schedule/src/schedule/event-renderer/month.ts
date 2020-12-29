@@ -1,4 +1,4 @@
-import { append, prepend, createElement, extend, EventHandler, closest, addClass, isBlazor, getElement } from '@syncfusion/ej2-base';
+import { append, prepend, createElement, extend, EventHandler, closest, addClass} from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove } from '@syncfusion/ej2-base';
 import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs, MoreEventsClickArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -555,11 +555,6 @@ export class MonthEvent extends EventBase {
             moreArgs.groupIndex = parseInt(groupIndex, 10);
         }
         this.parent.trigger(events.moreEventsClick, moreArgs, (clickArgs: MoreEventsClickArgs) => {
-            if (isBlazor()) {
-                clickArgs.startTime = new Date('' + clickArgs.startTime);
-                clickArgs.endTime = new Date('' + clickArgs.endTime);
-                clickArgs.element = getElement(clickArgs.element);
-            }
             if (!clickArgs.cancel) {
                 if (clickArgs.isPopupOpen) {
                     let filteredEvents: Object[] = this.getFilteredEvents(startDate, endDate, groupIndex);

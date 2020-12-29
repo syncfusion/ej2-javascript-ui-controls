@@ -273,10 +273,6 @@ export class FilterMenuRenderer {
 
             }
         }
-        let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
-        let column: Element = this.parent.element.querySelector('[e-mappinguid="' + col.uid + '"]').parentElement;
-        let flIcon: Element = column.querySelector(iconClass);
-        if (flIcon) { flIcon.classList.add('e-filtered'); }
         this.closeDialog();
     }
 

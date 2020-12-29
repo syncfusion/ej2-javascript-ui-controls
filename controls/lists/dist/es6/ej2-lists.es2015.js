@@ -1212,6 +1212,7 @@ let ListView = class ListView extends Component {
     // Animation Related Functions
     switchView(fromView, toView, reverse) {
         if (fromView && toView) {
+            this.trigger('actionBegin', { startList: fromView, endList: toView, isReverse: reverse });
             let fPos = fromView.style.position;
             let overflow = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
             fromView.style.position = 'absolute';
@@ -2284,7 +2285,7 @@ let ListView = class ListView extends Component {
                 }
             }
             if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
-                this.switchView(ul, ele);
+                this.switchView(ul, ele, false);
             }
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {

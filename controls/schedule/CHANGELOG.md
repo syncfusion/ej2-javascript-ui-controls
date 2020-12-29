@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### Schedule
+
+#### New Features
+
+- Provided public methods for the Scheduler to get and set the resource collections.
+
 ## 18.4.31 (2020-12-22)
 
 ### Schedule

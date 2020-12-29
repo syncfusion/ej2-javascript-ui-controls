@@ -851,7 +851,6 @@ export class QuickPopups {
             }
         }
         this.parent.renderTemplates();
-        this.parent.updateEventTemplates();
         let eventProp: PopupOpenEventArgs = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
             eventProp.data = data;

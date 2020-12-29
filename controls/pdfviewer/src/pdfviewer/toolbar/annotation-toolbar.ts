@@ -181,9 +181,9 @@ export class AnnotationToolbar {
         this.afterToolbarCreation();
         this.createStampContainer();
         this.createSignContainer();
-        this.showAnnotationToolbar(null);
         this.applyAnnotationToolbarSettings();
         this.updateToolbarItems();
+        this.showAnnotationToolbar(null);
     }
     public createMobileAnnotationToolbar(isEnable: boolean, isPath?: boolean): void {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {

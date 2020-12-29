@@ -702,7 +702,7 @@ export class Layout {
             return;
         }
         let width: number = element.width;
-        if (element instanceof FieldTextElementBox) {
+        if (element instanceof FieldTextElementBox && !this.isTocField(element.fieldBegin)) {
             text = this.documentHelper.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
             if (text !== '') {
                 (element as FieldTextElementBox).text = text;
@@ -6832,5 +6832,18 @@ export class Layout {
         }
         image.cropWidth = (image.widthScale - (image.x + right));
         image.cropHeight = (image.heightScale - (image.y + bottom));
+    }
+    /**
+     * @private
+     */
+    public isTocField(element: FieldElementBox): boolean {
+        if (element instanceof FieldElementBox) {
+            let nextElement: ElementBox = element.nextNode;
+            if (element instanceof FieldElementBox && element.fieldType === 0 && nextElement instanceof TextElementBox
+                && nextElement.text.trim().toLowerCase().indexOf('toc') !== -1) {
+                return true;
+            }
+        }
+        return false;
     }
 }

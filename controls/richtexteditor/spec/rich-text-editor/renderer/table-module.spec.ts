@@ -2376,6 +2376,40 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
+
+    describe("EJ2-44726 - Delete row issue ", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' - delete row deletes the previous row issue ', (done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `<table class="table table-bordered" style="width:1977.33px"><tbody><tr><td style="line-height:1.42857"><span style="font-weight:700"><span style="font-size:11px">Proceseigenaar</span></span></td><td style="line-height:1.42857">Directie<br></td></tr><tr><td style="line-height:1.42857" class=""><span style="font-weight:700"><span style="font-size:11px">Doel</span></span></td><td style="line-height:1.42857"><span style="font-size:11px">Zorgen dat wijzigingen in de organisatie op een juiste manier beoordeeld, uitgevoerd en geborgd worden incl. de risico's</span></td></tr><tr><td style="line-height:1.42857"><span style="font-weight:700"><span style="font-size:11px">Verwijzing</span></span></td><td style="line-height:1.42857"><span style="font-size:11px">ISO 9001</span></td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+            let domSelection: NodeSelection = new NodeSelection();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            let tableCell: Element = document.querySelectorAll('tr')[1].querySelectorAll('td')[0];
+            let eventsArg: any = { pageX: 50, pageY: 300, target: tableCell };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let rows: any = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(3);
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                rows = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(2);
+                expect(rows[0].textContent === "ProceseigenaarDirectie").toBe(true);
+                done();
+            }, 400);
+        });
+    });
     describe(" EJ2-28899: RTE text align property is not working properly in table header cell", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -2550,10 +2584,10 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
                     target.dispatchEvent(clickEvent);
                     setTimeout(() => {
-                        expect(rteEle.querySelectorAll('p').length).toBe(0);
-                        expect(rteEle.querySelectorAll('.e-content > p').length).toBe(0);
+                        expect(rteEle.querySelectorAll('p').length).toBe(1);
+                        expect(rteEle.querySelectorAll('.e-content > p').length).toBe(1);
                         expect(rteEle.querySelectorAll('.e-content > table').length).toBe(1);
-                        expect(rteEle.querySelector('.e-content').childNodes.length).toBe(1);
+                        expect(rteEle.querySelector('.e-content').childNodes.length).toBe(2);
                         let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
                         expect(table.querySelectorAll('tr').length === 3).toBe(true);
                         expect(table.querySelectorAll('td').length === 9).toBe(true);

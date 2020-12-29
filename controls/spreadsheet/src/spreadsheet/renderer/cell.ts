@@ -61,7 +61,14 @@ export class CellRenderer implements ICellRenderer {
         this.update(args);
         if (args.cell && args.td) {
             this.parent.notify(
-             cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
+                cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
+            if (args.td && args.td.children[0] && args.td.children[0].className === 'e-cf-databar') {
+                if (args.cell.style && args.cell.style.fontSize) {
+                    (args.td.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = args.cell.style.fontSize;
+                }
+                (args.td.children[0] as HTMLElement).style.height = '100%';
+                (args.td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
+            }
         }
         if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });

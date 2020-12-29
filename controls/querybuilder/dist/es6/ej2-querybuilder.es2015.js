@@ -565,6 +565,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     validateFields() {
         let isValid = true;
         if (this.allowValidation) {
+            let excludeOprs = ['isnull', 'isnotnull', 'isempty', 'isnotempty'];
             let i;
             let len;
             let fieldElem;
@@ -608,8 +609,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     if (rule.rules[index].value instanceof Array) {
                         valArray = rule.rules[index].value;
                     }
-                    if (isNullOrUndefined(rule.rules[index].value) || rule.rules[index].value === ''
-                        || (rule.rules[index].value instanceof Array && valArray.length < 1)) {
+                    if (excludeOprs.indexOf(rule.rules[index].operator) < 0 && (isNullOrUndefined(rule.rules[index].value) &&
+                        rule.rules[index].type !== 'date') || rule.rules[index].value === '' ||
+                        (rule.rules[index].value instanceof Array && valArray.length < 1)) {
                         let valElem = tempElem.querySelectorAll('.e-rule-value input.e-control');
                         isValid = false;
                         for (let j = 0, jLen = valElem.length; j < jLen; j++) {
@@ -1156,6 +1158,10 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             if (tempRule.operator.indexOf('null') > -1 || (tempRule.operator.indexOf('empty') > -1)) {
                 let parentElem = operatorElem.parentElement.querySelector('.e-rule-value');
+                let tooltipElem = parentElem.querySelector('.e-tooltip.e-input-group');
+                if (tooltipElem) {
+                    getComponent(tooltipElem, 'tooltip').destroy();
+                }
                 removeClass([parentElem], 'e-show');
                 addClass([parentElem], 'e-hide');
             }
@@ -1838,6 +1844,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             if (isRender) {
+                this.validatValue(rule, closest(target, '.e-rule-container'));
                 if (isBlazor() && !prevItemData.template) {
                     this.destroyControls(target);
                 }
@@ -1941,6 +1948,10 @@ let QueryBuilder = class QueryBuilder extends Component {
         let controlName = element.className.split(' e-')[idx];
         let i = parseInt(element.id.slice(-1), 2);
         switch (controlName) {
+            case 'checkbox':
+                let value = getComponent(element, controlName).value;
+                rule.value = (value !== '') ? value : undefined;
+                break;
             case 'textbox':
                 rule.value = getComponent(element, controlName).value;
                 break;
@@ -1992,7 +2003,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     rule.value = this.intl.formatDate(selectedDate, format);
                 }
                 else {
-                    rule.value = '';
+                    rule.value = selectedDate;
                 }
                 break;
             case 'multiselect':
@@ -2174,7 +2185,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
             }
-            this.validatValue(rule, index, ruleElem);
+            this.validatValue(rule, ruleElem, index);
         }
         else {
             if (target.className.indexOf('e-datepicker') > -1) {
@@ -2193,8 +2204,12 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
     }
-    validatValue(rule, index, ruleElem) {
-        if (this.allowValidation && rule.rules[index].value) {
+    validatValue(rule, ruleElem, index) {
+        if (!isNullOrUndefined(index)) {
+            rule = rule.rules[index];
+        }
+        let isObject = typeof (rule.value) === 'object';
+        if (this.allowValidation && (isNullOrUndefined(index) || (isObject ? rule.value.length > 0 : rule.value))) {
             let valElem = ruleElem.querySelectorAll('.e-rule-value .e-control');
             if (valElem[0].className.indexOf('e-tooltip') > -1) {
                 getComponent(valElem[0], 'tooltip').destroy();
@@ -3025,7 +3040,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                     rule.value = null;
                 }
             }
-            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && rule.value !== '')) {
+            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
+                rule.value !== undefined))) {
                 // tslint:disable-next-line:no-any
                 let customObj = rule.custom;
                 rule = {

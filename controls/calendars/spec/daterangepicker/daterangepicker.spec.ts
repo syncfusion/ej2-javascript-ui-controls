@@ -5016,7 +5016,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ startDate: new Date('8/10/2017'), endDate: new Date('8/11/2017') });
             daterangepicker.minDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') === null && daterangepicker.popupObj.element.querySelector('.e-end-date') === null).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error') && daterangepicker.startDate === null && daterangepicker.endDate === null).toBe(true);
         });
@@ -5024,7 +5026,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ startDate: new Date('8/10/2017'), endDate: new Date('8/19/2017') });
             daterangepicker.maxDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') === null && daterangepicker.popupObj.element.querySelector('.e-end-date') === null).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error') && daterangepicker.startDate === null && daterangepicker.endDate === null).toBe(true);
         });
@@ -5280,7 +5284,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ startDate: new Date('8/10/2017'), endDate: new Date('8/11/2017') }, true);
             daterangepicker.minDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') === null && daterangepicker.popupObj.element.querySelector('.e-end-date') === null).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error') && daterangepicker.startDate === null && daterangepicker.endDate === null).toBe(true);
         });
@@ -5288,7 +5294,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ startDate: new Date('8/10/2017'), endDate: new Date('8/11/2017') }, true);
             daterangepicker.minDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') === null && daterangepicker.popupObj.element.querySelector('.e-end-date') === null).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error') && daterangepicker.startDate === null && daterangepicker.endDate === null).toBe(true);
         });
@@ -5296,7 +5304,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ startDate: new Date('8/10/2017'), endDate: new Date('8/19/2017') }, true);
             daterangepicker.maxDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') === null && daterangepicker.popupObj.element.querySelector('.e-end-date') === null).toBe(true);
             expect(daterangepicker.inputWrapper.container.classList.contains('e-error') && daterangepicker.startDate === null && daterangepicker.endDate === null).toBe(true);
         });
@@ -5480,7 +5490,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/2017'), endDate: new Date('04/25/2017') });
             daterangepicker.minDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('04/24/2017') && +daterangepicker.endDate === +new Date('04/28/2017') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             let startDate: string = daterangepicker.globalize.formatDate(new Date('04/24/2017'), { format: daterangepicker.format, type: 'date', skeleton: 'yMd' });
@@ -5491,7 +5503,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/2017'), endDate: new Date('05/25/2017') });
             daterangepicker.maxDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('04/24/2017') && +daterangepicker.endDate === +new Date('04/28/2017') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             let startDate: string = daterangepicker.globalize.formatDate(new Date('04/24/2017'), { format: daterangepicker.format, type: 'date', skeleton: 'yMd' });
@@ -5660,7 +5674,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/2017'), endDate: new Date('04/25/2017') }, true);
             daterangepicker.minDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('04/24/2017') && +daterangepicker.endDate === +new Date('04/28/2017') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             let startDate: string = daterangepicker.globalize.formatDate(new Date('04/24/2017'), { format: daterangepicker.format, type: 'date', skeleton: 'yMd' });
@@ -5671,7 +5687,9 @@ describe('DateRangePicker', () => {
             daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/2017'), endDate: new Date('05/25/2017') }, true);
             daterangepicker.maxDays = 5;
             daterangepicker.dataBind();
-            <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('04/24/2017') && +daterangepicker.endDate === +new Date('04/28/2017') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             let startDate: string = daterangepicker.globalize.formatDate(new Date('04/24/2017'), { format: daterangepicker.format, type: 'date', skeleton: 'yMd' });
@@ -9106,6 +9124,152 @@ describe('DateRangePicker', () => {
             daterangepicker = new DateRangePicker();
             daterangepicker.appendTo('#date');
             expect(daterangepicker.element.getAttribute('data-val')).toBe('false');
+        });
+    });
+    describe('EJ2-42298- cannot select end date when dynamically changing property through select event', function () {
+        let daterangepicker: any;
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+        };
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'daterangepicker' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('dynamically change property on select event- minDays & maxDays', function () {
+            daterangepicker = new DateRangePicker({
+                minDays: 2,
+                maxDays: 4,
+                select: function() {
+                    daterangepicker.minDays = 3;
+                    daterangepicker.maxDays = 6;
+                }
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.isMobile = true;
+            mouseEventArgs.target = '.e-input-group-icon .e-range-icon .e-icons';
+            mouseEventArgs.type = 'click';
+            daterangepicker.rangeIconHandler(mouseEventArgs);
+            expect(daterangepicker.isPopupOpen()).toBe(true);
+            <HTMLElement>(daterangepicker.tableBodyElement.querySelectorAll('tr td')[1]).dispatchEvent(clickEvent);
+            <HTMLElement>(daterangepicker.tableBodyElement.querySelectorAll('tr td')[5]).dispatchEvent(clickEvent);
+            expect(daterangepicker.minDays).toBe(3);
+            expect(daterangepicker.maxDays).toBe(6);
+            expect(daterangepicker.isPopupOpen()).toBe(true);
+        });
+        it('dynamically change minDays greater than selected end date when strictmode is disabled', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/12/2020')
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.minDays = 3;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).toBe(null);
+            expect(daterangepicker.endDate).toBe(null);
+        });
+        it('dynamically change minDays greater than selected end date when strictmode is enabled', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/12/2020'),
+                strictMode: true
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.minDays = 3;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).not.toBe(null);
+            expect(daterangepicker.endDate).not.toBe(null);
+        });
+        it('dynamically change maxDays less than selected end date when strictmode is disabled', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/17/2020'),
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.maxDays = 3;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).toBe(null);
+            expect(daterangepicker.endDate).toBe(null);
+        });
+        it('dynamically change maxDays less than selected end date when strictmode is enabled', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/17/2020'),
+                strictMode: true
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.maxDays = 3;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).not.toBe(null);
+            expect(daterangepicker.endDate).not.toBe(null);
+        });
+        it('dynamically change minDays greated than maxDays when strictmode is enabled', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/17/2020'),
+                strictMode: true
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.maxDays = 3;
+            daterangepicker.dataBind();
+            daterangepicker.minDays = 4;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).not.toBe(null);
+            expect(daterangepicker.endDate).not.toBe(null);
+        });
+        it('dynamically change minDays greated than maxDays when strictmode is disabled', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/17/2020'),
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            daterangepicker.maxDays = 3;
+            daterangepicker.dataBind();
+            daterangepicker.minDays = 4;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).toBe(null);
+            expect(daterangepicker.endDate).toBe(null);
+        });
+        it('dynamically change minDays greated than maxDays when strictmode is enabled and popup opened', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/17/2020'),
+                strictMode: true
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.maxDays = 3;
+            daterangepicker.dataBind();
+            daterangepicker.minDays = 4;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).not.toBe(null);
+            expect(daterangepicker.endDate).not.toBe(null);
+        });
+        it('dynamically change minDays greated than maxDays when strictmode is disabled and popup opened', function () {
+            daterangepicker = new DateRangePicker({
+                startDate: new Date('11/11/2020'),
+                endDate: new Date('11/17/2020'),
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.maxDays = 3;
+            daterangepicker.dataBind();
+            daterangepicker.minDays = 4;
+            daterangepicker.dataBind();
+            expect(daterangepicker.startDate).toBe(null);
+            expect(daterangepicker.endDate).toBe(null);
         });
     });
 });

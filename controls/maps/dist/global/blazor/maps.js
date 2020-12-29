@@ -4013,9 +4013,11 @@ var Marker = /** @class */ (function () {
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(_this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(_this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                        if ((currentLayer.markerClusterSettings.allowClustering && currentLayer.layerType !== 'OSM') || !_this.maps.zoomSettings.enable) {
-                            clusterTemplate(currentLayer, markerTemplateEle, _this.maps, layerIndex, _this.markerSVGObject, layerElement, false, false);
-                            _this.maps.renderReactTemplates();
+                        if (!_this.maps.checkInitialRender) {
+                            if (currentLayer.markerClusterSettings.allowClustering) {
+                                clusterTemplate(currentLayer, markerTemplateEle, _this.maps, layerIndex, _this.markerSVGObject, layerElement, false, false);
+                                _this.maps.renderReactTemplates();
+                            }
                         }
                     }
                 });
@@ -12054,8 +12056,10 @@ var Zoom = /** @class */ (function () {
                     }
                     if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts - nullCount) && getElementByID(_this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(_this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
-                        if (currentLayers.markerClusterSettings.allowClustering) {
-                            clusterTemplate(currentLayers, markerTemplateElements, _this.maps, layerIndex, markerSVGObject, layerElement, false, true);
+                        if (scale <= 1) {
+                            if (currentLayers.markerClusterSettings.allowClustering) {
+                                clusterTemplate(currentLayers, markerTemplateElements, _this.maps, layerIndex, markerSVGObject, layerElement, false, true);
+                            }
                         }
                     }
                 });

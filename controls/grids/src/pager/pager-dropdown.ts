@@ -98,13 +98,14 @@ export class PagerDropDown {
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value as string, 10) });
     }
     public refresh(): void {
+        if (this.pagerCons) {
         if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
             this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
                 this.pagerModule.getLocalizedLabel('pagerAllDropDown');
         } else {
             this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
                 this.pagerModule.getLocalizedLabel('pagerDropDown');
-        }
+        } }
     }
 
     private beforeValueChange(prop: IPager): void {
@@ -116,7 +117,8 @@ export class PagerDropDown {
     private convertValue(pageSizeValue: (number | string)[]): (number | string)[] {
         let item: (number | string)[] = pageSizeValue;
         for (let i: number = 0; i < item.length; i++) {
-            item[i] = parseInt(item[i] as string, 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i] as string);
+            item[i] = parseInt(item[i] as string, 10) ? item[i].toString() : (this.pagerModule.getLocalizedLabel(item[i] as string) !== '')
+                ? this.pagerModule.getLocalizedLabel(item[i] as string) : item[i];
         }
         return item as string[];
     }

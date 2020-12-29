@@ -5015,8 +5015,11 @@ export class Annotation {
         }
         return annotationInteraction;
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private checkIsLockSettings(annotation: any): boolean {
+    public checkIsLockSettings(annotation: any): boolean {
         // tslint:disable-next-line
         let isLocked: boolean = false;
         if (annotation) {

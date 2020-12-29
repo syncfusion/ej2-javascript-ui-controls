@@ -1,5 +1,5 @@
 import { addClass, createElement, extend, isNullOrUndefined, closest, setStyleAttribute } from '@syncfusion/ej2-base';
-import { formatUnit, remove, removeClass, isBlazor } from '@syncfusion/ej2-base';
+import { formatUnit, remove, removeClass } from '@syncfusion/ej2-base';
 import { ActionBaseArgs, ResizeEdges, DragEventArgs, ResizeEventArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
@@ -59,12 +59,6 @@ export class ActionBase {
     public saveChangedData(eventArgs: DragEventArgs | ResizeEventArgs): void {
         this.parent.activeEventData.event = this.actionObj.event;
         this.parent.currentAction = 'Save';
-        if (isBlazor()) {
-            (eventArgs.data[this.parent.eventFields.startTime] as Date) = this.parent.getDateTime(
-                (eventArgs.data[this.parent.eventFields.startTime] as Date));
-            (eventArgs.data[this.parent.eventFields.endTime] as Date) = this.parent.getDateTime(
-                (eventArgs.data[this.parent.eventFields.endTime] as Date));
-        }
         let eventObj: { [key: string]: Object } = eventArgs.data;
         let isSameResource: boolean = (this.parent.activeViewOptions.group.resources.length > 0) ?
             parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;

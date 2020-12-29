@@ -1,4 +1,4 @@
-import { BlazorDotnetObject, Browser, EventHandler, getNumericObject, getValue, Internationalization } from '@syncfusion/ej2-base';
+import { BlazorDotnetObject, Browser, EventHandler } from '@syncfusion/ej2-base';
 
 /**
  * Blazor numeric texbot interop handler
@@ -64,12 +64,6 @@ class SfNumericTextBox {
     private keyPressHandler(event: KeyboardEvent): boolean {
         if (!this.options.enabled || this.options.readonly) { return true; }
         let action: number = event.keyCode;
-        if (!Browser.isDevice && Browser.info.version === IE_VERSION && action === ENTER) {
-            let inputValue: string = (this.element as HTMLInputElement).value;
-            let parsedInput: number = new Internationalization(this.options.locale).getNumberParser({ format: 'n' })(inputValue);
-            this.dotNetRef.invokeMethodAsync(SERVER_VALUE_UPDATE, parsedInput, event);
-            return true;
-        }
         if (event.which === LEFT_BUTTON || event.metaKey || event.ctrlKey || action === BACK_SPACE || action === ENTER) { return true; }
         let currentChar: string = String.fromCharCode(event.which);
         let text: string = (this.element as HTMLInputElement).value;
@@ -105,8 +99,7 @@ class SfNumericTextBox {
         }
     };
     private numericRegex(): RegExp {
-        let numericObject: Object = getNumericObject(this.options.locale);
-        let decimalSeparator: string = getValue(DECIMAL, numericObject);
+        let decimalSeparator: string = this.options.decimalSeparator;
         let fractionRule: string = '*';
         if (decimalSeparator === '.') {
             decimalSeparator = '\\' + decimalSeparator;
@@ -293,5 +286,6 @@ interface INumericOptions {
     locale: string;
     validateDecimalOnType: boolean;
     decimals: number;
+    decimalSeparator: string;
 }
 export default NumericTextBox;

@@ -1,5 +1,5 @@
 import { addClass, removeClass, Touch, remove, EventHandler, TapEventArgs, Browser } from '@syncfusion/ej2-base';
-import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ActionEventArgs, NavigatingEventArgs, LayoutData } from '../base/interface';
 import * as events from '../base/constant';
@@ -35,7 +35,7 @@ export class ScheduleTouch {
     }
 
     private scrollHandler(e: ScrollEventArgs): void {
-        if (isBlazor() || this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
+        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
             (e.originalEvent && ((<HTMLElement>e.originalEvent.target).classList.contains(cls.APPOINTMENT_CLASS) ||
                 closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS)))) {
             return;
@@ -226,9 +226,7 @@ export class ScheduleTouch {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        if (!isBlazor()) {
-            util.removeChildren(this.element);
-        }
+        util.removeChildren(this.element);
         removeClass([this.element], cls.TRANSLATE_CLASS);
     }
     /**

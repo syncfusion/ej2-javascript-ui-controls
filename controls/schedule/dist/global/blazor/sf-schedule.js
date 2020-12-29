@@ -618,6 +618,7 @@ var VerticalEvent = /** @class */ (function () {
             sf.base.EventHandler.clearEvents(moreIndicatorElement[i]);
             sf.base.EventHandler.add(moreIndicatorElement[i], 'click', this.rowExpandCollapse, this);
         }
+        this.parent.setDimensions();
     };
     VerticalEvent.prototype.getAppWidth = function (overlapEvents) {
         var width = this.parent.options.currentView === 'Day' ? 97 : 94;
@@ -670,6 +671,7 @@ var VerticalEvent = /** @class */ (function () {
         }
         this.setAllDayRowHeight(rowHeight);
         this.addOrRemoveClass();
+        this.parent.setDimensions();
     };
     VerticalEvent.prototype.addOrRemoveClass = function () {
         var _this = this;
@@ -3949,7 +3951,7 @@ var ActionBase = /** @class */ (function () {
         if (isCloneElement === void 0) { isCloneElement = false; }
         var appointmentWrapper = sf.base.createElement('div', {
             className: APPOINTMENT_CLASS,
-            innerHTML: this.cloneEventDetail.innerText
+            innerHTML: this.cloneEventDetail.outerHTML
         });
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             appointmentWrapper.setAttribute('data-group-index', resIndex.toString());

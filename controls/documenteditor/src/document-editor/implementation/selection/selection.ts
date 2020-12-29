@@ -7764,7 +7764,7 @@ export class Selection {
             this.pasteDropDwn = new DropDownButton({
                 items: items, iconCss: 'e-icons e-de-paste', select: this.pasteOptions
             });
-            this.pasteDropDwn.appendTo('#' + this.owner.containerId + '_iconsplitbtn');
+            this.pasteDropDwn.appendTo(splitButtonEle);
         }
         this.pasteElement.style.display = 'block';
         this.pasteElement.style.position = 'absolute';

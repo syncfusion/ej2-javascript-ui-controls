@@ -17,7 +17,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Selector } from '../../../src/diagram/objects/node';
 /**
  * Organizational Chart
-Â */
+ */
 
 let assitants: object[] = [
     { 'Id': 'parent', 'Role': 'Board', 'color': '#71AF17' },
@@ -3409,15 +3409,198 @@ describe('Layout children issue', () => {
     beforeAll(() => {
         ele = createElement('div', { id: 'diagramdataMap' });
         document.body.appendChild(ele);
-        
-    var data = [
+
+        var data = [
+            {
+                Id: "parent",
+                Role: "Board",
+                color: "#71AF17"
+            },
+
+
+            {
+                Id: "6",
+                Role: "Design Manager",
+                Manager: "parent",
+                ChartType: "right",
+                color: "#1859B7"
+            },
+            {
+                Id: "7",
+                Role: "Design Supervisor",
+                Manager: "6",
+                color: "#2E95D8"
+            },
+            {
+                Id: "8",
+                Role: "Development Supervisor",
+                Manager: "6",
+                color: "#2E95D8"
+            },
+            {
+                Id: "9",
+                Role: "Drafting Supervisor",
+                Manager: "6",
+                color: "#2E95D8"
+            },
+            {
+                Id: "10",
+                Role: "Operations Manager",
+                Manager: "parent",
+                ChartType: "right",
+                color: "#1859B7"
+            },
+            {
+                Id: "11",
+                Role: "Statistics Department",
+                Manager: "10",
+                color: "#2E95D8"
+            },
+            {
+                Id: "12",
+                Role: "Logistics Department",
+                Manager: "10",
+                color: "#2E95D8"
+            },
+            {
+                Id: "16",
+                Role: "Marketing Manager",
+                Manager: "parent",
+                ChartType: "right",
+                color: "#1859B7"
+            },
+            {
+                Id: "17",
+                Role: "Overseas Sales Manager",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "18",
+                Role: "Petroleum Manager",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "20",
+                Role: "Service Department Manager",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "21",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "22",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "23",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "24",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            }
+        ];
+        var items = new DataManager(data, new Query().take(7));
+        function nodeDefaultss(obj: any) {
+            obj.backgroundColor = (obj.data).color;
+            obj.style = { fill: "none", strokeColor: "none", color: "white" };
+            obj.expandIcon = {
+                height: 10,
+                width: 10,
+                shape: "None",
+                fill: "lightgray",
+                offset: { x: 0.5, y: 1 }
+            };
+            obj.expandIcon.verticalAlignment = "Center";
+            obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+            obj.collapseIcon.offset = { x: 0.5, y: 1 };
+            obj.collapseIcon.verticalAlignment = "Center";
+            obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+            obj.collapseIcon.height = 10;
+            obj.collapseIcon.width = 10;
+            obj.collapseIcon.shape = "None";
+            obj.collapseIcon.fill = "lightgray";
+            obj.width = 120;
+            obj.height = 30;
+            return obj;
+        }
+        function connectorDefaultss(connector: any) {
+            connector.targetDecorator.shape = "None";
+            connector.type = "Orthogonal";
+            connector.constraints = 0;
+            connector.cornerRadius = 0;
+            return connector;
+        }
+
+        diagram = new Diagram({
+            width: '900px', height: '550px',
+            layout: {
+                type: "OrganizationalChart",
+                getLayoutInfo: (node: any, options: any) => {
+                    options.type = "Balanced";
+                    options.orientation = "Horizontal";
+                }
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'Manager', dataSource: items,
+                doBinding: (nodeModel: any, data: any, diagram: any) => {
+                    nodeModel.shape = {
+                        type: "Text",
+                        content: (data).Role,
+                        margin: { left: 10, right: 10, top: 10, bottom: 10 }
+                    };
+                },
+            },
+            getNodeDefaults: nodeDefaultss,
+            getConnectorDefaults: connectorDefaultss
+        });
+        diagram.appendTo('#diagramdataMap');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Layout children break issue', (done: Function) => {
+        debugger
+        console.log("check values")
+        expect(diagram.nodes[9].offsetX === 535 && diagram.nodes[10].offsetX === 705
+            && diagram.nodes[11].offsetX === 875 && diagram.nodes[12].offsetX === 1045
+            && diagram.nodes[13].offsetX === 705 && diagram.nodes[14].offsetX === 875).toBe(true)
+        done();
+    });
+
+});
+
+
+describe('EJ2-44782-Child nodes are not rendered properly in Organizational chart', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    function nodeDefaults(node: any) {
+        node.annotations[0].style.color = "white";
+        node.width = 120;
+        node.height = 50;
+        node.expandIcon = { shape: 'Minus' };
+        node.collapseIcon = { shape: 'Plus' };
+        return node;
+    }
+    var data19 = [
         {
             Id: "parent",
             Role: "Board",
             color: "#71AF17"
         },
-
-      
         {
             Id: "6",
             Role: "Design Manager",
@@ -3510,80 +3693,560 @@ describe('Layout children issue', () => {
             Role: "Quality Control Department",
             Manager: "16",
             color: "#2E95D8"
+        },
+        {
+            Id: "25",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "26",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "27",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "28",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "29",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "30",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "31",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "32",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        }, {
+            Id: "33",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "34",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        }, {
+            Id: "35",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "36",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+    ];
+    var data17 = [
+        {
+            Id: "parent",
+            Role: "Board",
+            color: "#71AF17"
+        },
+        {
+            Id: "6",
+            Role: "Design Manager",
+            Manager: "parent",
+            ChartType: "right",
+            color: "#1859B7"
+        },
+        {
+            Id: "7",
+            Role: "Design Supervisor",
+            Manager: "6",
+            color: "#2E95D8"
+        },
+        {
+            Id: "8",
+            Role: "Development Supervisor",
+            Manager: "6",
+            color: "#2E95D8"
+        },
+        {
+            Id: "9",
+            Role: "Drafting Supervisor",
+            Manager: "6",
+            color: "#2E95D8"
+        },
+        {
+            Id: "10",
+            Role: "Operations Manager",
+            Manager: "parent",
+            ChartType: "right",
+            color: "#1859B7"
+        },
+        {
+            Id: "11",
+            Role: "Statistics Department",
+            Manager: "10",
+            color: "#2E95D8"
+        },
+        {
+            Id: "12",
+            Role: "Logistics Department",
+            Manager: "10",
+            color: "#2E95D8"
+        },
+        {
+            Id: "16",
+            Role: "Marketing Manager",
+            Manager: "parent",
+            ChartType: "right",
+            color: "#1859B7"
+        },
+        {
+            Id: "17",
+            Role: "Overseas Sales Manager",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "18",
+            Role: "Petroleum Manager",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "20",
+            Role: "Service Department Manager",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "21",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "22",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "23",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "24",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "25",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "26",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "27",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "28",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "29",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "30",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "31",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "32",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        }, {
+            Id: "33",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "34",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
         }
     ];
-    var items = new DataManager(data, new Query().take(7));
-    function nodeDefaultss(obj: any) {
-        obj.backgroundColor = (obj.data).color;
-        obj.style = { fill: "none", strokeColor: "none", color: "white" };
-        obj.expandIcon = {
-            height: 10,
-            width: 10,
-            shape: "None",
-            fill: "lightgray",
-            offset: { x: 0.5, y: 1 }
-        };
-        obj.expandIcon.verticalAlignment = "Center";
-        obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
-        obj.collapseIcon.offset = { x: 0.5, y: 1 };
-        obj.collapseIcon.verticalAlignment = "Center";
-        obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
-        obj.collapseIcon.height = 10;
-        obj.collapseIcon.width = 10;
-        obj.collapseIcon.shape = "None";
-        obj.collapseIcon.fill = "lightgray";
-        obj.width = 120;
-        obj.height = 30;
-        return obj;
-    }
-    function connectorDefaultss(connector: any) {
-        connector.targetDecorator.shape = "None";
-        connector.type = "Orthogonal";
-        connector.constraints = 0;
-        connector.cornerRadius = 0;
+    var data13 = [
+        {
+            Id: "parent",
+            Role: "Board",
+            color: "#71AF17"
+        },
+        {
+            Id: "6",
+            Role: "Design Manager",
+            Manager: "parent",
+            ChartType: "right",
+            color: "#1859B7"
+        },
+        {
+            Id: "7",
+            Role: "Design Supervisor",
+            Manager: "6",
+            color: "#2E95D8"
+        },
+        {
+            Id: "8",
+            Role: "Development Supervisor",
+            Manager: "6",
+            color: "#2E95D8"
+        },
+        {
+            Id: "9",
+            Role: "Drafting Supervisor",
+            Manager: "6",
+            color: "#2E95D8"
+        },
+        {
+            Id: "10",
+            Role: "Operations Manager",
+            Manager: "parent",
+            ChartType: "right",
+            color: "#1859B7"
+        },
+        {
+            Id: "11",
+            Role: "Statistics Department",
+            Manager: "10",
+            color: "#2E95D8"
+        },
+        {
+            Id: "12",
+            Role: "Logistics Department",
+            Manager: "10",
+            color: "#2E95D8"
+        },
+        {
+            Id: "16",
+            Role: "Marketing Manager",
+            Manager: "parent",
+            ChartType: "right",
+            color: "#1859B7"
+        },
+        {
+            Id: "17",
+            Role: "Overseas Sales Manager",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "18",
+            Role: "Petroleum Manager",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "20",
+            Role: "Service Department Manager",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "21",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "22",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "23",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "24",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "25",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "26",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "27",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "28",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "29",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        },
+        {
+            Id: "30",
+            Role: "Quality Control Department",
+            Manager: "16",
+            color: "#2E95D8"
+        }
+    ];
+    //The below method used to define the common settings for connectors.
+    function connectorDefaults(connector: any) {
+        connector.type = 'Orthogonal';
+        connector.targetDecorator = { shape: 'None' };
         return connector;
     }
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMap' });
+        document.body.appendChild(ele);
+
+        var data11 = [
+            {
+                Id: "parent",
+                Role: "Board",
+                color: "#71AF17"
+            },
+            {
+                Id: "16",
+                Role: "Marketing Manager",
+                Manager: "parent",
+                ChartType: "right",
+                color: "#1859B7"
+            },
+            {
+                Id: "17",
+                Role: "Overseas Sales Manager",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "18",
+                Role: "Petroleum Manager",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "20",
+                Role: "Service Department Manager",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "21",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "22",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "23",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "24",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "25",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "26",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "27",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+            {
+                Id: "28",
+                Role: "Quality Control Department",
+                Manager: "16",
+                color: "#2E95D8"
+            },
+        ];
+        var items = new DataManager(data11, new Query().take(7));
+        function nodeDefaultss(obj: any) {
+            obj.backgroundColor = (obj.data).color;
+            obj.style = { fill: "none", strokeColor: "none", color: "white" };
+            obj.expandIcon = {
+                height: 10,
+                width: 10,
+                shape: "None",
+                fill: "lightgray",
+                offset: { x: 0.5, y: 1 }
+            };
+            obj.expandIcon.verticalAlignment = "Center";
+            obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+            obj.collapseIcon.offset = { x: 0.5, y: 1 };
+            obj.collapseIcon.verticalAlignment = "Center";
+            obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+            obj.collapseIcon.height = 10;
+            obj.collapseIcon.width = 10;
+            obj.collapseIcon.shape = "None";
+            obj.collapseIcon.fill = "lightgray";
+            obj.width = 120;
+            obj.height = 30;
+            return obj;
+        }
+        function connectorDefaultss(connector: any) {
+            connector.targetDecorator.shape = "None";
+            connector.type = "Orthogonal";
+            connector.constraints = 0;
+            connector.cornerRadius = 0;
+            return connector;
+        }
 
         diagram = new Diagram({
-                width: '900px', height: '550px',
-                layout: {
-                    type: "OrganizationalChart",
-                    getLayoutInfo: (node: any, options: any) => {
-                        options.type = "Balanced";
-                        options.orientation = "Horizontal";
-                    }
+            width: '900px', height: '550px',
+            layout: {
+                type: "OrganizationalChart",
+                getLayoutInfo: (node: any, options: any) => {
+                    options.type = "Balanced";
+                    options.orientation = "Horizontal";
+                }
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'Manager', dataSource: items,
+                doBinding: (nodeModel: any, data: any, diagram: any) => {
+                    nodeModel.shape = {
+                        type: "Text",
+                        content: (data).Role,
+                        margin: { left: 10, right: 10, top: 10, bottom: 10 }
+                    };
                 },
-                dataSourceSettings: {
-                    id: 'Id', parentId: 'Manager', dataSource: items,
-                    doBinding: (nodeModel: any, data: any, diagram: any) => {
-                        nodeModel.shape = {
-                            type: "Text",
-                            content: (data).Role,
-                            margin: { left: 10, right: 10, top: 10, bottom: 10 }
-                        };
-                    },
-                },
-                getNodeDefaults: nodeDefaultss,
-                getConnectorDefaults: connectorDefaultss
-            });
+            },
+            getNodeDefaults: nodeDefaultss,
+            getConnectorDefaults: connectorDefaultss
+        });
         diagram.appendTo('#diagramdataMap');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
     });
-    it('Layout children break issue', (done: Function) => {
-
-          console.log("check values")
-          expect(diagram.nodes[9].offsetX === 535&&diagram.nodes[10].offsetX === 705
-          &&diagram.nodes[11].offsetX === 875&&diagram.nodes[12].offsetX === 1045
-          &&diagram.nodes[13].offsetX === 620&&diagram.nodes[14].offsetX === 790).toBe(true)
-            done();
-        });
-
+    it('Rendering with 11 child nodes', (done: Function) => {
+        console.log("check values Rendering with 11 child nodes")
+        expect(diagram.nodes[10].offsetX === 365 && diagram.nodes[10].offsetY === 395
+            && diagram.nodes[11].offsetX === 535 && diagram.nodes[11].offsetY === 395
+            && diagram.nodes[12].offsetX === 450 && diagram.nodes[12].offsetY === 475).toBe(true)
+        done();
+    });
+    it('Rendering with 13 child nodes', (done: Function) => {
+        console.log("check values Rendering with 13 child nodes")
+        var items = new DataManager(data13, new Query().take(7));
+        diagram.dataSourceSettings.dataSource = items;
+        diagram.dataBind();
+        expect(diagram.nodes[20].offsetX === 1045 && diagram.nodes[20].offsetY === 395
+            && diagram.nodes[21].offsetX === 790 && diagram.nodes[21].offsetY === 475).toBe(true)
+        done();
+    });
+    it('Rendering with 17 child nodes', (done: Function) => {
+        console.log("check values Rendering with 17 child nodes")
+        var items = new DataManager(data17, new Query().take(7));
+        diagram.dataSourceSettings.dataSource = items;
+        diagram.dataBind();
+        expect(diagram.nodes[23].offsetX === 875 && diagram.nodes[23].offsetY === 475
+            && diagram.nodes[24].offsetX === 1045 && diagram.nodes[24].offsetY === 475
+            && diagram.nodes[25].offsetX === 790 && diagram.nodes[25].offsetY === 555).toBe(true)
+        done();
+    });
+    it('Rendering with 19 child nodes', (done: Function) => {
+        console.log("check values Rendering with 19 child nodes")
+        var items = new DataManager(data19, new Query().take(7));
+        diagram.dataSourceSettings.dataSource = items;
+        diagram.dataBind();
+        expect(diagram.nodes[25].offsetX === 705 && diagram.nodes[25].offsetY === 555
+            && diagram.nodes[26].offsetX === 875 && diagram.nodes[26].offsetY === 555
+            && diagram.nodes[27].offsetX === 790 && diagram.nodes[27].offsetY === 635).toBe(true)
+        done();
+    });
 });
-
-
 describe('EJ2-44231-Exception occurs while change the datasource for layout at runtime', () => {
     let diagram: Diagram;
     let ele: HTMLElement;

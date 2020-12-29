@@ -2,9 +2,10 @@
  * CheckBox Default Sample
  */
 import { QueryBuilder , RuleModel, ColumnsModel} from './../../../src/query-builder/index';
-import { getComponent} from '@syncfusion/ej2-base';
+import { getComponent, createElement } from '@syncfusion/ej2-base';
 import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { Slider, SliderTickEventArgs } from '@syncfusion/ej2-inputs';
+import { CheckBox } from '@syncfusion/ej2-buttons';
 MultiSelect.Inject(CheckBoxSelection);
 let elem: HTMLElement;
 let dropDownObj: DropDownList;
@@ -53,7 +54,30 @@ let filter: ColumnsModel [] = [
         }
     }},
     { field: 'OrderID', label: 'OrderID', type: 'number'},
-    { field: 'In_stock', label: 'In_stock', type: 'boolean'},
+    { field: 'In_stock', label: 'In_stock', type: 'boolean', template: {
+        create: () => {
+            return createElement("input", { attrs: { type: "checkbox" } });
+          },
+          destroy: (args: { elementId: string }) => {
+            (getComponent(
+              document.getElementById(args.elementId),
+              "checkbox"
+            ) as CheckBox).destroy();
+          },
+          write: (args: { elements: Element; values: string }) => {
+            let checked: boolean = args.values === "Yes" ? true : false;
+            const boxObj: CheckBox = new CheckBox({
+              label: "In Stock",
+              checked: checked,
+              value: args.values === "Yes" ? "Yes": "No",
+              change: (e: any) => {
+                queryBldrObj.notifyChange(e.checked ? "Yes" : "No", e.event.target);
+              }
+            });
+            boxObj.appendTo("#" + args.elements.id);
+          }
+        }
+    },
     { field: 'Date', label: 'Date', type: 'date'},
     { field: 'Price', label: 'Price', type: 'number',  operators: [{key: 'equal', value: 'equal'},
      {key: 'greaterthan', value: 'greaterthan'}, {key: 'lessthan', value: 'lessthan'}], template: {

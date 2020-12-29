@@ -164,6 +164,96 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+        it('checking the Default labelOnTrack placement', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '195').toBe(true);
+            };            
+            progress.labelOnTrack = false;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Near labelOnTrack placement', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '46').toBe(true);
+            };
+            progress.labelStyle.textAlignment = 'Near';
+            progress.labelOnTrack = false;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Center labelOnTrack placement', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '195').toBe(true);
+            };
+            progress.labelStyle.textAlignment = 'Center';
+            progress.labelOnTrack = false;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Far labelOnTrack placement', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '354').toBe(true);
+            };
+            progress.labelStyle.textAlignment = 'Far';
+            progress.labelOnTrack = false;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Default labelOnTrack placement in RTL', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '46').toBe(true);
+            };
+            progress.enableRtl = true;
+            progress.labelOnTrack = false;            
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Near labelOnTrack placement in RTL', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '354').toBe(true);
+            };
+            progress.labelOnTrack = false;
+            progress.enableRtl = true;
+            progress.labelStyle.textAlignment = 'Near';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Center labelOnTrack placement in RTL', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '195').toBe(true);
+            };
+            progress.labelOnTrack = false;
+            progress.enableRtl = true;
+            progress.labelStyle.textAlignment = 'Center';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
+        it('checking the Far labelOnTrack placement in RTL', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_linearLabel');
+                pos = path.getAttribute('x');
+                expect(pos === '46').toBe(true);
+            };
+            progress.enableRtl = true;
+            progress.labelOnTrack = false;
+            progress.labelStyle.textAlignment = 'Far';
+            progress.loaded = loaded;
+            progress.refresh();
+        });
         it('checking the textRender event cancel', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_linearLabel');

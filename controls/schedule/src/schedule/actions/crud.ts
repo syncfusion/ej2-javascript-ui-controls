@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { getRecurrenceStringFromDate, generate } from '../../recurrence-editor/date-generator';
 import { ActionEventArgs, EventFieldsMapping, SaveChanges, CrudArgs, CrudAction, TdData } from '../base/interface';
@@ -47,7 +47,7 @@ export class Crud {
             this.parent.resizeModule.actionObj.element.style.display = 'none';
         }
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.activeViewOptions.group.allowGroupEdit
-            && !this.parent.rowAutoHeight  && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
+            && !this.parent.rowAutoHeight && !this.parent.virtualScrollModule && this.parent.activeViewOptions.group.byGroupID) {
             if (args.requestType === 'eventCreated' || args.requestType === 'eventRemoved') {
                 this.crudObj.isCrudAction = true;
                 this.crudObj.sourceEvent = [];
@@ -82,7 +82,7 @@ export class Crud {
             }).catch((e: ReturnType) => {
                 if (this.parent.isDestroyed) { return; }
                 // tslint:disable:no-any
-                this.parent.trigger(events.actionFailure, { error: isBlazor() ? (e as any).error.toString() : e });
+                this.parent.trigger(events.actionFailure, { error: e });
                 // tslint:disable:no-any
             });
         }
@@ -100,11 +100,8 @@ export class Crud {
                 requestType: 'eventCreate', cancel: false,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
-            if (!isBlazor()) {
-                args.data = addEvents;
-            }
+            args.data = addEvents;
             this.parent.trigger(events.actionBegin, args, (addArgs: ActionEventArgs) => {
-                this.serializeData(addArgs.addedRecords);
                 if (!addArgs.cancel) {
                     let fields: EventFieldsMapping = this.parent.eventFields;
                     let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -155,11 +152,8 @@ export class Crud {
                     requestType: 'eventChange', cancel: false,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
-                if (!isBlazor()) {
-                    args.data = eventData;
-                }
+                args.data = eventData;
                 this.parent.trigger(events.actionBegin, args, (saveArgs: ActionEventArgs) => {
-                    this.serializeData(saveArgs.changedRecords);
                     if (!saveArgs.cancel) {
                         let promise: Promise<Object>;
                         let fields: EventFieldsMapping = this.parent.eventFields;
@@ -217,11 +211,8 @@ export class Crud {
                     requestType: 'eventRemove', cancel: false,
                     addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
-                if (!isBlazor()) {
-                    args.data = eventData;
-                }
+                args.data = eventData;
                 this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
-                    this.serializeData(deleteArgs.deletedRecords);
                     if (!deleteArgs.cancel) {
                         let promise: Promise<Object>;
                         let fields: EventFieldsMapping = this.parent.eventFields;
@@ -262,11 +253,8 @@ export class Crud {
             requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = occurenceData;
-        }
+        args.data = occurenceData;
         this.parent.trigger(events.actionBegin, args, (occurenceArgs: ActionEventArgs) => {
-            this.serializeData(occurenceArgs.changedRecords);
             if (!occurenceArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -332,11 +320,8 @@ export class Crud {
             requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = followData;
-        }
+        args.data = followData;
         this.parent.trigger(events.actionBegin, args, (followArgs: ActionEventArgs) => {
-            this.serializeData(followArgs.changedRecords);
             if (!followArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -409,11 +394,8 @@ export class Crud {
             requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = seriesData;
-        }
+        args.data = seriesData;
         this.parent.trigger(events.actionBegin, args, (seriesArgs: ActionEventArgs) => {
-            this.serializeData(seriesArgs.changedRecords);
             if (!seriesArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -478,11 +460,8 @@ export class Crud {
             requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
-        if (!isBlazor()) {
-            args.data = deleteData;
-        }
+        args.data = deleteData;
         this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
-            this.serializeData(deleteArgs.deletedRecords);
             if (!deleteArgs.cancel) {
                 let fields: EventFieldsMapping = this.parent.eventFields;
                 let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -519,16 +498,6 @@ export class Crud {
                 this.refreshData(crudArgs);
             }
         });
-    }
-
-    public serializeData(eventData: Object[]): void {
-        if (isBlazor()) {
-            let eventFields: EventFieldsMapping = this.parent.eventFields;
-            for (let event of eventData as { [key: string]: Date }[]) {
-                event[eventFields.startTime] = this.parent.getDateTime(event[eventFields.startTime]);
-                event[eventFields.endTime] = this.parent.getDateTime(event[eventFields.endTime]);
-            }
-        }
     }
 
     private getParentEvent(event: { [key: string]: Object }, isParent: boolean = false): { [key: string]: Object } {

@@ -1238,6 +1238,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.switchView = function (fromView, toView, reverse) {
         var _this = this;
         if (fromView && toView) {
+            this.trigger('actionBegin', { startList: fromView, endList: toView, isReverse: reverse });
             var fPos_1 = fromView.style.position;
             var overflow_1 = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
             fromView.style.position = 'absolute';
@@ -2321,7 +2322,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
-                this.switchView(ul, ele);
+                this.switchView(ul, ele, false);
             }
             this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {

@@ -397,8 +397,10 @@ export class DataValidation {
             let maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            let minimumText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
-            let maximumText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            let minimumText: HTMLElement =
+                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
+            let maximumText: HTMLElement =
+                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             let minimumInp: HTMLElement = this.parent.createElement('input', {
                 id: 'minvalue',
                 className: 'e-input', attrs: { value: value1 }
@@ -478,8 +480,10 @@ export class DataValidation {
             let maximumCont: HTMLElement = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            let minimumText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
-            let maximumText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            let minimumText: HTMLElement =
+                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
+            let maximumText: HTMLElement =
+                this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             let minimumInp: HTMLElement = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
             let maximumInp: HTMLElement = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
             let numericMin: NumericTextBox = new NumericTextBox({

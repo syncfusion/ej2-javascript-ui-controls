@@ -8,13 +8,21 @@
 
 ## [Unreleased]
 
+## 18.4.30 (2020-12-17)
+
+### Maps
+
+#### Bug Fixes
+
+- `#302270` - The position of the marker cluster will now render properly when the Map control is positioned in an absolute location.
+
 ## 18.3.51 (2020-11-24)
 
 ### Maps
 
 #### Bug Fixes
 
-- `301355` - The balloon marker will now select properly with `initialMarkerSelection`.
+- `#301355` - The balloon marker will now select properly with `initialMarkerSelection`.
 
 ## 18.3.44 (2020-10-27)
 

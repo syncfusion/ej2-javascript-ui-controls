@@ -66,6 +66,8 @@ export class Filter implements IAction {
     private l10n: L10n;
     private valueFormatter: IValueFormatter;
     private actualPredicate: { [key: string]: PredicateModel[] } = {};
+    public prevFilterObject: PredicateModel;
+    public filterObjIndex: number;
 
     /**
      * Constructor for Grid filtering module
@@ -210,6 +212,8 @@ export class Filter implements IAction {
      */
     public updateModel(): void {
         let col: Column = this.parent.getColumnByField(this.fieldName);
+        this.filterObjIndex =  this.getFilteredColsIndexByField(col);
+        this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         let arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) ? this.value : [this.value];
         for (let i: number = 0, len: number = arrayVal.length; i < len; i++) {
             let field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
@@ -422,7 +426,6 @@ export class Filter implements IAction {
         } else {
             this.actualPredicate[this.fieldName] = [predObj];
         }
-        this.addFilteredClass(this.fieldName);
         if (this.checkAlreadyColFiltered(this.column.field)) {
             return;
         }
@@ -454,12 +457,22 @@ export class Filter implements IAction {
             switch (prop) {
                 case 'columns':
                     let col: string = 'columns';
+                    let args: Object = {
+                        currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
+                        this.column.field : undefined, action: 'filter', columns: this.filterSettings.columns,
+                        requestType: 'filtering', type: events.actionBegin, cancel: false
+                    };
                     if (this.contentRefresh && this.skipUid(e.properties[col])) {
-                        this.parent.notify(events.modelChanged, {
-                            currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
-                                this.column.field : undefined, action: 'filter',
-                            columns: this.filterSettings.columns, requestType: 'filtering', type: events.actionBegin, cancel: false
-                        });
+                        this.parent.notify(events.modelChanged, args);
+                        if ((<{ cancel?: boolean }>args).cancel) {
+                            if (isNullOrUndefined(this.prevFilterObject)) {
+                                this.filterSettings.columns.splice(this.filterSettings.columns.length - 1, 1);
+                            } else {
+                                this.filterSettings.columns[this.filterObjIndex] = this.prevFilterObject;
+                            }
+                            return;
+                        }
+                        this.addFilteredClass(this.fieldName);
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();

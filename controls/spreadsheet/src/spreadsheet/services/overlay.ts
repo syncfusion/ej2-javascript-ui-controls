@@ -78,7 +78,7 @@ export class Overlay {
                     if (height1 > 180 && top > -1) {
                         overlayElem.style.height = height1 + 'px';
                         overlayElem.style.top = top + 'px';
-                        this.resizedReorderTop = e.clientX; // resized divTop
+                        this.resizedReorderTop = top; // resized divTop
                         this.currenHeight = height1;
                         this.parent.notify(refreshChartSize, {
                             height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem });

@@ -902,4 +902,76 @@ describe('AutoComplete', () => {
             expect(autocompleteObj.inputElement.value).toBe("Australia");
         });
     });
+    describe('EJ2-45069- Highlight search with iconcss', () => {
+        let atcObj: any;
+        let atcObj1: any;
+        let atcObj2: any;
+        let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+        let socialMedia: { [key: string]: Object }[] = [
+            { class: 'sf-icon-facebook', country: 'Facebook' }, { class: 'sf-icon-twitter', country: 'Twitter ' },
+            { class: 'sf-icon-whatsapp', country: 'WhatsApp' }, { class: 'sf-icon-tumblr', country: 'Tumblr' },
+            { class: 'sf-icon-google-plus', country: 'Google plus' }, { class: 'sf-icon-skype-01', country: 'Skype' },
+            { class: 'sf-icon-vimeo', country: 'Vimeo' }, { class: 'sf-icon-instagram', country: 'Instagram' },
+            { class: 'sf-icon-youtube1', country: 'YouTube' }, { class: 'sf-icon-reddit', country: 'Reddit' }
+        ];  
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            atcObj.destroy();
+            atcObj1.destroy();
+            atcObj2.destroy();
+            element.remove();
+            document.body.innerHTML = "";
+        });
+        it('highlight by StartsWith', () => {
+            atcObj = new AutoComplete({
+                dataSource: socialMedia,
+                fields: { value: 'country', iconCss: 'class' },
+                highlight: true
+            });
+            atcObj.appendTo(element);
+            atcObj.filterType = 'StartsWith';
+            atcObj.dataBind()
+            e.keyCode = 70;
+            atcObj.inputElement.value = 'F';
+            atcObj.onInput(e);
+            atcObj.onFilterUp(e);
+            let highlight: HTMLElement[] = atcObj.liCollections[0].querySelectorAll('.e-highlight');
+            expect(highlight.length === 1).toBe(true);
+        });
+        it('highlight by EndsWith', () => {
+            atcObj1 = new AutoComplete({
+                dataSource: socialMedia,
+                fields: { value: 'country', iconCss: 'class' },
+                highlight: true
+            });
+            atcObj1.appendTo(element);
+            atcObj1.filterType = 'EndsWith';
+            atcObj1.dataBind()
+            e.keyCode = 75;
+            atcObj1.inputElement.value = 'k';
+            atcObj1.onInput(e);
+            atcObj1.onFilterUp(e);
+            let highlight: HTMLElement[] = atcObj1.liCollections[0].querySelectorAll('.e-highlight');
+            expect(highlight.length === 1).toBe(true);
+        });
+        it('highlight by Contains', () => {
+            atcObj2 = new AutoComplete({
+                dataSource: socialMedia,
+                fields: { value: 'country', iconCss: 'class' },
+                highlight: true
+            });
+            atcObj2.appendTo(element);
+            atcObj2.filterType = 'Contains';
+            atcObj2.dataBind()
+            e.keyCode = 84;
+            atcObj2.inputElement.value = 't';
+            atcObj2.onInput(e);
+            atcObj2.onFilterUp(e);
+            let highlight: HTMLElement[] = atcObj2.liCollections[0].querySelectorAll('.e-highlight');
+            expect(highlight.length === 3).toBe(true);
+        });
+    });
 });

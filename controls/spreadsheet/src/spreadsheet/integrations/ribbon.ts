@@ -185,7 +185,7 @@ export class Ribbon {
             items.find((x: RibbonItemModel) => x.header && x.header.text === l10n.getConstant('Insert')).content.push(
                 { type: 'Separator', id: id + '_separator_11' },
                 {
-                    template: this.getChartDBB(id), text: this.getLocaleText('Chart'),
+                    template: this.getChartDBB(id), text: l10n.getConstant('Chart'),
                     tooltipText: l10n.getConstant('Chart'), id: id + '_chart'
                 });
         }

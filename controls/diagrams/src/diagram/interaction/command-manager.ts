@@ -758,7 +758,9 @@ export class CommandHandler {
                 'methodName': 'UpdateBlazorDiagramModelLayers',
                 'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove
             };
-            window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+            if (!this.diagram.isLoading) {
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+            }
         }
     }
     /** @private */
@@ -2542,7 +2544,9 @@ export class CommandHandler {
         } else {
             if (window && window[blazor] && JSON.stringify(this.deepDiffer.diagramObject) !== '{}') {
                 let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
-                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+                if (!this.diagram.isLoading) {
+                    window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+                }
             }
         }
         //this.diagram.enableServerDataBinding(true);

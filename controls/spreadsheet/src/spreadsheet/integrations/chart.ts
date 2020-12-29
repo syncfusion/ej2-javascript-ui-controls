@@ -15,7 +15,7 @@ import { L10n, isNullOrUndefined, getComponent, closest, detach } from '@syncfus
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress } from '../../workbook/common/index';
-import { insertChart } from '../common/index';
+import { insertChart, chartRangeSelection } from '../common/index';
 
 Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
 Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip);
@@ -46,6 +46,7 @@ export class SpreadsheetChart {
         this.parent.on(deleteChart, this.deleteChart, this);
         this.parent.on(clearChartBorder, this.clearBorder, this);
         this.parent.on(insertChart, this.insertChartHandler, this);
+        this.parent.on(chartRangeSelection, this.chartRangeHandler, this);
     }
 
     private insertChartHandler(args: { action: string, id: string }): void {
@@ -107,6 +108,23 @@ export class SpreadsheetChart {
         this.parent.notify(setChart, { chart: chart });
     }
 
+    private chartRangeHandler(): void {
+        let overlayEle: HTMLElement = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
+        if (overlayEle) {
+            let chartId: string = overlayEle.getElementsByClassName('e-control')[0].id;
+            let chartColl: ChartModel[] = this.parent.chartColl;
+            let chartCollLen: number = chartColl.length;
+            for (let idx: number = 0; idx < chartCollLen; idx++) {
+                let chartEle: HTMLElement = document.getElementById(chartColl[idx].id);
+                if (overlayEle && chartEle && chartColl[idx].id === chartId) {
+                    this.parent.notify(initiateChart, {
+                        option: chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
+                    });
+                }
+            }
+        }
+    }
+
     private getPropertyValue(rIdx: number, cIdx: number, sheetIndex: number): string | number {
         let sheets: SheetModel[] = this.parent.sheets;
         if (sheets[sheetIndex] && sheets[sheetIndex].rows[rIdx] && sheets[sheetIndex].rows[rIdx].cells[cIdx]) {
@@ -142,8 +160,10 @@ export class SpreadsheetChart {
     private updateChartHandler(args: { chart: ChartModel }): void {
         let series: SeriesModel[] = this.initiateChartHandler({ option: args.chart, isRefresh: true }) as SeriesModel[];
         let chartObj: HTMLElement = this.parent.element.querySelector('.' + args.chart.id);
-        let excelFilter: Chart = getComponent(chartObj, 'chart');
-        excelFilter.series = series;
+        if (chartObj) {
+            let chartComp: Chart = getComponent(chartObj, 'chart');
+            chartComp.series = series;
+        }
     }
 
     private refreshChartCellObj(args: BeforeImageRefreshData): void {
@@ -724,6 +744,7 @@ export class SpreadsheetChart {
             this.parent.off(deleteChart, this.deleteChart);
             this.parent.off(clearChartBorder, this.clearBorder);
             this.parent.off(insertChart, this.insertChartHandler);
+            this.parent.off(chartRangeSelection, this.chartRangeHandler);
         }
     }
 

@@ -1,4 +1,4 @@
-import { formatUnit, isNullOrUndefined, closest, extend, append, prepend, isBlazor } from '@syncfusion/ej2-base';
+import { formatUnit, isNullOrUndefined, closest, extend, append, prepend } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, EventHandler } from '@syncfusion/ej2-base';
 import { IRenderer, NotifyEventArgs, EventFieldsMapping, TdData } from '../base/interface';
 import { AgendaBase } from '../event-renderer/agenda-base';
@@ -436,10 +436,6 @@ export class Agenda extends ViewBase implements IRenderer {
             this.unWireEvents();
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
-            }
-            if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
             }
             remove(this.element);
             this.element = null;

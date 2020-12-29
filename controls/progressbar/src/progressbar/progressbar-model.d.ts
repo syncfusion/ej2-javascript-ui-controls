@@ -133,6 +133,12 @@ export interface ProgressBarModel extends ComponentModel{
     enableRtl?: boolean;
 
     /**
+     * labelOnTrack
+     * @default true
+     */
+    labelOnTrack?: boolean;
+
+    /**
      * trackColor
      * @default null
      */

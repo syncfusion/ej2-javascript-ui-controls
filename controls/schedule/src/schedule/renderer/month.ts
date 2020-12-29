@@ -1,8 +1,7 @@
-import { EventHandler, formatUnit, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
-import { View } from '../base/type';
 import { ViewBase } from './view-base';
 import { MonthEvent } from '../event-renderer/month';
 import * as util from '../base/util';
@@ -224,7 +223,6 @@ export class Month extends ViewBase implements IRenderer {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(event.contentReady, {});
-        this.parent.updateLayoutTemplates();
     }
     private wireCellEvents(element: Element): void {
         EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
@@ -332,25 +330,21 @@ export class Month extends ViewBase implements IRenderer {
                 }
             } else {
                 let ele: Element = createElement('span', { className: cls.NAVIGATE_CLASS });
-                let skeleton: string = isBlazor() ? 'D' : 'full';
+                let skeleton: string = 'full';
                 let title: string =
                     this.parent.globalize.formatDate(td.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', util.capitalizeFirstWord(title, 'multiple'));
                 let innerText: string =
                     (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                         this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                        isBlazor() ?
-                            this.parent.globalize.formatDate(td.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
-                            this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 ele.innerHTML = util.capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
         }
         let args: RenderCellEventArgs = { elementType: td.type, element: tdEle, date: td.date, groupIndex: td.groupIndex };
-        if (!isBlazor()) {
-            this.parent.trigger(event.renderCell, args);
-        }
+        this.parent.trigger(event.renderCell, args);
         return tdEle;
     }
     public getContentSlots(): TdData[][] {
@@ -485,9 +479,7 @@ export class Month extends ViewBase implements IRenderer {
             append(cellTemplate, ntd);
         }
         let args: RenderCellEventArgs = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
-        if (!isBlazor()) {
-            this.parent.trigger(event.renderCell, args);
-        }
+        this.parent.trigger(event.renderCell, args);
         return ntd;
     }
 
@@ -509,14 +501,13 @@ export class Month extends ViewBase implements IRenderer {
             let innerText: string =
                 (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                    isBlazor() ? this.parent.globalize.formatDate(data.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
-                        this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                    this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
             dateHeader.innerHTML = util.capitalizeFirstWord(innerText, 'single');
         }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], cls.NAVIGATE_CLASS);
-            let skeleton: string = isBlazor() ? 'D' : 'full';
+            let skeleton: string = 'full';
             let annocementText: string =
                 this.parent.globalize.formatDate(data.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
             dateHeader.setAttribute('aria-label', annocementText);
@@ -614,9 +605,7 @@ export class Month extends ViewBase implements IRenderer {
         });
         tr.appendChild(td);
         let args: RenderCellEventArgs = { elementType: 'weekNumberCell', element: td };
-        if (!isBlazor()) {
-            this.parent.trigger(event.renderCell, args);
-        }
+        this.parent.trigger(event.renderCell, args);
         return tr;
     }
 
@@ -642,21 +631,7 @@ export class Month extends ViewBase implements IRenderer {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                let view: View = this.parent.viewCollections[this.viewIndex].option;
-                if (!this.parent.isServerRenderer(view)) {
-                    this.parent.resetLayoutTemplates();
-                    this.parent.resetEventTemplates();
-                    remove(this.element);
-                } else {
-                    if (['Month', 'MonthAgenda', 'TimelineMonth'].indexOf(this.parent.currentView) === -1) {
-                        this.element.style.display = 'none';
-                    }
-                    this.parent.resetEventTemplates();
-                }
-            } else {
-                remove(this.element);
-            }
+            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();

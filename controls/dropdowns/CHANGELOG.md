@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### AutoComplete
+
+#### Bug Fixes
+
+- `#308003` - Issue with 'highlight search is not working while rendering component along with `iconCss` property' has been resolved.
+
 ## 18.4.31 (2020-12-22)
 
 ### ListBox

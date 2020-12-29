@@ -740,6 +740,13 @@ export class Edit {
     }
 
     public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let actCell: number[] = getCellIndexes(sheet.activeCell);
+        let cell: HTMLElement = this.parent.getCell(actCell[0], actCell[1]);
+        let fSize: string = '';
+        if (this.editCellData.element.children[0] && this.editCellData.element.children[0].className === 'e-cf-databar') {
+            fSize = (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize;
+        }
         if (refreshFormulaBar) { this.refreshEditor(this.editCellData.oldValue, false, true, false, false); }
         if (this.triggerEvent('beforeCellSave')) {
             event.preventDefault();
@@ -752,6 +759,9 @@ export class Edit {
             this.focusElement();
         } else if (event) {
             event.preventDefault();
+        }
+        if (fSize !== '') {
+            (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = fSize;
         }
         this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
     }
@@ -839,10 +849,12 @@ export class Edit {
     }
 
     private refSelectionRender(): void {
-        if (checkIsFormula(this.editorElem.textContent)) {
-            this.parent.notify(initiateFormulaReference, {
-                range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
-            });
+        if (this.editorElem) {
+            if (checkIsFormula(this.editorElem.textContent)) {
+                this.parent.notify(initiateFormulaReference, {
+                    range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
+                });
+            }
         }
     }
 

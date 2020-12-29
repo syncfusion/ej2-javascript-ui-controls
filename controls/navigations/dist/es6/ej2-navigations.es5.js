@@ -3171,7 +3171,6 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
 };
 var CLS_VERTICAL = 'e-vertical';
 var CLS_ITEMS = 'e-toolbar-items';
-var BZ_ITEMS = 'e-blazor-toolbar-items';
 var CLS_ITEM = 'e-toolbar-item';
 var CLS_RTL$2 = 'e-rtl';
 var CLS_SEPARATOR = 'e-separator';
@@ -3324,10 +3323,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 document.body.appendChild(_this.element.querySelector(ele)).style.display = 'none';
             }
         });
-        if (isBlazor() && this.isServerRendered) {
-            this.resetServerItems();
-        }
-        while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
+        while (this.element.lastElementChild) {
             this.element.removeChild(this.element.lastElementChild);
         }
         if (this.trgtEle) {
@@ -3706,30 +3702,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         if (clst) {
             var tempItem = this.items[this.tbarEle.indexOf(clst)];
-            if (tempItem && isBlazor() && this.isServerRendered) {
-                itemObj = {
-                    id: tempItem.id,
-                    text: tempItem.text,
-                    width: tempItem.width,
-                    cssClass: tempItem.cssClass,
-                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
-                    disabled: tempItem.disabled,
-                    prefixIcon: tempItem.prefixIcon,
-                    suffixIcon: tempItem.suffixIcon,
-                    visible: tempItem.visible,
-                    overflow: tempItem.overflow,
-                    template: tempItem.template,
-                    type: tempItem.type,
-                    showTextOn: tempItem.showTextOn,
-                    htmlAttributes: tempItem.htmlAttributes,
-                    tooltipText: tempItem.tooltipText,
-                    align: tempItem.align,
-                    click: tempItem.click
-                };
-            }
-            else {
-                itemObj = tempItem;
-            }
+            itemObj = tempItem;
         }
         var eventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !isNullOrUndefined(itemObj.click)) {
@@ -3798,7 +3771,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     Toolbar.prototype.renderControl = function () {
         var ele = this.element;
-        this.trgtEle = (ele.children.length > 0 && (!isBlazor() && !this.isServerRendered)) ? ele.querySelector('div') : null;
+        this.trgtEle = (ele.children.length > 0) ? ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
         this.renderLayout();
@@ -3820,27 +3793,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.tbarEle = [];
         }
         for (var i = 0; i < items.length; i++) {
-            if (isBlazor() && this.isServerRendered) {
-                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
-                var itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
-                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
-                if (!innerItem) {
-                    continue;
-                }
-                if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
-                    this.popupPriCount++;
-                }
-                if (items[i].htmlAttributes) {
-                    this.setAttr(items[i].htmlAttributes, innerItem);
-                }
-                if (items[i].type === 'Button') {
-                    EventHandler.clearEvents(innerItem);
-                    EventHandler.add(innerItem, 'click', this.itemClick, this);
-                }
-            }
-            else {
-                innerItem = this.renderSubComponent(items[i], i);
-            }
+            innerItem = this.renderSubComponent(items[i], i);
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
             }
@@ -3865,25 +3818,6 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             this.notify('render-react-toolbar-template', this[portals]);
             this.renderReactTemplates();
         }
-    };
-    Toolbar.prototype.serverItemsRerender = function () {
-        this.destroyMode();
-        this.resetServerItems();
-        this.serverItemsRefresh();
-    };
-    Toolbar.prototype.serverItemsRefresh = function () {
-        var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
-        if (wrapBlaEleDom.children.length > 0) {
-            this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
-            this.renderLayout();
-            this.refreshOverflow();
-        }
-    };
-    Toolbar.prototype.resetServerItems = function () {
-        var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
-        var itemEles = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
-        append(itemEles, wrapBlaEleDom);
-        this.clearProperty();
     };
     /** @hidden */
     Toolbar.prototype.changeOrientation = function () {
@@ -5193,10 +5127,6 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                             }
                         }
                     }
-                    else if (isBlazor() && this.isServerRendered) {
-                        this.serverItemsRerender();
-                        this.notify('onItemsChanged', {});
-                    }
                     else {
                         this.itemsRerender(newProp.items);
                     }
@@ -5535,9 +5465,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         this.isDestroy = true;
         this.restoreContent(null);
         [].slice.call(ele.children).forEach(function (el) {
-            if (!el.classList.contains('blazor-template')) {
-                ele.removeChild(el);
-            }
+            ele.removeChild(el);
         });
         if (this.trgtEle) {
             while (this.ctrlTem.firstElementChild) {
@@ -5613,8 +5541,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.renderControl = function () {
-        this.trgtEle = (this.element.children.length > 0 &&
-            !(isBlazor() && !this.isStringTemplate)) ? select('div', this.element) : null;
+        this.trgtEle = (this.element.children.length > 0) ? select('div', this.element) : null;
         this.renderItems();
         this.initItemExpand();
     };
@@ -6051,7 +5978,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         catch (e) {
-            if (typeof (value) === 'string' && isBlazor() && value.indexOf('<div>Blazor') !== 0) {
+            if (typeof (value) === 'string') {
                 ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
                 /* tslint:disable */
             }
@@ -6361,7 +6288,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @param  {number} index - Number value that determines where the item should be added.
      * By default, item is added at the last index if the index is not specified.
      * @returns void
-     * @deprecated
      */
     Accordion.prototype.addItem = function (item, index) {
         var _this = this;
@@ -6411,7 +6337,6 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * Dynamically removes item from Accordion.
      * @param  {number} index - Number value that determines which item should be removed.
      * @returns void.
-     * @deprecated
      */
     Accordion.prototype.removeItem = function (index) {
         // tslint:disable-next-line:no-any
@@ -7951,7 +7876,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     };
     Tab.prototype.compileElement = function (ele, val, prop, index) {
         var templateFn;
-        if (typeof val === 'string' && isBlazor() && val.indexOf('<div>Blazor') !== 0) {
+        if (typeof val === 'string') {
             val = val.trim();
             ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
         }
@@ -7960,12 +7885,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         var templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            if (isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-                templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
-            }
-            else {
-                templateFUN = templateFn({}, this, prop);
-            }
+            templateFUN = templateFn({}, this, prop);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach(function (el) {
@@ -8600,7 +8520,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.templateEle = [];
                 var selectElement = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
-                while (selectElement.firstElementChild && !isBlazor()) {
+                while (selectElement.firstElementChild) {
                     detach(selectElement.firstElementChild);
                 }
                 this.select(this.selectedItem);
@@ -8641,7 +8561,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * @param  {TabItemsModel[]} items - An array of item that is added to the Tab.
      * @param  {number} index - Number value that determines where the items to be added. By default, index is 0.
      * @returns void.
-     * @deprecated
      */
     Tab.prototype.addTab = function (items, index) {
         var _this = this;
@@ -8726,7 +8645,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * Removes the items in the Tab from the specified index.
      * @param  {number} index - Index of target item that is going to be removed.
      * @returns void.
-     * @deprecated
      */
     Tab.prototype.removeTab = function (index) {
         var _this = this;
@@ -8737,11 +8655,6 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, function (tabRemovingArgs) {
             if (!tabRemovingArgs.cancel) {
-                if (isBlazor() && _this.isServerRendered) {
-                    // tslint:disable-next-line:no-any
-                    _this.interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
-                    return;
-                }
                 // tslint:disable-next-line:no-any
                 if (_this.isRect) {
                     _this.clearTemplate([], index);

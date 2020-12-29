@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { IntlBase } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -71,7 +71,6 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
      * {% codeBlock src='schedule/views/index.md' %}{% endcodeBlock %}
      * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
-     * @blazorType List<ScheduleView>
      */
     views?: View[] | ViewsModel[];
 
@@ -81,7 +80,6 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/selectedDate/index.md' %}{% endcodeBlock %}
      * @default 'new Date()'
      * @aspDefaultValue DateTime.Now
-     * @blazorDefaultValue DateTime.Now
      */
     selectedDate?: Date;
 
@@ -90,7 +88,6 @@ export interface ScheduleModel extends ComponentModel{
      *  Usually, it defaults to the new Date(1900, 0, 1).
      * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
-     * @blazorDefaultValue new DateTime(1900, 1, 1)
      */
     minDate?: Date;
 
@@ -99,7 +96,6 @@ export interface ScheduleModel extends ComponentModel{
      *  Usually, it defaults to the new Date(2099, 11, 31).
      * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     maxDate?: Date;
 
@@ -149,7 +145,6 @@ export interface ScheduleModel extends ComponentModel{
      * {% codeBlock src='schedule/workDays/index.md' %}{% endcodeBlock %}
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
-     * @blazorType int[]
      */
     workDays?: number[];
 
@@ -409,42 +404,36 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers after the scheduler component is created.
      * @event
-     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when the scheduler component is destroyed.
      * @event
-     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 
     /**
      * Triggers when the scheduler cells are single clicked or on single tap on the same cells in mobile devices.
      * @event
-     * @blazorproperty 'OnCellClick'
      */
     cellClick?: EmitType<CellClickEventArgs>;
 
     /**
      * Triggers when the scheduler cells are double clicked.
      * @event
-     * @blazorproperty 'OnCellDoubleClick'
      */
     cellDoubleClick?: EmitType<CellClickEventArgs>;
 
     /**
      * Triggers when the more events indicator are clicked.
      * @event
-     * @blazorproperty 'MoreEventsClicked'
      */
     moreEventsClick?: EmitType<MoreEventsClickArgs>;
 
     /**
      * Triggers when the scheduler elements are hovered.
      * @event
-     * @blazorproperty 'OnHover'
      * @deprecated
      */
     hover?: EmitType<HoverEventArgs>;
@@ -452,7 +441,6 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when multiple cells or events are selected on the Scheduler.
      * @event
-     * @blazorproperty 'OnSelect'
      * @deprecated
      */
     select?: EmitType<SelectEventArgs>;
@@ -460,92 +448,72 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers on beginning of every scheduler action.
      * @event
-     * @blazorproperty 'OnActionBegin'
-     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     actionBegin?: EmitType<ActionEventArgs>;
 
     /**
      * Triggers on successful completion of the scheduler actions.
      * @event
-     * @blazorproperty 'ActionCompleted'
-     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     actionComplete?: EmitType<ActionEventArgs>;
 
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     actionFailure?: EmitType<ActionEventArgs>;
 
     /**
      * Triggers before the date or view navigation takes place on scheduler.
      * @event
-     * @blazorproperty 'Navigating'
      */
     navigating?: EmitType<NavigatingEventArgs>;
 
     /**
      * Triggers before each element of the schedule rendering on the page.
      * @event
-     * @blazorproperty 'OnRenderCell'
      */
     renderCell?: EmitType<RenderCellEventArgs>;
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
-     * @blazorproperty 'OnEventClick'
-     * @blazorType Syncfusion.Blazor.Schedule.EventClickArgs<TValue>
      */
     eventClick?: EmitType<EventClickArgs>;
 
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
-     * @blazorproperty 'EventRendered'
-     * @blazorType Syncfusion.Blazor.Schedule.EventRenderedArgs<TValue>
      */
     eventRendered?: EmitType<EventRenderedArgs>;
 
     /**
      * Triggers before the data binds to the scheduler.
      * @event
-     * @blazorproperty 'DataBinding'
-     * @blazorType Syncfusion.Blazor.Schedule.DataBindingEventArgs<TValue>
      */
     dataBinding?: EmitType<ReturnType>;
 
     /**
      * Triggers before any of the scheduler popups opens on the page.
      * @event
-     * @blazorproperty 'OnPopupOpen'
-     * @blazorType Syncfusion.Blazor.Schedule.PopupOpenEventArgs<TValue>
      */
     popupOpen?: EmitType<PopupOpenEventArgs>;
 
     /**
      * Triggers before any of the scheduler popups close on the page.
      * @event
-     * @blazorproperty 'OnPopupClose'
-     * @blazorType Syncfusion.Blazor.Schedule.PopupCloseEventArgs<TValue>
      */
     popupClose?: EmitType<PopupCloseEventArgs>;
 
     /**
      * Triggers when an appointment is started to drag.
      * @event
-     * @blazorproperty 'OnDragStart'
      */
     dragStart?: EmitType<DragEventArgs>;
 
     /**
      * Triggers when an appointment is being in a dragged state.
      * @event
-     * @blazorproperty 'Dragging'
      * @deprecated
      */
     drag?: EmitType<DragEventArgs>;
@@ -553,21 +521,18 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when the dragging of appointment is stopped.
      * @event
-     * @blazorproperty 'Dragged'
      */
     dragStop?: EmitType<DragEventArgs>;
 
     /**
      * Triggers when an appointment is started to resize.
      * @event
-     * @blazorproperty 'OnResizeStart'
      */
     resizeStart?: EmitType<ResizeEventArgs>;
 
     /**
      * Triggers when an appointment is being in a resizing action.
      * @event
-     * @blazorproperty 'Resizing'
      * @deprecated
      */
     resizing?: EmitType<ResizeEventArgs>;
@@ -575,15 +540,12 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * Triggers when the resizing of appointment is stopped.
      * @event
-     * @blazorproperty 'Resized'
      */
     resizeStop?: EmitType<ResizeEventArgs>;
 
     /**
      * Triggers once the event data is bound to the scheduler.
      * @event
-     * @blazorproperty 'DataBound'
-     * @blazorType Syncfusion.Blazor.Schedule.DataBoundEventArgs<TValue>
      */
     dataBound?: EmitType<ReturnType>;
 

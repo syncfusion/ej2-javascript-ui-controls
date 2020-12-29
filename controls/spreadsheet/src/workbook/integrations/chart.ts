@@ -65,6 +65,9 @@ export class WorkbookChart {
                 chart[i].type = chart[i].type || 'Line';
                 chart[i].isSeriesInRows = chart[i].isSeriesInRows || false;
                 chart[i].range = chart[i].range || this.parent.getActiveSheet().selectedRange;
+                if (chart[i].range.indexOf('!') < 0) {
+                    chart[i].range = this.parent.getActiveSheet().name + '!' + chart[i].range;
+                }
                 if (isNullOrUndefined(chart[i].id)) {
                     chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
                     idAvailable = false;
@@ -104,10 +107,10 @@ export class WorkbookChart {
             if (i) {
                 while (i--) {
                     let chart: ChartModel = this.parent.chartColl[i];
-                    let isInRange: boolean = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx)
-                        && (chart.range.indexOf('!') > -1 ?
-                            getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) !== this.parent.activeSheetIndex : true);
-                    if (isInRange) {
+                    let isInRange: boolean = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx);
+                    let rangeSheetIdx: number = chart.range.indexOf('!') > -1 ?
+                            getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
+                    if (isInRange && rangeSheetIdx === this.parent.activeSheetIndex) {
                         this.parent.notify(updateChart, { chart: chart });
                     }
                 }

@@ -1,9 +1,8 @@
-﻿import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs, append } from '@syncfusion/ej2-base';
+﻿import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, isVisible, closest, attributes, detach, classList, KeyboardEvents } from '@syncfusion/ej2-base';
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { isBlazor } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { calculatePosition } from '@syncfusion/ej2-popups';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
@@ -38,7 +37,6 @@ export type ItemAlign = 'Left' | 'Center' | 'Right';
 
 const CLS_VERTICAL: Str = 'e-vertical';
 const CLS_ITEMS: Str = 'e-toolbar-items';
-const BZ_ITEMS: Str = 'e-blazor-toolbar-items';
 const CLS_ITEM: Str = 'e-toolbar-item';
 const CLS_RTL: Str = 'e-rtl';
 const CLS_SEPARATOR: Str = 'e-separator';
@@ -93,7 +91,6 @@ export interface ClickEventArgs extends BaseEventArgs {
     item: ItemModel;
     /** 
      * Defines the current Event arguments. 
-     * @blazorType MouseEventArgs
      */
     originalEvent: Event;
     /** Defines the prevent action. */
@@ -253,7 +250,6 @@ export class Item extends ChildProperty<Item>  {
     /**
      * Event triggers when `click` the toolbar item.
      * @event
-     * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
@@ -354,7 +350,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Defines whether to allow the cross-scripting site or not.
      * @default true
-     * @deprecated
      */
     @Property(true)
     public enableHtmlSanitizer: boolean;
@@ -368,29 +363,24 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
-     * @blazorProperty 'Clicked'
      */
     @Event()
     public clicked: EmitType<ClickEventArgs>;
     /**
      * The event will be fired when the control is rendered.
      * @event
-     * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Event>;
     /**
      * The event will be fired when the control gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Event>;
     /**
      * The event will be fired before the control is rendered on a page.
      * @event
-     * @blazorProperty 'OnCreate'
-     * @deprecated
      */
     @Event()
     public beforeCreate: EmitType<BeforeCreateArgs>;
@@ -408,10 +398,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 (<HTEle>document.body.appendChild(this.element.querySelector(ele))).style.display = 'none';
             }
         });
-        if (isBlazor() && this.isServerRendered) {
-            this.resetServerItems();
-        }
-        while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
+        while (this.element.lastElementChild) {
             this.element.removeChild(this.element.lastElementChild);
         }
         if (this.trgtEle) {
@@ -765,29 +752,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (clst) {
             let tempItem: ItemModel = this.items[this.tbarEle.indexOf(clst)];
-            if (tempItem && isBlazor() && this.isServerRendered) {
-                itemObj = {
-                    id: tempItem.id,
-                    text: tempItem.text,
-                    width: tempItem.width,
-                    cssClass: tempItem.cssClass,
-                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
-                    disabled: tempItem.disabled,
-                    prefixIcon: tempItem.prefixIcon,
-                    suffixIcon: tempItem.suffixIcon,
-                    visible: tempItem.visible,
-                    overflow: tempItem.overflow,
-                    template: tempItem.template,
-                    type: tempItem.type,
-                    showTextOn: tempItem.showTextOn,
-                    htmlAttributes: tempItem.htmlAttributes,
-                    tooltipText: tempItem.tooltipText,
-                    align: tempItem.align,
-                    click: tempItem.click
-                };
-            } else {
-                itemObj = tempItem;
-            }
+            itemObj = tempItem;
         }
         let eventArgs: ClickEventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !isNOU(itemObj.click)) {
@@ -852,7 +817,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private renderControl(): void {
         let ele: HTEle = this.element;
-        this.trgtEle = (ele.children.length > 0 && (!isBlazor() && !this.isServerRendered)) ? <HTEle>ele.querySelector('div') : null;
+        this.trgtEle = (ele.children.length > 0) ? <HTEle>ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
         this.renderLayout();
@@ -874,26 +839,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.tbarEle = [];
         }
         for (let i: number = 0; i < items.length; i++) {
-            if (isBlazor() && this.isServerRendered) {
-                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
-                let itemEleBlaDom: HTEle = this.element.querySelector('.' + BZ_ITEMS);
-                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
-                if (!innerItem) {
-                    continue;
-                }
-                if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
-                    this.popupPriCount++;
-                }
-                if (items[i].htmlAttributes) {
-                    this.setAttr(items[i].htmlAttributes, innerItem);
-                }
-                if (items[i].type === 'Button') {
-                    EventHandler.clearEvents(innerItem);
-                    EventHandler.add(innerItem, 'click', this.itemClick, this);
-                }
-            } else {
-                innerItem = this.renderSubComponent(items[i], i);
-            }
+            innerItem = this.renderSubComponent(items[i], i);
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
             }
@@ -915,29 +861,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             let portals: string = 'portals';
             // tslint:disable-next-line:no-any
             this.notify('render-react-toolbar-template', (this as any)[portals]);
-            this.renderReactTemplates(); }
-    }
-
-    private serverItemsRerender(): void {
-        this.destroyMode();
-        this.resetServerItems();
-        this.serverItemsRefresh();
-    }
-
-    private serverItemsRefresh(): void {
-        let wrapBlaEleDom: HTEle = <HTEle>this.element.querySelector('.' + BZ_ITEMS);
-        if (wrapBlaEleDom.children.length > 0) {
-            this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
-            this.renderLayout();
-            this.refreshOverflow();
+            this.renderReactTemplates();
         }
-    }
-
-    private resetServerItems(): void {
-        let wrapBlaEleDom: HTEle = <HTEle>this.element.querySelector('.' + BZ_ITEMS);
-        let itemEles: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
-        append(itemEles, wrapBlaEleDom);
-        this.clearProperty();
     }
 
     /** @hidden */
@@ -2132,9 +2057,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                                 this.tbarEle.splice(this.items.length, 1);
                             }
                         }
-                    } else if (isBlazor() && this.isServerRendered) {
-                        this.serverItemsRerender();
-                        this.notify('onItemsChanged', {});
                     } else {
                         this.itemsRerender(newProp.items);
                     }

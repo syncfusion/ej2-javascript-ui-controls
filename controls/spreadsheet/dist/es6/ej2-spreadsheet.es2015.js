@@ -1908,6 +1908,8 @@ const focusBorder = 'focusBorder';
 const clearChartBorder = 'clearChartBorder';
 /** @hidden */
 const insertChart = 'insertChart';
+/** @hidden */
+const chartRangeSelection = 'chartRangeSelection';
 
 /**
  * Open properties.
@@ -7324,13 +7326,23 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         num1 = num1 === this.emptyString ? '0' : num1;
         let num = Number(num1);
         if (isNaN(num)) {
-            throw this.getErrorStrings()[CommonErrors.value];
+            if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
+                throw this.getErrorStrings()[CommonErrors.divzero];
+            }
+            else {
+                throw this.getErrorStrings()[CommonErrors.value];
+            }
         }
         let num2 = stack.pop();
         num2 = num2 === this.emptyString ? '0' : num2;
         num = Number(num2);
         if (isNaN(num)) {
-            throw this.getErrorStrings()[CommonErrors.value];
+            if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
+                throw this.getErrorStrings()[CommonErrors.divzero];
+            }
+            else {
+                throw this.getErrorStrings()[CommonErrors.value];
+            }
         }
         if (operator === 'add') {
             stack.push((Number(num2) + Number(num1)).toString());
@@ -7417,6 +7429,9 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         if (operator === 'equal') {
             val1 = stack.pop().toString();
             val2 = stack.pop().toString();
+            if (val2 === '' && val1 !== '') {
+                val2 = '0';
+            }
             result = val1 === val2 ? this.trueValue : this.falseValue;
         }
         if (operator === 'or') {
@@ -9819,6 +9834,9 @@ class WorkbookChart {
                 chart[i].type = chart[i].type || 'Line';
                 chart[i].isSeriesInRows = chart[i].isSeriesInRows || false;
                 chart[i].range = chart[i].range || this.parent.getActiveSheet().selectedRange;
+                if (chart[i].range.indexOf('!') < 0) {
+                    chart[i].range = this.parent.getActiveSheet().name + '!' + chart[i].range;
+                }
                 if (isNullOrUndefined(chart[i].id)) {
                     chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
                     idAvailable = false;
@@ -9858,10 +9876,10 @@ class WorkbookChart {
             if (i) {
                 while (i--) {
                     let chart = this.parent.chartColl[i];
-                    let isInRange = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx)
-                        && (chart.range.indexOf('!') > -1 ?
-                            getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) !== this.parent.activeSheetIndex : true);
-                    if (isInRange) {
+                    let isInRange = inRange(getRangeIndexes(chart.range), args.rIdx, args.cIdx);
+                    let rangeSheetIdx = chart.range.indexOf('!') > -1 ?
+                        getSheetIndex(this.parent, getSheetNameFromAddress(chart.range)) : this.parent.activeSheetIndex;
+                    if (isInRange && rangeSheetIdx === this.parent.activeSheetIndex) {
                         this.parent.notify(updateChart, { chart: chart });
                     }
                 }
@@ -15654,7 +15672,7 @@ __decorate$6([
     Complex({}, Format)
 ], Column.prototype, "format", void 0);
 __decorate$6([
-    Property(null)
+    Property(true)
 ], Column.prototype, "isLocked", void 0);
 /**
  * @hidden
@@ -18415,6 +18433,13 @@ class Edit {
         return args;
     }
     endEdit(refreshFormulaBar = false, event) {
+        let sheet = this.parent.getActiveSheet();
+        let actCell = getCellIndexes(sheet.activeCell);
+        let cell = this.parent.getCell(actCell[0], actCell[1]);
+        let fSize = '';
+        if (this.editCellData.element.children[0] && this.editCellData.element.children[0].className === 'e-cf-databar') {
+            fSize = cell.children[0].querySelector('.e-databar-value').style.fontSize;
+        }
         if (refreshFormulaBar) {
             this.refreshEditor(this.editCellData.oldValue, false, true, false, false);
         }
@@ -18430,6 +18455,9 @@ class Edit {
         }
         else if (event) {
             event.preventDefault();
+        }
+        if (fSize !== '') {
+            cell.children[0].querySelector('.e-databar-value').style.fontSize = fSize;
         }
         this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
     }
@@ -18515,10 +18543,12 @@ class Edit {
         this.parent.notify(formulaOperation, { action: 'endEdit' });
     }
     refSelectionRender() {
-        if (checkIsFormula(this.editorElem.textContent)) {
-            this.parent.notify(initiateFormulaReference, {
-                range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
-            });
+        if (this.editorElem) {
+            if (checkIsFormula(this.editorElem.textContent)) {
+                this.parent.notify(initiateFormulaReference, {
+                    range: this.editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
+                });
+            }
         }
     }
     // Start edit the formula cell and set cursor position
@@ -18767,9 +18797,6 @@ class Selection {
             }
             if (closest(e.target, '.e-datavisualization-chart')) {
                 return;
-            }
-            else {
-                this.parent.notify(clearChartBorder, {});
             }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
@@ -19088,6 +19115,7 @@ class Selection {
         }
         this.parent.notify(showAggregate, {});
         this.parent.notify(refreshImgElem, {});
+        this.parent.notify(clearChartBorder, {});
     }
     UpdateRowColSelected(indexes) {
         let sheet = this.parent.getActiveSheet();
@@ -20652,7 +20680,14 @@ class CellFormat {
                         if (!this.checkHeight) {
                             this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate);
                         }
-                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
+                        let isFontSize = false;
+                        if (args.style.fontSize) {
+                            isFontSize = true;
+                        }
+                        if (cell && cell.children[0] && cell.children[0].className === 'e-cf-databar' && args.style.fontSize) {
+                            cell.children[0].querySelector('.e-databar-value').style.fontSize = args.style.fontSize;
+                        }
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, 0, isFontSize);
                     }
                 }
             }
@@ -20661,12 +20696,13 @@ class CellFormat {
             this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
         }
     }
-    updateRowHeight(rowIdx, colIdx, isLastCell, onActionUpdate, borderSize = 0) {
+    updateRowHeight(rowIdx, colIdx, isLastCell, onActionUpdate, borderSize = 0, isFontSize) {
         if (this.checkHeight) {
             let hgt = 0;
             let maxHgt;
             let sheet = this.parent.getActiveSheet();
             let cell = getCell(rowIdx, colIdx, sheet);
+            let td = this.parent.getCell(rowIdx, colIdx);
             hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
             if (cell && !isNullOrUndefined(cell.value)) {
@@ -20685,6 +20721,13 @@ class CellFormat {
                     }
                     hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
                 }
+            }
+            if (hgt + borderSize < 20 && isFontSize && getMaxHgt(sheet, rowIdx) >= 20) {
+                hgt = 20; // default height
+            }
+            if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {
+                td.children[0].style.height = '100%';
+                td.children[0].firstElementChild.nextElementSibling.style.height = '100%';
             }
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {
@@ -23987,8 +24030,8 @@ class DataValidation {
             let maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            let minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
-            let maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            let minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
+            let maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             let minimumInp = this.parent.createElement('input', {
                 id: 'minvalue',
                 className: 'e-input', attrs: { value: value1 }
@@ -24070,8 +24113,8 @@ class DataValidation {
             let maximumCont = this.parent.createElement('div', { className: 'e-maximum' });
             valuesCont.appendChild(minimumCont);
             valuesCont.appendChild(maximumCont);
-            let minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Minimum' });
-            let maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'Maximum' });
+            let minimumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Minimum') });
+            let maximumText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('Maximum') });
             let minimumInp = this.parent.createElement('input', { id: 'min', className: 'e-input', attrs: { value: '0' } });
             let maximumInp = this.parent.createElement('input', { id: 'max', className: 'e-input', attrs: { value: '0' } });
             let numericMin = new NumericTextBox({
@@ -25788,7 +25831,7 @@ class ConditionalFormatting {
         let value1Text = this.parent.createElement('span', { className: 'e-header e-top-header', innerHTML: dlgText });
         let value1Inp = this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } });
         let duplicateSelectEle = this.parent.createElement('input', { className: 'e-select' });
-        let subDivText = this.parent.createElement('span', { className: 'e-header', innerHTML: 'with' });
+        let subDivText = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
         let colorSelectEle = this.parent.createElement('input', { className: 'e-select' });
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);
@@ -27723,7 +27766,7 @@ class Ribbon$$1 {
         }
         if (this.parent.allowChart) {
             items.find((x) => x.header && x.header.text === l10n.getConstant('Insert')).content.push({ type: 'Separator', id: id + '_separator_11' }, {
-                template: this.getChartDBB(id), text: this.getLocaleText('Chart'),
+                template: this.getChartDBB(id), text: l10n.getConstant('Chart'),
                 tooltipText: l10n.getConstant('Chart'), id: id + '_chart'
             });
         }
@@ -31121,7 +31164,8 @@ class SheetTabs {
     addSheetTab() {
         let eventArgs = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit = checkIsFormula(eventArgs.editedValue) || eventArgs.editedValue.toString().indexOf('=') === 0;
+        let val = eventArgs.editedValue;
+        let isFormulaEdit = checkIsFormula(val) || val && val !== '' ? val.indexOf('=') === 0 : false;
         this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
         this.parent.element.focus();
     }
@@ -32844,7 +32888,7 @@ class Filter {
      */
     processRange(sheet, sheetIdx, filterRange) {
         let range = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
-        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
+        if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
             range[2] = sheet.usedRange.rowIndex;
@@ -33616,6 +33660,7 @@ class SpreadsheetChart {
         this.parent.on(deleteChart, this.deleteChart, this);
         this.parent.on(clearChartBorder, this.clearBorder, this);
         this.parent.on(insertChart, this.insertChartHandler, this);
+        this.parent.on(chartRangeSelection, this.chartRangeHandler, this);
     }
     insertChartHandler(args) {
         let chartType = 'Column';
@@ -33675,6 +33720,22 @@ class SpreadsheetChart {
         let chart = [{ type: chartType }];
         this.parent.notify(setChart, { chart: chart });
     }
+    chartRangeHandler() {
+        let overlayEle = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active');
+        if (overlayEle) {
+            let chartId = overlayEle.getElementsByClassName('e-control')[0].id;
+            let chartColl = this.parent.chartColl;
+            let chartCollLen = chartColl.length;
+            for (let idx = 0; idx < chartCollLen; idx++) {
+                let chartEle = document.getElementById(chartColl[idx].id);
+                if (overlayEle && chartEle && chartColl[idx].id === chartId) {
+                    this.parent.notify(initiateChart, {
+                        option: chartColl[idx], chartCount: this.parent.chartCount, isRefresh: true
+                    });
+                }
+            }
+        }
+    }
     getPropertyValue(rIdx, cIdx, sheetIndex) {
         let sheets = this.parent.sheets;
         if (sheets[sheetIndex] && sheets[sheetIndex].rows[rIdx] && sheets[sheetIndex].rows[rIdx].cells[cIdx]) {
@@ -33713,8 +33774,10 @@ class SpreadsheetChart {
     updateChartHandler(args) {
         let series = this.initiateChartHandler({ option: args.chart, isRefresh: true });
         let chartObj = this.parent.element.querySelector('.' + args.chart.id);
-        let excelFilter = getComponent(chartObj, 'chart');
-        excelFilter.series = series;
+        if (chartObj) {
+            let chartComp = getComponent(chartObj, 'chart');
+            chartComp.series = series;
+        }
     }
     refreshChartCellObj(args) {
         let currRowIdx = { clientY: args.currentTop, isImage: true };
@@ -34307,6 +34370,7 @@ class SpreadsheetChart {
             this.parent.off(deleteChart, this.deleteChart);
             this.parent.off(clearChartBorder, this.clearBorder);
             this.parent.off(insertChart, this.insertChartHandler);
+            this.parent.off(chartRangeSelection, this.chartRangeHandler);
         }
     }
     /**
@@ -34789,7 +34853,7 @@ let defaultLocale = {
     DataBars: 'Data Bars',
     ColorScales: 'Color Scales',
     IconSets: 'Icon Sets',
-    ClearRules: 'ClearRules',
+    ClearRules: 'Clear Rules',
     SelectedCells: 'Clear Rules from Selected Cells',
     EntireSheet: 'Clear Rules from Entire Sheet',
     ISNUMBER: 'Returns true when the value parses as a numeric value.',
@@ -35172,6 +35236,12 @@ class SheetRender {
             removeAllChildren(table);
             table.appendChild(frag);
             this.parent.notify(virtualContentLoaded, { refresh: 'Column' });
+            if (this.parent.isEdit) {
+                this.parent.notify(forRefSelRender, {});
+            }
+            if (this.parent.allowChart) {
+                this.parent.notify(chartRangeSelection, null);
+            }
             if (!this.parent.isOpen) {
                 this.parent.hideSpinner();
             }
@@ -35227,6 +35297,12 @@ class SheetRender {
             this.getContentTable().appendChild(frag);
         }
         this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
+        if (this.parent.allowChart) {
+            this.parent.notify(chartRangeSelection, {});
+        }
+        if (this.parent.isEdit) {
+            this.parent.notify(forRefSelRender, null);
+        }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
         }
@@ -35322,6 +35398,12 @@ class SheetRender {
             if (this.parent.scrollSettings.enableVirtualization) {
                 this.parent.notify(virtualContentLoaded, { refresh: 'Column' });
             }
+            if (this.parent.allowChart) {
+                this.parent.notify(chartRangeSelection, null);
+            }
+            if (this.parent.isEdit) {
+                this.parent.notify(forRefSelRender, {});
+            }
             if (!this.parent.isOpen) {
                 this.parent.hideSpinner();
             }
@@ -35395,11 +35477,11 @@ class SheetRender {
         if (this.parent.scrollSettings.enableVirtualization) {
             this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         }
-        if (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0]) {
-            let editCellVal = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].textContent;
-            if (checkIsFormula(editCellVal) || editCellVal.indexOf('=') === 0) {
-                this.parent.notify(forRefSelRender, null);
-            }
+        if (this.parent.isEdit) {
+            this.parent.notify(forRefSelRender, null);
+        }
+        if (this.parent.allowChart) {
+            this.parent.notify(chartRangeSelection, {});
         }
         if (!this.parent.isOpen) {
             this.parent.hideSpinner();
@@ -35691,6 +35773,13 @@ class CellRenderer {
         this.update(args);
         if (args.cell && args.td) {
             this.parent.notify(cFRender, { rowIdx: args.rowIdx, colIdx: args.colIdx, cell: args.cell, td: args.td, isChecked: false });
+            if (args.td && args.td.children[0] && args.td.children[0].className === 'e-cf-databar') {
+                if (args.cell.style && args.cell.style.fontSize) {
+                    args.td.children[0].querySelector('.e-databar-value').style.fontSize = args.cell.style.fontSize;
+                }
+                args.td.children[0].style.height = '100%';
+                args.td.children[0].firstElementChild.nextElementSibling.style.height = '100%';
+            }
         }
         if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
@@ -36415,7 +36504,7 @@ class Overlay {
                     if (height1 > 180 && top > -1) {
                         overlayElem.style.height = height1 + 'px';
                         overlayElem.style.top = top + 'px';
-                        this.resizedReorderTop = e.clientX; // resized divTop
+                        this.resizedReorderTop = top; // resized divTop
                         this.currenHeight = height1;
                         this.parent.notify(refreshChartSize, {
                             height: overlayElem.style.height, width: overlayElem.style.width, overlayEle: overlayElem
@@ -38212,5 +38301,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, checkIsFormula, isCellReference, isChar, inRange, isLocked, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, checkIsFormula, isCellReference, isChar, inRange, isLocked, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, chartRangeSelection, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

@@ -796,7 +796,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         for (let option of options) {
             let json: { [key: string]: {} } = {};
             json[fields.text] = option.innerText;
-            json[fields.value] = option.getAttribute(fields.value) ? option.getAttribute(fields.value) : option.innerText;
+            json[fields.value] = !isNullOrUndefined(option.getAttribute(fields.value)) ?
+                option.getAttribute(fields.value) : option.innerText;
             items.push(json);
         }
     }

@@ -178,8 +178,6 @@ export class Selection {
             }
             if (closest(e.target as Element, '.e-datavisualization-chart')) {
                 return;
-            } else {
-                this.parent.notify(clearChartBorder, {});
             }
             if (this.parent.getActiveSheet().isProtected && !this.parent.getActiveSheet().protectSettings.selectCells) {
                 return;
@@ -493,6 +491,7 @@ export class Selection {
         }
         this.parent.notify(showAggregate, {});
         this.parent.notify(refreshImgElem, {});
+        this.parent.notify(clearChartBorder, {});
     }
 
     private UpdateRowColSelected(indexes: number[]): void {

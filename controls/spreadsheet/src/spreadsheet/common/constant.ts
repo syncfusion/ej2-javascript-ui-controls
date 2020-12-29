@@ -371,7 +371,7 @@ export let defaultLocale: object = {
     DataBars: 'Data Bars',
     ColorScales: 'Color Scales',
     IconSets: 'Icon Sets',
-    ClearRules: 'ClearRules',
+    ClearRules: 'Clear Rules',
     SelectedCells: 'Clear Rules from Selected Cells',
     EntireSheet: 'Clear Rules from Entire Sheet',
     ISNUMBER:  'Returns true when the value parses as a numeric value.',

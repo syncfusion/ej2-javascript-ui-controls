@@ -110,7 +110,9 @@ function findTextNode(element, pattern, isBlazor$$1) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
             }
             else {
-                element.innerHTML = (element.innerHTML).trim().replace(pattern, '<span class="e-highlight">$1</span>');
+                var value = element.childNodes[index].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
+                element.childNodes[index].nodeValue = '';
+                element.innerHTML = element.innerHTML.trim() + value;
             }
             break;
         }
@@ -562,7 +564,8 @@ var DropDownBase = /** @class */ (function (_super) {
             var option = options_1[_i];
             var json = {};
             json[fields.text] = option.innerText;
-            json[fields.value] = option.getAttribute(fields.value) ? option.getAttribute(fields.value) : option.innerText;
+            json[fields.value] = !sf.base.isNullOrUndefined(option.getAttribute(fields.value)) ?
+                option.getAttribute(fields.value) : option.innerText;
             items.push(json);
         }
     };

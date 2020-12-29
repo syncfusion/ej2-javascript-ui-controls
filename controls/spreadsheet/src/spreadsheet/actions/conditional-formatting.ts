@@ -327,7 +327,7 @@ export class ConditionalFormatting {
             this.parent.createElement('input', { className: 'e-input', id: 'valueInput', attrs: { type: 'text' } });
         let duplicateSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
 
-        let subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: 'with' });
+        let subDivText: HTMLElement = this.parent.createElement('span', { className: 'e-header', innerHTML: l10n.getConstant('With') });
         let colorSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
         dlgContent.appendChild(mainDiv);
         dlgContent.appendChild(subDiv);

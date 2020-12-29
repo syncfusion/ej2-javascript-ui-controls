@@ -628,6 +628,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.validateFields = function () {
         var isValid = true;
         if (this.allowValidation) {
+            var excludeOprs = ['isnull', 'isnotnull', 'isempty', 'isnotempty'];
             var i = void 0;
             var len = void 0;
             var fieldElem = void 0;
@@ -671,8 +672,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     if (rule.rules[index].value instanceof Array) {
                         valArray = rule.rules[index].value;
                     }
-                    if (isNullOrUndefined(rule.rules[index].value) || rule.rules[index].value === ''
-                        || (rule.rules[index].value instanceof Array && valArray.length < 1)) {
+                    if (excludeOprs.indexOf(rule.rules[index].operator) < 0 && (isNullOrUndefined(rule.rules[index].value) &&
+                        rule.rules[index].type !== 'date') || rule.rules[index].value === '' ||
+                        (rule.rules[index].value instanceof Array && valArray.length < 1)) {
                         var valElem = tempElem.querySelectorAll('.e-rule-value input.e-control');
                         isValid = false;
                         for (var j_1 = 0, jLen = valElem.length; j_1 < jLen; j_1++) {
@@ -1224,6 +1226,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             if (tempRule.operator.indexOf('null') > -1 || (tempRule.operator.indexOf('empty') > -1)) {
                 var parentElem = operatorElem.parentElement.querySelector('.e-rule-value');
+                var tooltipElem = parentElem.querySelector('.e-tooltip.e-input-group');
+                if (tooltipElem) {
+                    getComponent(tooltipElem, 'tooltip').destroy();
+                }
                 removeClass([parentElem], 'e-show');
                 addClass([parentElem], 'e-hide');
             }
@@ -1913,6 +1919,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (isRender) {
+                this.validatValue(rule, closest(target, '.e-rule-container'));
                 if (isBlazor() && !prevItemData.template) {
                     this.destroyControls(target);
                 }
@@ -2016,6 +2023,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var controlName = element.className.split(' e-')[idx];
         var i = parseInt(element.id.slice(-1), 2);
         switch (controlName) {
+            case 'checkbox':
+                var value = getComponent(element, controlName).value;
+                rule.value = (value !== '') ? value : undefined;
+                break;
             case 'textbox':
                 rule.value = getComponent(element, controlName).value;
                 break;
@@ -2067,7 +2078,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     rule.value = this.intl.formatDate(selectedDate, format);
                 }
                 else {
-                    rule.value = '';
+                    rule.value = selectedDate;
                 }
                 break;
             case 'multiselect':
@@ -2249,7 +2260,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            this.validatValue(rule, index, ruleElem);
+            this.validatValue(rule, ruleElem, index);
         }
         else {
             if (target.className.indexOf('e-datepicker') > -1) {
@@ -2268,8 +2279,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    QueryBuilder.prototype.validatValue = function (rule, index, ruleElem) {
-        if (this.allowValidation && rule.rules[index].value) {
+    QueryBuilder.prototype.validatValue = function (rule, ruleElem, index) {
+        if (!isNullOrUndefined(index)) {
+            rule = rule.rules[index];
+        }
+        var isObject = typeof (rule.value) === 'object';
+        if (this.allowValidation && (isNullOrUndefined(index) || (isObject ? rule.value.length > 0 : rule.value))) {
             var valElem = ruleElem.querySelectorAll('.e-rule-value .e-control');
             if (valElem[0].className.indexOf('e-tooltip') > -1) {
                 getComponent(valElem[0], 'tooltip').destroy();
@@ -3104,7 +3119,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     rule.value = null;
                 }
             }
-            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && rule.value !== '')) {
+            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
+                rule.value !== undefined))) {
                 // tslint:disable-next-line:no-any
                 var customObj = rule.custom;
                 rule = {

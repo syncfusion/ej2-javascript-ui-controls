@@ -715,6 +715,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     // Animation Related Functions
     private switchView(fromView: HTMLElement, toView: HTMLElement, reverse?: boolean): void {
         if (fromView && toView) {
+            this.trigger('actionBegin', { startList: fromView, endList: toView, isReverse: reverse });
             let fPos: string = fromView.style.position;
             let overflow: string = (this.element.style.overflow !== 'hidden') ? this.element.style.overflow : '';
 
@@ -1806,7 +1807,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
             if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
-                this.switchView(<HTMLElement>ul, <HTMLElement>ele);
+                this.switchView(<HTMLElement>ul, <HTMLElement>ele, false);
             }
             this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {

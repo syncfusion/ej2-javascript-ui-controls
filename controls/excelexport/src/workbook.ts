@@ -1669,7 +1669,7 @@ export class Workbook {
                 if (font.u) {
                     fontStyle += '<u />';
                 }
-                fontStyle += '<sz val="' + this.pixelsToRowHeight(font.sz) + '" />';
+                fontStyle += '<sz val="' + font.sz + '" />';
                 fontStyle += '<color rgb="' + font.color + '" />';
                 fontStyle += '<name val="' + font.name + '" /></font>';
             }

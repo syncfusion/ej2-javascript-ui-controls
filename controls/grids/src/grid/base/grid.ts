@@ -13,7 +13,7 @@ import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex 
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';
-import {AggregateQueryCellInfoEventArgs } from './interface';
+import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
@@ -3769,6 +3769,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         } else {
             return;
+        }
+    }
+
+    /**
+     * @hidden   
+     */
+    public refreshReactColumnTemplateByUid(columnUid: string): void {
+        if ((<{ isReact?: boolean }>this).isReact) {
+            //tslint:disable-next-line:no-any
+            (this as any).clearTemplate(['columnTemplate'], undefined, () => {
+                let cells: string = 'cells';
+                let rowIdx: string = 'index';
+                let rowsObj: Row<Column>[] = this.getRowsObject();
+                let cellIndex: number = this.getNormalizedColumnIndex(columnUid);
+                for (let j: number = 0; j < rowsObj.length; j++) {
+                    let cell: Cell<Column> = rowsObj[j][cells][cellIndex];
+                    let cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
+                    let td: Element = this.getCellFromIndex(j, cellIndex);
+                    cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                }
+            })
         }
     }
 

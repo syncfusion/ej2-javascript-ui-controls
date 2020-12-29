@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+`#306799` - The issue with "deleting any rows in the table removes the first row of the table in the Rich Text Editor" has been resolved.
+
 ## 18.4.30 (2020-12-17)
 
 ### RichTextEditor

@@ -89,7 +89,6 @@ export class MonthAgenda extends Month {
     public onCellClick(event: CellClickEventArgs): void {
         this.parent.quickPopup.quickPopupHide();
         let filterData: Object[] = this.appointmentFiltering(event.startTime);
-        this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
         this.parent.notify(events.eventsLoaded, {});
         this.monthAgendaDate = new Date('' + event.startTime);

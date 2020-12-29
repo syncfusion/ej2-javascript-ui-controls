@@ -46,9 +46,9 @@ export class Column extends ChildProperty<Column> {
 
     /**
      * To lock/unlock the column in the protected sheet.
-     * @default null
+     * @default true
      */
-    @Property(null)
+    @Property(true)
     public isLocked: boolean;
 }
 

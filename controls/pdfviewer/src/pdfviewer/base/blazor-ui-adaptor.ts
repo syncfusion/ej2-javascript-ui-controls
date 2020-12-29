@@ -7,7 +7,10 @@ import { PdfViewer, PdfViewerBase } from '../index';
 export class BlazorUiAdaptor {
     private pdfViewer: PdfViewer = null;
     private pdfViewerBase: PdfViewerBase = null;
-    private totalPageElement: HTMLElement = null;
+    /**
+     * @private
+     */
+    public totalPageElement: HTMLElement = null;
     private currentPageBoxElementContainer: HTMLElement = null;
     private currentPageBoxElement: HTMLInputElement = null;
     private firstPageElement: HTMLElement = null;
@@ -145,7 +148,7 @@ export class BlazorUiAdaptor {
             this.nextPageElement.classList.remove(this.cssClass);
             this.lastPageElement.classList.remove(this.cssClass);
             if (this.pdfViewerBase.pageCount === 1) {
-                if (!this.nextPageElement) {
+                if (!this.nextPageElement.classList.contains(this.cssClass)) {
                     this.nextPageElement.className += this.disableClass;
                 }
                 if (!this.lastPageElement.classList.contains(this.cssClass)) {

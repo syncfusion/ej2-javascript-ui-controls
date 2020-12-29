@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- `304127` - Now, the annotation toolbar items are aligned properly in the annotation toolbar.
+
+## 18.4.31 (2020-12-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
 - `#302213`  - Pixel size is updated properly while using ExportAsImage API.
 - `#300096`  - Font Styles are applied properly for free text annotation.
 - `#303827`  - Annotation customData properties are mapped properly in PDF Viewer.

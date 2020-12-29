@@ -2,7 +2,6 @@ import {
     addClass, Browser, EventHandler, remove, closest, extend,
     formatUnit, setStyleAttribute, isNullOrUndefined
 } from '@syncfusion/ej2-base';
-import { getElement, isBlazor } from '@syncfusion/ej2-base';
 import { ResizeEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
@@ -57,15 +56,6 @@ export class Resize extends ActionBase {
         this.parent.trigger(event.resizeStart, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
             if (resizeEventArgs.cancel) {
                 return;
-            }
-            if (isBlazor()) {
-                if (resizeEventArgs.element) {
-                    resizeEventArgs.element = getElement(resizeEventArgs.element);
-                }
-                (resizeEventArgs.data[this.parent.eventFields.startTime] as Date) = this.parent.getDateTime(
-                    (resizeEventArgs.data[this.parent.eventFields.startTime] as Date));
-                (resizeEventArgs.data[this.parent.eventFields.endTime] as Date) = this.parent.getDateTime(
-                    (resizeEventArgs.data[this.parent.eventFields.endTime] as Date));
             }
             this.actionClass('addClass');
             this.parent.uiStateValues.action = true;

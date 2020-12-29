@@ -24,7 +24,9 @@ function findTextNode(element: HTMLElement, pattern: RegExp, isBlazor?: boolean)
         if (isBlazor && element.getAttribute('data-value')) {
             element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
         } else {
-            element.innerHTML = (element.innerHTML).trim().replace(pattern, '<span class="e-highlight">$1</span>');
+            let value: string = element.childNodes[index].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
+            element.childNodes[index].nodeValue = '';
+            element.innerHTML = element.innerHTML.trim() + value;
         }
         break;
     } else {

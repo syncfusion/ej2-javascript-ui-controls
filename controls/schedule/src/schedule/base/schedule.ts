@@ -1,8 +1,7 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
-import { getElement, removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
-import { IntlBase } from '@syncfusion/ej2-base';
+import { getElement, removeClass, addClass, classList, remove } from '@syncfusion/ej2-base';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ScheduleModel } from './schedule-model';
 import { HeaderRenderer } from '../renderer/header-renderer';
@@ -210,7 +209,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
      * {% codeBlock src='schedule/views/index.md' %}{% endcodeBlock %}
      * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
-     * @blazorType List<ScheduleView>
      */
     @Property(['Day', 'Week', 'WorkWeek', 'Month', 'Agenda'])
     public views: View[] | ViewsModel[];
@@ -220,7 +218,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/selectedDate/index.md' %}{% endcodeBlock %}
      * @default 'new Date()'
      * @aspDefaultValue DateTime.Now
-     * @blazorDefaultValue DateTime.Now
      */
     @Property(new Date())
     public selectedDate: Date;
@@ -229,7 +226,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  Usually, it defaults to the new Date(1900, 0, 1).
      * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
-     * @blazorDefaultValue new DateTime(1900, 1, 1)
      */
     @Property(new Date(1900, 0, 1))
     public minDate: Date;
@@ -238,7 +234,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *  Usually, it defaults to the new Date(2099, 11, 31).
      * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
-     * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public maxDate: Date;
@@ -288,7 +283,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/workDays/index.md' %}{% endcodeBlock %}
      * @default '[1, 2, 3, 4, 5]'
      * @aspType int[]
-     * @blazorType int[]
      */
     @Property([1, 2, 3, 4, 5])
     public workDays: number[];
@@ -550,42 +544,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers after the scheduler component is created.
      * @event
-     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when the scheduler component is destroyed.
      * @event
-     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
     /**
      * Triggers when the scheduler cells are single clicked or on single tap on the same cells in mobile devices.
      * @event
-     * @blazorproperty 'OnCellClick'
      */
     @Event()
     public cellClick: EmitType<CellClickEventArgs>;
     /**
      * Triggers when the scheduler cells are double clicked.
      * @event
-     * @blazorproperty 'OnCellDoubleClick'
      */
     @Event()
     public cellDoubleClick: EmitType<CellClickEventArgs>;
     /**
      * Triggers when the more events indicator are clicked.
      * @event
-     * @blazorproperty 'MoreEventsClicked'
      */
     @Event()
     public moreEventsClick: EmitType<MoreEventsClickArgs>;
     /**
      * Triggers when the scheduler elements are hovered.
      * @event
-     * @blazorproperty 'OnHover'
      * @deprecated
      */
     @Event()
@@ -593,7 +581,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when multiple cells or events are selected on the Scheduler.
      * @event
-     * @blazorproperty 'OnSelect'
      * @deprecated
      */
     @Event()
@@ -601,92 +588,72 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers on beginning of every scheduler action.
      * @event
-     * @blazorproperty 'OnActionBegin'
-     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionBegin: EmitType<ActionEventArgs>;
     /**
      * Triggers on successful completion of the scheduler actions.
      * @event
-     * @blazorproperty 'ActionCompleted'
-     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionComplete: EmitType<ActionEventArgs>;
     /**
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
-     * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
     /**
      * Triggers before the date or view navigation takes place on scheduler.
      * @event
-     * @blazorproperty 'Navigating'
      */
     @Event()
     public navigating: EmitType<NavigatingEventArgs>;
     /**
      * Triggers before each element of the schedule rendering on the page.
      * @event
-     * @blazorproperty 'OnRenderCell'
      */
     @Event()
     public renderCell: EmitType<RenderCellEventArgs>;
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
-     * @blazorproperty 'OnEventClick'
-     * @blazorType Syncfusion.Blazor.Schedule.EventClickArgs<TValue>
      */
     @Event()
     public eventClick: EmitType<EventClickArgs>;
     /**
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
-     * @blazorproperty 'EventRendered'
-     * @blazorType Syncfusion.Blazor.Schedule.EventRenderedArgs<TValue>
      */
     @Event()
     public eventRendered: EmitType<EventRenderedArgs>;
     /**
      * Triggers before the data binds to the scheduler.
      * @event
-     * @blazorproperty 'DataBinding'
-     * @blazorType Syncfusion.Blazor.Schedule.DataBindingEventArgs<TValue>
      */
     @Event()
     public dataBinding: EmitType<ReturnType>;
     /**
      * Triggers before any of the scheduler popups opens on the page.
      * @event
-     * @blazorproperty 'OnPopupOpen'
-     * @blazorType Syncfusion.Blazor.Schedule.PopupOpenEventArgs<TValue>
      */
     @Event()
     public popupOpen: EmitType<PopupOpenEventArgs>;
     /**
      * Triggers before any of the scheduler popups close on the page.
      * @event
-     * @blazorproperty 'OnPopupClose'
-     * @blazorType Syncfusion.Blazor.Schedule.PopupCloseEventArgs<TValue>
      */
     @Event()
     public popupClose: EmitType<PopupCloseEventArgs>;
     /**
      * Triggers when an appointment is started to drag.
      * @event
-     * @blazorproperty 'OnDragStart'
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
     /**
      * Triggers when an appointment is being in a dragged state.
      * @event
-     * @blazorproperty 'Dragging'
      * @deprecated
      */
     @Event()
@@ -694,21 +661,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the dragging of appointment is stopped.
      * @event
-     * @blazorproperty 'Dragged'
      */
     @Event()
     public dragStop: EmitType<DragEventArgs>;
     /**
      * Triggers when an appointment is started to resize.
      * @event
-     * @blazorproperty 'OnResizeStart'
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
     /**
      * Triggers when an appointment is being in a resizing action.
      * @event
-     * @blazorproperty 'Resizing'
      * @deprecated
      */
     @Event()
@@ -716,15 +680,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Triggers when the resizing of appointment is stopped.
      * @event
-     * @blazorproperty 'Resized'
      */
     @Event()
     public resizeStop: EmitType<ResizeEventArgs>;
     /**
      * Triggers once the event data is bound to the scheduler.
      * @event
-     * @blazorproperty 'DataBound'
-     * @blazorType Syncfusion.Blazor.Schedule.DataBoundEventArgs<TValue>
      */
     @Event()
     public dataBound: EmitType<ReturnType>;
@@ -742,10 +703,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public render(): void {
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            (this as any).interopAdaptor.invokeMethodAsync('SetAdaptive', this.isAdaptive);
-        }
         let addClasses: string[] = [];
         let removeClasses: string[] = [];
         addClasses.push(cls.ROOT);
@@ -784,8 +741,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.inlineModule = new InlineEdit(this);
         this.initializeDataModule();
-        this.on(events.dataReady, this.resetEventTemplates, this);
-        this.on(events.eventsLoaded, this.updateEventTemplates, this);
         this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
@@ -802,9 +757,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public isServerRenderer(view: View = this.currentView): boolean {
         // tslint:disable-next-line:max-line-length
         let views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'MonthAgenda', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
-        if (isBlazor() && (views.indexOf(view) !== -1)) {
-            return true;
-        }
         return false;
     }
 
@@ -838,124 +790,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.resourceCollection = args;
         this.renderElements(true);
         this.layoutReady();
-    }
-
-    /** @hidden */
-    public updateLayoutTemplates(): void {
-        let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
-        if (this.isServerRenderer(view.option)) {
-            return;
-        }
-        if (this.cellHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.cellHeaderTemplateName !== '') {
-            let tempID: string = this.element.id + '_' + this.activeViewOptions.cellHeaderTemplateName + 'cellHeaderTemplate';
-            updateBlazorTemplate(tempID, 'CellHeaderTemplate', view);
-        }
-        if (this.dateHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.dateHeaderTemplateName !== '') {
-            let templateName: string = 'dateHeaderTemplate';
-            let tempID: string = this.element.id + '_' + this.activeViewOptions.dateHeaderTemplateName + templateName;
-            updateBlazorTemplate(tempID, 'DateHeaderTemplate', view);
-        }
-        if (this.cellTemplate) {
-            updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
-        }
-        if (this.activeViewOptions.cellTemplateName !== '') {
-            let tempID: string = this.element.id + '_' + this.activeViewOptions.cellTemplateName + 'cellTemplate';
-            updateBlazorTemplate(tempID, 'CellTemplate', view);
-        }
-        if (this.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.resourceHeaderTemplateName !== '') {
-            let templateName: string = 'resourceHeaderTemplate';
-            let tempID: string = this.element.id + '_' + this.activeViewOptions.resourceHeaderTemplateName + templateName;
-            updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
-        }
-        if (this.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this.timeScale);
-        }
-        if (this.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this.timeScale);
-        }
-    }
-
-    /** @hidden */
-    public resetLayoutTemplates(): void {
-        let view: ViewsData = this.viewCollections[this.activeView.viewIndex];
-        if (this.isServerRenderer(view.option)) {
-            return;
-        }
-        if (this.cellHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate');
-        }
-        if (view.cellHeaderTemplate !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.cellHeaderTemplateName + 'cellHeaderTemplate', 'CellHeaderTemplate');
-        }
-        if (this.dateHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (view.dateHeaderTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.dateHeaderTemplateName + 'dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (this.cellTemplate) {
-            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
-        }
-        if (view.cellTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.cellTemplateName + 'cellTemplate', 'CellTemplate');
-        }
-        if (this.resourceHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
-        }
-        if (view.resourceHeaderTemplateName !== '') {
-            let templateName: string = 'ResourceHeaderTemplate';
-            resetBlazorTemplate(this.element.id + '_' + view.resourceHeaderTemplateName + 'resourceHeaderTemplate', templateName);
-        }
-        if (this.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate');
-        }
-        if (this.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate');
-        }
-    }
-
-    /** @hidden */
-    public updateEventTemplates(): void {
-        let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
-        let viewCollections: ViewsData = this.viewCollections[this.viewIndex];
-        if (this.eventSettings.template) {
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings, false);
-        }
-        if (this.activeViewOptions.eventTemplateName !== '') {
-            let tempID: string = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
-            updateBlazorTemplate(tempID, 'EventTemplate', view, false);
-        }
-        if (viewCollections.option === 'Agenda' || viewCollections.option === 'MonthAgenda' || viewCollections.option === 'TimelineYear') {
-            this.updateLayoutTemplates();
-        }
-    }
-
-    /** @hidden */
-    public resetEventTemplates(): void {
-        let view: ViewsData = this.viewCollections[this.activeView.viewIndex];
-        if (this.eventSettings.template) {
-            // tslint:disable-next-line:no-any
-            (blazorTemplates as any)[this.element.id + '_eventTemplate'] = [];
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
-        }
-        if (view.eventTemplateName !== '') {
-            let tempID: string = this.element.id + '_' + view.eventTemplateName + 'eventTemplate';
-            // tslint:disable-next-line:no-any
-            (blazorTemplates as any)[tempID] = [];
-            updateBlazorTemplate(tempID, 'EventTemplate', this.views[this.activeView.viewIndex] as ViewsModel);
-        }
-        if (view.option === 'Agenda' || view.option === 'MonthAgenda' || view.option === 'TimelineYear') {
-            this.resetLayoutTemplates();
-        }
     }
 
     /**
@@ -1086,7 +920,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (!isModuleLoad && selectedView) {
             this.setScheduleProperties({ currentView: selectedView });
-            this.onServerDataBind();
         }
         if (this.viewIndex === -1) {
             let currentIndex: number = this.getViewIndex(this.currentView);
@@ -1095,14 +928,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    /** @hidden */
-    public onServerDataBind(): void {
-        //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
-        if (this.bulkChanges && this.bulkChanges.selectedDate) {
-            this.bulkChanges.selectedDate = util.addLocalOffset(this.bulkChanges.selectedDate as Date);
-        }
-        this.serverDataBind();
-    }
     private getActiveViewOptions(): ViewsData {
         let timeScale: TimeScaleModel = {
             enable: this.timeScale.enable,
@@ -1212,17 +1037,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public getDayNames(type: string): string[] {
-        if (isBlazor() && type === 'narrow') {
-            type = 'short';
-        }
         let culShortNames: string[] = [];
         let cldrObj: string[];
         let nameSpace: string = '';
         if (this.locale === 'en' || this.locale === 'en-US') {
-            nameSpace = isBlazor() ? 'days.' : 'days.stand-alone.';
+            nameSpace = 'days.stand-alone.';
             cldrObj = <string[]>(getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            nameSpace = isBlazor() ? '' + this.locale + '.dates.days.' + type :
+            nameSpace =
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type;
             cldrObj = <string[]>(
                 getValue(nameSpace, cldrData));
@@ -1233,10 +1055,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return culShortNames;
     }
     private setCldrTimeFormat(): void {
-        if (isBlazor()) {
-            this.timeFormat = IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
-            return;
-        }
         if (this.locale === 'en' || this.locale === 'en-US') {
             this.timeFormat = <string>(getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         } else {
@@ -1284,10 +1102,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             return;
         }
         this.viewIndex = index;
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            (this as any).interopAdaptor.invokeMethodAsync('SetViewIndex', this.viewIndex);
-        }
         let args: ActionEventArgs = { requestType: 'viewNavigate', cancel: false, event: event };
         this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
@@ -1304,11 +1118,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
-                        this.onServerDataBind();
                         this.animateLayout();
-                        if (isBlazor() && this.virtualScrollModule) {
-                            this.resetScrollTop();
-                        }
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
                     }
@@ -1334,11 +1144,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                             this.headerModule.setCalendarDate(navigationArgs.currentDate);
                         }
                         this.initializeView(this.currentView);
-                        this.onServerDataBind();
                         this.animateLayout();
-                        if (isBlazor() && this.virtualScrollModule) {
-                            this.resetScrollTop();
-                        }
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
                     }
@@ -1385,7 +1191,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return 'Day';
     }
     private animateLayout(): void {
-        if (isBlazor() || !this.activeView.element) {
+        if (!this.activeView.element) {
             return;
         }
         new Animation({ duration: 600, name: 'FadeIn', timingFunction: 'easeIn' }).animate(this.activeView.element);
@@ -1408,9 +1214,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.allowResizing) {
             modules.push({ member: 'resize', args: [this] });
         }
-        if (!isBlazor() || isBlazor() && this.isServerRendered && this.allowExcelExport) {
-            modules.push({ member: 'excelExport', args: [this] });
-        }
+        modules.push({ member: 'excelExport', args: [this] });
         modules.push({ member: 'iCalendarExport', args: [this] });
         modules.push({ member: 'iCalendarImport', args: [this] });
         modules.push({ member: 'print', args: [this] });
@@ -1769,7 +1573,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             resourceName = this.quickPopup.getResourceText({ event: event } as EventClickArgs, 'event') + constantText;
         }
         let recordSubject: string = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default)) as string;
-        let skeleton: string = isBlazor() ? 'F' : 'full';
+        let skeleton: string = 'full';
         let startDateText: string = this.globalize.formatDate(event[this.eventFields.startTime] as Date, {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
@@ -2284,7 +2088,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             startTime: startTime,
             endTime: endTime,
             isAllDay: this.isAllDayCell(firstTd),
-            element: isBlazor() ? firstTd as HTMLElement : tdCol as HTMLElement | HTMLElement[]
+            element: tdCol as HTMLElement | HTMLElement[]
         };
         let groupIndex: string = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
@@ -2306,10 +2110,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * To get the resource collection
      * @method getResourceCollections
      * @return {ResourcesModel[]}
-     * @deprecated
      */
     public getResourceCollections(): ResourcesModel[] {
         return this.resourceCollection;
+    }
+
+    /**
+     * To set the resource collection
+     * @method setResourceCollections
+     * @param {ResourcesModel[]} resourceCol Accepts the resource collections in ResourcesModel type
+     */
+    public setResourceCollections(resourceCol: ResourcesModel[]): void {
+        this.setProperties({ resources: resourceCol }, false);
     }
 
     /**
@@ -2781,9 +2593,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @return {void}
      */
     public destroy(): void {
-        if (isBlazor()) {
-            this.isDestroyed = true;
-        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;

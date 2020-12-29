@@ -23,7 +23,6 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 var CLS_VERTICAL = 'e-vertical';
 var CLS_ITEMS = 'e-toolbar-items';
-var BZ_ITEMS = 'e-blazor-toolbar-items';
 var CLS_ITEM = 'e-toolbar-item';
 var CLS_RTL = 'e-rtl';
 var CLS_SEPARATOR = 'e-separator';
@@ -176,10 +175,7 @@ var Toolbar = /** @class */ (function (_super) {
                 document.body.appendChild(_this.element.querySelector(ele)).style.display = 'none';
             }
         });
-        if (sf.base.isBlazor() && this.isServerRendered) {
-            this.resetServerItems();
-        }
-        while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
+        while (this.element.lastElementChild) {
             this.element.removeChild(this.element.lastElementChild);
         }
         if (this.trgtEle) {
@@ -558,30 +554,7 @@ var Toolbar = /** @class */ (function (_super) {
         }
         if (clst) {
             var tempItem = this.items[this.tbarEle.indexOf(clst)];
-            if (tempItem && sf.base.isBlazor() && this.isServerRendered) {
-                itemObj = {
-                    id: tempItem.id,
-                    text: tempItem.text,
-                    width: tempItem.width,
-                    cssClass: tempItem.cssClass,
-                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
-                    disabled: tempItem.disabled,
-                    prefixIcon: tempItem.prefixIcon,
-                    suffixIcon: tempItem.suffixIcon,
-                    visible: tempItem.visible,
-                    overflow: tempItem.overflow,
-                    template: tempItem.template,
-                    type: tempItem.type,
-                    showTextOn: tempItem.showTextOn,
-                    htmlAttributes: tempItem.htmlAttributes,
-                    tooltipText: tempItem.tooltipText,
-                    align: tempItem.align,
-                    click: tempItem.click
-                };
-            }
-            else {
-                itemObj = tempItem;
-            }
+            itemObj = tempItem;
         }
         var eventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !sf.base.isNullOrUndefined(itemObj.click)) {
@@ -650,7 +623,7 @@ var Toolbar = /** @class */ (function (_super) {
     };
     Toolbar.prototype.renderControl = function () {
         var ele = this.element;
-        this.trgtEle = (ele.children.length > 0 && (!sf.base.isBlazor() && !this.isServerRendered)) ? ele.querySelector('div') : null;
+        this.trgtEle = (ele.children.length > 0) ? ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
         this.renderLayout();
@@ -672,27 +645,7 @@ var Toolbar = /** @class */ (function (_super) {
             this.tbarEle = [];
         }
         for (var i = 0; i < items.length; i++) {
-            if (sf.base.isBlazor() && this.isServerRendered) {
-                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
-                var itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
-                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
-                if (!innerItem) {
-                    continue;
-                }
-                if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
-                    this.popupPriCount++;
-                }
-                if (items[i].htmlAttributes) {
-                    this.setAttr(items[i].htmlAttributes, innerItem);
-                }
-                if (items[i].type === 'Button') {
-                    sf.base.EventHandler.clearEvents(innerItem);
-                    sf.base.EventHandler.add(innerItem, 'click', this.itemClick, this);
-                }
-            }
-            else {
-                innerItem = this.renderSubComponent(items[i], i);
-            }
+            innerItem = this.renderSubComponent(items[i], i);
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
             }
@@ -717,25 +670,6 @@ var Toolbar = /** @class */ (function (_super) {
             this.notify('render-react-toolbar-template', this[portals]);
             this.renderReactTemplates();
         }
-    };
-    Toolbar.prototype.serverItemsRerender = function () {
-        this.destroyMode();
-        this.resetServerItems();
-        this.serverItemsRefresh();
-    };
-    Toolbar.prototype.serverItemsRefresh = function () {
-        var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
-        if (wrapBlaEleDom.children.length > 0) {
-            this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
-            this.renderLayout();
-            this.refreshOverflow();
-        }
-    };
-    Toolbar.prototype.resetServerItems = function () {
-        var wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
-        var itemEles = [].slice.call(sf.base.selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
-        sf.base.append(itemEles, wrapBlaEleDom);
-        this.clearProperty();
     };
     /** @hidden */
     Toolbar.prototype.changeOrientation = function () {
@@ -2044,10 +1978,6 @@ var Toolbar = /** @class */ (function (_super) {
                                 this.tbarEle.splice(this.items.length, 1);
                             }
                         }
-                    }
-                    else if (sf.base.isBlazor() && this.isServerRendered) {
-                        this.serverItemsRerender();
-                        this.notify('onItemsChanged', {});
                     }
                     else {
                         this.itemsRerender(newProp.items);

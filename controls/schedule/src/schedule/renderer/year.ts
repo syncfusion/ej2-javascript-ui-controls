@@ -1,4 +1,4 @@
-import { EventHandler, formatUnit, remove, createElement, addClass, closest, prepend, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, remove, createElement, addClass, closest, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
 import { IRenderer, EventClickArgs, TdData, NotifyEventArgs } from '../base/interface';
@@ -183,8 +183,8 @@ export class Year extends ViewBase implements IRenderer {
         this.parent.workHours.end): TdData[] {
         let dateCol: TdData[] = [{
             date: renderDates[0], type: 'dateHeader', className: [cls.HEADER_CELLS_CLASS], colSpan: 1, workDays: workDays,
-            startHour: new Date(+this.parent.globalize.parseDate(startHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' })),
-            endHour: new Date(+this.parent.globalize.parseDate(endHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' }))
+            startHour: new Date(+this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' })),
+            endHour: new Date(+this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' }))
         }];
         return dateCol;
     }
@@ -298,7 +298,7 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getDateRangeText(): string {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, isBlazor() ? { format: 'yyyy' } : { skeleton: 'y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
     }
 
     public addEventListener(): void {
@@ -351,10 +351,6 @@ export class Year extends ViewBase implements IRenderer {
         if (this.element) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
-            }
-            if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
             }
             remove(this.element);
             this.element = null;

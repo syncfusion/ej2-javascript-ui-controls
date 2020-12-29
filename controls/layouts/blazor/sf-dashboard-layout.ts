@@ -147,6 +147,7 @@ class SfDashboardLayout {
 
     public initialize(property : IDashboard): void {
         this.preRender(property);
+        if (isNullOrUndefined(this.panels)) { this.panels = []; }
         for (let i: number = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
             this.panelElements.push(<HTMLElement>(this.element.querySelectorAll('.e-panel')[i]));
         }
@@ -1233,6 +1234,7 @@ class SfDashboardLayout {
                         let model: PanelModel = this.getCellInstance(this.mainElement.id);
                         if (this.allowPushing &&
                             this.collisions(model.row, model.col, model.sizeX, model.sizeY, this.mainElement).length > 0) {
+                            this.setHolderPosition(args);
                             this.updatePanelPosition(model.id, model.col, model.row);
                             this.updatePanelLayout(this.mainElement, model);
                         } else {
@@ -1333,6 +1335,7 @@ class SfDashboardLayout {
             this.oldRowCol[(args.element.id)] = { row: row, col: col };
             this.updateOldRowColumn();
             if (this.startCol !== endCol || this.startRow !== endRow) {
+                this.setHolderPosition(args);
                 if (this.startCol !== endCol) {
                     this.startRow = endRow;
                 }
@@ -1359,6 +1362,7 @@ class SfDashboardLayout {
             this.moveItemsUpwards();
         }
         if (!this.allowPushing) {
+            this.setHolderPosition(args);
             return;
         }
     }
@@ -1832,6 +1836,24 @@ class SfDashboardLayout {
         }
         this.removeAllPanel();
     }
+    protected setHolderPosition(args: DragEventArgs): void {
+        let cellSizeOne: number;
+        let cellSizeZero: number;
+        let sizeY: number = parseInt(args.element.getAttribute('data-sizeY'), 10);
+        let col: number = parseInt(args.element.getAttribute('data-col'), 10);
+        let row: number = parseInt(args.element.getAttribute('data-row'), 10);
+        let sizeX: number = parseInt(args.element.getAttribute('data-sizeX'), 10);
+        let widthValue: number = this.getCellSize()[0];
+        let heightValue: number = this.getCellSize()[1];
+        let top: number = row === 0 ? 0 : (((row) * (heightValue + this.cellSpacing[1])));
+        let left: number = col === 0 ? 0 : (((col) * (widthValue + this.cellSpacing[0])));
+        cellSizeOne = this.getCellSize()[1];
+        cellSizeZero = this.getCellSize()[0];
+        this.shadowEle.style.top = top + 'px';
+        this.shadowEle.style.left = left + 'px';
+        this.shadowEle.style.height = ((sizeY * cellSizeOne) + ((sizeY - 1) * this.cellSpacing[1])) + 'px';
+        this.shadowEle.style.width = ((sizeX * cellSizeZero) + ((sizeX - 1) * this.cellSpacing[0])) + 'px';
+    };
 }
 // tslint:disable-next-line
 let DashboardLayout: object = {

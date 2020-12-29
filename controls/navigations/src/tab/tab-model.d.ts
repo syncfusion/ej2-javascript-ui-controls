@@ -1,4 +1,4 @@
-﻿import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { isBlazor, getRandomId, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';import { ToolbarModel } from '../toolbar';
+﻿import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { getRandomId, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';import { ToolbarModel } from '../toolbar';
 import {HeaderPosition,HeightStyles,ContentLoad,AddEventArgs,SelectingEventArgs,SelectEventArgs,RemoveEventArgs} from "./tab";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -11,7 +11,6 @@ export interface TabActionSettingsModel {
      * Specifies the animation effect for displaying Tab content.
      * @default 'SlideLeftIn'
      * @aspType string
-     * @blazorType string
      */
     effect?: 'None' | Effect;
 
@@ -195,7 +194,6 @@ export interface TabModel extends ComponentModel{
      * - Content: Based on the corresponding content height, the content panel height is set.
      * - Fill: Based on the parent height, the content panel height is set.
      * @default 'Content'
-     * @deprecated
      */
     heightAdjustMode?: HeightStyles;
 
@@ -230,7 +228,6 @@ export interface TabModel extends ComponentModel{
     /**
      * Defines whether to allow the cross-scripting site or not.
      * @default false
-     * @deprecated
      */
     enableHtmlSanitizer?: boolean;
 
@@ -257,56 +254,48 @@ export interface TabModel extends ComponentModel{
     /**
      * The event will be fired once the component rendering is completed.
      * @event
-     * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
 
     /**
      * The event will be fired before adding the item to the Tab.
      * @event
-     * @blazorProperty 'Adding'
      */
     adding?: EmitType<AddEventArgs>;
 
     /**
      * The event will be fired after adding the item to the Tab.
      * @event
-     * @blazorProperty 'Added'
      */
     added?: EmitType<AddEventArgs>;
 
     /**
      * The event will be fired before the item gets selected.
      * @event
-     * @blazorProperty 'Selecting'
      */
     selecting?: EmitType<SelectingEventArgs>;
 
     /**
      * The event will be fired after the item gets selected.
      * @event
-     * @blazorProperty 'Selected'
      */
     selected?: EmitType<SelectEventArgs>;
 
     /**
      * The event will be fired before removing the item from the Tab.
      * @event
-     * @blazorProperty 'Removing'
      */
     removing?: EmitType<RemoveEventArgs>;
 
     /**
      * The event will be fired after removing the item from the Tab.
      * @event
-     * @blazorProperty 'Removed'
      */
     removed?: EmitType<RemoveEventArgs>;
 
     /**
      * The event will be fired when the component gets destroyed.
      * @event
-     * @blazorProperty 'Destroyed'
      */
     destroyed?: EmitType<Event>;
 

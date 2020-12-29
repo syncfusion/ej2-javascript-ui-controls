@@ -14705,7 +14705,7 @@ function updateShape(node, actualObject, oldObject, diagram) {
             updateShapeContent(content, actualObject, diagram);
     }
     if (node.shape.type === undefined || node.shape.type === oldObject.shape.type || (isBlazor() && node.shape.type === 'UmlActivity')) {
-        updateContent(node, actualObject, diagram);
+        updateContent(node, actualObject, diagram, oldObject);
     }
     else {
         content.width = actualObject.wrapper.children[0].width;
@@ -14718,7 +14718,7 @@ function updateShape(node, actualObject, oldObject, diagram) {
     }
 }
 /** @private */
-function updateContent(newValues, actualObject, diagram) {
+function updateContent(newValues, actualObject, diagram, oldObject) {
     if (Object.keys(newValues.shape).length > 0) {
         if (actualObject.shape.type === 'Path' && newValues.shape.data !== undefined) {
             actualObject.wrapper.children[0].data = newValues.shape.data;
@@ -14768,6 +14768,14 @@ function updateContent(newValues, actualObject, diagram) {
         }
         else if (newValues.shape.cornerRadius !== undefined) {
             actualObject.wrapper.children[0].cornerRadius = newValues.shape.cornerRadius;
+        }
+        else if (actualObject.shape.type === 'Basic' && (oldObject && oldObject.shape.shape === 'Rectangle')) {
+            let basicshape = new PathElement();
+            let basicshapedata = getBasicShape((isBlazor()) ? actualObject.shape.basicShape :
+                actualObject.shape.shape);
+            basicshape.data = basicshapedata;
+            let content = basicshape;
+            updateShapeContent(content, actualObject, diagram);
         }
         else if (((isBlazor() && newValues.shape.basicShape !== undefined) ||
             newValues.shape.shape !== undefined)) {
@@ -28584,7 +28592,9 @@ class CommandHandler {
                 'methodName': 'UpdateBlazorDiagramModelLayers',
                 'diagramobj': JSON.stringify(updatedModel), 'isRemove': isRemove
             };
-            window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+            if (!this.diagram.isLoading) {
+                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+            }
         }
     }
     /** @private */
@@ -30352,7 +30362,9 @@ class CommandHandler {
         else {
             if (window && window[blazor] && JSON.stringify(this.deepDiffer.diagramObject) !== '{}') {
                 let obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
-                window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+                if (!this.diagram.isLoading) {
+                    window[blazorInterop].updateBlazorProperties(obj, this.diagram);
+                }
             }
         }
         //this.diagram.enableServerDataBinding(true);
@@ -52262,9 +52274,6 @@ class HierarchicalTree {
             let align;
             let rows = this.splitChildrenInRows(layout, shape);
             let unique = info.tree.children.length === 5 && rows[0].length === 3;
-            if (info.tree.children.length > 5) {
-                unique = rows[0].length === Math.round(info.tree.children.length / 2);
-            }
             let leftTree = [];
             let rightTree = [];
             if (!unique) {
@@ -52434,9 +52443,6 @@ class HierarchicalTree {
         let dimensions = treeInfo.dimensions;
         let lev = treeInfo.level;
         let unique = info.tree.children.length === 5 && rows[0].length === 3;
-        if (info.tree.children.length > 5) {
-            unique = rows[0].length === Math.round(info.tree.children.length / 2);
-        }
         if (unique && i === 1) {
             max = (rightBounds[0].right - rightBounds[0].x) >= (rightBounds[1].right - rightBounds[1].x) ? 0 : 1;
         }
@@ -52672,7 +52678,10 @@ class HierarchicalTree {
         while (childNodes > 0) {
             rows[rows.length] = children.splice(0, column);
             childNodes -= column;
-            if (childNodes < column) {
+            if (childNodes === 3) {
+                column = 2;
+            }
+            else if (childNodes < column) {
                 column = childNodes;
             }
         }

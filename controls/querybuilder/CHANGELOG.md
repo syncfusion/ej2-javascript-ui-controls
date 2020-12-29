@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with validation is fixed.
+
 ## 18.3.52 (2020-12-01)
 
 ### QueryBuilder

@@ -637,6 +637,8 @@ export class StampAnnotation {
         let author: string;
         let isCommentsLock: boolean;
         // tslint:disable-next-line
+        let isCustomStamp: boolean = this.pdfViewer.customStampSettings.left > 0 && this.pdfViewer.customStampSettings.top > 0 ? true : false;
+        // tslint:disable-next-line
         let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
         // tslint:disable-next-line
         let allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ? this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
@@ -679,7 +681,21 @@ export class StampAnnotation {
         // tslint:disable-next-line
         let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
 
-        if (isExistingStamp) {
+        if (isExistingStamp || isCustomStamp) {
+            if (!annotation) {
+                this.isStampAnnotSelected = false;
+                annotation = annot;
+                // tslint:disable-next-line
+                annotation.Note = '';
+                // tslint:disable-next-line
+                annotation.State = '';
+                // tslint:disable-next-line
+                annotation.StateModel = '';
+                let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('stamp', pageIndex + 1);
+                if (commentsDivid) {
+                    document.getElementById(commentsDivid).id = annotationName;
+                }
+            }
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
                 stampAnnotationType: 'image', author: author, allowedInteractions: allowedInteractions, modifiedDate: modifiedDate, subject: '',

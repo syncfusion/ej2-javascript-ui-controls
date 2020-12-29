@@ -1,7 +1,6 @@
-import { isNullOrUndefined, extend, EventHandler, formatUnit, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, EventHandler, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { View } from '../base/type';
 import { ViewBase, ViewHelper } from './view-base';
 import { VerticalEvent } from '../event-renderer/vertical-view';
 import { MonthEvent } from '../event-renderer/month';
@@ -405,7 +404,6 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(event.contentReady, {});
-        this.parent.updateLayoutTemplates();
     }
     public renderHeader(): void {
         let tr: Element = createElement('tr');
@@ -760,21 +758,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                let view: View = this.parent.viewCollections[this.viewIndex].option;
-                if (this.parent.isServerRenderer(view)) {
-                    if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'TimelineYear') {
-                        this.element.style.display = 'none';
-                    }
-                    this.parent.resetEventTemplates();
-                } else {
-                    this.parent.resetLayoutTemplates();
-                    this.parent.resetEventTemplates();
-                    remove(this.element);
-                }
-            } else {
-                remove(this.element);
-            }
+            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();

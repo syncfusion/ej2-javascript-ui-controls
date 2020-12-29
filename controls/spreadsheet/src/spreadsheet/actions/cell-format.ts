@@ -74,7 +74,14 @@ export class CellFormat {
                         }
                     } else {
                         if (!this.checkHeight) { this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate); }
-                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
+                        let isFontSize: boolean = false;
+                        if (args.style.fontSize) {
+                            isFontSize = true;
+                        }
+                        if (cell && cell.children[0] && cell.children[0].className === 'e-cf-databar' && args.style.fontSize) {
+                            (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = args.style.fontSize;
+                        }
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, 0, isFontSize);
                     }
                 }
             }
@@ -82,12 +89,14 @@ export class CellFormat {
             this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
         }
     }
-    private updateRowHeight(rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize: number = 0): void {
+    private updateRowHeight(
+        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize: number = 0, isFontSize?: boolean): void {
         if (this.checkHeight) {
             let hgt: number = 0;
             let maxHgt: number;
             let sheet: SheetModel = this.parent.getActiveSheet();
             let cell: CellModel = getCell(rowIdx, colIdx, sheet);
+            let td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
             hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
                 getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
             if (cell && !isNullOrUndefined(cell.value)) {
@@ -105,6 +114,13 @@ export class CellFormat {
                     }
                     hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
                 }
+            }
+            if (hgt + borderSize < 20 && isFontSize && getMaxHgt(sheet, rowIdx) >= 20) {
+                hgt = 20; // default height
+            }
+            if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {
+                (td.children[0] as HTMLElement).style.height = '100%';
+                (td.children[0].firstElementChild.nextElementSibling as HTMLElement).style.height = '100%';
             }
             setMaxHgt(sheet, rowIdx, colIdx, hgt + borderSize);
             if (isLastCell) {

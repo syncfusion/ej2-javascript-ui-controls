@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.31 (2020-12-22)
+## 18.4.32 (2020-12-29)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Font size is set correctly in Grid to Excel export.
+
+## 18.4.30 (2020-12-17)
 
 ### Excel Export
 

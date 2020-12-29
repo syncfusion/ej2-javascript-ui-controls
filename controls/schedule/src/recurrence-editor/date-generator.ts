@@ -1,4 +1,4 @@
-import { isNullOrUndefined, L10n, getDefaultDateObject, getValue, cldrData, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, getDefaultDateObject, getValue, cldrData } from '@syncfusion/ej2-base';
 import { MS_PER_DAY, addDays, resetTime, capitalizeFirstWord } from '../schedule/base/util';
 import { CalendarUtil, Islamic, Gregorian, CalendarType } from '../common/calendar-util';
 import { Timezone } from '../schedule/timezone/timezone';
@@ -13,14 +13,14 @@ export function generateSummary(rule: string, localeObject: L10n, locale: string
     let cldrObj1: string[];
     let calendarMode: string = calendarType.toLowerCase();
     if (locale === 'en' || locale === 'en-US') {
-        let nameSpace1: string = isBlazor() ? 'months.abbreviated' : 'months.stand-alone.abbreviated';
-        let nameSpace: string = isBlazor() ? 'days.abbreviated' : 'days.stand-alone.abbreviated';
+        let nameSpace1: string = 'months.stand-alone.abbreviated';
+        let nameSpace: string = 'days.stand-alone.abbreviated';
         cldrObj1 = <string[]>(getValue(nameSpace1, getDefaultDateObject(calendarMode)));
         cldrObj = <string[]>(getValue(nameSpace, getDefaultDateObject(calendarMode)));
     } else {
-        let nameSpace1: string = isBlazor() ? locale + '.dates.months.abbreviated' :
+        let nameSpace1: string =
             'main.' + locale + '.dates.calendars.' + calendarMode + '.months.stand-alone.abbreviated';
-        let nameSpace: string = isBlazor() ? locale + '.dates.days.abbreviated' :
+        let nameSpace: string =
             'main.' + locale + '.dates.calendars.' + calendarMode + '.days.stand-alone.abbreviated';
         cldrObj1 =
             <string[]>(getValue(nameSpace1, cldrData));

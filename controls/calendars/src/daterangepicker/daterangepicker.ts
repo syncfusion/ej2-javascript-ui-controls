@@ -1976,6 +1976,14 @@ export class DateRangePicker extends CalendarBase {
                         } else {
                             removeClass([ele], [RANGEHOVER]);
                         }
+                        if (ele.classList.contains(SELECTED) && ele.classList.contains(ENDDATE) &&
+                        (+eleDateValue !== +this.endValue)) {
+                            removeClass([ele], [SELECTED]);
+                            removeClass([ele], [ENDDATE]);
+                        }
+                        if (ele.classList.contains(RANGEHOVER) && (+eleDateValue > +this.endValue)) {
+                            removeClass([ele], [RANGEHOVER]);
+                        }
                         if (!ele.classList.contains(OTHERMONTH)) {
                             let startDateValue: Date = new Date(+this.startValue);
                             let eleDateValue: Date = new Date(+eleDate);
@@ -4331,6 +4339,21 @@ export class DateRangePicker extends CalendarBase {
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
         this.inputElement.parentElement.appendChild(this.secondHiddenChild);
     }
+    private setMinMaxDays (): void {
+        if (this.isPopupOpen()) {
+            this.removeClassDisabled();
+            this.checkMinMaxDays();
+            if (this.isMobile) {
+                this.selectableDates();
+            }
+            if (!this.strictMode && (isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue))) {
+                this.removeSelection();
+            } else {
+                this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
+            }
+            this.updateHeader();
+        }
+    }
     /**
      * Called internally if any of the property value changed.
      * returns void
@@ -4340,7 +4363,10 @@ export class DateRangePicker extends CalendarBase {
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
         let format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (let prop of Object.keys(newProp)) {
-            this.hide(null);
+            let openPopup: string[] = ['maxDays', 'minDays'];
+            if (openPopup.indexOf(prop) < 0) {
+                this.hide(null);
+            }
             switch (prop) {
                 case 'width':
                     this.setEleWidth(this.width);
@@ -4468,10 +4494,12 @@ export class DateRangePicker extends CalendarBase {
                 case 'minDays':
                     this.setProperties({ minDays: newProp.minDays }, true);
                     this.refreshChange();
+                    this.setMinMaxDays();
                     break;
                 case 'maxDays':
                     this.setProperties({ maxDays: newProp.maxDays }, true);
                     this.refreshChange();
+                    this.setMinMaxDays();
                     break;
                 case 'min':
                     this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);

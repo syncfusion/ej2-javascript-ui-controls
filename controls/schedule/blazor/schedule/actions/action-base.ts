@@ -354,7 +354,7 @@ export class ActionBase {
     public createAppointmentElement(record: { [key: string]: Object }, resIndex: number, isCloneElement: boolean = false): HTMLElement {
         let appointmentWrapper: HTMLElement = createElement('div', {
             className: cls.APPOINTMENT_CLASS,
-            innerHTML: this.cloneEventDetail.innerText
+            innerHTML: this.cloneEventDetail.outerHTML
         });
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             appointmentWrapper.setAttribute('data-group-index', resIndex.toString());

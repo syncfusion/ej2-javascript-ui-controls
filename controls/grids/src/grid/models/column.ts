@@ -7,7 +7,6 @@ import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer, HeaderValueAccessor } from '../base/type';
 import { getUid, templateCompiler, getForeignData, getObject } from '../base/util';
-import { Row } from './row';
 
 /**
  * Represents Grid `Column` model class.
@@ -586,15 +585,7 @@ export class Column {
             this[keys[i]] = column[keys[i]];
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact && keys[i] === 'template') {
-                //tslint:disable-next-line:no-any
-                (this.parent as any).clearTemplate(['columnTemplate'], undefined, () => {
-                    let rowsObj: Row<Column>[] = this.parent.getRowsObject();
-                    let pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
-                    for (let j: number = 0; j < rowsObj.length; j++) {
-                        let key: string | number = rowsObj[j].data[pKeyField];
-                        this.parent.setCellValue(key, this.field, rowsObj[j][this.field]);
-                    }
-                });
+                this.parent.refreshReactColumnTemplateByUid(this.uid);
             }
         }
     }

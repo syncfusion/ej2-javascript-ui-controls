@@ -114,7 +114,9 @@ function findTextNode(element, pattern, isBlazor$$1) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
             }
             else {
-                element.innerHTML = (element.innerHTML).trim().replace(pattern, '<span class="e-highlight">$1</span>');
+                let value = element.childNodes[index].nodeValue.trim().replace(pattern, '<span class="e-highlight">$1</span>');
+                element.childNodes[index].nodeValue = '';
+                element.innerHTML = element.innerHTML.trim() + value;
             }
             break;
         }
@@ -547,7 +549,8 @@ let DropDownBase = class DropDownBase extends Component {
         for (let option of options) {
             let json = {};
             json[fields.text] = option.innerText;
-            json[fields.value] = option.getAttribute(fields.value) ? option.getAttribute(fields.value) : option.innerText;
+            json[fields.value] = !isNullOrUndefined(option.getAttribute(fields.value)) ?
+                option.getAttribute(fields.value) : option.innerText;
             items.push(json);
         }
     }

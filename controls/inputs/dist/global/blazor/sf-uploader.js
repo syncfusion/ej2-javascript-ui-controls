@@ -895,7 +895,8 @@ var SfUploader = /** @class */ (function () {
             progressInterval: '',
             isCanceled: false,
             currentRequest: null,
-            customFormData: null
+            customFormData: null,
+            type: args.type
         };
         if (targetFiles.length < 1) {
             eventArgs.isCanceled = true;
@@ -2424,7 +2425,8 @@ var SfUploader = /** @class */ (function () {
             var eventArgs = {
                 customFormData: [],
                 currentRequest: null,
-                cancel: false
+                cancel: false,
+                filesData: uploadFiles_1
             };
             if (this.beforeUploadEnabled) {
                 // @ts-ignore-start
@@ -2655,10 +2657,12 @@ var SfUploader = /** @class */ (function () {
         if (sf.base.isNullOrUndefined(postRawFile)) {
             postRawFile = true;
         }
+        var removeFiles = this.getFilesInArray(fileData);
         var beforeEventArgs = {
             cancel: false,
             customFormData: [],
-            currentRequest: null
+            currentRequest: null,
+            filesData: removeFiles
         };
         if (this.beforeRemoveEnabled) {
             // @ts-ignore-start

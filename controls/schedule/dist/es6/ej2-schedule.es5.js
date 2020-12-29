@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, IntlBase, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, blazorTemplates, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getElement, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, IntlBase, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getElement, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -251,21 +251,9 @@ function isDaylightSavingTime(date) {
     return date.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 function addLocalOffset(date) {
-    if (isBlazor()) {
-        var dateValue = new Date(+date - (date.getTimezoneOffset() * 60000));
-        return dateValue;
-    }
     return date;
 }
 function addLocalOffsetToEvent(event, eventFields) {
-    if (isBlazor()) {
-        var eventObj = extend({}, event, null, true);
-        eventObj[eventFields.startTime] =
-            new Date(+event[eventFields.startTime] - ((eventObj[eventFields.startTime]).getTimezoneOffset() * 60000));
-        eventObj[eventFields.endTime] =
-            new Date(+event[eventFields.endTime] - ((eventObj[eventFields.endTime]).getTimezoneOffset() * 60000));
-        return eventObj;
-    }
     return event;
 }
 function capitalizeFirstWord(inputString, type) {
@@ -779,9 +767,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
     HeaderRenderer.prototype.renderToolbar = function () {
         var items = this.getItems();
         var args = { requestType: 'toolbarItemRendering', items: items };
-        if (!isBlazor()) {
-            this.parent.trigger(actionBegin, args);
-        }
+        this.parent.trigger(actionBegin, args);
         this.toolbarObj = new Toolbar({
             items: args.items,
             overflowMode: 'Popup',
@@ -800,27 +786,21 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             nextNavEle.firstElementChild.setAttribute('title', this.l10n.getConstant('next'));
         }
         this.updateActiveView();
-        if (!isBlazor()) {
-            this.parent.trigger(actionComplete, {
-                requestType: 'toolBarItemRendered', items: this.toolbarObj.items
-            });
-        }
+        this.parent.trigger(actionComplete, {
+            requestType: 'toolBarItemRendered', items: this.toolbarObj.items
+        });
     };
     HeaderRenderer.prototype.updateItems = function () {
         if (this.toolbarObj) {
             var items = this.getItems();
             var args = { requestType: 'toolbarItemRendering', items: items };
-            if (!isBlazor()) {
-                this.parent.trigger(actionBegin, args);
-            }
+            this.parent.trigger(actionBegin, args);
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
-            if (!isBlazor()) {
-                this.parent.trigger(actionComplete, {
-                    requestType: 'toolBarItemRendered',
-                    items: this.toolbarObj.items
-                });
-            }
+            this.parent.trigger(actionComplete, {
+                requestType: 'toolBarItemRendered',
+                items: this.toolbarObj.items
+            });
         }
     };
     HeaderRenderer.prototype.getPopUpRelativeElement = function () {
@@ -1312,7 +1292,7 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
         this.touchRightDirection = this.parent.enableRtl ? 'Left' : 'Right';
     }
     ScheduleTouch.prototype.scrollHandler = function (e) {
-        if (isBlazor() || this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
+        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
             (e.originalEvent && (e.originalEvent.target.classList.contains(APPOINTMENT_CLASS) ||
                 closest(e.originalEvent.target, '.' + APPOINTMENT_CLASS)))) {
             return;
@@ -1504,9 +1484,7 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        if (!isBlazor()) {
-            removeChildren(this.element);
-        }
+        removeChildren(this.element);
         removeClass([this.element], TRANSLATE_CLASS);
     };
     /**
@@ -2971,16 +2949,14 @@ function generateSummary(rule, localeObject, locale, calendarType) {
     var cldrObj1;
     var calendarMode = calendarType.toLowerCase();
     if (locale === 'en' || locale === 'en-US') {
-        var nameSpace1 = isBlazor() ? 'months.abbreviated' : 'months.stand-alone.abbreviated';
-        var nameSpace = isBlazor() ? 'days.abbreviated' : 'days.stand-alone.abbreviated';
+        var nameSpace1 = 'months.stand-alone.abbreviated';
+        var nameSpace = 'days.stand-alone.abbreviated';
         cldrObj1 = (getValue(nameSpace1, getDefaultDateObject(calendarMode)));
         cldrObj = (getValue(nameSpace, getDefaultDateObject(calendarMode)));
     }
     else {
-        var nameSpace1 = isBlazor() ? locale + '.dates.months.abbreviated' :
-            'main.' + locale + '.dates.calendars.' + calendarMode + '.months.stand-alone.abbreviated';
-        var nameSpace = isBlazor() ? locale + '.dates.days.abbreviated' :
-            'main.' + locale + '.dates.calendars.' + calendarMode + '.days.stand-alone.abbreviated';
+        var nameSpace1 = 'main.' + locale + '.dates.calendars.' + calendarMode + '.months.stand-alone.abbreviated';
+        var nameSpace = 'main.' + locale + '.dates.calendars.' + calendarMode + '.days.stand-alone.abbreviated';
         cldrObj1 =
             (getValue(nameSpace1, cldrData));
         cldrObj =
@@ -4853,15 +4829,6 @@ var EventBase = /** @__PURE__ @class */ (function () {
             this.parent.trigger(select, selectEventArgs);
             var args = extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
             this.parent.trigger(eventClick, args, function (eventClickArgs) {
-                if (isBlazor()) {
-                    var eventFields = _this.parent.eventFields;
-                    var eventObj = eventClickArgs.event;
-                    eventObj[eventFields.startTime] = _this.parent.getDateTime(eventObj[eventFields.startTime]);
-                    eventObj[eventFields.endTime] = _this.parent.getDateTime(eventObj[eventFields.endTime]);
-                    if (eventClickArgs.element) {
-                        eventClickArgs.element = getElement(eventClickArgs.element);
-                    }
-                }
                 if (eventClickArgs.cancel) {
                     _this.removeSelectedAppointmentClass();
                     if (_this.parent.quickPopup) {
@@ -6592,11 +6559,6 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             moreArgs.groupIndex = parseInt(groupIndex, 10);
         }
         this.parent.trigger(moreEventsClick, moreArgs, function (clickArgs) {
-            if (isBlazor()) {
-                clickArgs.startTime = new Date('' + clickArgs.startTime);
-                clickArgs.endTime = new Date('' + clickArgs.endTime);
-                clickArgs.element = getElement(clickArgs.element);
-            }
             if (!clickArgs.cancel) {
                 if (clickArgs.isPopupOpen) {
                     var filteredEvents = _this.getFilteredEvents(startDate, endDate, groupIndex);
@@ -8263,7 +8225,6 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             }
         }
         this.parent.renderTemplates();
-        this.parent.updateEventTemplates();
         var eventProp = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
             eventProp.data = data;
@@ -8839,7 +8800,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
     function EventTooltip(parent) {
         this.parent = parent;
         this.tooltipObj = new Tooltip({
-            animation: { close: { effect: isBlazor() ? 'None' : 'FadeOut' } },
+            animation: { close: { effect: 'FadeOut' } },
             content: 'No title',
             position: 'BottomRight',
             offsetY: 10,
@@ -8848,9 +8809,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             cssClass: this.parent.cssClass + ' ' + EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
-            enableRtl: this.parent.enableRtl,
-            beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this)
+            enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
         this.tooltipObj.isStringTemplate = true;
@@ -8864,26 +8823,6 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             targets.push('.' + APPOINTMENT_CLASS);
         }
         return targets.join(',');
-    };
-    EventTooltip.prototype.onBeforeOpen = function () {
-        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
-            var templateId = this.parent.element.id + '_headerTooltipTemplate';
-            updateBlazorTemplate(templateId, 'HeaderTooltipTemplate', this.parent.group);
-        }
-        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
-            var templateId = this.parent.element.id + '_tooltipTemplate';
-            updateBlazorTemplate(templateId, 'TooltipTemplate', this.parent.eventSettings);
-        }
-    };
-    EventTooltip.prototype.onBeforeClose = function () {
-        if (isBlazor() && this.parent.group.headerTooltipTemplate) {
-            var templateId = this.parent.element.id + '_headerTooltipTemplate';
-            resetBlazorTemplate(templateId, 'HeaderTooltipTemplate');
-        }
-        if (isBlazor() && this.parent.eventSettings.tooltipTemplate) {
-            var templateId = this.parent.element.id + '_tooltipTemplate';
-            resetBlazorTemplate(templateId, 'TooltipTemplate');
-        }
     };
     // tslint:disable-next-line:max-func-body-length
     EventTooltip.prototype.onBeforeRender = function (args) {
@@ -8934,32 +8873,19 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             var startMonthDate = '';
             var startMonthYearDate = '';
             var endMonthYearDate = '';
-            if (isBlazor()) {
-                startMonthDate = globalize.formatDate(eventStart, {
-                    type: 'date', format: 'MMM d', calendar: this.parent.getCalendarMode()
-                });
-                startMonthYearDate = globalize.formatDate(eventStart, {
-                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                });
-                endMonthYearDate = globalize.formatDate(eventEnd, {
-                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                });
-            }
-            else {
-                startMonthDate = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
-                });
-                startMonthYearDate = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-                });
-                endMonthYearDate = globalize.formatDate(eventEnd, {
-                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-                });
-            }
+            startMonthDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+            });
+            startMonthYearDate = globalize.formatDate(eventStart, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
+            endMonthYearDate = globalize.formatDate(eventEnd, {
+                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+            });
             startMonthDate = capitalizeFirstWord(startMonthDate, 'single');
             startMonthYearDate = capitalizeFirstWord(startMonthYearDate, 'single');
             endMonthYearDate = capitalizeFirstWord(endMonthYearDate, 'single');
-            var skeleton = isBlazor() ? 't' : 'short';
+            var skeleton = 'short';
             var startTime = globalize.formatDate(eventStart, {
                 type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
@@ -8968,10 +8894,7 @@ var EventTooltip = /** @__PURE__ @class */ (function () {
             });
             var tooltipDetails = void 0;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = isBlazor() ?
-                    globalize.formatDate(eventStart, {
-                        type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
-                    }) :
+                tooltipDetails =
                     globalize.formatDate(eventStart, {
                         type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
                     });
@@ -9498,12 +9421,6 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         this.untilDateObj.appendTo(this.element.querySelector('.' + UNTILDATE));
     };
     RecurrenceEditor.prototype.getFormat = function (formatType) {
-        if (isBlazor()) {
-            if (formatType === 'dateFormats') {
-                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.locale).format;
-            }
-            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
-        }
         var format;
         if (this.locale === 'en' || this.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.getCalendarMode()));
@@ -9672,20 +9589,16 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         return dataSource;
     };
     RecurrenceEditor.prototype.getDayData = function (format) {
-        if (isBlazor() && format === 'narrow') {
-            format = 'short';
-        }
         var weekday = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
         var dayData = [];
         var cldrObj;
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            var nameSpaceString = isBlazor() ? 'days.' : 'days.stand-alone.';
+            var nameSpaceString = 'days.stand-alone.';
             cldrObj = (getValue(nameSpaceString + format, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
-            var nameSpaceString = isBlazor() ? this.locale + '.dates.days.' + format :
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
+            var nameSpaceString = 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
             cldrObj = (getValue(nameSpaceString, cldrData));
         }
         for (var _i = 0, weekday_1 = weekday; _i < weekday_1.length; _i++) {
@@ -9699,12 +9612,11 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         var monthData = [];
         var cldrObj;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            var nameSpaceString = isBlazor() ? 'months.wide' : 'months.stand-alone.wide';
+            var nameSpaceString = 'months.stand-alone.wide';
             cldrObj = (getValue(nameSpaceString, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
-            var nameSpaceString = isBlazor() ? this.locale + '.dates.months.wide' :
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
+            var nameSpaceString = 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
             cldrObj = (getValue(nameSpaceString, cldrData));
         }
         for (var _i = 0, _a = Object.keys(cldrObj); _i < _a.length; _i++) {
@@ -9928,12 +9840,6 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     };
     RecurrenceEditor.prototype.getRecurrenceDates = function (startDate, rule, excludeDate, maximumCount, viewDate) {
-        if (isBlazor()) {
-            startDate = new Date('' + startDate);
-            if (viewDate) {
-                viewDate = new Date('' + viewDate);
-            }
-        }
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
         return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     };
@@ -9968,9 +9874,6 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RecurrenceEditor.prototype.setRecurrenceRule = function (rule, startDate) {
         if (startDate === void 0) { startDate = this.startDate; }
-        if (isBlazor()) {
-            startDate = new Date('' + startDate);
-        }
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
             return;
@@ -11937,11 +11840,6 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         this.parent.off(virtualScroll, this.virtualScrolling);
     };
     VirtualScroll.prototype.getRenderedCount = function () {
-        if (isBlazor()) {
-            var conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
-            this.renderedLength = conTable.querySelector('tbody').children.length;
-            return this.renderedLength;
-        }
         this.setItemSize();
         return Math.ceil(this.parent.element.clientHeight / this.itemSize) + this.bufferCount;
     };
@@ -11990,7 +11888,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
         var lastResourceIndex = this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
         var lastRenderIndex = this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
-        if (lastRenderIndex !== lastResourceIndex || isBlazor()) {
+        if (lastRenderIndex !== lastResourceIndex) {
             var conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
             this.renderedLength = conTable.querySelector('tbody').children.length;
             virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
@@ -12024,13 +11922,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         this.itemSize = getElementHeightFromClass(this.parent.activeView.element, WORK_CELLS_CLASS) || this.itemSize;
     };
     VirtualScroll.prototype.beforeInvoke = function (resWrap, conWrap, eventWrap, timeIndicator) {
-        var _this = this;
-        if (isBlazor()) {
-            window.clearTimeout(this.timeValue);
-            this.timeValue = window.setTimeout(function () { _this.triggerScrolling(); }, 250);
-            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-            this.previousTop = conWrap.scrollTop;
-        }
+        //code
     };
     VirtualScroll.prototype.virtualScrolling = function () {
         var _this = this;
@@ -12046,9 +11938,6 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var scrollHeight = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
-        if (isBlazor()) {
-            this.setItemSize();
-        }
         var resCollection = [];
         if ((conWrap.scrollTop) - this.translateY < 0) {
             resCollection = this.upScroll(conWrap, firstTDIndex);
@@ -12060,28 +11949,21 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
                 this.beforeInvoke(resWrap, conWrap, eventWrap, timeIndicator);
             }
         }
-        if (!isBlazor()) {
-            if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
-                this.parent.showSpinner();
-                this.updateContent(resWrap, conWrap, eventWrap, resCollection);
-                this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-                this.parent.notify(dataReady, {});
-                if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
-                    this.parent.dragAndDropModule.navigationWrapper();
-                }
-                window.clearTimeout(this.timeValue);
-                this.timeValue = window.setTimeout(function () { _this.parent.hideSpinner(); }, 250);
+        if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
+            this.parent.showSpinner();
+            this.updateContent(resWrap, conWrap, eventWrap, resCollection);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+            this.parent.notify(dataReady, {});
+            if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
+                this.parent.dragAndDropModule.navigationWrapper();
             }
+            window.clearTimeout(this.timeValue);
+            this.timeValue = window.setTimeout(function () { _this.parent.hideSpinner(); }, 250);
         }
     };
     VirtualScroll.prototype.upScroll = function (conWrap, firstTDIndex) {
         var index = 0;
-        if (isBlazor()) {
-            index = ~~(conWrap.scrollTop / this.itemSize);
-        }
-        else {
-            index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
-        }
+        index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
         if (this.parent.rowAutoHeight) {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
@@ -12096,9 +11978,6 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
-        if (isBlazor()) {
-            this.startIndex = index;
-        }
         return prevSetCollection;
     };
     VirtualScroll.prototype.downScroll = function (conWrap, firstTDIndex) {
@@ -12110,28 +11989,16 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
         var nextSetResIndex = 0;
         var height = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
-        if (isBlazor()) {
-            nextSetResIndex = ~~(conWrap.scrollTop / height);
-        }
-        else {
-            nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
-            if (this.parent.rowAutoHeight) {
-                nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
-                nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
-            }
+        nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
+        if (this.parent.rowAutoHeight) {
+            nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
+            nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
         }
         var lastIndex = nextSetResIndex + this.renderedLength;
         lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
             nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;
         var nextSetCollection = this.getBufferCollection(lastIndex - this.renderedLength, lastIndex);
         this.translateY = conWrap.scrollTop;
-        if (isBlazor()) {
-            if (this.translateY > (this.parent.resourceBase.expandedResources.length * height) - (this.renderedLength * height)) {
-                this.translateY = (this.parent.resourceBase.expandedResources.length * height) - (this.renderedLength * height);
-            }
-            this.startIndex = lastIndex - this.renderedLength;
-            this.parent.resourceBase.renderedResources = nextSetCollection;
-        }
         return nextSetCollection;
     };
     VirtualScroll.prototype.updateContent = function (resWrap, conWrap, eventWrap, resCollection) {
@@ -12241,7 +12108,6 @@ var Render = /** @__PURE__ @class */ (function () {
             var firstView = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
-                this.parent.onServerDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -12310,12 +12176,6 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         this.parent.trigger(dataBinding, e, function (args) {
             var resultData = extend([], args.result, null, true);
-            if (isBlazor()) {
-                for (var _i = 0, _a = resultData; _i < _a.length; _i++) {
-                    var data = _a[_i];
-                    delete data.BlazId;
-                }
-            }
             _this.parent.eventsData = resultData.filter(function (data) { return !data[_this.parent.eventFields.isBlock]; });
             _this.parent.blockData = resultData.filter(function (data) { return data[_this.parent.eventFields.isBlock]; });
             var processed = _this.parent.eventBase.processData(resultData);
@@ -12333,7 +12193,7 @@ var Render = /** @__PURE__ @class */ (function () {
             return;
         }
         // tslint:disable:no-any
-        this.parent.trigger(actionFailure, { error: isBlazor() ? e.error ? e.error.toString() : e.toString() : e }, function () { return _this.parent.hideSpinner(); });
+        this.parent.trigger(actionFailure, { error: e }, function () { return _this.parent.hideSpinner(); });
         // tslint:disable:no-any
     };
     return Render;
@@ -12579,7 +12439,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 // tslint:disable:no-any
-                _this.parent.trigger(actionFailure, { error: isBlazor() ? e.error.toString() : e });
+                _this.parent.trigger(actionFailure, { error: e });
                 // tslint:disable:no-any
             });
         }
@@ -12597,11 +12457,8 @@ var Crud = /** @__PURE__ @class */ (function () {
                 requestType: 'eventCreate', cancel: false,
                 addedRecords: addEvents, changedRecords: [], deletedRecords: []
             };
-            if (!isBlazor()) {
-                args.data = addEvents;
-            }
+            args.data = addEvents;
             this.parent.trigger(actionBegin, args, function (addArgs) {
-                _this.serializeData(addArgs.addedRecords);
                 if (!addArgs.cancel) {
                     var fields = _this.parent.eventFields;
                     var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12655,11 +12512,8 @@ var Crud = /** @__PURE__ @class */ (function () {
                     requestType: 'eventChange', cancel: false,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
-                if (!isBlazor()) {
-                    args.data = eventData;
-                }
+                args.data = eventData;
                 this.parent.trigger(actionBegin, args, function (saveArgs) {
-                    _this.serializeData(saveArgs.changedRecords);
                     if (!saveArgs.cancel) {
                         var promise = void 0;
                         var fields = _this.parent.eventFields;
@@ -12722,11 +12576,8 @@ var Crud = /** @__PURE__ @class */ (function () {
                     requestType: 'eventRemove', cancel: false,
                     addedRecords: [], changedRecords: [], deletedRecords: deleteEvents
                 };
-                if (!isBlazor()) {
-                    args.data = eventData;
-                }
+                args.data = eventData;
                 this.parent.trigger(actionBegin, args, function (deleteArgs) {
-                    _this.serializeData(deleteArgs.deletedRecords);
                     if (!deleteArgs.cancel) {
                         var promise = void 0;
                         var fields = _this.parent.eventFields;
@@ -12770,11 +12621,8 @@ var Crud = /** @__PURE__ @class */ (function () {
             requestType: action === 'EditOccurrence' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = occurenceData;
-        }
+        args.data = occurenceData;
         this.parent.trigger(actionBegin, args, function (occurenceArgs) {
-            _this.serializeData(occurenceArgs.changedRecords);
             if (!occurenceArgs.cancel) {
                 var fields = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12844,11 +12692,8 @@ var Crud = /** @__PURE__ @class */ (function () {
             requestType: action === 'EditFollowingEvents' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateFollowEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = followData;
-        }
+        args.data = followData;
         this.parent.trigger(actionBegin, args, function (followArgs) {
-            _this.serializeData(followArgs.changedRecords);
             if (!followArgs.cancel) {
                 var fields_1 = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12925,11 +12770,8 @@ var Crud = /** @__PURE__ @class */ (function () {
             requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
         };
-        if (!isBlazor()) {
-            args.data = seriesData;
-        }
+        args.data = seriesData;
         this.parent.trigger(actionBegin, args, function (seriesArgs) {
-            _this.serializeData(seriesArgs.changedRecords);
             if (!seriesArgs.cancel) {
                 var fields_2 = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -12999,11 +12841,8 @@ var Crud = /** @__PURE__ @class */ (function () {
             requestType: 'eventRemove', cancel: false,
             addedRecords: [], changedRecords: [], deletedRecords: eventData
         };
-        if (!isBlazor()) {
-            args.data = deleteData;
-        }
+        args.data = deleteData;
         this.parent.trigger(actionBegin, args, function (deleteArgs) {
-            _this.serializeData(deleteArgs.deletedRecords);
             if (!deleteArgs.cancel) {
                 var fields_3 = _this.parent.eventFields;
                 var editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
@@ -13044,16 +12883,6 @@ var Crud = /** @__PURE__ @class */ (function () {
                 _this.refreshData(crudArgs);
             }
         });
-    };
-    Crud.prototype.serializeData = function (eventData) {
-        if (isBlazor()) {
-            var eventFields = this.parent.eventFields;
-            for (var _i = 0, _a = eventData; _i < _a.length; _i++) {
-                var event_8 = _a[_i];
-                event_8[eventFields.startTime] = this.parent.getDateTime(event_8[eventFields.startTime]);
-                event_8[eventFields.endTime] = this.parent.getDateTime(event_8[eventFields.endTime]);
-            }
-        }
     };
     Crud.prototype.getParentEvent = function (event, isParent) {
         if (isParent === void 0) { isParent = false; }
@@ -13120,8 +12949,8 @@ var Crud = /** @__PURE__ @class */ (function () {
         var eventCollection = (eventData instanceof Array) ? eventData : [eventData];
         var value = false;
         for (var _i = 0, eventCollection_1 = eventCollection; _i < eventCollection_1.length; _i++) {
-            var event_9 = eventCollection_1[_i];
-            value = event_9[this.parent.eventFields.isBlock] || false;
+            var event_8 = eventCollection_1[_i];
+            value = event_8[this.parent.eventFields.isBlock] || false;
         }
         return value;
     };
@@ -13227,16 +13056,6 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
         });
     };
     WorkCellInteraction.prototype.serializingData = function (clickArgs, e) {
-        if (isBlazor()) {
-            clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
-            clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
-            if (clickArgs.element) {
-                clickArgs.element = getElement(clickArgs.element);
-            }
-            if (clickArgs.event) {
-                clickArgs.event = e;
-            }
-        }
         return clickArgs;
     };
     WorkCellInteraction.prototype.onHover = function (e) {
@@ -13777,9 +13596,6 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                 }
                 if (_this.parent.virtualScrollModule) {
                     _this.updateVirtualContent(index, hide, e, target);
-                    if (isBlazor()) {
-                        return;
-                    }
                 }
                 else {
                     _this.updateContent(index, hide);
@@ -13849,41 +13665,6 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         }
     };
     ResourceBase.prototype.updateVirtualContent = function (index, expand, e, target) {
-        var _this = this;
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            var scheduleObj = this.parent;
-            var adaptor = 'interopAdaptor';
-            var invokeMethodAsync = 'invokeMethodAsync';
-            scheduleObj[adaptor][invokeMethodAsync]('UpdateVirtualContent', index, expand).then(function () {
-                _this.lastResourceLevel[index].resourceData[_this.lastResourceLevel[index].resource.expandedField] = !expand;
-                _this.setExpandedResources();
-                var resourcesCount = _this.parent.virtualScrollModule.getRenderedCount();
-                var startIndex = _this.expandedResources.indexOf(_this.renderedResources[0]);
-                _this.renderedResources = _this.expandedResources.slice(startIndex, startIndex + resourcesCount);
-                if (_this.renderedResources.length < resourcesCount) {
-                    var sIndex = _this.expandedResources.length - resourcesCount;
-                    sIndex = (sIndex > 0) ? sIndex : 0;
-                    _this.renderedResources = _this.expandedResources.slice(sIndex, _this.expandedResources.length);
-                }
-                var virtualTrack = _this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
-                _this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
-                var timeIndicator = _this.parent.element.querySelector('.' + CURRENT_TIMELINE_CLASS);
-                if (!isNullOrUndefined(timeIndicator)) {
-                    timeIndicator.style.height =
-                        _this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS).offsetHeight + 'px';
-                }
-                var data = { cssProperties: _this.parent.getCssProperties(), module: 'scroll' };
-                _this.parent.notify(scrollUiUpdate, data);
-                var args = {
-                    cancel: false, event: e, groupIndex: index,
-                    requestType: target.classList.contains(RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
-                };
-                _this.parent.notify(dataReady, {});
-                _this.parent.trigger(actionComplete, args);
-            });
-            return;
-        }
         this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
         this.setExpandedResources();
         var resourceCount = this.parent.virtualScrollModule.getRenderedCount();
@@ -14110,20 +13891,6 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
     ResourceBase.prototype.bindResourcesData = function (isSetModel) {
         var _this = this;
         this.parent.showSpinner();
-        if (isBlazor()) {
-            if (!this.parent.isServerRenderer() && this.parent.tempResourceCollection) {
-                this.parent.resourceCollection = this.parent.tempResourceCollection || [];
-                this.refreshLayout(false);
-            }
-            // the resourceCollection will be updated in layoutReady method
-            // tslint:disable-next-line:no-any
-            // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
-            //     if (this.parent.isDestroyed) { return; }
-            //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
-            //     this.refreshLayout(isSetModel);
-            // }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
-            return;
-        }
         var promises = [];
         for (var i = 0; i < this.parent.resources.length; i++) {
             var dataModule = new Data(this.parent.resources[i].dataSource, this.parent.resources[i].query);
@@ -14663,10 +14430,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Schedule.prototype.render = function () {
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            this.interopAdaptor.invokeMethodAsync('SetAdaptive', this.isAdaptive);
-        }
         var addClasses = [];
         var removeClasses = [];
         addClasses.push(ROOT);
@@ -14708,8 +14471,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         }
         this.inlineModule = new InlineEdit(this);
         this.initializeDataModule();
-        this.on(dataReady, this.resetEventTemplates, this);
-        this.on(eventsLoaded, this.updateEventTemplates, this);
         this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
@@ -14724,10 +14485,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     Schedule.prototype.isServerRenderer = function (view) {
         if (view === void 0) { view = this.currentView; }
         // tslint:disable-next-line:max-line-length
-        var views = ['Day', 'Week', 'WorkWeek', 'Month', 'MonthAgenda', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
-        if (isBlazor() && (views.indexOf(view) !== -1)) {
-            return true;
-        }
         return false;
     };
     /** @hidden */
@@ -14758,120 +14515,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.resourceCollection = args;
         this.renderElements(true);
         this.layoutReady();
-    };
-    /** @hidden */
-    Schedule.prototype.updateLayoutTemplates = function () {
-        var view = this.views[this.viewIndex];
-        if (this.isServerRenderer(view.option)) {
-            return;
-        }
-        if (this.cellHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.cellHeaderTemplateName !== '') {
-            var tempID = this.element.id + '_' + this.activeViewOptions.cellHeaderTemplateName + 'cellHeaderTemplate';
-            updateBlazorTemplate(tempID, 'CellHeaderTemplate', view);
-        }
-        if (this.dateHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.dateHeaderTemplateName !== '') {
-            var templateName = 'dateHeaderTemplate';
-            var tempID = this.element.id + '_' + this.activeViewOptions.dateHeaderTemplateName + templateName;
-            updateBlazorTemplate(tempID, 'DateHeaderTemplate', view);
-        }
-        if (this.cellTemplate) {
-            updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
-        }
-        if (this.activeViewOptions.cellTemplateName !== '') {
-            var tempID = this.element.id + '_' + this.activeViewOptions.cellTemplateName + 'cellTemplate';
-            updateBlazorTemplate(tempID, 'CellTemplate', view);
-        }
-        if (this.resourceHeaderTemplate) {
-            updateBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate', this);
-        }
-        if (this.activeViewOptions.resourceHeaderTemplateName !== '') {
-            var templateName = 'resourceHeaderTemplate';
-            var tempID = this.element.id + '_' + this.activeViewOptions.resourceHeaderTemplateName + templateName;
-            updateBlazorTemplate(tempID, 'ResourceHeaderTemplate', view);
-        }
-        if (this.timeScale.minorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate', this.timeScale);
-        }
-        if (this.timeScale.majorSlotTemplate) {
-            updateBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate', this.timeScale);
-        }
-    };
-    /** @hidden */
-    Schedule.prototype.resetLayoutTemplates = function () {
-        var view = this.viewCollections[this.activeView.viewIndex];
-        if (this.isServerRenderer(view.option)) {
-            return;
-        }
-        if (this.cellHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate');
-        }
-        if (view.cellHeaderTemplate !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.cellHeaderTemplateName + 'cellHeaderTemplate', 'CellHeaderTemplate');
-        }
-        if (this.dateHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (view.dateHeaderTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.dateHeaderTemplateName + 'dateHeaderTemplate', 'DateHeaderTemplate');
-        }
-        if (this.cellTemplate) {
-            resetBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate');
-        }
-        if (view.cellTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.cellTemplateName + 'cellTemplate', 'CellTemplate');
-        }
-        if (this.resourceHeaderTemplate) {
-            resetBlazorTemplate(this.element.id + '_resourceHeaderTemplate', 'ResourceHeaderTemplate');
-        }
-        if (view.resourceHeaderTemplateName !== '') {
-            var templateName = 'ResourceHeaderTemplate';
-            resetBlazorTemplate(this.element.id + '_' + view.resourceHeaderTemplateName + 'resourceHeaderTemplate', templateName);
-        }
-        if (this.timeScale.minorSlotTemplate) {
-            resetBlazorTemplate(this.element.id + '_minorSlotTemplate', 'MinorSlotTemplate');
-        }
-        if (this.timeScale.majorSlotTemplate) {
-            resetBlazorTemplate(this.element.id + '_majorSlotTemplate', 'MajorSlotTemplate');
-        }
-    };
-    /** @hidden */
-    Schedule.prototype.updateEventTemplates = function () {
-        var view = this.views[this.viewIndex];
-        var viewCollections = this.viewCollections[this.viewIndex];
-        if (this.eventSettings.template) {
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings, false);
-        }
-        if (this.activeViewOptions.eventTemplateName !== '') {
-            var tempID = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
-            updateBlazorTemplate(tempID, 'EventTemplate', view, false);
-        }
-        if (viewCollections.option === 'Agenda' || viewCollections.option === 'MonthAgenda' || viewCollections.option === 'TimelineYear') {
-            this.updateLayoutTemplates();
-        }
-    };
-    /** @hidden */
-    Schedule.prototype.resetEventTemplates = function () {
-        var view = this.viewCollections[this.activeView.viewIndex];
-        if (this.eventSettings.template) {
-            // tslint:disable-next-line:no-any
-            blazorTemplates[this.element.id + '_eventTemplate'] = [];
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
-        }
-        if (view.eventTemplateName !== '') {
-            var tempID = this.element.id + '_' + view.eventTemplateName + 'eventTemplate';
-            // tslint:disable-next-line:no-any
-            blazorTemplates[tempID] = [];
-            updateBlazorTemplate(tempID, 'EventTemplate', this.views[this.activeView.viewIndex]);
-        }
-        if (view.option === 'Agenda' || view.option === 'MonthAgenda' || view.option === 'TimelineYear') {
-            this.resetLayoutTemplates();
-        }
     };
     /**
      * To render the react templates
@@ -15005,21 +14648,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         }
         if (!isModuleLoad && selectedView) {
             this.setScheduleProperties({ currentView: selectedView });
-            this.onServerDataBind();
         }
         if (this.viewIndex === -1) {
             var currentIndex = this.getViewIndex(this.currentView);
             this.viewIndex = ((typeof this.views[0] !== 'string') && (!isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
                 (currentIndex === -1) ? 0 : currentIndex;
         }
-    };
-    /** @hidden */
-    Schedule.prototype.onServerDataBind = function () {
-        //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
-        if (this.bulkChanges && this.bulkChanges.selectedDate) {
-            this.bulkChanges.selectedDate = addLocalOffset(this.bulkChanges.selectedDate);
-        }
-        this.serverDataBind();
     };
     Schedule.prototype.getActiveViewOptions = function () {
         var timeScale = {
@@ -15129,18 +14763,15 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     Schedule.prototype.getDayNames = function (type) {
-        if (isBlazor() && type === 'narrow') {
-            type = 'short';
-        }
         var culShortNames = [];
         var cldrObj;
         var nameSpace = '';
         if (this.locale === 'en' || this.locale === 'en-US') {
-            nameSpace = isBlazor() ? 'days.' : 'days.stand-alone.';
+            nameSpace = 'days.stand-alone.';
             cldrObj = (getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
-            nameSpace = isBlazor() ? '' + this.locale + '.dates.days.' + type :
+            nameSpace =
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type;
             cldrObj = (getValue(nameSpace, cldrData));
         }
@@ -15151,10 +14782,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         return culShortNames;
     };
     Schedule.prototype.setCldrTimeFormat = function () {
-        if (isBlazor()) {
-            this.timeFormat = IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
-            return;
-        }
         if (this.locale === 'en' || this.locale === 'en-US') {
             this.timeFormat = (getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         }
@@ -15199,10 +14826,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.viewIndex = index;
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            this.interopAdaptor.invokeMethodAsync('SetViewIndex', this.viewIndex);
-        }
         var args = { requestType: 'viewNavigate', cancel: false, event: event };
         this.trigger(actionBegin, args, function (actionArgs) {
             if (!actionArgs.cancel) {
@@ -15219,11 +14842,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                             _this.headerModule.setCalendarView();
                         }
                         _this.initializeView(_this.currentView);
-                        _this.onServerDataBind();
                         _this.animateLayout();
-                        if (isBlazor() && _this.virtualScrollModule) {
-                            _this.resetScrollTop();
-                        }
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         _this.trigger(actionComplete, args);
                     }
@@ -15249,11 +14868,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                             _this.headerModule.setCalendarDate(navigationArgs.currentDate);
                         }
                         _this.initializeView(_this.currentView);
-                        _this.onServerDataBind();
                         _this.animateLayout();
-                        if (isBlazor() && _this.virtualScrollModule) {
-                            _this.resetScrollTop();
-                        }
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         _this.trigger(actionComplete, args);
                     }
@@ -15297,7 +14912,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         return 'Day';
     };
     Schedule.prototype.animateLayout = function () {
-        if (isBlazor() || !this.activeView.element) {
+        if (!this.activeView.element) {
             return;
         }
         new Animation({ duration: 600, name: 'FadeIn', timingFunction: 'easeIn' }).animate(this.activeView.element);
@@ -15321,9 +14936,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         if (this.allowResizing) {
             modules.push({ member: 'resize', args: [this] });
         }
-        if (!isBlazor() || isBlazor() && this.isServerRendered && this.allowExcelExport) {
-            modules.push({ member: 'excelExport', args: [this] });
-        }
+        modules.push({ member: 'excelExport', args: [this] });
         modules.push({ member: 'iCalendarExport', args: [this] });
         modules.push({ member: 'iCalendarImport', args: [this] });
         modules.push({ member: 'print', args: [this] });
@@ -15655,7 +15268,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             resourceName = this.quickPopup.getResourceText({ event: event }, 'event') + constantText;
         }
         var recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
-        var skeleton = isBlazor() ? 'F' : 'full';
+        var skeleton = 'full';
         var startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
@@ -16185,7 +15798,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             startTime: startTime,
             endTime: endTime,
             isAllDay: this.isAllDayCell(firstTd),
-            element: isBlazor() ? firstTd : tdCol
+            element: tdCol
         };
         var groupIndex = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
@@ -16205,10 +15818,17 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * To get the resource collection
      * @method getResourceCollections
      * @return {ResourcesModel[]}
-     * @deprecated
      */
     Schedule.prototype.getResourceCollections = function () {
         return this.resourceCollection;
+    };
+    /**
+     * To set the resource collection
+     * @method setResourceCollections
+     * @param {ResourcesModel[]} resourceCol Accepts the resource collections in ResourcesModel type
+     */
+    Schedule.prototype.setResourceCollections = function (resourceCol) {
+        this.setProperties({ resources: resourceCol }, false);
     };
     /**
      * Current View could be change based on the provided parameters.
@@ -16661,9 +16281,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     Schedule.prototype.destroy = function () {
-        if (isBlazor()) {
-            this.isDestroyed = true;
-        }
         if (this.eventTooltip) {
             this.eventTooltip.destroy();
             this.eventTooltip = null;
@@ -16949,10 +16566,6 @@ var ActionBase = /** @__PURE__ @class */ (function () {
     ActionBase.prototype.saveChangedData = function (eventArgs) {
         this.parent.activeEventData.event = this.actionObj.event;
         this.parent.currentAction = 'Save';
-        if (isBlazor()) {
-            eventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(eventArgs.data[this.parent.eventFields.startTime]);
-            eventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(eventArgs.data[this.parent.eventFields.endTime]);
-        }
         var eventObj = eventArgs.data;
         var isSameResource = (this.parent.activeViewOptions.group.resources.length > 0) ?
             parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
@@ -17387,13 +17000,6 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         this.parent.trigger(resizeStart, resizeArgs, function (resizeEventArgs) {
             if (resizeEventArgs.cancel) {
                 return;
-            }
-            if (isBlazor()) {
-                if (resizeEventArgs.element) {
-                    resizeEventArgs.element = getElement(resizeEventArgs.element);
-                }
-                resizeEventArgs.data[_this.parent.eventFields.startTime] = _this.parent.getDateTime(resizeEventArgs.data[_this.parent.eventFields.startTime]);
-                resizeEventArgs.data[_this.parent.eventFields.endTime] = _this.parent.getDateTime(resizeEventArgs.data[_this.parent.eventFields.endTime]);
             }
             _this.actionClass('addClass');
             _this.parent.uiStateValues.action = true;
@@ -18489,14 +18095,6 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
                 _this.removeCloneElement();
                 return;
             }
-            else if (isBlazor()) {
-                e.bindEvents(e.dragElement);
-                if (dragEventArgs.element) {
-                    dragEventArgs.element = getElement(dragEventArgs.element);
-                }
-                dragEventArgs.data[_this.parent.eventFields.startTime] = _this.parent.getDateTime(dragEventArgs.data[_this.parent.eventFields.startTime]);
-                dragEventArgs.data[_this.parent.eventFields.endTime] = _this.parent.getDateTime(dragEventArgs.data[_this.parent.eventFields.endTime]);
-            }
             _this.actionClass('addClass');
             _this.parent.uiStateValues.action = true;
             _this.actionObj.start = eventObj[_this.parent.eventFields.startTime];
@@ -19284,14 +18882,12 @@ var ViewHelper;
             if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
-            return isBlazor() ?
-                proxy.globalize.formatDate(date, { format: 'h', calendar: proxy.getCalendarMode() }) :
-                proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
+            return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
         }
         return proxy.getTimeString(date);
     };
     ViewHelper.getTimelineDate = function (proxy, date) {
-        var skeleton = isBlazor() ? 'M' : 'MMMd';
+        var skeleton = 'MMMd';
         var text = proxy.globalize.formatDate(date, { skeleton: skeleton, calendar: proxy.getCalendarMode() }) + ', ' +
             proxy.getDayNames('wide')[date.getDay()];
         return capitalizeFirstWord(text, 'multiple');
@@ -19417,7 +19013,7 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         return headerBarHeight;
     };
     ViewBase.prototype.renderPanel = function (type) {
-        if (type === PREVIOUS_PANEL_CLASS || isBlazor()) {
+        if (type === PREVIOUS_PANEL_CLASS) {
             prepend([this.element], this.parent.element.querySelector('.' + TABLE_CONTAINER_CLASS));
         }
         else {
@@ -19573,9 +19169,7 @@ var ViewBase = /** @__PURE__ @class */ (function () {
     };
     ViewBase.prototype.getLabelText = function (view) {
         var viewStr = view.charAt(0).toLowerCase() + view.substring(1);
-        return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(isBlazor() ?
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }), 'single');
+        return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }), 'single');
     };
     ViewBase.prototype.getDateRangeText = function () {
         if (this.parent.isAdaptive) {
@@ -19602,16 +19196,11 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         }
         var formattedStr;
         var longDateFormat;
-        if (isBlazor()) {
-            longDateFormat = 'MMMM d, y';
+        if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
+            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
         }
         else {
-            if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-                longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
-            }
-            else {
-                longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
-            }
+            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
             return capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
@@ -20174,7 +19763,6 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
-        this.parent.updateLayoutTemplates();
     };
     VerticalView.prototype.renderHeader = function () {
         var tr = createElement('tr');
@@ -20537,23 +20125,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                var view = this.parent.viewCollections[this.viewIndex].option;
-                if (this.parent.isServerRenderer(view)) {
-                    if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'TimelineYear') {
-                        this.element.style.display = 'none';
-                    }
-                    this.parent.resetEventTemplates();
-                }
-                else {
-                    this.parent.resetLayoutTemplates();
-                    this.parent.resetEventTemplates();
-                    remove(this.element);
-                }
-            }
-            else {
-                remove(this.element);
-            }
+            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();
@@ -20914,7 +20486,6 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
-        this.parent.updateLayoutTemplates();
     };
     Month.prototype.wireCellEvents = function (element) {
         EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
@@ -21022,23 +20593,19 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 var ele = createElement('span', { className: NAVIGATE_CLASS });
-                var skeleton = isBlazor() ? 'D' : 'full';
+                var skeleton = 'full';
                 var title = this.parent.globalize.formatDate(td.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', capitalizeFirstWord(title, 'multiple'));
                 var innerText = (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                    isBlazor() ?
-                        this.parent.globalize.formatDate(td.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
-                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                    this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 ele.innerHTML = capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
         }
         var args = { elementType: td.type, element: tdEle, date: td.date, groupIndex: td.groupIndex };
-        if (!isBlazor()) {
-            this.parent.trigger(renderCell, args);
-        }
+        this.parent.trigger(renderCell, args);
         return tdEle;
     };
     Month.prototype.getContentSlots = function () {
@@ -21179,9 +20746,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             append(cellTemplate, ntd);
         }
         var args = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
-        if (!isBlazor()) {
-            this.parent.trigger(renderCell, args);
-        }
+        this.parent.trigger(renderCell, args);
         return ntd;
     };
     Month.prototype.renderDateHeaderElement = function (data, ntd) {
@@ -21201,14 +20766,13 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         else {
             var innerText = (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
                 this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                isBlazor() ? this.parent.globalize.formatDate(data.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
-                    this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
             dateHeader.innerHTML = capitalizeFirstWord(innerText, 'single');
         }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
-            var skeleton = isBlazor() ? 'D' : 'full';
+            var skeleton = 'full';
             var annocementText = this.parent.globalize.formatDate(data.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
             dateHeader.setAttribute('aria-label', annocementText);
         }
@@ -21294,9 +20858,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         });
         tr.appendChild(td);
         var args = { elementType: 'weekNumberCell', element: td };
-        if (!isBlazor()) {
-            this.parent.trigger(renderCell, args);
-        }
+        this.parent.trigger(renderCell, args);
         return tr;
     };
     Month.prototype.unwireEvents = function () {
@@ -21322,23 +20884,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                var view = this.parent.viewCollections[this.viewIndex].option;
-                if (!this.parent.isServerRenderer(view)) {
-                    this.parent.resetLayoutTemplates();
-                    this.parent.resetEventTemplates();
-                    remove(this.element);
-                }
-                else {
-                    if (['Month', 'MonthAgenda', 'TimelineMonth'].indexOf(this.parent.currentView) === -1) {
-                        this.element.style.display = 'none';
-                    }
-                    this.parent.resetEventTemplates();
-                }
-            }
-            else {
-                remove(this.element);
-            }
+            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();
@@ -21529,8 +21075,8 @@ var Year = /** @__PURE__ @class */ (function (_super) {
         if (endHour === void 0) { endHour = this.parent.workHours.end; }
         var dateCol = [{
                 date: renderDates[0], type: 'dateHeader', className: [HEADER_CELLS_CLASS], colSpan: 1, workDays: workDays,
-                startHour: new Date(+this.parent.globalize.parseDate(startHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' })),
-                endHour: new Date(+this.parent.globalize.parseDate(endHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' }))
+                startHour: new Date(+this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' })),
+                endHour: new Date(+this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' }))
             }];
         return dateCol;
     };
@@ -21635,7 +21181,7 @@ var Year = /** @__PURE__ @class */ (function (_super) {
         return addYears(this.parent.selectedDate, ((type === 'next') ? 1 : -1));
     };
     Year.prototype.getDateRangeText = function () {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, isBlazor() ? { format: 'yyyy' } : { skeleton: 'y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
     };
     Year.prototype.addEventListener = function () {
         this.parent.on(scrollUiUpdate, this.onScrollUiUpdate, this);
@@ -21684,10 +21230,6 @@ var Year = /** @__PURE__ @class */ (function (_super) {
         if (this.element) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
-            }
-            if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
             }
             remove(this.element);
             this.element = null;
@@ -22505,10 +22047,6 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
-            }
             remove(this.element);
             this.element = null;
             if (this.parent.headerModule && this.parent.activeViewOptions.allowVirtualScrolling) {
@@ -22610,7 +22148,6 @@ var MonthAgenda = /** @__PURE__ @class */ (function (_super) {
     MonthAgenda.prototype.onCellClick = function (event) {
         this.parent.quickPopup.quickPopupHide();
         var filterData = this.appointmentFiltering(event.startTime);
-        this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
         this.parent.notify(eventsLoaded, {});
         this.monthAgendaDate = new Date('' + event.startTime);
@@ -23414,7 +22951,7 @@ var TimelineYear = /** @__PURE__ @class */ (function (_super) {
                     className: DATE_HEADER_CLASS + ' ' + NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
-                var skeleton = isBlazor() ? 'D' : 'full';
+                var skeleton = 'full';
                 var annocementText = this.parent.globalize.formatDate(date, {
                     skeleton: skeleton,
                     calendar: this.parent.getCalendarMode()

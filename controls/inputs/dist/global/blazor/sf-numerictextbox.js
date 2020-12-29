@@ -26,10 +26,8 @@ var ROOT = 'e-input-group-icon';
 var MOUSE_UP = 'mouseup';
 var MOUSE_WHEEL = 'mousewheel DOMMouseScroll';
 var SERVER_ACTION = 'ServerAction';
-var SERVER_VALUE_UPDATE = 'ServerupdateValue';
 var SPIN_UP = 'e-spin-up';
 var SPIN_DOWN = 'e-spin-down';
-var DECIMAL = 'decimal';
 var FOCUS = 'focus';
 var BLUR = 'blur';
 var KEY_PRESS = 'keypress';
@@ -56,12 +54,6 @@ var SfNumericTextBox = /** @class */ (function () {
             return true;
         }
         var action = event.keyCode;
-        if (!sf.base.Browser.isDevice && sf.base.Browser.info.version === IE_VERSION && action === ENTER) {
-            var inputValue = this.element.value;
-            var parsedInput = new sf.base.Internationalization(this.options.locale).getNumberParser({ format: 'n' })(inputValue);
-            this.dotNetRef.invokeMethodAsync(SERVER_VALUE_UPDATE, parsedInput, event);
-            return true;
-        }
         if (event.which === LEFT_BUTTON || event.metaKey || event.ctrlKey || action === BACK_SPACE || action === ENTER) {
             return true;
         }
@@ -104,8 +96,7 @@ var SfNumericTextBox = /** @class */ (function () {
     };
     
     SfNumericTextBox.prototype.numericRegex = function () {
-        var numericObject = sf.base.getNumericObject(this.options.locale);
-        var decimalSeparator = sf.base.getValue(DECIMAL, numericObject);
+        var decimalSeparator = this.options.decimalSeparator;
         var fractionRule = '*';
         if (decimalSeparator === '.') {
             decimalSeparator = '\\' + decimalSeparator;

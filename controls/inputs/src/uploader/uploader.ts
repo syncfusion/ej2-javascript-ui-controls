@@ -1317,7 +1317,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.renderPreLoadFiles();
             this.wireEvents();
         }
-        this.renderComplete();
+        if (this.isServerBlazor) {
+            this.renderComplete();
+        }
     }
 
     private renderBrowseButton(): void {

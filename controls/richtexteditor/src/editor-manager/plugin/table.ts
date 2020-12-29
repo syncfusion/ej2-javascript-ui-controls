@@ -58,6 +58,11 @@ export class TableCommand {
         InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
         this.removeEmptyNode();
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
+        if (table.nextElementSibling === null) {
+            let emptyPara: HTMLElement = createElement('p');
+            emptyPara.appendChild(createElement('br'));
+            this.insertAfter(emptyPara, table);
+        }
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
             e.callBack({
@@ -219,7 +224,7 @@ export class TableCommand {
     private deleteRow(e: IHtmlItem): void {
         let selectedCell: Node = e.item.selection.range.startContainer;
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
-        let selectedRowIndex: number = (selectedCell.parentNode as HTMLTableRowElement).rowIndex;
+        let selectedRowIndex: number = (closest(selectedCell, 'tr') as HTMLTableRowElement).rowIndex;
         let parentTable: HTMLTableElement = closest(selectedCell, 'table') as HTMLTableElement;
         if (parentTable.rows.length === 1) {
             e.item.selection.restore();

@@ -245,6 +245,7 @@ export class Linear {
     }
 
     /** Render the Linear Label */
+    //tslint:disable-next-line:max-func-body-length
     public renderLinearLabel(): void {
         let linearlabel: Element;
         let linearValue: number;
@@ -284,27 +285,41 @@ export class Linear {
             textSize = measureText(argsData.text, progress.labelStyle);
             defaultPos = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width - textSize.width / 2) :
                 (progress.progressRect.x + textSize.width / 2);
-            if (textAlignment === 'Near') {
-                posX = defaultPos + ((progress.enableRtl) ? -padding : padding);
-            } else if (textAlignment === 'Center') {
-                center = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width - progressWidth / 2) :
-                    (progress.progressRect.x + progressWidth / 2);
-                pos = (progress.enableRtl) ? (center <= defaultPos) : (center >= defaultPos);
-                if (pos) {
-                    posX = center;
+            if (progress.labelOnTrack) {
+                if (textAlignment === 'Near') {
+                    posX = defaultPos + ((progress.enableRtl) ? -padding : padding);
+                } else if (textAlignment === 'Center') {
+                    center = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width - progressWidth / 2) :
+                        (progress.progressRect.x + progressWidth / 2);
+                    pos = (progress.enableRtl) ? (center <= defaultPos) : (center >= defaultPos);
+                    if (pos) {
+                        posX = center;
+                    } else {
+                        posX = defaultPos;
+                    }
                 } else {
-                    posX = defaultPos;
+                    far = (progress.enableRtl) ?
+                        ((progress.progressRect.x + progress.progressRect.width - progressWidth) + textSize.width / 2) :
+                        (progress.progressRect.x + progressWidth - textSize.width / 2);
+                    far += (progress.enableRtl) ? padding : -padding;
+                    pos = (progress.enableRtl) ? (far <= defaultPos) : (far >= defaultPos);
+                    if (pos) {
+                        posX = far;
+                    } else {
+                        posX = defaultPos;
+                    }
                 }
             } else {
-                far = (progress.enableRtl) ?
-                    ((progress.progressRect.x + progress.progressRect.width - progressWidth) + textSize.width / 2) :
-                    (progress.progressRect.x + progressWidth - textSize.width / 2);
-                far += (progress.enableRtl) ? padding : -padding;
-                pos = (progress.enableRtl) ? (far <= defaultPos) : (far >= defaultPos);
-                if (pos) {
-                    posX = far;
+                if (textAlignment === 'Near') {
+                    posX = defaultPos + ((progress.enableRtl) ? -padding : padding);
+                } else if (textAlignment === 'Center') {
+                    posX = (progress.progressRect.x + progress.progressRect.width) / 2;
+
                 } else {
-                    posX = defaultPos;
+                    posX = (progress.enableRtl) ?
+                        (progress.progressRect.x + textSize.width / 2) :
+                        (progress.progressRect.x + progress.progressRect.width - textSize.width / 2);
+                    posX += (progress.enableRtl) ? padding : -padding;
                 }
             }
             if (this.progress.cornerRadius === 'Round4px') {

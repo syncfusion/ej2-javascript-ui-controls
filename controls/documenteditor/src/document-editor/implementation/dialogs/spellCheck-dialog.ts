@@ -59,6 +59,8 @@ export class SpellCheckDialog {
             this.parent.spellChecker.manageReplace('Ignore Once', this.elementBox);
             this.removeErrors();
             this.parent.spellChecker.checkForNextError();
+            // this.documentHelper.hideDialog();
+            hideSpinner(this.documentHelper.dialog.element);
         }
     }
 
@@ -88,6 +90,8 @@ export class SpellCheckDialog {
             let text: string = (this.elementBox as TextElementBox).text;
             this.parent.spellChecker.handleIgnoreAllItems({ element: this.elementBox, text: text });
             this.parent.spellChecker.checkForNextError();
+            // this.documentHelper.hideDialog();
+            hideSpinner(this.documentHelper.dialog.element);
         }
     }
     /**
@@ -102,6 +106,7 @@ export class SpellCheckDialog {
                 this.parent.spellChecker.errorWordCollection.remove(this.errorText);
             }
             this.parent.spellChecker.checkForNextError();
+            this.documentHelper.hideDialog();
         }
     }
     /**
@@ -115,6 +120,7 @@ export class SpellCheckDialog {
             this.removeErrors();
             this.parent.spellChecker.checkForNextError();
             this.documentHelper.dialog.content = '';
+            hideSpinner(this.documentHelper.dialog.element);
         }
     }
     /**
@@ -146,6 +152,8 @@ export class SpellCheckDialog {
             }
             this.parent.spellChecker.checkForNextError();
             this.documentHelper.dialog.content = '';
+            // this.documentHelper.hideDialog();
+            hideSpinner(this.documentHelper.dialog.element);
         }
     }
     /**

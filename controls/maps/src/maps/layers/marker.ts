@@ -155,10 +155,12 @@ export class Marker {
                     }
                     if (markerTemplateEle.childElementCount === (markerData.length - markerCount - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
-                        if ((currentLayer.markerClusterSettings.allowClustering && currentLayer.layerType !== 'OSM') || !this.maps.zoomSettings.enable) {
-                            clusterTemplate(currentLayer, markerTemplateEle, this.maps,
-                                layerIndex, this.markerSVGObject, layerElement, false, false);
-                            (this.maps as any).renderReactTemplates();
+                        if (!this.maps.checkInitialRender) {
+                            if (currentLayer.markerClusterSettings.allowClustering) {
+                                clusterTemplate(currentLayer, markerTemplateEle, this.maps,
+                                    layerIndex, this.markerSVGObject, layerElement, false, false);
+                                (this.maps as any).renderReactTemplates();
+                            }
                         }
                     }
                 });

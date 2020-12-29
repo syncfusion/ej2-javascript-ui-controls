@@ -10,7 +10,7 @@ class CellStyle {
         this.numFmtId = 0;
         this.backColor = 'none';
         this.fontName = 'Calibri';
-        this.fontSize = 14;
+        this.fontSize = 10.5;
         this.fontColor = '#000000';
         this.italic = false;
         this.bold = false;
@@ -32,7 +32,7 @@ class CellStyle {
  */
 class Font {
     constructor() {
-        this.sz = 14;
+        this.sz = 10.5;
         this.name = 'Calibri';
         this.u = false;
         this.b = false;
@@ -2106,7 +2106,7 @@ class Workbook {
                 if (font.u) {
                     fontStyle += '<u />';
                 }
-                fontStyle += '<sz val="' + this.pixelsToRowHeight(font.sz) + '" />';
+                fontStyle += '<sz val="' + font.sz + '" />';
                 fontStyle += '<color rgb="' + font.color + '" />';
                 fontStyle += '<name val="' + font.name + '" /></font>';
             }

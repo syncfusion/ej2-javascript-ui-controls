@@ -198,6 +198,9 @@ export class Signature {
             let strokeColor: string = this.pdfViewer.handWrittenSignatureSettings.strokeColor ? this.pdfViewer.handWrittenSignatureSettings.strokeColor : '#000000';
             // tslint:disable-next-line
             let signatureBounds: any = this.pdfViewer.formFieldsModule.updateSignatureAspectRatio(this.outputString, true);
+            // tslint:disable-next-line
+            let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
+            this.saveImageString = canvas.toDataURL();
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: signatureBounds, pageIndex: pageIndex, data: this.outputString,
@@ -396,9 +399,8 @@ export class Signature {
             uploadCanvas.style.backgroundColor = 'white';
             uploadCanvas.style.zIndex = '0';
             uploadDiv.appendChild(uploadCanvas);
-            this.signfontStyle = [{ FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-            { FontName: 'Segoe Script' }, { FontName: 'Symbol' }
-            ];
+            // tslint:disable-next-line:max-line-length
+            this.signfontStyle = [{FontName: 'Helvetica'}, { FontName: 'Times New Roman' }, { FontName: 'Courier' }, { FontName: 'Symbol' }];
             // tslint:disable-next-line
             let fontSignature: any = [];
             for (let i: number = 0; i < this.signfontStyle.length; i++) {

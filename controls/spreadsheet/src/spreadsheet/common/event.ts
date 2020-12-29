@@ -282,3 +282,5 @@ export const focusBorder: string = 'focusBorder';
 export const clearChartBorder: string = 'clearChartBorder';
 /** @hidden */
 export const insertChart: string = 'insertChart';
+/** @hidden */
+export const chartRangeSelection: string = 'chartRangeSelection';

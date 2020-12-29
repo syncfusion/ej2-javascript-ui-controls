@@ -1,5 +1,5 @@
 import {
-    extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList, isBlazor
+    extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList
 } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -222,9 +222,6 @@ export class ResourceBase {
                 }
                 if (this.parent.virtualScrollModule) {
                     this.updateVirtualContent(index, hide, e, target);
-                    if (isBlazor()) {
-                        return;
-                    }
                 } else {
                     this.updateContent(index, hide);
                 }
@@ -296,40 +293,6 @@ export class ResourceBase {
     }
 
     public updateVirtualContent(index: number, expand: boolean, e: Event, target: Element): void {
-        if (isBlazor()) {
-            // tslint:disable-next-line:no-any
-            let scheduleObj: any = this.parent;
-            let adaptor: string = 'interopAdaptor';
-            let invokeMethodAsync: string = 'invokeMethodAsync';
-            scheduleObj[adaptor][invokeMethodAsync]('UpdateVirtualContent', index, expand).then(() => {
-                this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
-                this.setExpandedResources();
-                let resourcesCount: number = this.parent.virtualScrollModule.getRenderedCount();
-                let startIndex: number = this.expandedResources.indexOf(this.renderedResources[0]);
-                this.renderedResources = this.expandedResources.slice(startIndex, startIndex + resourcesCount);
-                if (this.renderedResources.length < resourcesCount) {
-                    let sIndex: number = this.expandedResources.length - resourcesCount;
-                    sIndex = (sIndex > 0) ? sIndex : 0;
-                    this.renderedResources = this.expandedResources.slice(sIndex, this.expandedResources.length);
-                }
-                let virtualTrack: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS);
-                this.parent.virtualScrollModule.updateVirtualTrackHeight(virtualTrack);
-                let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
-                if (!isNullOrUndefined(timeIndicator)) {
-                    timeIndicator.style.height =
-                        (this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement).offsetHeight + 'px';
-                }
-                let data: NotifyEventArgs = { cssProperties: this.parent.getCssProperties(), module: 'scroll' };
-                this.parent.notify(events.scrollUiUpdate, data);
-                let args: ActionEventArgs = {
-                    cancel: false, event: e, groupIndex: index,
-                    requestType: target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) ? 'resourceExpanded' : 'resourceCollapsed',
-                };
-                this.parent.notify(events.dataReady, {});
-                this.parent.trigger(events.actionComplete, args);
-            });
-            return;
-        }
         this.lastResourceLevel[index].resourceData[this.lastResourceLevel[index].resource.expandedField] = !expand;
         this.setExpandedResources();
         let resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
@@ -543,20 +506,6 @@ export class ResourceBase {
 
     public bindResourcesData(isSetModel: boolean): void {
         this.parent.showSpinner();
-        if (isBlazor()) {
-            if (!this.parent.isServerRenderer() && this.parent.tempResourceCollection) {
-                this.parent.resourceCollection = this.parent.tempResourceCollection || [];
-                this.refreshLayout(false);
-            }
-            // the resourceCollection will be updated in layoutReady method
-            // tslint:disable-next-line:no-any
-            // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
-            //     if (this.parent.isDestroyed) { return; }
-            //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
-            //     this.refreshLayout(isSetModel);
-            // }).catch((e: ReturnType) => this.parent.renderModule.dataManagerFailure(e));
-            return;
-        }
         let promises: Promise<Object>[] = [];
         for (let i: number = 0; i < this.parent.resources.length; i++) {
             let dataModule: Data = new Data(this.parent.resources[i].dataSource, this.parent.resources[i].query);

@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, TextModel, PathModel, FlowShapeModel, BasicShapeModel, ImageModel } from '../../../src/diagram/objects/node-model';
 import { TextStyle } from '../../../src/diagram/core/appearance';
-import { TextElement, TextStyleModel, PathElement, NodeConstraints, Html } from '../../../src/diagram/index';
+import { TextElement, TextStyleModel, PathElement, NodeConstraints, Html, DiagramElement } from '../../../src/diagram/index';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 
@@ -247,7 +247,7 @@ describe('Diagram Control', () => {
             diagram.nodes[2].shape = { type: 'Basic', shape: 'Ellipse' };
             diagram.dataBind();
             let value: HTMLElement = document.getElementById('node1_content_groupElement');
-            expect((value.childNodes[0] as HTMLElement).tagName === 'rect').toBe(true);
+            expect((value.childNodes[0] as HTMLElement).tagName === 'path').toBe(true);
             done();
         });
         it('Changing Flow shape at run time', (done: Function) => {
@@ -521,5 +521,44 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
 
+    });
+    describe('EJ2-45100-Cant change flowshape to other basic shape', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramShadowCheck' });
+            document.body.appendChild(ele);
+            let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
+            let nodes: NodeModel[] = [
+                {id: 'node', offsetX: 100, offsetY: 100, shape: shape,annotations: [{ content: 'Node1'}]},
+            ]
+
+            diagram = new Diagram({
+                width: 800, height: 300,
+                nodes: nodes
+            });
+            diagram.appendTo('#diagramShadowCheck');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Changing the pathnode shape at the run time ', (done: Function) => {
+            expect(diagram.nodes[0].wrapper.children[0] instanceof DiagramElement).toBe(true);
+            diagram.nodes[0].shape = { type: 'Basic', shape: 'Plus' };
+            diagram.dataBind();
+            expect(diagram.nodes[0].wrapper.children[0] instanceof PathElement).toBe(true);
+            done();
+        });
+        
     });
 });

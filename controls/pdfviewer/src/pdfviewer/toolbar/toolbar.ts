@@ -111,7 +111,11 @@ export class Toolbar {
         // tslint:disable-next-line
         let isIE: boolean = !!(document as any).documentMode;
         if (isIE) {
-            this.totalPageItem.classList.add('e-pv-total-page-ms');
+            if (isBlazor()) {
+                this.pdfViewerBase.blazorUIAdaptor.totalPageElement.classList.add('e-pv-total-page-ms');
+            } else {
+                this.totalPageItem.classList.add('e-pv-total-page-ms');
+            }
         }
         this.createFileElement(toolbarDiv);
         this.wireEvent();

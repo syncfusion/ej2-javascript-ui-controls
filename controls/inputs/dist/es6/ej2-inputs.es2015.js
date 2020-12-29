@@ -7867,7 +7867,9 @@ let Uploader = class Uploader extends Component {
             this.renderPreLoadFiles();
             this.wireEvents();
         }
-        this.renderComplete();
+        if (this.isServerBlazor) {
+            this.renderComplete();
+        }
     }
     renderBrowseButton() {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });

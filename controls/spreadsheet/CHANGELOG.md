@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I308504` - Added missed text in the localization file.
+`#I305131` - Unlocking cells is not working for the defined columns in the view in ASP.NET Core issue has been fixed.
+
 ## 18.4.31 (2020-12-22)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I296802` - Provided proper error support and if formula issue fixed.
+
+## 18.4.30 (2020-12-17)
 
 ### Spreadsheet
 

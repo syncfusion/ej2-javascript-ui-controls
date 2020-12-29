@@ -490,9 +490,24 @@ class SfListView {
         this.toggleCheckBox(item, true);
     }
 
-    public getCheckData(item: HTMLElement | Element, isCheck: boolean): void {
-        let liItem: HTMLElement = <HTMLElement>this.curUlElement.querySelector('[data-uid=\'' + item.id + '\']');
+    //tslint:disable-next-line
+    public getCheckData(item: HTMLElement | Element | any, isCheck: boolean, fieldId: string): void {
+        let id: string = item.id;
+        if (fieldId !== item.id || isNullOrUndefined(item.id)) {
+            fieldId = fieldId.toLowerCase();
+            //tslint:disable-next-line
+            for (const [key, value] of (<any>Object).entries(item)) {
+                let tempItem: string = `${key}`;
+                let tempVal: string = `${value}`;
+                tempItem = tempItem.toLowerCase();
+                if (tempItem === fieldId) {
+                    id = tempVal;
+                }
+            }
+        }
+        let liItem: HTMLElement = <HTMLElement>this.curUlElement.querySelector('[data-uid=\'' + id + '\']');
         isCheck ? this.checkItem(liItem) : this.uncheckItem(liItem);
+        this.removeFocus();
     }
 
     private spaceKeyHandler(e: KeyboardEventArgs): void {
@@ -709,11 +724,11 @@ let listView: object = {
         if (this.isValid(element)) { element.blazor__instance.uncheckAllItems(); }
     },
     // tslint:disable
-    getCheckData(element: BlazorListViewElement, item: any, isCheck: boolean): void {
+    getCheckData(element: BlazorListViewElement, item: any, isCheck: boolean, fieldId: string): void {
         // tslint:enable
         if (this.isValid(element) && item != null) {
             for (let i: number = 0; i < item.length; i++) {
-                element.blazor__instance.getCheckData(item[i], isCheck);
+                element.blazor__instance.getCheckData(item[i], isCheck, fieldId);
             }
         }
     },

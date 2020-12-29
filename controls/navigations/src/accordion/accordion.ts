@@ -1,6 +1,6 @@
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { isVisible, closest, attributes, detach, select, isBlazor, addClass, append } from '@syncfusion/ej2-base';
+import { isVisible, closest, attributes, detach, select, addClass, append } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, Complex } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper, isRippleEnabled } from '@syncfusion/ej2-base';
@@ -63,7 +63,6 @@ export interface AccordionClickArgs extends BaseEventArgs {
   item?: AccordionItemModel;
   /** 
    * Defines the current Event arguments.
-   * @blazorType MouseEventArgs
    */
   originalEvent?: Event;
 }
@@ -105,7 +104,6 @@ export class AccordionActionSettings extends ChildProperty<AccordionActionSettin
    * Specifies the type of animation.
    * @default 'SlideDown'
    * @aspType string
-   * @blazorType string
    */
   @Property('SlideDown')
   public effect: 'None' | Effect;
@@ -278,7 +276,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
    * Specifies the datasource for the accordion items.
    * @isdatamanager false
    * @default []
-   * @blazorType IEnumerable<object>
    */
   @Property([])
   public dataSource: Object[];
@@ -324,7 +321,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   /**
    * Defines whether to allow the cross-scripting site or not.
    * @default false
-   * @deprecated
    * 
    */
   @Property(false)
@@ -339,35 +335,30 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   /**
    * The event will be fired while clicking anywhere within the Accordion.
    * @event
-   * @blazorProperty 'Clicked'
    */
   @Event()
   public clicked: EmitType<AccordionClickArgs>;
   /**
    * The event will be fired before the item gets collapsed/expanded.
    * @event
-   * @blazorProperty 'Expanding'
    */
   @Event()
   public expanding: EmitType<ExpandEventArgs>;
   /**
    * The event will be fired after the item gets collapsed/expanded.
    * @event
-   * @blazorProperty 'Expanded'
    */
   @Event()
   public expanded: EmitType<ExpandedEventArgs>;
   /**
    * The event will be fired once the control rendering is completed.
    * @event
-   * @blazorProperty 'Created'
    */
   @Event()
   public created: EmitType<Event>;
   /**
    * The event will be fired when the control gets destroyed.
    * @event
-   * @blazorProperty 'Destroyed'
    */
   @Event()
   public destroyed: EmitType<Event>;
@@ -393,9 +384,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     this.isDestroy = true;
     this.restoreContent(null);
     [].slice.call(ele.children).forEach((el: HTEle) => {
-      if (!el.classList.contains('blazor-template')) {
-        ele.removeChild(el);
-      }
+      ele.removeChild(el);
     });
     if (this.trgtEle) {
       while (this.ctrlTem.firstElementChild) {
@@ -469,8 +458,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
   }
   private renderControl(): void {
-    this.trgtEle = (this.element.children.length > 0 &&
-      !(isBlazor() && !this.isStringTemplate)) ? <HTEle>select('div', this.element) : null;
+    this.trgtEle = (this.element.children.length > 0) ? <HTEle>select('div', this.element) : null;
     this.renderItems();
     this.initItemExpand();
   }
@@ -880,7 +868,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         eleVal.style.display = '';
       }
     } catch (e) {
-      if (typeof (value) === 'string' && isBlazor() && value.indexOf('<div>Blazor') !== 0) {
+      if (typeof (value) === 'string') {
         ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
         /* tslint:disable */
       } else if (!isNOU(this.trgtEle) && ((value as any) instanceof (HTMLElement))) {
@@ -1168,7 +1156,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
    * @param  {number} index - Number value that determines where the item should be added.
    * By default, item is added at the last index if the index is not specified.
    * @returns void
-   * @deprecated
    */
   public addItem(item: AccordionItemModel | AccordionItemModel[] | Object | Object[], index?: number): void {
     let ele: HTEle = this.element;
@@ -1213,7 +1200,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
    * Dynamically removes item from Accordion.
    * @param  {number} index - Number value that determines which item should be removed.
    * @returns void.
-   * @deprecated
    */
   public removeItem(index: number): void {
     // tslint:disable-next-line:no-any

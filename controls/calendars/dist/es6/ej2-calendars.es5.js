@@ -6271,6 +6271,14 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         else {
                             removeClass([ele], [RANGEHOVER]);
                         }
+                        if (ele.classList.contains(SELECTED$3) && ele.classList.contains(ENDDATE) &&
+                            (+eleDateValue !== +this.endValue)) {
+                            removeClass([ele], [SELECTED$3]);
+                            removeClass([ele], [ENDDATE]);
+                        }
+                        if (ele.classList.contains(RANGEHOVER) && (+eleDateValue > +this.endValue)) {
+                            removeClass([ele], [RANGEHOVER]);
+                        }
                         if (!ele.classList.contains(OTHERMONTH$2)) {
                             var startDateValue = new Date(+this.startValue);
                             var eleDateValue_1 = new Date(+eleDate);
@@ -8723,6 +8731,22 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
         this.inputElement.parentElement.appendChild(this.secondHiddenChild);
     };
+    DateRangePicker.prototype.setMinMaxDays = function () {
+        if (this.isPopupOpen()) {
+            this.removeClassDisabled();
+            this.checkMinMaxDays();
+            if (this.isMobile) {
+                this.selectableDates();
+            }
+            if (!this.strictMode && (isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue))) {
+                this.removeSelection();
+            }
+            else {
+                this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
+            }
+            this.updateHeader();
+        }
+    };
     /**
      * Called internally if any of the property value changed.
      * returns void
@@ -8733,7 +8757,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var format = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
-            this.hide(null);
+            var openPopup = ['maxDays', 'minDays'];
+            if (openPopup.indexOf(prop) < 0) {
+                this.hide(null);
+            }
             switch (prop) {
                 case 'width':
                     this.setEleWidth(this.width);
@@ -8869,10 +8896,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'minDays':
                     this.setProperties({ minDays: newProp.minDays }, true);
                     this.refreshChange();
+                    this.setMinMaxDays();
                     break;
                 case 'maxDays':
                     this.setProperties({ maxDays: newProp.maxDays }, true);
                     this.refreshChange();
+                    this.setMinMaxDays();
                     break;
                 case 'min':
                     this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);

@@ -289,15 +289,7 @@ class Column {
             this[keys[i]] = column[keys[i]];
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact && keys[i] === 'template') {
-                //tslint:disable-next-line:no-any
-                this.parent.clearTemplate(['columnTemplate'], undefined, () => {
-                    let rowsObj = this.parent.getRowsObject();
-                    let pKeyField = this.parent.getPrimaryKeyFieldNames()[0];
-                    for (let j = 0; j < rowsObj.length; j++) {
-                        let key = rowsObj[j].data[pKeyField];
-                        this.parent.setCellValue(key, this.field, rowsObj[j][this.field]);
-                    }
-                });
+                this.parent.refreshReactColumnTemplateByUid(this.uid);
             }
         }
     }
@@ -14349,6 +14341,26 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
+     * @hidden
+     */
+    refreshReactColumnTemplateByUid(columnUid) {
+        if (this.isReact) {
+            //tslint:disable-next-line:no-any
+            this.clearTemplate(['columnTemplate'], undefined, () => {
+                let cells = 'cells';
+                let rowIdx = 'index';
+                let rowsObj = this.getRowsObject();
+                let cellIndex = this.getNormalizedColumnIndex(columnUid);
+                for (let j = 0; j < rowsObj.length; j++) {
+                    let cell = rowsObj[j][cells][cellIndex];
+                    let cellRenderer = new CellRenderer(this, this.serviceLocator);
+                    let td = this.getCellFromIndex(j, cellIndex);
+                    cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                }
+            });
+        }
+    }
+    /**
      * Updates and refresh the particular row values based on the given primary key value.
      * > Primary key column must be specified using `columns.isPrimaryKey` property.
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
@@ -22025,13 +22037,15 @@ class PagerDropDown {
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value, 10) });
     }
     refresh() {
-        if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
-            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
-        }
-        else {
-            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerDropDown');
+        if (this.pagerCons) {
+            if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            }
+            else {
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerDropDown');
+            }
         }
     }
     beforeValueChange(prop) {
@@ -22043,7 +22057,8 @@ class PagerDropDown {
     convertValue(pageSizeValue) {
         let item = pageSizeValue;
         for (let i = 0; i < item.length; i++) {
-            item[i] = parseInt(item[i], 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i]);
+            item[i] = parseInt(item[i], 10) ? item[i].toString() : (this.pagerModule.getLocalizedLabel(item[i]) !== '')
+                ? this.pagerModule.getLocalizedLabel(item[i]) : item[i];
         }
         return item;
     }
@@ -23169,12 +23184,6 @@ class FilterMenuRenderer {
                 instanceofFilterUI.read(targ, col, flOptrValue, this.filterObj);
             }
         }
-        let iconClass = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
-        let column = this.parent.element.querySelector('[e-mappinguid="' + col.uid + '"]').parentElement;
-        let flIcon = column.querySelector(iconClass);
-        if (flIcon) {
-            flIcon.classList.add('e-filtered');
-        }
         this.closeDialog();
     }
     clearBtnClick(column) {
@@ -23488,6 +23497,8 @@ class Filter {
      */
     updateModel() {
         let col = this.parent.getColumnByField(this.fieldName);
+        this.filterObjIndex = this.getFilteredColsIndexByField(col);
+        this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         let arrayVal = Array.isArray(this.value) ? this.value : [this.value];
         for (let i = 0, len = arrayVal.length; i < len; i++) {
             let field = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
@@ -23692,7 +23703,6 @@ class Filter {
         else {
             this.actualPredicate[this.fieldName] = [predObj];
         }
-        this.addFilteredClass(this.fieldName);
         if (this.checkAlreadyColFiltered(this.column.field)) {
             return;
         }
@@ -23723,12 +23733,23 @@ class Filter {
             switch (prop) {
                 case 'columns':
                     let col = 'columns';
+                    let args = {
+                        currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
+                            this.column.field : undefined, action: 'filter', columns: this.filterSettings.columns,
+                        requestType: 'filtering', type: actionBegin, cancel: false
+                    };
                     if (this.contentRefresh && this.skipUid(e.properties[col])) {
-                        this.parent.notify(modelChanged, {
-                            currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
-                                this.column.field : undefined, action: 'filter',
-                            columns: this.filterSettings.columns, requestType: 'filtering', type: actionBegin, cancel: false
-                        });
+                        this.parent.notify(modelChanged, args);
+                        if (args.cancel) {
+                            if (isNullOrUndefined(this.prevFilterObject)) {
+                                this.filterSettings.columns.splice(this.filterSettings.columns.length - 1, 1);
+                            }
+                            else {
+                                this.filterSettings.columns[this.filterObjIndex] = this.prevFilterObject;
+                            }
+                            return;
+                        }
+                        this.addFilteredClass(this.fieldName);
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();

@@ -8037,7 +8037,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.renderPreLoadFiles();
             this.wireEvents();
         }
-        this.renderComplete();
+        if (this.isServerBlazor) {
+            this.renderComplete();
+        }
     };
     Uploader.prototype.renderBrowseButton = function () {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });

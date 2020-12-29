@@ -1,5 +1,5 @@
-import { isNullOrUndefined, closest, extend, EventHandler, isBlazor } from '@syncfusion/ej2-base';
-import { createElement, prepend, append, addClass, removeClass, getElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, extend, EventHandler } from '@syncfusion/ej2-base';
+import { createElement, prepend, append, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs, InlineClickArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -704,15 +704,6 @@ export class EventBase {
             this.parent.trigger(event.select, selectEventArgs);
             let args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
             this.parent.trigger(event.eventClick, args, (eventClickArgs: EventClickArgs) => {
-                if (isBlazor()) {
-                    let eventFields: EventFieldsMapping = this.parent.eventFields;
-                    let eventObj: { [key: string]: Date } = eventClickArgs.event as { [key: string]: Date };
-                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
-                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
-                    if (eventClickArgs.element) {
-                        eventClickArgs.element = getElement(eventClickArgs.element);
-                    }
-                }
                 if (eventClickArgs.cancel) {
                     this.removeSelectedAppointmentClass();
                     if (this.parent.quickPopup) {

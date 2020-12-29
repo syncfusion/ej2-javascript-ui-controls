@@ -620,9 +620,11 @@ export class Zoom {
                         }
                         if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                             getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
-                            if (currentLayers.markerClusterSettings.allowClustering) {
-                                clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false, true) ;
-                            }
+                            if (scale <= 1) {
+                                if (currentLayers.markerClusterSettings.allowClustering) {
+                                    clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false, true) ;
+                                }
+                            } 
                         }
                     });
                 });

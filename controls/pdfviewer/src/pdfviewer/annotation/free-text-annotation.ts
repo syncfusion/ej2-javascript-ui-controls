@@ -300,6 +300,16 @@ export class FreeTextAnnotation {
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
+                        let rotateAngle: any = Math.abs(annotation.Rotate);
+                        let width: number = annotation.Bounds.Width;
+                        let height: number = annotation.Bounds.Height;
+                        if (rotateAngle === 90 || rotateAngle === 270) {
+                            annotation.Bounds.Width = annotation.Bounds.Height;
+                            annotation.Bounds.Height = width;
+                            annotation.Bounds.X = (annotation.Bounds.X + annotation.Bounds.Height) - height / 2;
+                            annotation.Bounds.Y = (annotation.Bounds.Y + annotation.Bounds.Width) - height / 2;
+                        }
+                        // tslint:disable-next-line
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         // tslint:disable-next-line
                         annot = {

@@ -1,5 +1,5 @@
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { addClass, remove, removeClass, setStyleAttribute, isBlazor, getElement, Browser, EventHandler } from '@syncfusion/ej2-base';
+import { addClass, remove, removeClass, setStyleAttribute, Browser, EventHandler } from '@syncfusion/ej2-base';
 import { DragEventArgs, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
@@ -151,15 +151,6 @@ export class DragAndDrop extends ActionBase {
                 this.removeCloneElementClasses();
                 this.removeCloneElement();
                 return;
-            } else if (isBlazor()) {
-                e.bindEvents(e.dragElement);
-                if (dragEventArgs.element) {
-                    dragEventArgs.element = getElement(dragEventArgs.element);
-                }
-                (dragEventArgs.data[this.parent.eventFields.startTime] as Date) = this.parent.getDateTime(
-                    (dragEventArgs.data[this.parent.eventFields.startTime] as Date));
-                (dragEventArgs.data[this.parent.eventFields.endTime] as Date) = this.parent.getDateTime(
-                    (dragEventArgs.data[this.parent.eventFields.endTime] as Date));
             }
             this.actionClass('addClass');
             this.parent.uiStateValues.action = true;

@@ -1,6 +1,6 @@
 import { Component, NumberFormatOptions, DateFormatOptions, EmitType } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs as BaseKeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
-import { Query, DataManager, Group } from '@syncfusion/ej2-data';
+import { Query, DataManager, Group, Predicate } from '@syncfusion/ej2-data';
 import { ItemModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonModel, CheckBoxModel, SwitchModel } from '@syncfusion/ej2-buttons';
 import { Column, ColumnModel } from '../models/column';
@@ -615,6 +615,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenLeftContentTbody?(): Element;
     getFrozenRightHeaderTbody?(): Element;
     getFrozenRightContentTbody?(): Element;
+    refreshReactColumnTemplateByUid?(columnUid: string): void;
     getAllDataRows?(includeBatch: boolean): Element[];
     getAllMovableDataRows?(includeBatch: boolean): Element[];
     getAllFrozenDataRows?(includeBatch: boolean): Element[];
@@ -2038,7 +2039,7 @@ export interface DataStateChangeEventArgs {
     /** Defines the page size */
     take?: number;
     /** Defines the filter criteria  */
-    where?: PredicateModel[];
+    where?: Predicate[];
     /** Defines the sorted field and direction */
     sorted?: Sorts[];
     /** Defines the grouped field names */

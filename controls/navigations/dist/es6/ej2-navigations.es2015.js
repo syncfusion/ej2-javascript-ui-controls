@@ -3045,7 +3045,6 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
 };
 const CLS_VERTICAL = 'e-vertical';
 const CLS_ITEMS = 'e-toolbar-items';
-const BZ_ITEMS = 'e-blazor-toolbar-items';
 const CLS_ITEM = 'e-toolbar-item';
 const CLS_RTL$2 = 'e-rtl';
 const CLS_SEPARATOR = 'e-separator';
@@ -3190,10 +3189,7 @@ let Toolbar = class Toolbar extends Component {
                 document.body.appendChild(this.element.querySelector(ele)).style.display = 'none';
             }
         });
-        if (isBlazor() && this.isServerRendered) {
-            this.resetServerItems();
-        }
-        while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
+        while (this.element.lastElementChild) {
             this.element.removeChild(this.element.lastElementChild);
         }
         if (this.trgtEle) {
@@ -3569,30 +3565,7 @@ let Toolbar = class Toolbar extends Component {
         }
         if (clst) {
             let tempItem = this.items[this.tbarEle.indexOf(clst)];
-            if (tempItem && isBlazor() && this.isServerRendered) {
-                itemObj = {
-                    id: tempItem.id,
-                    text: tempItem.text,
-                    width: tempItem.width,
-                    cssClass: tempItem.cssClass,
-                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
-                    disabled: tempItem.disabled,
-                    prefixIcon: tempItem.prefixIcon,
-                    suffixIcon: tempItem.suffixIcon,
-                    visible: tempItem.visible,
-                    overflow: tempItem.overflow,
-                    template: tempItem.template,
-                    type: tempItem.type,
-                    showTextOn: tempItem.showTextOn,
-                    htmlAttributes: tempItem.htmlAttributes,
-                    tooltipText: tempItem.tooltipText,
-                    align: tempItem.align,
-                    click: tempItem.click
-                };
-            }
-            else {
-                itemObj = tempItem;
-            }
+            itemObj = tempItem;
         }
         let eventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !isNullOrUndefined(itemObj.click)) {
@@ -3661,7 +3634,7 @@ let Toolbar = class Toolbar extends Component {
     }
     renderControl() {
         let ele = this.element;
-        this.trgtEle = (ele.children.length > 0 && (!isBlazor() && !this.isServerRendered)) ? ele.querySelector('div') : null;
+        this.trgtEle = (ele.children.length > 0) ? ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
         this.renderLayout();
@@ -3683,27 +3656,7 @@ let Toolbar = class Toolbar extends Component {
             this.tbarEle = [];
         }
         for (let i = 0; i < items.length; i++) {
-            if (isBlazor() && this.isServerRendered) {
-                this.isVertical = this.element.classList.contains(CLS_VERTICAL) ? true : false;
-                let itemEleBlaDom = this.element.querySelector('.' + BZ_ITEMS);
-                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
-                if (!innerItem) {
-                    continue;
-                }
-                if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
-                    this.popupPriCount++;
-                }
-                if (items[i].htmlAttributes) {
-                    this.setAttr(items[i].htmlAttributes, innerItem);
-                }
-                if (items[i].type === 'Button') {
-                    EventHandler.clearEvents(innerItem);
-                    EventHandler.add(innerItem, 'click', this.itemClick, this);
-                }
-            }
-            else {
-                innerItem = this.renderSubComponent(items[i], i);
-            }
+            innerItem = this.renderSubComponent(items[i], i);
             if (this.tbarEle.indexOf(innerItem) === -1) {
                 this.tbarEle.push(innerItem);
             }
@@ -3728,25 +3681,6 @@ let Toolbar = class Toolbar extends Component {
             this.notify('render-react-toolbar-template', this[portals]);
             this.renderReactTemplates();
         }
-    }
-    serverItemsRerender() {
-        this.destroyMode();
-        this.resetServerItems();
-        this.serverItemsRefresh();
-    }
-    serverItemsRefresh() {
-        let wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
-        if (wrapBlaEleDom.children.length > 0) {
-            this.itemsAlign(this.items, this.element.querySelector('.' + CLS_ITEMS));
-            this.renderLayout();
-            this.refreshOverflow();
-        }
-    }
-    resetServerItems() {
-        let wrapBlaEleDom = this.element.querySelector('.' + BZ_ITEMS);
-        let itemEles = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
-        append(itemEles, wrapBlaEleDom);
-        this.clearProperty();
     }
     /** @hidden */
     changeOrientation() {
@@ -5042,10 +4976,6 @@ let Toolbar = class Toolbar extends Component {
                             }
                         }
                     }
-                    else if (isBlazor() && this.isServerRendered) {
-                        this.serverItemsRerender();
-                        this.notify('onItemsChanged', {});
-                    }
                     else {
                         this.itemsRerender(newProp.items);
                     }
@@ -5352,9 +5282,7 @@ let Accordion = class Accordion extends Component {
         this.isDestroy = true;
         this.restoreContent(null);
         [].slice.call(ele.children).forEach((el) => {
-            if (!el.classList.contains('blazor-template')) {
-                ele.removeChild(el);
-            }
+            ele.removeChild(el);
         });
         if (this.trgtEle) {
             while (this.ctrlTem.firstElementChild) {
@@ -5430,8 +5358,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     renderControl() {
-        this.trgtEle = (this.element.children.length > 0 &&
-            !(isBlazor() && !this.isStringTemplate)) ? select('div', this.element) : null;
+        this.trgtEle = (this.element.children.length > 0) ? select('div', this.element) : null;
         this.renderItems();
         this.initItemExpand();
     }
@@ -5863,7 +5790,7 @@ let Accordion = class Accordion extends Component {
             }
         }
         catch (e) {
-            if (typeof (value) === 'string' && isBlazor() && value.indexOf('<div>Blazor') !== 0) {
+            if (typeof (value) === 'string') {
                 ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
                 /* tslint:disable */
             }
@@ -6169,7 +6096,6 @@ let Accordion = class Accordion extends Component {
      * @param  {number} index - Number value that determines where the item should be added.
      * By default, item is added at the last index if the index is not specified.
      * @returns void
-     * @deprecated
      */
     addItem(item, index) {
         let ele = this.element;
@@ -6217,7 +6143,6 @@ let Accordion = class Accordion extends Component {
      * Dynamically removes item from Accordion.
      * @param  {number} index - Number value that determines which item should be removed.
      * @returns void.
-     * @deprecated
      */
     removeItem(index) {
         // tslint:disable-next-line:no-any
@@ -7678,7 +7603,7 @@ let Tab = class Tab extends Component {
     }
     compileElement(ele, val, prop, index) {
         let templateFn;
-        if (typeof val === 'string' && isBlazor() && val.indexOf('<div>Blazor') !== 0) {
+        if (typeof val === 'string') {
             val = val.trim();
             ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
         }
@@ -7687,12 +7612,7 @@ let Tab = class Tab extends Component {
         }
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            if (isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-                templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
-            }
-            else {
-                templateFUN = templateFn({}, this, prop);
-            }
+            templateFUN = templateFn({}, this, prop);
         }
         if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
             [].slice.call(templateFUN).forEach((el) => {
@@ -8326,7 +8246,7 @@ let Tab = class Tab extends Component {
                 }
                 this.templateEle = [];
                 let selectElement = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
-                while (selectElement.firstElementChild && !isBlazor()) {
+                while (selectElement.firstElementChild) {
                     detach(selectElement.firstElementChild);
                 }
                 this.select(this.selectedItem);
@@ -8367,7 +8287,6 @@ let Tab = class Tab extends Component {
      * @param  {TabItemsModel[]} items - An array of item that is added to the Tab.
      * @param  {number} index - Number value that determines where the items to be added. By default, index is 0.
      * @returns void.
-     * @deprecated
      */
     addTab(items, index) {
         let addArgs = { addedItems: items, cancel: false };
@@ -8450,7 +8369,6 @@ let Tab = class Tab extends Component {
      * Removes the items in the Tab from the specified index.
      * @param  {number} index - Index of target item that is going to be removed.
      * @returns void.
-     * @deprecated
      */
     removeTab(index) {
         let trg = selectAll('.' + CLS_TB_ITEM, this.element)[index];
@@ -8460,11 +8378,6 @@ let Tab = class Tab extends Component {
         let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs) => {
             if (!tabRemovingArgs.cancel) {
-                if (isBlazor() && this.isServerRendered) {
-                    // tslint:disable-next-line:no-any
-                    this.interopAdaptor.invokeMethodAsync('OnRemoveItem', index);
-                    return;
-                }
                 // tslint:disable-next-line:no-any
                 if (this.isRect) {
                     this.clearTemplate([], index);

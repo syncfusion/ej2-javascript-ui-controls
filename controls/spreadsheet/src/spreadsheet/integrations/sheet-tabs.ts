@@ -185,7 +185,8 @@ export class SheetTabs {
     private addSheetTab(): void {
         let eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
-        let isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) || eventArgs.editedValue.toString().indexOf('=') === 0;
+        let val: string = eventArgs.editedValue;
+        let isFormulaEdit: boolean = checkIsFormula(val) || val && val !== '' ? val.indexOf('=') === 0 : false;
         this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex + 1,  end:
             this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
         this.parent.element.focus();

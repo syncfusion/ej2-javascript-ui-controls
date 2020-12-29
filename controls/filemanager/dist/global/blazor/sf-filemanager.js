@@ -758,7 +758,8 @@ var FileManager = {
         else {
             if ((element.classList.contains('e-yscroll') && element.classList.contains('e-content')) ||
                 (element.classList.contains('e-list-parent') && element.classList.contains('e-ul')) ||
-                element.classList.contains('e-view-container')) {
+                element.classList.contains('e-view-container') || element.classList.contains('e-large-icons')
+                || sf.base.closest(element, '.e-empty.e-view-container')) {
                 menuModel = { IsFile: false, RowIndex: null, IsFolder: false, IsLayout: true, IsTree: false };
             }
             else if (treeElement) {

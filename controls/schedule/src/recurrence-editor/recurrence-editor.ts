@@ -1,10 +1,10 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser } from '@syncfusion/ej2-base';
 import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
-import { EventHandler, MouseEventArgs, classList, IntlBase } from '@syncfusion/ej2-base';
+import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';
 import { EJ2Instance } from '../schedule/base/interface';
 import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';
 import { RecurrenceEditorModel } from './recurrence-editor-model';
@@ -561,12 +561,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.untilDateObj.appendTo(<HTMLElement>this.element.querySelector('.' + UNTILDATE));
     }
     private getFormat(formatType: string): string {
-        if (isBlazor()) {
-            if (formatType === 'dateFormats') {
-                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.locale).format;
-            }
-            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
-        }
         let format: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.getCalendarMode()));
@@ -733,18 +727,15 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return dataSource;
     }
     private getDayData(format: DayFormateType): { [key: string]: string }[] {
-        if (isBlazor() && format === 'narrow') {
-            format = 'short';
-        }
         let weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
         let dayData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            let nameSpaceString: string = isBlazor() ? 'days.' : 'days.stand-alone.';
+            let nameSpaceString: string = 'days.stand-alone.';
             cldrObj = <string[]>(getValue(nameSpaceString + format, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            let nameSpaceString: string = isBlazor() ? this.locale + '.dates.days.' + format :
+            let nameSpaceString: string =
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
             cldrObj = <string[]>(getValue(nameSpaceString, cldrData));
         }
@@ -758,11 +749,11 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         let monthData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         if (this.locale === 'en' || this.locale === 'en-US') {
-            let nameSpaceString: string = isBlazor() ? 'months.wide' : 'months.stand-alone.wide';
+            let nameSpaceString: string = 'months.stand-alone.wide';
             cldrObj = <string[]>(getValue(nameSpaceString, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            let nameSpaceString: string = isBlazor() ? this.locale + '.dates.months.wide' :
-             'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
+            let nameSpaceString: string =
+                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
             cldrObj = <string[]>(getValue(nameSpaceString, cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
@@ -981,12 +972,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     }
     public getRecurrenceDates(startDate: Date, rule: string, excludeDate?: string, maximumCount?: number, viewDate?: Date): number[] {
-        if (isBlazor()) {
-            startDate = new Date('' + startDate);
-            if (viewDate) {
-                viewDate = new Date('' + viewDate);
-            }
-        }
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
         return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     }
@@ -1020,9 +1005,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return ruleData;
     }
     public setRecurrenceRule(rule: string, startDate: Date = this.startDate): void {
-        if (isBlazor()) {
-            startDate = new Date('' + startDate);
-        }
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
             return;

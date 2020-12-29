@@ -133,13 +133,13 @@ describe('Legend position ', () => {
         browser.driver.sleep(5000);
         browser.compareScreen(element(By.id('container')),'sublayer_bubble');
     });
-   // it('Map event print', function () {
+    it('Map event print', function () {
         // load the sample in driver browser
-   //      browser.get(browser.basePath + '/demos/event_print.html');
+         browser.get(browser.basePath + '/demos/event_print.html');
         // take and compare screen shots.
-   //     browser.driver.sleep(5000);
-   //     browser.compareScreen(element(By.id('container')),'event_print');
- //   });
+        browser.driver.sleep(5000);
+        browser.compareScreen(element(By.id('container')),'event_print');
+    });
     it('Map event', function () {
         // load the sample in driver browser
          browser.get(browser.basePath + '/demos/event_bubble.html');

@@ -6,7 +6,7 @@ import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefi
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';
 import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel } from './query-builder-model';
-import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';
+import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';
 import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';
@@ -804,14 +804,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public validateFields(): boolean {
         let isValid: boolean = true;
         if (this.allowValidation) {
+            let excludeOprs: string [] = ['isnull', 'isnotnull', 'isempty', 'isnotempty'];
             let i: number; let len: number; let fieldElem: Element; let indexElem: Element; let valArray: string[] | number[] = [];
             let groupElem: Element; let index: number; let dropDownObj: DropDownList; let tempElem: Element; let rule: RuleModel;
             let ruleElemCln: NodeListOf<Element> = this.element.querySelectorAll('.e-rule-container'); let validateRule: Validation;
             for (i = 0, len = ruleElemCln.length; i < len; i++) {
                 groupElem = closest(ruleElemCln[i], '.e-group-container');
-                rule = this.getParentGroup(groupElem);
-                index = 0;
-                indexElem = tempElem = ruleElemCln[i];
+                rule = this.getParentGroup(groupElem); index = 0; indexElem = tempElem = ruleElemCln[i];
                 dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdownlist');
                 this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
                 validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
@@ -838,8 +837,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (rule.rules[index].value instanceof Array) {
                         valArray = rule.rules[index].value as string[] | number[];
                     }
-                    if (isNullOrUndefined(rule.rules[index].value) || rule.rules[index].value === ''
-                    || (rule.rules[index].value instanceof Array && valArray.length < 1)) {
+                    if (excludeOprs.indexOf(rule.rules[index].operator) < 0 && (isNullOrUndefined(rule.rules[index].value) &&
+                    rule.rules[index].type !== 'date') || rule.rules[index].value === '' ||
+                    (rule.rules[index].value instanceof Array && valArray.length < 1)) {
                         let valElem: NodeListOf<Element> = tempElem.querySelectorAll('.e-rule-value input.e-control');
                         isValid = false; let j: number = 0;
                         for (let j: number = 0, jLen: number = valElem.length; j < jLen; j++) {
@@ -1344,8 +1344,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if (tempRule.operator.indexOf('null') > -1 || (tempRule.operator.indexOf('empty') > -1 )) {
                 let parentElem: HTMLElement = operatorElem.parentElement.querySelector('.e-rule-value') as HTMLElement;
-                removeClass([parentElem], 'e-show');
-                addClass([parentElem], 'e-hide');
+                let tooltipElem: HTMLElement = parentElem.querySelector('.e-tooltip.e-input-group');
+                if (tooltipElem) {
+                    (getComponent( tooltipElem, 'tooltip') as Tooltip).destroy();
+                }
+                removeClass([parentElem], 'e-show'); addClass([parentElem], 'e-hide');
             }
             if (valElem && valElem.querySelector('.e-template')) {
                 filterElem = operatorElem.previousElementSibling;
@@ -1968,6 +1971,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         if (isRender) {
+            this.validatValue(rule, closest(target, '.e-rule-container'));
             if (isBlazor() && !prevItemData.template) {
                 this.destroyControls(target);
             } else if (!isBlazor()) {
@@ -2054,6 +2058,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let controlName: string = element.className.split(' e-')[idx];
         let i: number = parseInt(element.id.slice(-1), 2) as number;
         switch (controlName) {
+            case 'checkbox':
+                let value: string = (getComponent(element, controlName) as CheckBox).value;
+                rule.value = (value !== '') ? value : undefined;
+                break;
             case 'textbox':
                 rule.value = (getComponent(element, controlName) as TextBox).value;
                 break;
@@ -2099,7 +2107,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else if (selectedDate) {
                     rule.value = this.intl.formatDate(selectedDate, format);
                 } else {
-                    rule.value = '';
+                    rule.value = selectedDate as null;
                 }
                 break;
             case 'multiselect':
@@ -2263,7 +2271,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
             }
-            this.validatValue(rule, index, ruleElem);
+            this.validatValue(rule, ruleElem, index);
         } else {
             if (target.className.indexOf('e-datepicker') > -1) {
                 if (arrOperator.indexOf(oper) > -1) {
@@ -2279,8 +2287,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
     }
-    private validatValue(rule: RuleModel, index: number, ruleElem: Element): void {
-        if (this.allowValidation && rule.rules[index].value) {
+    private validatValue(rule: RuleModel, ruleElem: Element, index?: number): void {
+        if (!isNullOrUndefined(index)) {
+            rule = rule.rules[index];
+        }
+        let isObject: boolean = typeof(rule.value) === 'object';
+        if (this.allowValidation && (isNullOrUndefined(index) || (isObject ? (rule.value as string []).length > 0 : rule.value))) {
             let valElem: NodeListOf<Element> = ruleElem.querySelectorAll('.e-rule-value .e-control');
             if (valElem[0].className.indexOf('e-tooltip') > -1) {
                 (getComponent(valElem[0] as HTMLElement, 'tooltip') as Tooltip).destroy();
@@ -3057,7 +3069,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rule.value = null;
                 }
             }
-            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && rule.value !== '')) {
+            if ((this.isRefreshed && this.enablePersistence) || (this.rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
+            rule.value !== undefined))) {
                 // tslint:disable-next-line:no-any
                 let customObj: Object = (rule as any).custom;
                 rule = {

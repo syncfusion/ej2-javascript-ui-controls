@@ -952,7 +952,8 @@ class SfUploader {
             progressInterval: '',
             isCanceled: false,
             currentRequest: null,
-            customFormData: null
+            customFormData: null,
+            type: args.type
         };
 
         if (targetFiles.length < 1) {
@@ -2468,7 +2469,8 @@ class SfUploader {
             let eventArgs: BeforeUploadEventArgs = {
                 customFormData: [],
                 currentRequest: null,
-                cancel: false
+                cancel: false,
+                filesData: uploadFiles
             };
             if (this.beforeUploadEnabled) {
                 // @ts-ignore-start
@@ -2697,10 +2699,12 @@ class SfUploader {
         if (isNullOrUndefined(postRawFile)) {
             postRawFile = true;
         }
+        let removeFiles: FileInfo[] = this.getFilesInArray(fileData);
         let beforeEventArgs: BeforeRemoveEventArgs = {
             cancel: false,
             customFormData: [],
-            currentRequest: null
+            currentRequest: null,
+            filesData: removeFiles
         };
         if (this.beforeRemoveEnabled) {
             // @ts-ignore-start
@@ -3158,6 +3162,7 @@ interface BeforeUploadEventArgs {
     cancel: boolean;
     customFormData: { [key: string]: Object }[];
     currentRequest?: { [key: string]: string }[];
+    filesData: FileInfo[];
 }
 interface FileListRenderingEventArgs {
     element: HTMLElement;
@@ -3183,6 +3188,7 @@ interface SelectedEventArgs {
     isCanceled?: boolean;
     currentRequest?: { [key: string]: string }[];
     customFormData: { [key: string]: Object }[];
+    type: string;
 }
 interface CancelEventArgs {
     cancel: boolean;
@@ -3204,6 +3210,7 @@ interface BeforeRemoveEventArgs {
     cancel: boolean;
     customFormData: { [key: string]: Object }[];
     currentRequest?: { [key: string]: string }[];
+    filesData: FileInfo[];
 }
 
 export default Uploader;

@@ -153,6 +153,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Property(false)
     public enableRtl: boolean;
     /**
+     * labelOnTrack
+     * @default true
+     */
+    @Property(true)
+    public labelOnTrack: boolean;
+    /**
      * trackColor
      * @default null
      */

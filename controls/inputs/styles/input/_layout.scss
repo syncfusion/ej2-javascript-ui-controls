@@ -10409,4 +10409,11 @@
       border-width: $input-group-full-border-width;
     }
   }
+
+  .e-input-group.e-control-container.valid.modified,
+  .e-input-group.e-control-container.invalid,
+  .e-float-input.e-control-container.valid.modified,
+  .e-float-input.e-control-container.invalid {
+    outline: none;
+  }
 }

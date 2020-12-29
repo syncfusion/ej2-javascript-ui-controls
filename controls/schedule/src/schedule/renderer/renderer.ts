@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend, addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { View, ReturnType } from '../base/type';
 import { VirtualScroll } from '../actions/virtual-scroll';
@@ -75,7 +75,6 @@ export class Render {
             let firstView: View = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
-                this.parent.onServerDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -143,11 +142,6 @@ export class Render {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
             let resultData: Object[] = <Object[]>extend([], args.result, null, true);
-            if (isBlazor()) {
-                for (let data of resultData as { [key: string]: Object }[]) {
-                    delete data.BlazId;
-                }
-            }
             this.parent.eventsData = resultData.filter((data: { [key: string]: Object }) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: { [key: string]: Object }) => data[this.parent.eventFields.isBlock]);
             let processed: Object[] = this.parent.eventBase.processData(resultData as { [key: string]: Object }[]);
@@ -164,9 +158,7 @@ export class Render {
         if (this.parent.isDestroyed) { return; }
         // tslint:disable:no-any
         this.parent.trigger(
-            events.actionFailure,
-            { error: isBlazor() ? (e as any).error ? (e as any).error.toString() : (e as any).toString() : e },
-            () => this.parent.hideSpinner()
+            events.actionFailure, { error: e }, () => this.parent.hideSpinner()
         );
         // tslint:disable:no-any
     }

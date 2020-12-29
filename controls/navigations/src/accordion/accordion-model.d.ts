@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { isVisible, closest, attributes, detach, select, isBlazor, addClass, append } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper, isRippleEnabled } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';import { isVisible, closest, attributes, detach, select, addClass, append } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, Complex } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper, isRippleEnabled } from '@syncfusion/ej2-base';
 import {ExpandMode,AccordionClickArgs,ExpandEventArgs,ExpandedEventArgs} from "./accordion";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -11,7 +11,6 @@ export interface AccordionActionSettingsModel {
    * Specifies the type of animation.
    * @default 'SlideDown'
    * @aspType string
-   * @blazorType string
    */
     effect?: 'None' | Effect;
 
@@ -155,7 +154,6 @@ export interface AccordionModel extends ComponentModel{
    * Specifies the datasource for the accordion items.
    * @isdatamanager false
    * @default []
-   * @blazorType IEnumerable<object>
    */
     dataSource?: Object[];
 
@@ -201,7 +199,6 @@ export interface AccordionModel extends ComponentModel{
     /**
    * Defines whether to allow the cross-scripting site or not.
    * @default false
-   * @deprecated
    * 
    */
     enableHtmlSanitizer?: boolean;
@@ -216,35 +213,30 @@ export interface AccordionModel extends ComponentModel{
     /**
    * The event will be fired while clicking anywhere within the Accordion.
    * @event
-   * @blazorProperty 'Clicked'
    */
     clicked?: EmitType<AccordionClickArgs>;
 
     /**
    * The event will be fired before the item gets collapsed/expanded.
    * @event
-   * @blazorProperty 'Expanding'
    */
     expanding?: EmitType<ExpandEventArgs>;
 
     /**
    * The event will be fired after the item gets collapsed/expanded.
    * @event
-   * @blazorProperty 'Expanded'
    */
     expanded?: EmitType<ExpandedEventArgs>;
 
     /**
    * The event will be fired once the control rendering is completed.
    * @event
-   * @blazorProperty 'Created'
    */
     created?: EmitType<Event>;
 
     /**
    * The event will be fired when the control gets destroyed.
    * @event
-   * @blazorProperty 'Destroyed'
    */
     destroyed?: EmitType<Event>;
 

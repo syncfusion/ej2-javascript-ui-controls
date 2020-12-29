@@ -278,22 +278,13 @@ var Column = /** @class */ (function () {
     };
     /** @hidden */
     Column.prototype.setProperties = function (column) {
-        var _this = this;
         //Angular two way binding
         var keys = Object.keys(column);
         for (var i = 0; i < keys.length; i++) {
             this[keys[i]] = column[keys[i]];
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact && keys[i] === 'template') {
-                //tslint:disable-next-line:no-any
-                this.parent.clearTemplate(['columnTemplate'], undefined, function () {
-                    var rowsObj = _this.parent.getRowsObject();
-                    var pKeyField = _this.parent.getPrimaryKeyFieldNames()[0];
-                    for (var j = 0; j < rowsObj.length; j++) {
-                        var key = rowsObj[j].data[pKeyField];
-                        _this.parent.setCellValue(key, _this.field, rowsObj[j][_this.field]);
-                    }
-                });
+                this.parent.refreshReactColumnTemplateByUid(this.uid);
             }
         }
     };
@@ -14874,6 +14865,27 @@ var Grid = /** @class */ (function (_super) {
         }
     };
     /**
+     * @hidden
+     */
+    Grid.prototype.refreshReactColumnTemplateByUid = function (columnUid) {
+        var _this = this;
+        if (this.isReact) {
+            //tslint:disable-next-line:no-any
+            this.clearTemplate(['columnTemplate'], undefined, function () {
+                var cells = 'cells';
+                var rowIdx = 'index';
+                var rowsObj = _this.getRowsObject();
+                var cellIndex = _this.getNormalizedColumnIndex(columnUid);
+                for (var j = 0; j < rowsObj.length; j++) {
+                    var cell = rowsObj[j][cells][cellIndex];
+                    var cellRenderer = new CellRenderer(_this, _this.serviceLocator);
+                    var td = _this.getCellFromIndex(j, cellIndex);
+                    cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                }
+            });
+        }
+    };
+    /**
      * Updates and refresh the particular row values based on the given primary key value.
      * > Primary key column must be specified using `columns.isPrimaryKey` property.
      *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
@@ -22655,13 +22667,15 @@ var PagerDropDown = /** @class */ (function () {
         this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value, 10) });
     };
     PagerDropDown.prototype.refresh = function () {
-        if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
-            this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
-        }
-        else {
-            this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
-                this.pagerModule.getLocalizedLabel('pagerDropDown');
+        if (this.pagerCons) {
+            if (this.pagerModule.pageSize === this.pagerModule.totalRecordsCount) {
+                this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            }
+            else {
+                this.pagerCons.innerHTML = sf.base.isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerDropDown');
+            }
         }
     };
     PagerDropDown.prototype.beforeValueChange = function (prop) {
@@ -22673,7 +22687,8 @@ var PagerDropDown = /** @class */ (function () {
     PagerDropDown.prototype.convertValue = function (pageSizeValue) {
         var item = pageSizeValue;
         for (var i = 0; i < item.length; i++) {
-            item[i] = parseInt(item[i], 10) ? item[i].toString() : this.pagerModule.getLocalizedLabel(item[i]);
+            item[i] = parseInt(item[i], 10) ? item[i].toString() : (this.pagerModule.getLocalizedLabel(item[i]) !== '')
+                ? this.pagerModule.getLocalizedLabel(item[i]) : item[i];
         }
         return item;
     };
@@ -23827,12 +23842,6 @@ var FilterMenuRenderer = /** @class */ (function () {
                 instanceofFilterUI.read(targ, col, flOptrValue, this.filterObj);
             }
         }
-        var iconClass = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
-        var column = this.parent.element.querySelector('[e-mappinguid="' + col.uid + '"]').parentElement;
-        var flIcon = column.querySelector(iconClass);
-        if (flIcon) {
-            flIcon.classList.add('e-filtered');
-        }
         this.closeDialog();
     };
     FilterMenuRenderer.prototype.clearBtnClick = function (column) {
@@ -24165,6 +24174,8 @@ var Filter = /** @class */ (function () {
      */
     Filter.prototype.updateModel = function () {
         var col = this.parent.getColumnByField(this.fieldName);
+        this.filterObjIndex = this.getFilteredColsIndexByField(col);
+        this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         var arrayVal = Array.isArray(this.value) ? this.value : [this.value];
         for (var i = 0, len = arrayVal.length; i < len; i++) {
             var field = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
@@ -24371,7 +24382,6 @@ var Filter = /** @class */ (function () {
         else {
             this.actualPredicate[this.fieldName] = [predObj];
         }
-        this.addFilteredClass(this.fieldName);
         if (this.checkAlreadyColFiltered(this.column.field)) {
             return;
         }
@@ -24403,12 +24413,23 @@ var Filter = /** @class */ (function () {
             switch (prop) {
                 case 'columns':
                     var col = 'columns';
+                    var args = {
+                        currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
+                            this.column.field : undefined, action: 'filter', columns: this.filterSettings.columns,
+                        requestType: 'filtering', type: actionBegin, cancel: false
+                    };
                     if (this.contentRefresh && this.skipUid(e.properties[col])) {
-                        this.parent.notify(modelChanged, {
-                            currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
-                                this.column.field : undefined, action: 'filter',
-                            columns: this.filterSettings.columns, requestType: 'filtering', type: actionBegin, cancel: false
-                        });
+                        this.parent.notify(modelChanged, args);
+                        if (args.cancel) {
+                            if (sf.base.isNullOrUndefined(this.prevFilterObject)) {
+                                this.filterSettings.columns.splice(this.filterSettings.columns.length - 1, 1);
+                            }
+                            else {
+                                this.filterSettings.columns[this.filterObjIndex] = this.prevFilterObject;
+                            }
+                            return;
+                        }
+                        this.addFilteredClass(this.fieldName);
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();

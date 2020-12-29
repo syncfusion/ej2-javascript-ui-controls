@@ -39,7 +39,7 @@ export interface ColumnModel {
 
     /**
      * To lock/unlock the column in the protected sheet.
-     * @default null
+     * @default true
      */
     isLocked?: boolean;
 

@@ -835,4 +835,46 @@ describe('ComboBox', () => {
             expect(listObj.inputElement.value).toBe("JAVA");
         });
     });
+    describe("EJ2-45073- Dropdownlist with select tag updating value wrongly when it contains Empty as inner text and “” as value", () => {
+        let listObj: any;
+        let element: string = "<select id='select1'><option value = '0'>option1</option><option value=''>Empty</option><option value='1'>Option3</option></select>";
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        beforeEach(() => {
+            document.body.innerHTML = element;
+            let select: HTMLSelectElement = document.getElementById('select1') as HTMLSelectElement;
+            document.body.appendChild(select);
+            listObj = new ComboBox();
+            listObj.appendTo('#select1');
+        });
+        afterEach(() => {
+            let select: HTMLSelectElement = document.getElementById('select1') as HTMLSelectElement;
+            if (select) {
+                let parent: HTMLElement = select.parentElement as HTMLElement;
+                parent.remove();
+            }
+        });
+        it('dynamically bind the empty value of the select tag', (done) => {
+            listObj.value = '';
+            listObj.dataBind();
+            setTimeout(() => {
+                expect(listObj.inputElement.value).toBe('Empty');
+                expect(listObj.value).toBe('');
+                expect(listObj.text).toBe('Empty');
+                done();
+            }, 450);
+        });
+        it('open popup and select the empty value item from the list', (done) => {
+            listObj.showPopup();
+            mouseEventArgs.target = listObj.ulElement.querySelectorAll('li')[1];
+            mouseEventArgs.type = 'click';
+            listObj.onMouseClick(mouseEventArgs);
+            setTimeout(() => {
+                expect(listObj.inputElement.value).toBe('Empty');
+                expect(listObj.value).toBe('');
+                expect(listObj.text).toBe('Empty');
+                done();
+            }, 450);
+        });
+    });
 });

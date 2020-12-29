@@ -70,6 +70,9 @@ var SfDashboardLayout = /** @class */ (function () {
     };
     SfDashboardLayout.prototype.initialize = function (property) {
         this.preRender(property);
+        if (sf.base.isNullOrUndefined(this.panels)) {
+            this.panels = [];
+        }
         for (var i = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
             this.panelElements.push((this.element.querySelectorAll('.e-panel')[i]));
         }
@@ -1160,6 +1163,7 @@ var SfDashboardLayout = /** @class */ (function () {
                         var model = _this.getCellInstance(_this.mainElement.id);
                         if (_this.allowPushing &&
                             _this.collisions(model.row, model.col, model.sizeX, model.sizeY, _this.mainElement).length > 0) {
+                            _this.setHolderPosition(args);
                             _this.updatePanelPosition(model.id, model.col, model.row);
                             _this.updatePanelLayout(_this.mainElement, model);
                         }
@@ -1259,6 +1263,7 @@ var SfDashboardLayout = /** @class */ (function () {
             this.oldRowCol[(args.element.id)] = { row: row, col: col };
             this.updateOldRowColumn();
             if (this.startCol !== endCol || this.startRow !== endRow) {
+                this.setHolderPosition(args);
                 if (this.startCol !== endCol) {
                     this.startRow = endRow;
                 }
@@ -1285,6 +1290,7 @@ var SfDashboardLayout = /** @class */ (function () {
             this.moveItemsUpwards();
         }
         if (!this.allowPushing) {
+            this.setHolderPosition(args);
             return;
         }
     };
@@ -1752,6 +1758,25 @@ var SfDashboardLayout = /** @class */ (function () {
         }
         this.removeAllPanel();
     };
+    SfDashboardLayout.prototype.setHolderPosition = function (args) {
+        var cellSizeOne;
+        var cellSizeZero;
+        var sizeY = parseInt(args.element.getAttribute('data-sizeY'), 10);
+        var col = parseInt(args.element.getAttribute('data-col'), 10);
+        var row = parseInt(args.element.getAttribute('data-row'), 10);
+        var sizeX = parseInt(args.element.getAttribute('data-sizeX'), 10);
+        var widthValue = this.getCellSize()[0];
+        var heightValue = this.getCellSize()[1];
+        var top = row === 0 ? 0 : (((row) * (heightValue + this.cellSpacing[1])));
+        var left = col === 0 ? 0 : (((col) * (widthValue + this.cellSpacing[0])));
+        cellSizeOne = this.getCellSize()[1];
+        cellSizeZero = this.getCellSize()[0];
+        this.shadowEle.style.top = top + 'px';
+        this.shadowEle.style.left = left + 'px';
+        this.shadowEle.style.height = ((sizeY * cellSizeOne) + ((sizeY - 1) * this.cellSpacing[1])) + 'px';
+        this.shadowEle.style.width = ((sizeX * cellSizeZero) + ((sizeX - 1) * this.cellSpacing[0])) + 'px';
+    };
+    
     return SfDashboardLayout;
 }());
 // tslint:disable-next-line

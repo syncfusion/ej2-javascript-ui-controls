@@ -32,7 +32,7 @@ describe('Paste sfdt', () => {
     }, 1000);
   });
   it('Merge With ExistingFormatting option validation', () => {
-console.log('Merge With ExistingFormatting option validation');
+    console.log('Merge With ExistingFormatting option validation');
     editor.editorModule.insertText('sample');
     editor.selection.handleLeftKey();
     editor.selection.handleLeftKey();
@@ -70,7 +70,7 @@ describe('Insert table', () => {
     }, 1000);
   });
   it('below current table validation', () => {
-console.log('below current table validation');
+    console.log('below current table validation');
     editor.editorModule.insertTable(2, 2);
     editor.selection.handleDownKey();
     editor.selection.handleDownKey();
@@ -78,17 +78,17 @@ console.log('below current table validation');
     expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
   });
   it('undo after insert table', () => {
-console.log('undo after insert table');
+    console.log('undo after insert table');
     editor.editorHistory.undo();
     expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
   });
   it('redo after undo insert table', () => {
-console.log('redo after undo insert table');
+    console.log('redo after undo insert table');
     editor.editorHistory.redo();
     expect(editor.selection.start.paragraph.previousWidget instanceof TableWidget).toBe(true);
   });
   it('Multiple undo and redo after insertTable', () => {
-console.log('Multiple undo and redo after insertTable');
+    console.log('Multiple undo and redo after insertTable');
     editor.editorHistory.undo();
     editor.editorHistory.redo();
     expect(editor.selection.start.paragraph.previousWidget instanceof TableWidget).toBe(true);
@@ -123,7 +123,7 @@ describe('Insert text after page break', () => {
     }, 1000);
   });
   it('In non-empty paragraph insert text and page break validation', () => {
-console.log('In non-empty paragraph insert text and page break validation');
+    console.log('In non-empty paragraph insert text and page break validation');
     editor.editor.insertText('sample');
     editor.editorModule.insertPageBreak();
     editor.editor.insertText('s');
@@ -132,7 +132,7 @@ console.log('In non-empty paragraph insert text and page break validation');
     expect(editor.documentHelper.pages.indexOf(editor.documentHelper.currentPage)).toBe(0);
   });
   it('In empty paragraph insert text and page break validation', () => {
-console.log('In empty paragraph insert text and page break validation');
+    console.log('In empty paragraph insert text and page break validation');
     editor.editorModule.insertPageBreak();
     editor.editor.insertText('sample');
     editor.selection.handleUpKey();
@@ -140,12 +140,12 @@ console.log('In empty paragraph insert text and page break validation');
     expect(editor.documentHelper.pages.indexOf(editor.documentHelper.currentPage)).toBe(0);
   });
   it('undo after insert text', () => {
-console.log('undo after insert text');
+    console.log('undo after insert text');
     editor.editorHistory.undo();
     expect(editor.selection.start.currentWidget.children.length).toBe(1);
   });
   it('redo after insert text', () => {
-console.log('redo after insert text');
+    console.log('redo after insert text');
     editor.editorHistory.redo();
     expect(editor.selection.start.currentWidget.children.length).toBe(2);
   });
@@ -180,7 +180,7 @@ describe('Delete before page break', () => {
     }, 1000);
   });
   it('Insert page break and delete', () => {
-console.log('Insert page break and delete');
+    console.log('Insert page break and delete');
     editor.editorModule.insertPageBreak();
     editor.selection.selectAll();
     editor.editor.insertBookmark('sample');
@@ -215,7 +215,7 @@ describe('Paste sfdt', () => {
     }, 1000);
   });
   it('Merge With ExistingFormatting option validation', () => {
-console.log('Merge With ExistingFormatting option validation');
+    console.log('Merge With ExistingFormatting option validation');
     let str = '{"sections":[{"blocks":[{"characterFormat":{"bold":false,"italic":true,"strikethrough":"SingleStrike","highlightColor":"Yellow","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#FF0000FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","textAlignment":"Left","styleName":"Heading 1","bidi":false,"contextualSpacing":false},"inlines":[{"text":"Adventure work cycle","characterFormat":{"bold":false,"italic":true,"strikethrough":"SingleStrike","highlightColor":"Yellow","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#FF0000FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"}}]},{"characterFormat":{"bold":false,"italic":true,"strikethrough":"SingleStrike","highlightColor":"Yellow","fontSize":11,"fontFamily":"Calibri","fontColor":"#FF0000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"Normal","bidi":false,"contextualSpacing":false},"inlines":[]},{"characterFormat":{"bold":false,"italic":true,"strikethrough":"SingleStrike","baselineAlignment":"Normal","highlightColor":"NoColor","fontSize":11,"fontFamily":"Calibri","fontColor":"#FF0000FF","bidi":false,"boldBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"Normal","bidi":false,"contextualSpacing":false},"inlines":[{"text":"asdasdsadsadasdasdadasdasdasdasd","characterFormat":{"bold":false,"italic":true,"strikethrough":"SingleStrike","highlightColor":"Yellow","fontSize":11,"fontFamily":"Calibri","fontColor":"#FF0000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"Heading 1","basedOn":"Normal","next":"Heading 1","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"beforeSpacing":12,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","textAlignment":"Left"}},{"type":"Character","name":"Heading 1 Char","basedOn":"Default Paragraph Font","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","bidi":false,"fontSizeBidi":16,"fontFamilyBidi":"Calibri Light"}}],"defaultTabWidth":35.400001525878906,"formatting":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false}';
     editor.editorModule.paste(str);
     (editor.editorModule as any).copiedTextContent = 'Adventure work cycle\r\n\r\nasdasdsadsadasdasdadasdasdasdasd\r\n';
@@ -253,7 +253,7 @@ describe('Paste sfdt with bookmark', () => {
     }, 1000);
   });
   it('paste with same bookmark name', () => {
-console.log('paste with same bookmark name');
+    console.log('paste with same bookmark name');
     editor.editor.insertText('sample');
     editor.selection.selectAll();
     editor.editor.insertBookmark('sample');
@@ -263,7 +263,7 @@ console.log('paste with same bookmark name');
     expect(editor.selection.start.currentWidget.children.length).toBe(1);
   });
   it('paste with different bookmark name', () => {
-console.log('paste with different bookmark name');
+    console.log('paste with different bookmark name');
     editor.openBlank();
     editor.editor.insertText('sample');
     editor.selection.selectAll();
@@ -299,7 +299,7 @@ describe('Insert text after page break', () => {
     }, 1000);
   });
   it('In non-empty paragraph insert text and page break validation', () => {
-console.log('In non-empty paragraph insert text and page break validation');
+    console.log('In non-empty paragraph insert text and page break validation');
     editor.editor.insertText('sample');
     editor.editorModule.insertPageBreak();
     editor.editor.insertText('s');
@@ -308,7 +308,7 @@ console.log('In non-empty paragraph insert text and page break validation');
     expect(editor.documentHelper.pages.indexOf(editor.documentHelper.currentPage)).toBe(0);
   });
   it('In empty paragraph insert text and page break validation', () => {
-console.log('In empty paragraph insert text and page break validation');
+    console.log('In empty paragraph insert text and page break validation');
     editor.editorModule.insertPageBreak();
     editor.editor.insertText('sample');
     editor.selection.handleUpKey();
@@ -316,12 +316,12 @@ console.log('In empty paragraph insert text and page break validation');
     expect(editor.documentHelper.pages.indexOf(editor.documentHelper.currentPage)).toBe(0);
   });
   it('undo after insert text', () => {
-console.log('undo after insert text');
+    console.log('undo after insert text');
     editor.editorHistory.undo();
     expect(editor.selection.start.currentWidget.children.length).toBe(1);
   });
   it('redo after insert text', () => {
-console.log('redo after insert text');
+    console.log('redo after insert text');
     editor.editorHistory.redo();
     expect(editor.selection.start.currentWidget.children.length).toBe(2);
   });
@@ -719,7 +719,7 @@ describe('Form Filling validation For Formatting', () => {
     }, 1000);
   });
   it('Inline TextFormField validation For Paste', () => {
-console.log('Inline TextFormField validation For Paste');
+    console.log('Inline TextFormField validation For Paste');
     editor.editor.addProtection('', 'FormFieldsOnly');
     editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
     let formfields: FieldElementBox[] = editor.documentHelper.formFields;
@@ -738,7 +738,7 @@ console.log('Inline TextFormField validation For Paste');
     expect(editor.documentHelper.isDocumentProtected).toBe(true);
   });
   it('Inline TextFormField validation For Textformatting', () => {
-console.log('Inline TextFormField validation For Textformatting');
+    console.log('Inline TextFormField validation For Textformatting');
     editor.editor.addProtection('', 'FormFieldsOnly');
     editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
     let formfield: FieldElementBox = editor.documentHelper.formFields[0];
@@ -759,7 +759,7 @@ console.log('Inline TextFormField validation For Textformatting');
     expect(resultText).toBe(formattedText);
   });
   it('Inline TextFormField validation For delete', () => {
-console.log('Inline TextFormField validation For delete');
+    console.log('Inline TextFormField validation For delete');
     editor.editor.addProtection('', 'FormFieldsOnly');
     editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
     let formfield: FieldElementBox = editor.documentHelper.formFields[0];
@@ -770,7 +770,7 @@ console.log('Inline TextFormField validation For delete');
     expect(resultText).toBe(text);
   });
   it('Inline TextFormField validation For insert text', () => {
-console.log('Inline TextFormField validation For insert text');
+    console.log('Inline TextFormField validation For insert text');
     editor.editor.addProtection('', 'FormFieldsOnly');
     editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
     let formfield: FieldElementBox = editor.documentHelper.formFields[0];
@@ -781,7 +781,7 @@ console.log('Inline TextFormField validation For insert text');
     expect(resultText).toBe('Hello');
   });
   it('Inline TextFormField validation For backspace', () => {
-console.log('Inline TextFormField validation For backspace');
+    console.log('Inline TextFormField validation For backspace');
     editor.editor.addProtection('', 'FormFieldsOnly');
     editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
     let formfield: FieldElementBox = editor.documentHelper.formFields[0];
@@ -818,7 +818,7 @@ describe('Insert row below validation', () => {
     }, 1000);
   });
   it('with different border', () => {
-console.log('with different border');
+    console.log('with different border');
     editor.editorModule.insertTable(2, 2);
     editor.selection.handleDownKey();
     editor.selection.selectRow();
@@ -854,7 +854,7 @@ describe('Update Revision Collection validation', () => {
     }, 1000);
   });
   it('Update Revision Collection validation', () => {
-console.log('Update Revision Collection validation');
+    console.log('Update Revision Collection validation');
     editor.enableTrackChanges = true;
     editor.editorModule.insertText('Syncfusion');
     editor.enableTrackChanges = false;
@@ -901,7 +901,7 @@ describe('Validate Track Change have Page Break', () => {
     }, 1000);
   });
   it('Rejected page break revision Validation', function () {
-console.log('Rejected page break revision Validation');
+    console.log('Rejected page break revision Validation');
     container.editor.insertText('Hello World');
     container.selection.handleControlLeftKey();
     container.enableTrackChanges = true;
@@ -920,7 +920,7 @@ console.log('Rejected page break revision Validation');
     expect(container.revisions.length).toBe(0);
   });
   it('image resizer validation', function () {
-console.log('image resizer validation');
+    console.log('image resizer validation');
     container.openBlank();
     let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
     container.editor.insertImage(imageString, 100, 100);
@@ -942,7 +942,7 @@ console.log('image resizer validation');
     expect(container.editorHistory.undoStack[container.editorHistory.undoStack.length - 1].action).toBe('ImageResizing');
   });
   it('Style validation', function () {
-console.log('Style validation');
+    console.log('Style validation');
     container.openBlank();
     container.editor.applyStyle('Heading 1');
     container.editor.insertText('h');
@@ -978,7 +978,7 @@ describe('Content control Validation', () => {
     }, 1000);
   });
   it('Plain text content control & Character format Validation & delete after contents locked', function () {
-console.log('Plain text content control & Character format Validation & delete after contents locked');
+    console.log('Plain text content control & Character format Validation & delete after contents locked');
     editor.open(JSON.stringify(plainContentControl));
     let para: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
     let elementCollec: ElementBox[] = (para.childWidgets[0] as LineWidget).children;
@@ -1008,7 +1008,7 @@ console.log('Plain text content control & Character format Validation & delete a
     expect((para.childWidgets[0] as LineWidget).children.length).toBe(eleLength);
   });
   it('Heaader backspace on half selection of content control', function () {
-console.log('Heaader backspace on half selection of content control');
+    console.log('Heaader backspace on half selection of content control');
     editor.open(JSON.stringify(headerContentControl));
     let para: ParagraphWidget = editor.documentHelper.pages[0].headerWidget.childWidgets[0] as ParagraphWidget;
     let elementCollec: ElementBox[] = (para.childWidgets[0] as LineWidget).children;
@@ -1023,7 +1023,7 @@ console.log('Heaader backspace on half selection of content control');
     expect(((para.childWidgets[0] as LineWidget).children[2] as TextElementBox).text).toBe(text);
   });
   it('Table Content control Validation', function () {
-console.log('Table Content control Validation');
+    console.log('Table Content control Validation');
     editor.open(JSON.stringify(tableContentControl));
     let paraCollec: IWidget[] = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets;
     let table: TableWidget = paraCollec[0] as TableWidget;
@@ -1064,12 +1064,12 @@ describe('Footnote api validation', () => {
     }, 1000);
   });
   it('Footnote validation', function () {
-console.log('Footnote validation');
+    console.log('Footnote validation');
     container.editor.insertFootnote();
     container.editor.insertText('Hello World');
     expect(container.editor.documentHelper.footnoteCollection.length).toBe(1);
   });
-  
+
 });
 describe('endnote api validation', () => {
   let container: DocumentEditor;
@@ -1099,10 +1099,52 @@ describe('endnote api validation', () => {
     }, 1000);
   });
   it('endnote validation', function () {
-console.log('endtnote validation');
+    console.log('endtnote validation');
     container.editor.insertEndnote();
     container.editor.insertText('World');
     expect(container.editor.documentHelper.endnoteCollection.length).toBe(1);
   });
-  
+
+});
+
+describe('Insert comment validation at end of paragraph', () => {
+  let container: DocumentEditor;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    DocumentEditor.Inject(Editor, Selection, EditorHistory);
+    container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true ,enableComment:true });
+    (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    container.appendTo('#container');
+  });
+  afterAll((done): void => {
+    container.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    container = undefined;
+    document.body.innerHTML = '';
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('comment insert', function () {
+    console.log('comment insert');
+    container.editor.insertText('World');
+    container.editor.insertComment();
+    expect(container.selection.end.currentWidget.children.length).toBe(3);
+  });
+  it('undo after comment insert', function () {
+    console.log('undo after comment insert');
+    container.editorHistory.undo();
+    expect(container.selection.end.currentWidget.children.length).toBe(1);
+  });
+  it('redo after comment insert', function () {
+    console.log('redo after comment insert');
+    container.editorHistory.redo();
+    expect(container.selection.end.currentWidget.children.length).toBe(3);
+  });
+
 });

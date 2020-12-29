@@ -294,7 +294,7 @@ class SfSlider {
     };
     private focusOut(): void {
         if (this.options.Tooltip !== null && this.options.Tooltip.isVisible) {
-            if (this.options.Type !== RANGESLIDER) {
+            if (this.options.Type !== RANGESLIDER && !isNullOrUndefined(this.materialHandle)) {
                 this.materialHandle.style.transform = 'scale(1)';
             }
             this.dotNetRef.invokeMethodAsync('CloseTooltip');
@@ -399,43 +399,46 @@ class SfSlider {
     }
 
     private sliderBarMove(eventargs: MouseEvent & TouchEvent): void {
-        if (eventargs.type !== 'touchmove') {
-            eventargs.preventDefault();
-        }
-        this.isSliderMove = true;
-        let pos: { [key: string]: Object };
-        if (eventargs.type === 'mousemove') {
-            pos = { x: eventargs.clientX, y: eventargs.clientY };
-        } else if (eventargs.type === 'touchmove' || eventargs.type === 'touchstart') {
-            pos = { x: eventargs.changedTouches[0].clientX, y: eventargs.changedTouches[0].clientY };
-        }
-        this.handlePos = this.xyToPosition(pos);
-        this.handleVal = this.positionToValue(this.handlePos);
-        this.handlePos = this.checkHandlePosition(this.handleVal);
-        this.firstHandle.style.transition = this.transition.scaleTransform;
-        if (this.options.Type === RANGESLIDER) {
-            this.secondHandle.style.transition = this.transition.scaleTransform;
-        }
-        if (this.rangeBar) { this.rangeBar.style.transition = 'none'; }
-        if (this.options.Type === RANGESLIDER) {
-            if ((this.previousHandleVal as number[]).indexOf(this.handleVal) === -1) {
-                if (this.activeHandle === 1 && this.handleVal <= this.handleVal2 || this.activeHandle === 2 &&
-                    this.handleVal >= this.handleVal1) {
-                    // tslint:disable-next-line:no-any
-                    if (this.options.Events != null && (this.options.Events as any).onChange.hasDelegate &&
-                        this.options.IsImmediateValue) {
-                        this.callChangeEvent(false);
-                    } else {
-                        this.sliderBarClick();
+        if ((eventargs.type === 'touchmove' && (eventargs.target as HTMLElement).parentElement === this.element) ||
+            eventargs.type === 'mousemove') {
+            if (eventargs.type !== 'touchmove') {
+                eventargs.preventDefault();
+            }
+            this.isSliderMove = true;
+            let pos: { [key: string]: Object };
+            if (eventargs.type === 'mousemove') {
+                pos = { x: eventargs.clientX, y: eventargs.clientY };
+            } else if (eventargs.type === 'touchmove' || eventargs.type === 'touchstart') {
+                pos = { x: eventargs.changedTouches[0].clientX, y: eventargs.changedTouches[0].clientY };
+            }
+            this.handlePos = this.xyToPosition(pos);
+            this.handleVal = this.positionToValue(this.handlePos);
+            this.handlePos = this.checkHandlePosition(this.handleVal);
+            this.firstHandle.style.transition = this.transition.scaleTransform;
+            if (this.options.Type === RANGESLIDER) {
+                this.secondHandle.style.transition = this.transition.scaleTransform;
+            }
+            if (this.rangeBar) { this.rangeBar.style.transition = 'none'; }
+            if (this.options.Type === RANGESLIDER) {
+                if ((this.previousHandleVal as number[]).indexOf(this.handleVal) === -1) {
+                    if (this.activeHandle === 1 && this.handleVal <= this.handleVal2 || this.activeHandle === 2 &&
+                        this.handleVal >= this.handleVal1) {
+                        // tslint:disable-next-line:no-any
+                        if (this.options.Events != null && (this.options.Events as any).onChange.hasDelegate &&
+                            this.options.IsImmediateValue) {
+                            this.callChangeEvent(false);
+                        } else {
+                            this.sliderBarClick();
+                        }
                     }
                 }
-            }
-        } else if (this.previousHandleVal !== this.handleVal) {
-            // tslint:disable-next-line:no-any
-            if (this.options.Events !== null && (this.options.Events as any).onChange.hasDelegate && this.options.IsImmediateValue) {
-                this.callChangeEvent(false);
-            } else {
-                this.sliderBarClick();
+            } else if (this.previousHandleVal !== this.handleVal) {
+                // tslint:disable-next-line:no-any
+                if (this.options.Events !== null && (this.options.Events as any).onChange.hasDelegate && this.options.IsImmediateValue) {
+                    this.callChangeEvent(false);
+                } else {
+                    this.sliderBarClick();
+                }
             }
         }
     }
@@ -562,7 +565,7 @@ class SfSlider {
                     let valAndPos: number[] = this.updateNewHandleValue(this.handleVal, this.handlePos, limitValue);
                     this.updateHandleValue(this.firstHandle, valAndPos[0], valAndPos[1], true);
                     if (this.isMaterial && !isNullOrUndefined(this.materialHandle) && this.options.Type !== RANGESLIDER) {
-                        this.updateHandleValue(this.materialHandle, this.handleVal, this.handlePos, this.activeHandle === 1);
+                        this.updateHandleValue(this.materialHandle, valAndPos[0], valAndPos[1], this.activeHandle === 1);
                     }
                 } else if (this.activeHandle === 2 && !this.options.Limits.endHandleFixed) {
                     limitValue = [this.options.Limits.maxStart, this.options.Limits.maxEnd];
@@ -1051,8 +1054,8 @@ class SfSlider {
     }
     public updateTooltipPosition(id: string): void {
         let tooltipContent: HTMLElement = document.getElementById(id);
-        if (tooltipContent !== null && this.options.Type !== RANGESLIDER) {
-            tooltipContent.style.transform = 'rotate(45deg)';
+        if (!isNullOrUndefined(tooltipContent) && this.options.Type !== RANGESLIDER && isNullOrUndefined(this.options.Tooltip.format)) {
+            tooltipContent.style.transform = this.options.Tooltip.placement === 'Before' ? 'rotate(45deg)' : 'rotate(225deg)';
         }
     }
     // tslint:disable-next-line:no-any

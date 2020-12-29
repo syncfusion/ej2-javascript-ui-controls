@@ -1,4 +1,4 @@
-import { L10n, isNullOrUndefined, createElement, remove, closest, addClass, removeClass, extend, isBlazor } from '@syncfusion/ej2-base';
+import { L10n, isNullOrUndefined, createElement, remove, closest, addClass, removeClass, extend } from '@syncfusion/ej2-base';
 import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Calendar, CalendarView, ChangedEventArgs, NavigatedEventArgs } from '@syncfusion/ej2-calendars';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -59,9 +59,7 @@ export class HeaderRenderer {
     private renderToolbar(): void {
         let items: ItemModel[] = this.getItems();
         let args: ToolbarActionArgs = { requestType: 'toolbarItemRendering', items: items };
-        if (!isBlazor()) {
-            this.parent.trigger(events.actionBegin, args);
-        }
+        this.parent.trigger(events.actionBegin, args);
         this.toolbarObj = new Toolbar({
             items: args.items,
             overflowMode: 'Popup',
@@ -80,27 +78,21 @@ export class HeaderRenderer {
             (nextNavEle.firstElementChild as Element).setAttribute('title', this.l10n.getConstant('next'));
         }
         this.updateActiveView();
-        if (!isBlazor()) {
-            this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
-                requestType: 'toolBarItemRendered', items: this.toolbarObj.items
-            });
-        }
+        this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
+            requestType: 'toolBarItemRendered', items: this.toolbarObj.items
+        });
     }
     public updateItems(): void {
         if (this.toolbarObj) {
             let items: ItemModel[] = this.getItems();
             let args: ToolbarActionArgs = { requestType: 'toolbarItemRendering', items: items };
-            if (!isBlazor()) {
-                this.parent.trigger(events.actionBegin, args);
-            }
+            this.parent.trigger(events.actionBegin, args);
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
-            if (!isBlazor()) {
-                this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
-                    requestType: 'toolBarItemRendered',
-                    items: this.toolbarObj.items
-                });
-            }
+            this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
+                requestType: 'toolBarItemRendered',
+                items: this.toolbarObj.items
+            });
         }
     }
     public getPopUpRelativeElement(): HTMLElement {
