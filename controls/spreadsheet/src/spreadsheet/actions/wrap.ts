@@ -3,8 +3,8 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getTextHeight, getLines,  } from '../common/index';
-import { getColumnWidth, SheetModel, getCell, CellModel, CellStyleModel, wrap as wrapText, wrapEvent, getRow } from '../../workbook/index';
-import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
+import { SheetModel, getCell, CellModel, CellStyleModel, wrap as wrapText, wrapEvent, getRow } from '../../workbook/index';
+import { getRowHeight, getAddressFromSelectedRange, getColumnsWidth } from '../../workbook/index';
 
 
 /**
@@ -64,8 +64,8 @@ export class WrapText {
                         ele.classList.add('e-ie-wrap');
                     }
                     if (!isCustomHgt) {
-                        colwidth = getColumnWidth(args.sheet, j);
                         cell = getCell(i, j, args.sheet);
+                        colwidth = getColumnsWidth(args.sheet, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText: string = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
                             let editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');

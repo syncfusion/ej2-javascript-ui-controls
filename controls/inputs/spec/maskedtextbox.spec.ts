@@ -3133,3 +3133,73 @@ describe('Masked Textbox with bind value', function () {
         expect(input.value).toBe('123456');
     });
 });
+describe('EJ2-44945- Delete key removes only first digit in the ejs-maskedtextbox', function () {
+    let maskBox: any;
+    beforeEach(function () {
+        let browser: string = "Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko";
+        Browser.userAgent = browser;
+        maskBox = undefined;
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(function () {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('press delete key to remove value', function () {
+        maskBox = new MaskedTextBox({
+            mask: "000-0000-000",
+            value: "1234567890"
+        });
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        expect(input.value).toBe('123-4567-890');
+        input.selectionStart = 2;
+        input.selectionEnd = 2;
+        let event: any = eventObject('KeyboardEvent', 'keydown');
+        event.key = 'Delete';
+        event.keyCode = 46;
+        EventHandler.trigger(input, 'keydown', event);
+        expect(input.value).toBe('12_-4567-890');
+        expect(input.selectionStart).toBe(4);
+        EventHandler.trigger(input, 'keydown', event);
+        expect(input.value).toBe('12_-_567-890');
+        expect(input.selectionStart).toBe(5);
+    });
+    it('select whole value and press delete key to remove all value from the input', function () {
+        maskBox = new MaskedTextBox({
+            mask: "+1(999)-9999-999",
+            value: "1234567890"
+        });
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        expect(input.value).toBe("+1(123)-4567-890");
+        input.selectionStart = 0;
+        input.selectionEnd = (input.value).length;
+        let event: any = eventObject('KeyboardEvent', 'keydown');
+        event.key = 'Delete';
+        event.keyCode = 46;
+        EventHandler.trigger(input, 'keydown', event);
+        expect(input.value).toBe("+1(___)-____-___");
+        expect(input.selectionEnd).toBe(0);
+    });
+    it('select multiple characters from the input with mouse drag action and press delete key to the selected character', function () {
+        maskBox = new MaskedTextBox({
+            mask: "+1(999)-9999-999",
+            value: "1234567890"
+        });
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        expect(input.value).toBe("+1(123)-4567-890");
+        input.selectionStart = 4;
+        input.selectionEnd = 9;
+        let event: any = eventObject('KeyboardEvent', 'keydown');
+        event.key = 'Delete';
+        event.keyCode = 46;
+        EventHandler.trigger(input, 'keydown', event);
+        expect(input.value).toBe("+1(1__)-_567-890");
+        expect(input.selectionEnd).toBe(9);
+    });
+});

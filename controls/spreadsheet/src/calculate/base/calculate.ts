@@ -1884,6 +1884,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             if (!this.isUpperChar(s[0]) && (this.isDigit(s[0]) || s[0] === this.getParseDecimalSeparator() || s[0] === '-' || s[0] === 'n')) {
                 if (s[0] === 'n') {
                     s = s.substring(1);
+                    if (s.indexOf('"n') > - 1) {
+                        s = s.replace('"n', '"');
+                    }
                 }
                 return s;
             }

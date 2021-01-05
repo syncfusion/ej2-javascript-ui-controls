@@ -320,13 +320,13 @@ var SfTooltip = /** @class */ (function () {
         }
         var isOpenable = true;
         if (opensOn === 'Hover') {
-            isOpenable = target.matches(':hover');
+            isOpenable = sf.base.matches(target, ':hover');
         }
         else if (opensOn === 'Auto') {
-            isOpenable = (target.matches(':hover') || target.matches(':focus'));
+            isOpenable = (sf.base.matches(target, ':hover') || sf.base.matches(target, ':focus'));
         }
         else if (opensOn === 'Focus') {
-            isOpenable = target.matches(':focus');
+            isOpenable = sf.base.matches(target, ':focus');
         }
         else if (opensOn === 'Click') {
             if (element === sf.base.closest(e.target, '.' + ROOT) &&
@@ -901,8 +901,10 @@ var SfTooltip = /** @class */ (function () {
             return;
         }
         var elePos = this.getTooltipPosition(target);
-        this.popupObj.position = { X: elePos.left, Y: elePos.top };
-        this.popupObj.dataBind();
+        if (!sf.base.isNullOrUndefined(this.popupObj)) {
+            this.popupObj.position = { X: elePos.left, Y: elePos.top };
+            this.popupObj.dataBind();
+        }
     };
     SfTooltip.prototype.renderPopup = function (target) {
         var elePos = this.properties.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);

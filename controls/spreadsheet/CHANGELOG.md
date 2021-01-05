@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I308693` - Editing merge cell shows text two times issue has been fixed.
+`#I308693` - Undo & redo is not working for background color issue has been fixed.
+`#I293654` - Nested formula issue fixed.
+
 ## 18.4.32 (2020-12-29)
 
 ### Spreadsheet

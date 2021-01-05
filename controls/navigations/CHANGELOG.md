@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### Context Menu
+
+#### Bug Fixes
+
+- `F160329` - The issue with template item focus in ContextMenu is fixed.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#307778` - Now, the Expanded attribute value will be updated properly in the `nodeCollapsed` event.
+
+### Tab
+
+#### Bug Fixes
+
+- `#306302` -  The original event parameter is exposed in tab selecting event.
+- `#306228` - An issue with closing the tab item clear the content of all the tab items has been fixed.
+
 ## 18.4.31 (2020-12-22)
 
 ### Menu

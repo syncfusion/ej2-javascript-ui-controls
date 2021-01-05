@@ -152,6 +152,10 @@ var SfDashboardLayout = /** @class */ (function () {
         if (this.element.querySelectorAll('.e-panel').length > 0 || this.panels.length > 0) {
             this.updateOldRowColumn();
             for (var i = 0; i < this.panels.length; i++) {
+                if (this.columns < this.panels[i].col || this.columns < this.panels[i].col + this.panels[i].sizeX) {
+                    var colValue = this.columns - this.panels[i].sizeX;
+                    this.updatePanelPosition(this.panels[i].id, colValue < 0 ? 0 : colValue, this.panels[i].row);
+                }
                 this.renderedElement.push(this.panelElements[i]);
                 var cell = this.renderCell(cells[i]);
                 this.updatePanelLayout(cell, this.panels[i]);
@@ -204,6 +208,16 @@ var SfDashboardLayout = /** @class */ (function () {
         else if (property.Columns !== this.columns) {
             this.columns = property.Columns;
             this.calculateCellSizeValue();
+            for (var i = 0; i < this.panels.length; i++) {
+                if (this.columns < this.panels[i].col || this.columns < this.panels[i].col + this.panels[i].sizeX) {
+                    var colValue = this.columns - this.panels[i].sizeX;
+                    this.updatePanelPosition(this.panels[i].id, (colValue < 0 ? 0 : colValue), this.panels[i].row);
+                }
+                this.updatePanelLayout(document.getElementById(this.panels[i].id), this.panels[i]);
+            }
+            this.renderDashBoardCells(this.panels);
+            this.updatePanels();
+            this.dotnetRef.invokeMethodAsync('UpdatedPanelsValues', this.panels);
         }
         this.getProperty(property);
     };
@@ -1305,13 +1319,6 @@ var SfDashboardLayout = /** @class */ (function () {
         if (!this.checkMediaQuery()) {
             if (this.element.classList.contains(RESPONSIVE)) {
                 sf.base.removeClass([this.element], [RESPONSIVE]);
-                for (var i = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
-                    var currentElement = this.element.querySelectorAll('.e-panel')[i];
-                    var cellInstance = this.getCellInstance(currentElement.id);
-                    var row = cellInstance.row;
-                    var col = cellInstance.col;
-                    this.updatePanelPosition(cellInstance.id, col, row);
-                }
             }
             this.element.classList.add('e-responsive');
             this.calculateCellSizeValue();

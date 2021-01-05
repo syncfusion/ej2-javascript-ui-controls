@@ -5,13 +5,446 @@ window.sfBlazor.Chart = (function () {
 /**
  * Chart native blazor source file
  */
-//tslint:disable
 var throttle = window['_'].throttle;
+var SfChart = /** @class */ (function () {
+    // tslint:disable-next-line:max-line-length
+    function SfChart(id, element, dotnetRef, isZooming, isScrollbar) {
+        if (isZooming === void 0) { isZooming = false; }
+        if (isScrollbar === void 0) { isScrollbar = false; }
+        this.mouseY = 0;
+        this.mouseX = 0;
+        this.eventInterval = 80;
+        this.chartOnMouseDownRef = null;
+        this.mouseMoveRef = null;
+        this.mouseEndRef = null;
+        this.chartOnMouseClickRef = null;
+        this.chartRightClickRef = null;
+        this.mouseLeaveRef = null;
+        this.chartMouseWheelRef = null;
+        this.domMouseMoveRef = null;
+        this.domMouseUpRef = null;
+        this.resizeBound = [];
+        this.longPressBound = null;
+        this.touchObject = null;
+        this.resizeTo = {};
+        // tslint:disable-next-line:max-line-length
+        this.pinchStyle = 'opacity: 0; position: absolute; display: block; width: 100px; height: 100px; background: transparent; border: 2px solid blue;';
+        this.pinchtarget = null;
+        this.id = id;
+        this.element = element;
+        this.dotnetref = dotnetRef;
+        this.isZooming = isZooming;
+        this.isScrollbar = isScrollbar;
+        this.element.blazor__instance = this;
+    }
+    SfChart.prototype.render = function () {
+        this.unWireEvents(this.id, this.dotnetref);
+        this.wireEvents(this.id, this.dotnetref);
+    };
+    SfChart.prototype.destroy = function () {
+        this.unWireEvents(this.id, this.dotnetref);
+    };
+    SfChart.prototype.unWireEvents = function (id, dotnetref) {
+        var element = document.getElementById(id);
+        if (!element) {
+            return;
+        }
+        this.dotnetref = dotnetref;
+        Chart.dotnetrefCollection = Chart.dotnetrefCollection.filter(function (item) {
+            return item.id !== id;
+        });
+        /*! Find the Events type */
+        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! Bind the Event handler */
+        sf.base.EventHandler.remove(element, sf.base.Browser.touchStartEvent, this.chartOnMouseDownRef);
+        element.removeEventListener('mousemove', this.mouseMoveRef);
+        element.removeEventListener('touchmove', this.mouseMoveRef);
+        sf.base.EventHandler.remove(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
+        sf.base.EventHandler.remove(element, 'click', this.chartOnMouseClickRef);
+        sf.base.EventHandler.remove(element, 'contextmenu', this.chartRightClickRef);
+        sf.base.EventHandler.remove(element, cancelEvent, this.mouseLeaveRef);
+        if (this.isZooming) {
+            var wheelEvent = sf.base.Browser.info.name === 'mozilla' ? (sf.base.Browser.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
+            element.removeEventListener(wheelEvent, this.chartMouseWheelRef);
+        }
+        if (this.isScrollbar) {
+            window.removeEventListener('mousemove', this.domMouseMoveRef);
+            window.removeEventListener('mouseup', this.domMouseUpRef, false);
+        }
+        var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
+        sf.base.EventHandler.remove(window, resize, this.resizeBound[id]);
+        if (this.touchObject) {
+            this.touchObject.destroy();
+            this.touchObject = null;
+        }
+        /*! Apply the style for chart */
+    };
+    SfChart.prototype.wireEvents = function (id, dotnetref) {
+        var _this = this;
+        var element = document.getElementById(id);
+        if (!element) {
+            return;
+        }
+        this.dotnetref = dotnetref;
+        Chart.dotnetrefCollection.push({ id: id, dotnetref: dotnetref });
+        /*! Find the Events type */
+        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        this.chartOnMouseDownRef = this.chartOnMouseDown.bind(this, dotnetref, id);
+        this.mouseMoveRef = this.mouseMove.bind(this, dotnetref, id);
+        this.mouseEndRef = this.mouseEnd.bind(this, dotnetref, id);
+        this.chartOnMouseClickRef = this.chartOnMouseClick.bind(this, dotnetref, id);
+        this.chartRightClickRef = this.chartRightClick.bind(this, dotnetref, id);
+        this.mouseLeaveRef = this.mouseLeave.bind(this, dotnetref, id);
+        /*! Bind the Event handler */
+        sf.base.EventHandler.add(element, sf.base.Browser.touchStartEvent, this.chartOnMouseDownRef);
+        element.addEventListener('mousemove', throttle(function (e) {
+            _this.mouseMoveRef(e);
+        }, this.eventInterval));
+        element.addEventListener('touchmove', throttle(function (e) {
+            _this.mouseMoveRef(e);
+        }, this.eventInterval));
+        sf.base.EventHandler.add(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
+        sf.base.EventHandler.add(element, 'click', this.chartOnMouseClickRef);
+        sf.base.EventHandler.add(element, 'contextmenu', this.chartRightClickRef);
+        sf.base.EventHandler.add(element, cancelEvent, this.mouseLeaveRef);
+        if (this.isZooming) {
+            this.chartMouseWheelRef = this.chartMouseWheel.bind(this, dotnetref, id);
+            var wheelEvent = sf.base.Browser.info.name === 'mozilla' ? (sf.base.Browser.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
+            element.addEventListener(wheelEvent, throttle(function (e) {
+                _this.chartMouseWheelRef(e);
+            }, this.eventInterval));
+        }
+        if (this.isScrollbar) {
+            this.domMouseMoveRef = this.domMouseMove.bind(this, dotnetref, id);
+            this.domMouseUpRef = this.domMouseUp.bind(this, dotnetref, id);
+            window.addEventListener('mousemove', throttle(function (e) {
+                _this.domMouseMoveRef(e);
+            }, this.eventInterval));
+            window.addEventListener('mouseup', this.domMouseUpRef, false);
+        }
+        this.resizeBound[id] = this.chartResize.bind(this, dotnetref, id);
+        var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
+        sf.base.EventHandler.add(window, resize, this.resizeBound[id]);
+        this.longPressBound = this.longPress.bind(this, dotnetref, id);
+        this.touchObject = new sf.base.Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
+        /*! Apply the style for chart */
+    };
+    SfChart.prototype.getEventArgs = function (e, id) {
+        var clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        var clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        this.setMouseXY(clientX, clientY, id);
+        var touches = e.touches; //pointerId
+        var touchList = [];
+        if (e.type.indexOf('touch') > -1) {
+            for (var i = 0, length_1 = touches.length; i < length_1; i++) {
+                touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: e.pointerId || 0 });
+            }
+        }
+        return {
+            type: e.type,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            mouseX: this.mouseX,
+            mouseY: this.mouseY,
+            pointerType: e.pointerType,
+            target: e.target.id,
+            changedTouches: {
+                clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
+                clientY: e.changedTouches ? e.changedTouches[0].clientY : 0
+            },
+            touches: touchList,
+            pointerId: e.pointerId
+        };
+    };
+    SfChart.prototype.getWheelArgs = function (e, id) {
+        this.setMouseXY(e.clientX, e.clientY, id);
+        return {
+            detail: e.detail,
+            wheelDelta: e['wheelDelta'],
+            target: e.currentTarget ? e.currentTarget['id'] : e.srcElement ? e.srcElement['id'] : e.target ? e.target['id'] : '',
+            clientX: e.clientX,
+            clientY: e.clientY,
+            mouseX: this.mouseX,
+            mouseY: this.mouseY,
+            browserName: sf.base.Browser.info.name,
+            isPointer: sf.base.Browser.isPointer
+        };
+    };
+    SfChart.prototype.setMouseXY = function (pageX, pageY, id) {
+        var svgRect = document.getElementById(id + '_svg').getBoundingClientRect();
+        var rect = document.getElementById(id).getBoundingClientRect();
+        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+    };
+    SfChart.prototype.chartOnMouseDown = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        if (e.type.indexOf('touch') > -1) {
+            var clientX = e.changedTouches ? e.changedTouches[0].clientX :
+                e.clientX;
+            var clientY = e.changedTouches ? e.changedTouches[0].clientY :
+                e.clientY;
+            this.pinchtarget = document.getElementById('pinchtarget');
+            this.pinchtarget.setAttribute('style', this.pinchStyle + ' top: ' + (clientY - 50) + 'px; left: ' + (clientX - 50) + 'px;');
+        }
+        dotnetref.invokeMethodAsync('OnChartMouseDown', this.getEventArgs(e, id));
+        return false;
+    };
+    SfChart.prototype.chartMouseWheel = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        dotnetref.invokeMethodAsync('OnChartMouseWheel', this.getWheelArgs(e, id));
+        e.preventDefault();
+        return false;
+    };
+    SfChart.prototype.mouseMove = function (dotnetref, id, e) {
+        var pageX;
+        var pageY;
+        var touchArg;
+        if (e.type === 'touchmove') {
+            this.isTouch = true;
+            touchArg = e;
+            pageX = touchArg.changedTouches[0].clientX;
+            pageY = touchArg.changedTouches[0].clientY;
+            if (this.pinchtarget) {
+                this.pinchtarget.setAttribute('style', this.pinchStyle + ' top: ' + (pageY - 50) + 'px; left: ' + (pageX - 50) + 'px;');
+            }
+            e.preventDefault();
+        }
+        else {
+            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || this.isTouch;
+            pageX = e.clientX;
+            pageY = e.clientY;
+        }
+        this.dotnetref = dotnetref;
+        if (document.getElementById(id + '_svg')) {
+            this.setMouseXY(pageX, pageY, id);
+            dotnetref.invokeMethodAsync('OnChartMouseMove', this.getEventArgs(e, id));
+        }
+        return false;
+    };
+    SfChart.prototype.mouseEnd = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        if (this.pinchtarget) {
+            this.pinchtarget.setAttribute('style', this.pinchStyle + ' top: -100px; left: -100px;');
+        }
+        dotnetref.invokeMethodAsync('OnChartMouseEnd', this.getEventArgs(e, id));
+        return false;
+    };
+    SfChart.prototype.chartOnMouseClick = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        dotnetref.invokeMethodAsync('OnChartMouseClick', this.getEventArgs(e, id));
+        return false;
+    };
+    SfChart.prototype.chartRightClick = function (dotnetref, id, event) {
+        this.dotnetref = dotnetref;
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    };
+    SfChart.prototype.mouseLeave = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e, id));
+        return false;
+    };
+    SfChart.prototype.chartResize = function (dotnetref, id, e) {
+        if (this.resizeTo[id]) {
+            clearTimeout(this.resizeTo[id]);
+        }
+        this.resizeTo[id] = setTimeout(function () {
+            var count = Chart.dotnetrefCollection.length;
+            var tempDotnetref;
+            for (var i = 0; i < count; i++) {
+                tempDotnetref = Chart.dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('RemoveElements');
+            }
+            dotnetref.invokeMethodAsync('OnChartResize', e);
+        }, 500);
+        return false;
+    };
+    SfChart.prototype.longPress = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        var clientX = e && e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].clientX : 0;
+        var clientY = e && e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].clientY : 0;
+        this.setMouseXY(clientX, clientY, id);
+        var args = {
+            type: 'TapHold',
+            clientX: clientX,
+            clientY: clientY,
+            mouseX: this.mouseX,
+            mouseY: this.mouseY,
+            pointerType: '',
+            target: '',
+            changedTouches: {
+                clientX: clientX,
+                clientY: clientY
+            },
+            touches: [],
+            pointerId: 0
+        };
+        dotnetref.invokeMethodAsync('OnChartLongPress', args);
+        return false;
+    };
+    SfChart.prototype.domMouseMove = function (dotnetref, id, event) {
+        if (!sf.base.isNullOrUndefined(Chart.svgId) && Chart.svgId.indexOf(id) > -1) {
+            var evtArgs = Chart.getScrollEventArgs(event, true);
+            dotnetref.invokeMethodAsync('ScrollMouseMove', evtArgs);
+        }
+        return false;
+    };
+    SfChart.prototype.domMouseUp = function (dotnetref, id, event) {
+        if (!sf.base.isNullOrUndefined(Chart.svgId) && Chart.svgId.indexOf(id) > -1) {
+            var evtArgs = Chart.getScrollEventArgs(event, true);
+            dotnetref.invokeMethodAsync('ScrollMouseUp', evtArgs);
+            Chart.svgId = null;
+        }
+        return false;
+    };
+    return SfChart;
+}());
 var Chart = {
-    id: '',
-    mouseY: 0,
-    mouseX: 0,
+    initialize: function (element, dotnetRef, isZooming, isScrollbar) {
+        var instance = new SfChart(element.id, element, dotnetRef, isZooming, isScrollbar);
+        instance.render();
+    },
+    destroy: function (element) {
+        var currentInstance = element.blazor__instance;
+        if (!sf.base.isNullOrUndefined(currentInstance)) {
+            currentInstance.destroy();
+        }
+    },
     eventInterval: 80,
+    dotnetref: {},
+    getScrollEventArgs: function (e, lastScrollbar) {
+        if (lastScrollbar === void 0) { lastScrollbar = false; }
+        var clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        var clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        var mouseXY = this.setScrollMouseXY(clientX, clientY, e.target['id'], lastScrollbar);
+        var touches = e.touches; //pointerId
+        var touchList = [];
+        if (e.type.indexOf('touch') > -1) {
+            for (var i = 0, length_2 = touches.length; i < length_2; i++) {
+                touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: e.pointerId || 0 });
+            }
+        }
+        var id = e.target.id;
+        id = id.indexOf('scrollBar') > -1 ? id : this.svgId;
+        return {
+            type: e.type,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            mouseX: mouseXY.mouseX,
+            mouseY: mouseXY.mouseY,
+            pointerType: e.pointerType,
+            target: id,
+            changedTouches: {
+                clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
+                clientY: e.changedTouches ? e.changedTouches[0].clientY : 0
+            },
+            touches: touchList,
+            pointerId: e.pointerId
+        };
+    },
+    getScrollWheelArgs: function (e) {
+        var mouseXY = this.setScrollMouseXY(e.clientX, e.clientY, e.currentTarget['id']);
+        return {
+            detail: e.detail,
+            wheelDelta: e['wheelDelta'],
+            target: e.currentTarget ? e.currentTarget['id'] : e.srcElement ? e.srcElement['id'] : e.target ? e.target['id'] : '',
+            clientX: e.clientX,
+            clientY: e.clientY,
+            mouseX: mouseXY.mouseX,
+            mouseY: mouseXY.mouseY,
+            browserName: sf.base.Browser.info.name,
+            isPointer: sf.base.Browser.isPointer
+        };
+    },
+    svgId: null,
+    setScrollMouseXY: function (pageX, pageY, id, lastScrollbar) {
+        if (lastScrollbar === void 0) { lastScrollbar = false; }
+        this.svgId = !lastScrollbar ? id : this.svgId;
+        if (!lastScrollbar && id.indexOf('_scrollBar_svg') === -1) {
+            var chartId_1 = id.split('_scrollBar')[0];
+            var splitId = id.split('_');
+            this.svgId = chartId_1 + '_scrollBar_svg' + splitId[splitId.length - 1];
+            this.dotnetref = this.dotnetrefCollection.find(function (item) { return chartId_1 === item.id; }).dotnetref;
+        }
+        var svgRect = this.getElement(this.svgId).getBoundingClientRect();
+        var mouseX = pageX - Math.max(svgRect.left, 0);
+        var mouseY = pageY - Math.max(svgRect.top, 0);
+        return { mouseX: mouseX, mouseY: mouseY };
+    },
+    scrollMouseDown: function (event) {
+        var evtArgs = this.getScrollEventArgs(event);
+        this.dotnetref.invokeMethodAsync('ScrollMouseDown', evtArgs);
+        return false;
+    },
+    scrollMouseMove: function (event) {
+        var _this = this;
+        throttle(function () {
+            var evtArgs = _this.getScrollEventArgs(event);
+            _this.dotnetref.invokeMethodAsync('ScrollMouseMove', evtArgs);
+        }, this.eventInterval);
+        return false;
+    },
+    scrollMouseUp: function (event) {
+        var evtArgs = this.getScrollEventArgs(event);
+        this.dotnetref.invokeMethodAsync('ScrollMouseUp', evtArgs);
+        this.svgId = null;
+        return false;
+    },
+    scrollMouseWheel: function (event) {
+        var _this = this;
+        throttle(function () {
+            var evtArgs = _this.getScrollWheelArgs(event);
+            _this.dotnetref.invokeMethodAsync('ScrollMouseWheel', evtArgs);
+        }, this.eventInterval);
+        return false;
+    },
+    dotnetrefCollection: [],
+    renderTooltip: function (tooltipOptions, elementId, tooltipModule, element) {
+        var svgElement = document.getElementById(elementId + '_svg');
+        var firstRender = svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0 ? false : true;
+        var options = JSON.parse(tooltipOptions);
+        var currentInstance = element.blazor__instance;
+        if (firstRender && !sf.base.isNullOrUndefined(currentInstance)) {
+            currentInstance.tooltip = new sf.svgbase.Tooltip(options);
+            currentInstance.tooltip.appendTo('#' + elementId);
+            currentInstance.tooltip.tooltipRender = function () {
+                tooltipModule.invokeMethodAsync('TooltipRender');
+            };
+            currentInstance.tooltip.animationComplete = function (args) {
+                if (args.tooltip.fadeOuted) {
+                    tooltipModule.invokeMethodAsync('TooltipAnimationComplete');
+                }
+            };
+        }
+        else if (!sf.base.isNullOrUndefined(currentInstance.tooltip)) {
+            currentInstance.tooltip.location = new sf.svgbase.TooltipLocation(options.location.x, options.location.y);
+            currentInstance.tooltip.content = options.content;
+            currentInstance.tooltip.header = options.header;
+            currentInstance.tooltip.offset = options.offset;
+            currentInstance.tooltip.palette = options.palette;
+            currentInstance.tooltip.shapes = options.shapes;
+            currentInstance.tooltip.data = options.data;
+            currentInstance.tooltip.template = options.template;
+            currentInstance.tooltip.textStyle.color = options.textStyle.color || currentInstance.tooltip.textStyle.color;
+            currentInstance.tooltip.textStyle.fontFamily = options.textStyle.fontFamily || currentInstance.tooltip.textStyle.fontFamily;
+            currentInstance.tooltip.textStyle.fontStyle = options.textStyle.fontStyle || currentInstance.tooltip.textStyle.fontStyle;
+            currentInstance.tooltip.textStyle.fontWeight = options.textStyle.fontWeight || currentInstance.tooltip.textStyle.fontWeight;
+            currentInstance.tooltip.textStyle.opacity = options.textStyle.opacity || currentInstance.tooltip.textStyle.opacity;
+            currentInstance.tooltip.textStyle.size = options.textStyle.size || currentInstance.tooltip.textStyle.size;
+            currentInstance.tooltip.isNegative = options.isNegative;
+            currentInstance.tooltip.clipBounds = new sf.svgbase.TooltipLocation(options.clipBounds.x, options.clipBounds.y);
+            currentInstance.tooltip.arrowPadding = options.arrowPadding;
+            currentInstance.tooltip.dataBind();
+        }
+    },
+    fadeOut: function (element) {
+        if (sf.base.isNullOrUndefined(element.blazor__instance) ||
+            (!sf.base.isNullOrUndefined(element.blazor__instance) && sf.base.isNullOrUndefined(element.blazor__instance.tooltip))) {
+            return;
+        }
+        element.blazor__instance.tooltip.fadeOut();
+    },
     getElementBoundsById: function (id, isSetId) {
         if (isSetId === void 0) { isSetId = true; }
         if (isSetId) {
@@ -136,7 +569,6 @@ var Chart = {
         var fontFamily = fontValues[4];
         return this.measureText(char, size, fontWeight, fontStyle, fontFamily);
     },
-    resizeTo: {},
     getElementRect: function (id) {
         var element = document.getElementById(id);
         var rect = element.getBoundingClientRect();
@@ -149,304 +581,6 @@ var Chart = {
             Width: rect.width,
             Height: rect.height
         };
-    },
-    dotnetref: {},
-    dotnetrefCollection: [],
-    unWireEvents: function (id, dotnetref, isZooming, isScrollbar) {
-        if (isZooming === void 0) { isZooming = false; }
-        if (isScrollbar === void 0) { isScrollbar = false; }
-        var element = document.getElementById(id);
-        if (!element) {
-            return;
-        }
-        this.dotnetref = dotnetref;
-        this.dotnetrefCollection = this.dotnetrefCollection.filter(function (item) {
-            return item.id !== id;
-        });
-        /*! Find the Events type */
-        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! Bind the Event handler */
-        sf.base.EventHandler.remove(element, sf.base.Browser.touchStartEvent, this.chartOnMouseDownRef);
-        element.removeEventListener('mousemove', this.mouseMoveRef);
-        element.removeEventListener('touchmove', this.mouseMoveRef);
-        sf.base.EventHandler.remove(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
-        sf.base.EventHandler.remove(element, 'click', this.chartOnMouseClickRef);
-        sf.base.EventHandler.remove(element, 'contextmenu', this.chartRightClickRef);
-        sf.base.EventHandler.remove(element, cancelEvent, this.mouseLeaveRef);
-        if (isZooming) {
-            var wheelEvent = sf.base.Browser.info.name === 'mozilla' ? (sf.base.Browser.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
-            element.removeEventListener(wheelEvent, this.chartMouseWheelRef);
-        }
-        if (isScrollbar) {
-            window.removeEventListener('mousemove', this.domMouseMoveRef);
-            window.removeEventListener('mouseup', this.domMouseUpRef, false);
-        }
-        var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        sf.base.EventHandler.remove(window, resize, this.resizeBound[id]);
-        if (this.touchObject) {
-            this.touchObject.destroy();
-            this.touchObject = null;
-        }
-        /*! Apply the style for chart */
-    },
-    chartOnMouseDownRef: null,
-    mouseMoveRef: null,
-    mouseEndRef: null,
-    chartOnMouseClickRef: null,
-    chartRightClickRef: null,
-    mouseLeaveRef: null,
-    chartMouseWheelRef: null,
-    domMouseMoveRef: null,
-    domMouseUpRef: null,
-    resizeBound: [],
-    longPressBound: null,
-    touchObject: null,
-    wireEvents: function (id, dotnetref, isZooming, isScrollbar) {
-        var _this = this;
-        if (isZooming === void 0) { isZooming = false; }
-        if (isScrollbar === void 0) { isScrollbar = false; }
-        var element = document.getElementById(id);
-        if (!element) {
-            return;
-        }
-        this.dotnetref = dotnetref;
-        this.dotnetrefCollection.push({ id: id, dotnetref: dotnetref });
-        /*! Find the Events type */
-        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        this.chartOnMouseDownRef = this.chartOnMouseDown.bind(this, dotnetref, id);
-        this.mouseMoveRef = this.mouseMove.bind(this, dotnetref, id);
-        this.mouseEndRef = this.mouseEnd.bind(this, dotnetref, id);
-        this.chartOnMouseClickRef = this.chartOnMouseClick.bind(this, dotnetref, id);
-        this.chartRightClickRef = this.chartRightClick.bind(this, dotnetref, id);
-        this.mouseLeaveRef = this.mouseLeave.bind(this, dotnetref, id);
-        /*! Bind the Event handler */
-        sf.base.EventHandler.add(element, sf.base.Browser.touchStartEvent, this.chartOnMouseDownRef);
-        element.addEventListener('mousemove', throttle(function (e) {
-            _this.mouseMoveRef(e);
-        }, this.eventInterval));
-        element.addEventListener('touchmove', throttle(function (e) {
-            _this.mouseMoveRef(e);
-        }, this.eventInterval));
-        sf.base.EventHandler.add(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
-        sf.base.EventHandler.add(element, 'click', this.chartOnMouseClickRef);
-        sf.base.EventHandler.add(element, 'contextmenu', this.chartRightClickRef);
-        sf.base.EventHandler.add(element, cancelEvent, this.mouseLeaveRef);
-        if (isZooming) {
-            this.chartMouseWheelRef = this.chartMouseWheel.bind(this, dotnetref, id);
-            var wheelEvent = sf.base.Browser.info.name === 'mozilla' ? (sf.base.Browser.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
-            element.addEventListener(wheelEvent, throttle(function (e) {
-                _this.chartMouseWheelRef(e);
-            }, this.eventInterval));
-        }
-        if (isScrollbar) {
-            this.domMouseMoveRef = this.domMouseMove.bind(this, dotnetref, id);
-            this.domMouseUpRef = this.domMouseUp.bind(this, dotnetref, id);
-            window.addEventListener('mousemove', throttle(function (e) {
-                _this.domMouseMoveRef(e);
-            }, this.eventInterval));
-            window.addEventListener('mouseup', this.domMouseUpRef, false);
-        }
-        this.resizeBound[id] = this.chartResize.bind(this, dotnetref, id);
-        var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        sf.base.EventHandler.add(window, resize, this.resizeBound[id]);
-        this.longPressBound = this.longPress.bind(this, dotnetref, id);
-        this.touchObject = new sf.base.Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
-        /*! Apply the style for chart */
-    },
-    getEventArgs: function (e, id) {
-        var clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-        var clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-        this.setMouseXY(clientX, clientY, id);
-        var touches = e.touches; //pointerId
-        var touchList = [];
-        if (e.type.indexOf('touch') > -1) {
-            for (var i = 0, length_1 = touches.length; i < length_1; i++) {
-                touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: e.pointerId || 0 });
-            }
-        }
-        return {
-            type: e.type,
-            clientX: e.clientX,
-            clientY: e.clientY,
-            mouseX: this.mouseX,
-            mouseY: this.mouseY,
-            pointerType: e.pointerType,
-            target: e.target.id,
-            changedTouches: {
-                clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
-                clientY: e.changedTouches ? e.changedTouches[0].clientY : 0
-            },
-            touches: touchList,
-            pointerId: e.pointerId
-        };
-    },
-    getWheelArgs: function (e, id) {
-        this.setMouseXY(e.clientX, e.clientY, id);
-        return {
-            detail: e.detail,
-            wheelDelta: e['wheelDelta'],
-            target: e.currentTarget ? e.currentTarget['id'] : e.srcElement ? e.srcElement['id'] : e.target ? e.target['id'] : '',
-            clientX: e.clientX,
-            clientY: e.clientY,
-            mouseX: this.mouseX,
-            mouseY: this.mouseY,
-            browserName: sf.base.Browser.info.name,
-            isPointer: sf.base.Browser.isPointer
-        };
-    },
-    setMouseXY: function (pageX, pageY, id) {
-        var svgRect = document.getElementById(id + '_svg').getBoundingClientRect();
-        var rect = document.getElementById(id).getBoundingClientRect();
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-    },
-    pinchStyle: 'opacity: 0; position: absolute; display: block; width: 100px; height: 100px; background: transparent; border: 2px solid blue;',
-    pinchtarget: null,
-    chartOnMouseDown: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        if (e.type.indexOf('touch') > -1) {
-            var clientX = e.changedTouches ? e.changedTouches[0].clientX :
-                e.clientX;
-            var clientY = e.changedTouches ? e.changedTouches[0].clientY :
-                e.clientY;
-            this.pinchtarget = document.getElementById('pinchtarget');
-            this.pinchtarget.setAttribute('style', this.pinchStyle + ' top: ' + (clientY - 50) + 'px; left: ' + (clientX - 50) + 'px;');
-        }
-        dotnetref.invokeMethodAsync('OnChartMouseDown', this.getEventArgs(e, id));
-        return false;
-    },
-    chartMouseWheel: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        dotnetref.invokeMethodAsync('OnChartMouseWheel', this.getWheelArgs(e, id));
-        e.preventDefault();
-        return false;
-    },
-    mouseMove: function (dotnetref, id, e) {
-        var pageX;
-        var pageY;
-        var touchArg;
-        if (e.type === 'touchmove') {
-            this.isTouch = true;
-            touchArg = e;
-            pageX = touchArg.changedTouches[0].clientX;
-            pageY = touchArg.changedTouches[0].clientY;
-            if (this.pinchtarget) {
-                this.pinchtarget.setAttribute('style', this.pinchStyle + ' top: ' + (pageY - 50) + 'px; left: ' + (pageX - 50) + 'px;');
-            }
-            e.preventDefault();
-        }
-        else {
-            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || this.isTouch;
-            pageX = e.clientX;
-            pageY = e.clientY;
-        }
-        this.dotnetref = dotnetref;
-        if (document.getElementById(id + '_svg')) {
-            this.setMouseXY(pageX, pageY, id);
-            dotnetref.invokeMethodAsync('OnChartMouseMove', this.getEventArgs(e, id));
-        }
-        return false;
-    },
-    mouseEnd: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        if (this.pinchtarget) {
-            this.pinchtarget.setAttribute('style', this.pinchStyle + ' top: -100px; left: -100px;');
-        }
-        dotnetref.invokeMethodAsync('OnChartMouseEnd', this.getEventArgs(e, id));
-        return false;
-    },
-    chartOnMouseClick: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        dotnetref.invokeMethodAsync('OnChartMouseClick', this.getEventArgs(e, id));
-        return false;
-    },
-    chartRightClick: function (dotnetref, id, event) {
-        this.dotnetref = dotnetref;
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
-    },
-    mouseLeave: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e, id));
-        return false;
-    },
-    chartResize: function (dotnetref, id, e) {
-        var _this = this;
-        if (this.resizeTo[id]) {
-            clearTimeout(this.resizeTo[id]);
-        }
-        this.resizeTo[id] = setTimeout(function () {
-            var count = _this.dotnetrefCollection.length;
-            var tempDotnetref;
-            for (var i = 0; i < count; i++) {
-                tempDotnetref = _this.dotnetrefCollection[i].dotnetref;
-                tempDotnetref.invokeMethodAsync('RemoveElements');
-            }
-            dotnetref.invokeMethodAsync('OnChartResize', e);
-        }, 500);
-        return false;
-    },
-    longPress: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        var clientX = e && e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].clientX : 0;
-        var clientY = e && e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].clientY : 0;
-        this.setMouseXY(clientX, clientY, id);
-        var args = {
-            type: 'TapHold',
-            clientX: clientX,
-            clientY: clientY,
-            mouseX: this.mouseX,
-            mouseY: this.mouseY,
-            pointerType: '',
-            target: '',
-            changedTouches: {
-                clientX: clientX,
-                clientY: clientY
-            },
-            touches: [],
-            pointerId: 0
-        };
-        dotnetref.invokeMethodAsync('OnChartLongPress', args);
-        return false;
-    },
-    tooltip: {},
-    renderTooltip: function (tooltipOptions, elementId, tooltipModule) {
-        var svgElement = document.getElementById(elementId + '_svg');
-        var firstRender = svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0 ? false : true;
-        var options = JSON.parse(tooltipOptions);
-        if (firstRender) {
-            this.tooltip = new sf.svgbase.Tooltip(options);
-            this.tooltip.appendTo('#' + elementId);
-            this.tooltip.tooltipRender = function () {
-                tooltipModule.invokeMethodAsync('TooltipRender');
-            };
-            this.tooltip.animationComplete = function (args) {
-                if (args.tooltip.fadeOuted) {
-                    tooltipModule.invokeMethodAsync('TooltipAnimationComplete');
-                }
-            };
-        }
-        else {
-            this.tooltip.location = new sf.svgbase.TooltipLocation(options.location.x, options.location.y);
-            this.tooltip.content = options.content;
-            this.tooltip.header = options.header;
-            this.tooltip.offset = options.offset;
-            this.tooltip.palette = options.palette;
-            this.tooltip.shapes = options.shapes;
-            this.tooltip.data = options.data;
-            this.tooltip.template = options.template;
-            this.tooltip.textStyle.color = options.textStyle.color || this.tooltip.textStyle.color;
-            this.tooltip.textStyle.fontFamily = options.textStyle.fontFamily || this.tooltip.textStyle.fontFamily;
-            this.tooltip.textStyle.fontStyle = options.textStyle.fontStyle || this.tooltip.textStyle.fontStyle;
-            this.tooltip.textStyle.fontWeight = options.textStyle.fontWeight || this.tooltip.textStyle.fontWeight;
-            this.tooltip.textStyle.opacity = options.textStyle.opacity || this.tooltip.textStyle.opacity;
-            this.tooltip.textStyle.size = options.textStyle.size || this.tooltip.textStyle.size;
-            this.tooltip.isNegative = options.isNegative;
-            this.tooltip.clipBounds = new sf.svgbase.TooltipLocation(options.clipBounds.x, options.clipBounds.y);
-            this.tooltip.arrowPadding = options.arrowPadding;
-            this.tooltip.dataBind();
-        }
     },
     getElement: function (id) {
         return document.getElementById(id);
@@ -509,7 +643,7 @@ var Chart = {
         var childNodes;
         if (elements && elements.childNodes) {
             childNodes = elements.childNodes;
-            for (var i = 1, length_2 = childNodes.length; i < length_2; i++) {
+            for (var i = 1, length_3 = childNodes.length; i < length_3; i++) {
                 if (childNodes[i] && childNodes[i].tagName !== 'rect' && childNodes[i].setAttribute) {
                     childNodes[i].setAttribute('fill', color);
                 }
@@ -910,106 +1044,6 @@ var Chart = {
             };
         }
         return null;
-    },
-    getScrollEventArgs: function (e, lastScrollbar) {
-        if (lastScrollbar === void 0) { lastScrollbar = false; }
-        var clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-        var clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-        var mouseXY = this.setScrollMouseXY(clientX, clientY, e.target['id'], lastScrollbar);
-        var touches = e.touches; //pointerId
-        var touchList = [];
-        if (e.type.indexOf('touch') > -1) {
-            for (var i = 0, length_3 = touches.length; i < length_3; i++) {
-                touchList.push({ pageX: touches[i].clientX, pageY: touches[i].clientY, pointerId: e.pointerId || 0 });
-            }
-        }
-        var id = e.target.id;
-        id = id.indexOf('scrollBar') > -1 ? id : this.svgId;
-        return {
-            type: e.type,
-            clientX: e.clientX,
-            clientY: e.clientY,
-            mouseX: mouseXY.mouseX,
-            mouseY: mouseXY.mouseY,
-            pointerType: e.pointerType,
-            target: id,
-            changedTouches: {
-                clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
-                clientY: e.changedTouches ? e.changedTouches[0].clientY : 0
-            },
-            touches: touchList,
-            pointerId: e.pointerId
-        };
-    },
-    getScrollWheelArgs: function (e) {
-        var mouseXY = this.setScrollMouseXY(e.clientX, e.clientY, e.currentTarget['id']);
-        return {
-            detail: e.detail,
-            wheelDelta: e['wheelDelta'],
-            target: e.currentTarget ? e.currentTarget['id'] : e.srcElement ? e.srcElement['id'] : e.target ? e.target['id'] : '',
-            clientX: e.clientX,
-            clientY: e.clientY,
-            mouseX: mouseXY.mouseX,
-            mouseY: mouseXY.mouseY,
-            browserName: sf.base.Browser.info.name,
-            isPointer: sf.base.Browser.isPointer
-        };
-    },
-    svgId: null,
-    setScrollMouseXY: function (pageX, pageY, id, lastScrollbar) {
-        if (lastScrollbar === void 0) { lastScrollbar = false; }
-        this.svgId = !lastScrollbar ? id : this.svgId;
-        if (!lastScrollbar && id.indexOf('_scrollBar_svg') === -1) {
-            var chartId = id.split('_scrollBar')[0];
-            var splitId = id.split('_');
-            this.svgId = chartId + '_scrollBar_svg' + splitId[splitId.length - 1];
-        }
-        var svgRect = this.getElement(this.svgId).getBoundingClientRect();
-        var mouseX = pageX - Math.max(svgRect.left, 0);
-        var mouseY = pageY - Math.max(svgRect.top, 0);
-        return { mouseX: mouseX, mouseY: mouseY };
-    },
-    domMouseMove: function (dotnetref, id, event) {
-        if (!sf.base.isNullOrUndefined(this.svgId)) {
-            var evtArgs = this.getScrollEventArgs(event, true);
-            dotnetref.invokeMethodAsync('ScrollMouseMove', evtArgs);
-        }
-        return false;
-    },
-    domMouseUp: function (dotnetref, id, event) {
-        if (!sf.base.isNullOrUndefined(this.svgId)) {
-            var evtArgs = this.getScrollEventArgs(event, true);
-            dotnetref.invokeMethodAsync('ScrollMouseUp', evtArgs);
-            this.svgId = null;
-        }
-        return false;
-    },
-    scrollMouseDown: function (event) {
-        var evtArgs = this.getScrollEventArgs(event);
-        this.dotnetref.invokeMethodAsync('ScrollMouseDown', evtArgs);
-        return false;
-    },
-    scrollMouseMove: function (event) {
-        var _this = this;
-        throttle(function () {
-            var evtArgs = _this.getScrollEventArgs(event);
-            _this.dotnetref.invokeMethodAsync('ScrollMouseMove', evtArgs);
-        }, this.eventInterval);
-        return false;
-    },
-    scrollMouseUp: function (event) {
-        var evtArgs = this.getScrollEventArgs(event);
-        this.dotnetref.invokeMethodAsync('ScrollMouseUp', evtArgs);
-        this.svgId = null;
-        return false;
-    },
-    scrollMouseWheel: function (event) {
-        var _this = this;
-        throttle(function () {
-            var evtArgs = _this.getScrollWheelArgs(event);
-            _this.dotnetref.invokeMethodAsync('ScrollMouseWheel', evtArgs);
-        }, this.eventInterval);
-        return false;
     }
 };
 

@@ -2258,6 +2258,7 @@ var Table = /** @class */ (function () {
         this.parent.observer.on(dropDownSelect, this.dropdownSelect, this);
         this.parent.observer.on(editAreaClick, this.editAreaClickHandler, this);
         this.parent.observer.on(tableToolbarAction, this.onToolbarAction, this);
+        this.parent.observer.on(mouseUp, this.selectionTable, this);
     };
     Table.prototype.removeEventListener = function () {
         this.parent.observer.off(keyDown, this.keyDown);
@@ -2270,6 +2271,7 @@ var Table = /** @class */ (function () {
         this.parent.observer.off(tableColorPickerChanged, this.setBGColor);
         this.parent.observer.off(editAreaClick, this.editAreaClickHandler);
         this.parent.observer.off(tableToolbarAction, this.onToolbarAction);
+        this.parent.observer.off(mouseUp, this.selectionTable);
     };
     Table.prototype.afterRender = function () {
         this.parent.observer.on(mouseDown, this.cellSelect, this);
@@ -2279,6 +2281,12 @@ var Table = /** @class */ (function () {
         }
         if (!sf.base.Browser.isDevice && this.parent.tableSettings.resize) {
             sf.base.EventHandler.add(this.parent.getEditPanel(), 'mouseover', this.resizeHelper, this);
+        }
+    };
+    Table.prototype.selectionTable = function (e) {
+        var target = e.args.target;
+        if (sf.base.Browser.info.name === 'mozilla' && !sf.base.isNullOrUndefined(sf.base.closest(target, 'table')) && sf.base.closest(target, 'table').tagName === 'TABLE') {
+            this.parent.getEditPanel().setAttribute('contenteditable', 'true');
         }
     };
     Table.prototype.tabSelection = function (event, selection, ele) {
@@ -2402,6 +2410,10 @@ var Table = /** @class */ (function () {
             if (this.helper && this.parent.getEditPanel().contains(this.helper)) {
                 sf.base.detach(this.helper);
             }
+        }
+        if (sf.base.Browser.info.name === 'mozilla' && !sf.base.isNullOrUndefined(sf.base.closest(target, 'table')) &&
+            sf.base.closest(target, 'table').tagName === 'TABLE') {
+            this.parent.getEditPanel().setAttribute('contenteditable', 'false');
         }
     };
     Table.prototype.renderDlgContent = function (args) {
@@ -6133,6 +6145,11 @@ var sourceCodeMouseDown$1 = 'sourceCodeMouseDown';
  * @deprecated
  */
 var checkUndo$1 = 'checkUndoStack';
+/**
+ * @hidden
+ * @deprecated
+ */
+
 /**
  * @hidden
  * @deprecated
@@ -11930,12 +11947,17 @@ var FullScreen = /** @class */ (function () {
         }
     };
     FullScreen.prototype.onKeyDown = function (event) {
+        var _this = this;
         var originalEvent = event.args;
         switch (originalEvent.action) {
             case 'full-screen':
-                this.parent.dotNetRef.invokeMethodAsync(showFullScreenClient);
-                this.showFullScreen(event.args);
-                originalEvent.preventDefault();
+                // @ts-ignore-start
+                this.parent.dotNetRef.invokeMethodAsync(showFullScreenClient).then(function (e) {
+                    // @ts-ignore-end
+                    _this.parent.toolbarSettings = e;
+                    _this.showFullScreen(event.args);
+                    originalEvent.preventDefault();
+                });
                 break;
             case 'escape':
                 this.parent.dotNetRef.invokeMethodAsync(hideFullScreenClient);
@@ -16782,6 +16804,9 @@ var SfRichTextEditor = /** @class */ (function () {
     SfRichTextEditor.prototype.insertImageLink = function (url, target) {
         this.imageModule.insertLink(url, target);
     };
+    SfRichTextEditor.prototype.updateToolbarSettings = function (tbObj) {
+        this.toolbarSettings = tbObj;
+    };
     SfRichTextEditor.prototype.destroy = function () {
         this.unWireEvents();
     };
@@ -17570,6 +17595,11 @@ var RichTextEditor = {
     },
     getXhtml: function (element) {
         return element.blazor__instance.getXhtml();
+    },
+    updateToolbarSettings: function (element, tbObj) {
+        if (element) {
+            element.blazor__instance.updateToolbarSettings(tbObj);
+        }
     },
     destroy: function (element) {
         if (element) {

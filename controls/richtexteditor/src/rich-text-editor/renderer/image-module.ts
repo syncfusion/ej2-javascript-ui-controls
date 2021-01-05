@@ -2,7 +2,7 @@ import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventA
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
-    ImageDragEvent, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ImageUploadingEventArgs
+    ImageDropEventArgs, ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ImageUploadingEventArgs
 } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -991,7 +991,7 @@ export class Image {
         } else {
             this.captionEle = this.parent.createElement('span', {
                 className: classes.CLS_CAPTION + ' ' + classes.CLS_RTE_CAPTION,
-                attrs: { contenteditable: 'false', draggable: 'false' }
+                attrs: { contenteditable: 'false', draggable: 'false', style: 'width:' + this.parent.insertImageSettings.width }
             });
             let imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' });
             let imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner', attrs: { contenteditable: 'true' } });
@@ -1509,44 +1509,45 @@ export class Image {
     };
 
     /**
-     * USed to set range When drop an image
+     * Used to set range When drop an image
      */
-    private dragDrop(e: ImageDragEvent): void | boolean {
-        let imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
-        if ((imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0) {
-            this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
-                if (actionBeginArgs.cancel) {
-                    e.preventDefault();
-                } else {
-                    if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
-                        this.parent.inputElement.contentEditable === 'false') {
+    private dragDrop(args: ImageDropEventArgs): void {
+        this.parent.trigger(events.beforeImageDrop, args, (e: ImageDropEventArgs) => {
+            let imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+            let isImgOrFileDrop: boolean = (imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0;
+            if (!e.cancel && isImgOrFileDrop) {
+                this.parent.trigger(events.actionBegin, e, (actionBeginArgs: ActionBeginEventArgs) => {
+                    if (actionBeginArgs.cancel) {
                         e.preventDefault();
-                        return;
-                    }
-                    if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
-                        detach(this.imgResizeDiv);
-                    }
-                    e.preventDefault();
-                    let range: Range;
-                    if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                        range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                    } else if ((e.rangeParent)) { //For mozilla firefox
-                        range = this.contentModule.getDocument().createRange();
-                        range.setStart(e.rangeParent, e.rangeOffset);
                     } else {
-                        range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                        if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
+                            this.parent.inputElement.contentEditable === 'false') {
+                            e.preventDefault();
+                            return;
+                        }
+                        if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
+                            detach(this.imgResizeDiv);
+                        }
+                        e.preventDefault();
+                        let range: Range;
+                        if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                            range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                        } else if ((e.rangeParent)) { //For mozilla firefox
+                            range = this.contentModule.getDocument().createRange();
+                            range.setStart(e.rangeParent, e.rangeOffset);
+                        } else {
+                            range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                        }
+                        this.parent.notify(events.selectRange, { range: range });
+                        let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+                        if (uploadArea) { return; }
+                        this.insertDragImage(e as DragEvent);
                     }
-                    this.parent.notify(events.selectRange, { range: range });
-                    let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
-                    if (uploadArea) {
-                        return;
-                    }
-                    this.insertDragImage(e as DragEvent);
-                }
-            });
-        } else {
-            return true;
-        }
+                });
+            } else {
+                if (isImgOrFileDrop) { e.preventDefault(); }
+            }
+        });
     }
 
     /**

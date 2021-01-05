@@ -468,6 +468,9 @@ export class EventWindow {
             endObj.value = endDate;
             endObj.dataBind();
         }
+        if (this.recurrenceEditor) {
+            this.recurrenceEditor.updateRuleUntilDate(this.eventWindowTime.startTime);
+        }
     }
 
     private renderResourceDetails(resourceData: ResourcesModel): HTMLElement {

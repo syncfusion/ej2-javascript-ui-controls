@@ -501,6 +501,7 @@ function removeMaskInputValues(event: KeyboardEvent): void {
     let maskValue: string = this.hiddenMask.replace(/[>|\\<]/g, '');
     let curMask: string = maskValue[startIndex - 1];
     let parentElement: HTMLElement = <HTMLElement>this.element.parentNode;
+    let deleteEndIndex: number = this.element.selectionEnd;
     if (isRemove || event.keyCode === 8 || event.keyCode === 46) {
         this.undoCollec.push({ value: this.element.value, startIndex: this.element.selectionStart, endIndex: endIndex });
         let multipleDel: boolean = false;
@@ -510,9 +511,7 @@ function removeMaskInputValues(event: KeyboardEvent): void {
             let index: number = startIndex;
             if (startIndex !== endIndex) {
                 startIndex = endIndex;
-                if (event.keyCode === 46) {
-                    multipleDel = true;
-                }
+                if (event.keyCode === 46) { multipleDel = true; }
             } else if (event.keyCode === 46) {
                 ++index;
             } else {
@@ -540,15 +539,14 @@ function removeMaskInputValues(event: KeyboardEvent): void {
                         || (this.promptMask[sIndex] !== this.promptChar && isNullOrUndefined(this.customCharacters))) {
                         this.element.selectionStart = this.element.selectionEnd = sIndex;
                         event.preventDefault();
-                        if (event.keyCode === 46 && !multipleDel) {
-                            ++this.element.selectionStart;
-                        }
+                        if (event.keyCode === 46 && !multipleDel) { ++this.element.selectionStart; }
                     } else {
                         let value: string = this.element.value;
                         let prompt: string = this.promptChar;
                         let elementValue: string = value.substring(0, sIndex) + prompt + value.substring(startIndex, value.length);
                         setElementValue.call(this, elementValue);
                         event.preventDefault();
+                        if (event.keyCode === 46 && !multipleDel) { sIndex++; }
                         this.element.selectionStart = this.element.selectionEnd = sIndex;
                         isDeleted = true;
                     }
@@ -568,6 +566,9 @@ function removeMaskInputValues(event: KeyboardEvent): void {
                 }
             }
         }
+        if (event.keyCode === 46 && multipleDel && isDeleted) {
+            this.element.selectionStart = this.element.selectionEnd = deleteEndIndex;
+        }
         if (this.element.selectionStart === 0 && (this.element.selectionEnd === this.element.value.length)) {
             setElementValue.call(this, this.promptMask);
             event.preventDefault();
@@ -577,9 +578,7 @@ function removeMaskInputValues(event: KeyboardEvent): void {
             value: this.element.value, startIndex: this.element.selectionStart,
             endIndex: this.element.selectionEnd
         });
-        if (this.element.value !== preValue) {
-            triggerMaskChangeEvent.call(this, event, oldEventVal);
-        }
+        if (this.element.value !== preValue) { triggerMaskChangeEvent.call(this, event, oldEventVal); }
     }
 }
 

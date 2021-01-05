@@ -68,7 +68,7 @@ export function findObjectUnderMouse(
         if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
             let bounds: PdfBoundsModel = objects[i].wrapper.bounds;
             let rotationValue: number = 0;
-            if (objects[i].shapeAnnotationType === 'Stamp') {
+            if (objects[i].shapeAnnotationType === 'Stamp' || objects[i].shapeAnnotationType === 'Image') {
                 rotationValue = 25;
             }
             // tslint:disable-next-line:max-line-length
@@ -213,8 +213,8 @@ export function findTargetShapeElement(container: Container, position: PointMode
 export function findObjects(region: PointModel, objCollection: (PdfAnnotationBaseModel)[]): (PdfAnnotationBaseModel)[] {
     let objects: (PdfAnnotationBaseModel)[] = [];
     for (let obj of objCollection) {
-        if (findElementUnderMouse(obj as IElement, region, 10) ||
-            (obj.shapeAnnotationType === 'Stamp' && findElementUnderMouse(obj as IElement, region, 40))) {
+        // tslint:disable-next-line:max-line-length
+        if (findElementUnderMouse(obj as IElement, region, 10)  || ((obj.shapeAnnotationType === 'Stamp' || obj.shapeAnnotationType === 'Image') && findElementUnderMouse(obj as IElement, region, 40))) {
             insertObject(obj, 'zIndex', objects);
         }
     }

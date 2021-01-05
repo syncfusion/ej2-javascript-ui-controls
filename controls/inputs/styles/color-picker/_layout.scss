@@ -125,11 +125,11 @@
     }
   }
 
-  & .sf-colorpicker .e-switch-ctrl-btn .e-ctrl-btn {
+  .sf-colorpicker .e-switch-ctrl-btn .e-ctrl-btn {
     position: relative;
   }
 
-  &.e-show-value .sf-colorpicker.e-color-palette {
+  .e-show-value .sf-colorpicker.e-color-palette {
     & .e-selected-value,
     & .e-switch-ctrl-btn {
       width: 270px;

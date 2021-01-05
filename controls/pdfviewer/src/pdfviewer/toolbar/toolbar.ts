@@ -319,6 +319,31 @@ export class Toolbar {
             }
         }
     }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public DisableToolbarItems(restrictionSummary: any, isEnable: boolean): void {
+        switch (restrictionSummary) {
+            case 'Print':
+                this.enablePrintOption(isEnable);
+                break;
+            case 'CopyContent':
+                this.isSelectionToolDisabled = isEnable;
+                this.enableSelectionTool(isEnable);
+                if (isEnable) {
+                    this.pdfViewerBase.initiateTextSelectMode();
+                    this.updateInteractionTools(isEnable);
+                } else {
+                    this.pdfViewerBase.initiatePanning();
+                    this.updateInteractionTools(isEnable);
+                }
+                break;
+            case 'EditAnnotations':
+                this.enableAnnotationEditTool(isEnable);
+                break;
+        }
+    }
 
     private showOpenOption(enableOpenOption: boolean): void {
         this.isOpenBtnVisible = enableOpenOption;

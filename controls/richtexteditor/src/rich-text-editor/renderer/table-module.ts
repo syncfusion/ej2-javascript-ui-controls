@@ -63,6 +63,7 @@ export class Table {
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
+        this.parent.on(events.mouseUp, this.selectionTable, this);
         this.parent.on(events.destroy, this.destroy, this);
     }
 
@@ -77,7 +78,15 @@ export class Table {
         this.parent.off(events.mouseDown, this.cellSelect);
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.off(events.keyDown, this.keyDown);
+        this.parent.off(events.mouseUp, this.selectionTable);
         this.parent.off(events.destroy, this.destroy);
+    }
+
+    private selectionTable(e: ITableNotifyArgs): void {
+        let target: HTMLTableCellElement = (e.args as MouseEvent).target as HTMLTableCellElement;
+        if (Browser.info.name === 'mozilla' && !isNOU(closest(target, 'table')) && closest(target, 'table').tagName === 'TABLE') {
+            this.parent.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+        }
     }
 
     private afterRender(): void {
@@ -458,6 +467,10 @@ export class Table {
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table') as HTMLTableElement;
             this.removeResizeElement();
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) { detach(this.helper); }
+        }
+        if (Browser.info.name === 'mozilla' && !isNOU(closest(target, 'table')) &&
+        closest(target, 'table').tagName === 'TABLE') {
+            this.parent.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
         }
     }
     private resizeHelper(e: PointerEvent | TouchEvent): void {

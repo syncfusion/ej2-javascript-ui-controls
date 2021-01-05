@@ -326,3 +326,34 @@ let ShapeExport:any ={
       expect(()=>{editor.save('Shape', 'Docx');}).not.toThrowError();
     });
 });
+
+let bubbleChart:any = {"sections":[{"blocks":[{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{"fontColor":"empty"},"inlines":[{"characterFormat":{},"bookmarkType":0,"name":"Container_Chart1b8b078f_0d98_443a_b314_39ab7c499154"},{"characterFormat":{},"chartLegend":{"position":"Bottom","chartTitleArea":{"fontName":"Calibri","fontSize":10,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"808080","rgb":"#808080"}}}},"chartTitleArea":{"fontName":"Calibri","fontSize":14,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"000000","rgb":"#000000"}}},"chartArea":{"foreColor":"#FFFFFF00"},"plotArea":{"foreColor":"#FFFFFF00"},"chartCategory":[{"chartData":[{"yValue":0.7,"size":2.7}],"categoryXName":"Category1"},{"chartData":[{"yValue":1.8,"size":3.2}],"categoryXName":"Category2"},{"chartData":[{"yValue":2.6,"size":0.8}],"categoryXName":"Category3"}],"chartSeries":[{"dataPoints":[{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{}}],"seriesName":"Serie1"}],"chartPrimaryCategoryAxis":{"chartTitle":"Technical","chartTitleArea":{"fontName":"Calibri","fontSize":10,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"000000","rgb":"#000000"}}},"categoryType":"Automatic","fontSize":11,"fontName":"Calibri","numberFormat":"General","maximumValue":0,"minimumValue":0,"majorUnit":0,"hasMajorGridLines":false,"hasMinorGridLines":false,"majorTickMark":"TickMark_Outside","minorTickMark":"TickMark_None","tickLabelPosition":"TickLabelPosition_NextToAxis"},"chartPrimaryValueAxis":{"chartTitle":"Non-Tehnical","chartTitleArea":{"fontName":"Calibri","fontSize":10,"layout":{"layoutX":0,"layoutY":0},"dataFormat":{"fill":{"foreColor":"000000","rgb":"#000000"},"line":{"color":"000000","rgb":"#000000"}}},"fontSize":10,"fontName":"Calibri","maximumValue":0,"minimumValue":0,"majorUnit":0,"hasMajorGridLines":true,"hasMinorGridLines":false,"majorTickMark":"TickMark_Outside","minorTickMark":"TickMark_None","tickLabelPosition":"TickLabelPosition_Low"},"chartTitle":"InformationTech","chartType":"Bubble","gapWidth":0,"overlap":0,"height":300,"width":470},{"characterFormat":{},"bookmarkType":1,"name":"Container_Chart1b8b078f_0d98_443a_b314_39ab7c499154"}]}],"headersFooters":{}}]};
+describe('Word export module with bubbleChart', () => {
+    let editor: DocumentEditor;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport,EditorHistory);
+       editor = new DocumentEditor({enableEditorHistory:true, enableWordExport: true, enableEditor: true, isReadOnly: false, enableSelection: true, enableSfdtExport: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('bubbleChart Export', () => {
+console.log('bubbleChart Export');
+        editor.open(JSON.stringify(bubbleChart));
+        editor.save('bubbleChart', 'Docx');
+        expect(()=>{editor.save('bubbleChart', 'Docx');}).not.toThrowError();
+    });
+});

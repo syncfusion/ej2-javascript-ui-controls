@@ -547,7 +547,9 @@ export class ResourceBase {
     }
 
     public refreshLayout(isSetModel: boolean): void {
-        this.parent.uiStateValues.groupIndex = 0;
+        if (isNullOrUndefined(this.parent.uiStateValues.groupIndex) || !(this.parent.enablePersistence)) {
+            this.parent.uiStateValues.groupIndex = 0;
+        }
         this.parent.renderElements(isSetModel);
     }
 

@@ -135,7 +135,7 @@ export class Scroll {
                 if (temp < scrollTop) {
                     temp += getRowHeight(sheet, i);
                     if (temp > scrollTop) {
-                        return { idx: i, size: temp - getRowHeight(sheet, i) };
+                        return { idx: i, size: temp - getRowHeight(sheet, i) < 0 ? 0 : temp - getRowHeight(sheet, i) };
                     } else {
                         return { idx: i + 1, size: temp };
                     }

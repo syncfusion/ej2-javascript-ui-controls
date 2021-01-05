@@ -1333,6 +1333,7 @@ class Render {
         let cellElement;
         let column = this.parent.getColumnByUid(args.column.uid);
         let summaryRow = data.isSummaryRow;
+        let frozenColumns = this.parent.getFrozenColumns();
         if (!isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;
         }
@@ -1396,16 +1397,16 @@ class Render {
         else if (this.templateResult) {
             this.templateResult = null;
         }
-        if (this.parent.frozenColumns > this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
-            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns) {
+        if (frozenColumns > this.parent.treeColumnIndex && frozenColumns > 0 &&
+            grid.getColumnIndexByUid(args.column.uid) === frozenColumns) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
-        else if (this.parent.frozenColumns < this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
-            (grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns
-                || grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1)) {
+        else if (frozenColumns < this.parent.treeColumnIndex && frozenColumns > 0 &&
+            (grid.getColumnIndexByUid(args.column.uid) === frozenColumns
+                || grid.getColumnIndexByUid(args.column.uid) === frozenColumns - 1)) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
-        else if (this.parent.frozenColumns === this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
+        else if (frozenColumns === this.parent.treeColumnIndex && frozenColumns > 0 &&
             grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex - 1) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
@@ -2375,8 +2376,10 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                                     treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                     if (editedData && editedData.taskData) {
                                         if (isBlazor()) {
-                                            editedData.taskData[keys[j]] = editedData[keys[j]]
-                                                = control.grid.currentViewData[i][keys[j]] = treeData[i][keys[j]];
+                                            let taskData = 'taskData';
+                                            editedData.taskData[keys[j]]
+                                                = editedData[keys[j]] = control.grid.currentViewData[i][keys[j]]
+                                                    = control.grid.currentViewData[i][taskData][keys[j]] = treeData[i][keys[j]];
                                         }
                                         else {
                                             editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
@@ -2616,7 +2619,7 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             }
             control.renderModule.cellRender({
                 data: record, cell: row.cells[index] ? row.cells[index]
-                    : movableRow.cells[index - control.frozenColumns],
+                    : movableRow.cells[index - control.getFrozenColumns()],
                 column: control.grid.getColumns()[control.treeColumnIndex],
                 requestType: action
             });
@@ -5023,7 +5026,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             if (rows.length) {
                 action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
             }
-            else {
+            else if (this.allowPaging) {
                 let isExpandCollapseall = this.enableCollapseAll;
                 this.setProperties({ enableCollapseAll: true }, true);
                 this.grid.pagerModule.goToPage(1);

@@ -197,7 +197,7 @@ export class Parser {
                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], false);
             }
             while (i < formula.length) {
-                if ((formula.indexOf('&') > -1) || (this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
+                if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
                         && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1)))) {
                     if (isNullOrUndefined(args)) {
@@ -332,9 +332,7 @@ export class Parser {
         let storedString: Map<string, string> = null;
         let condition: string;
         let ticLoc: number = tempString.indexOf(this.parent.tic);
-        let singleTicLoc: number = tempString.indexOf(this.parent.singleTic);
         if (ticLoc > -1) {
-            tempString = tempString.split(this.parent.singleTic).join(this.parent.tic);
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
                 if (storedString === null) {

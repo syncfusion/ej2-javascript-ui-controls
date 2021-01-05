@@ -39,6 +39,7 @@ export class VirtualScroll {
         this.setItemSize();
         this.setVirtualTrackHeight(resWrap);
         this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+        conWrap.scrollTop = resWrap.scrollTop;
     }
 
     private setVirtualTrackHeight(resourceWrap: HTMLElement): void {

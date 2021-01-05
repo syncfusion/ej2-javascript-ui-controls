@@ -4736,7 +4736,8 @@ var DragAndDrop = /** @class */ (function (_super) {
             if (_this.parent.options.currentView === 'Month' || _this.parent.options.currentView === 'TimelineYear' ||
                 (!_this.parent.isTimelineView() && !_this.parent.activeViewOptions.timeScale.enable)) {
                 _this.updateOriginalElement(_this.actionObj.clone);
-                _this.cloneEventDetail = _this.actionObj.clone.querySelector('.e-appointment-details');
+                var appDetail = _this.actionObj.clone.querySelector('.e-appointment-details');
+                _this.cloneEventDetail = appDetail ? appDetail : _this.actionObj.clone.querySelector('.e-subject');
                 _this.monthEvent = new MonthEvent(_this.parent);
             }
             if (_this.parent.options.currentView === 'Day' || _this.parent.options.currentView === 'Week' ||
@@ -5517,6 +5518,7 @@ var VirtualScroll = /** @class */ (function () {
         this.setItemSize();
         this.setVirtualTrackHeight(resWrap);
         this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
+        conWrap.scrollTop = resWrap.scrollTop;
     };
     VirtualScroll.prototype.setVirtualTrackHeight = function (resourceWrap) {
         var virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);

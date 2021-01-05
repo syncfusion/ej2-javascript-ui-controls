@@ -327,8 +327,8 @@ export class UndoRedo {
                 cell = getCell(i, j, sheet);
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
-                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
-                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
+                    style: cell && cell.style ? Object.assign({}, cell.style) : null, value: cell ? cell.value : '', formula: cell ?
+                    cell.formula : '', wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
                     hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
                 });
             }
@@ -343,7 +343,7 @@ export class UndoRedo {
         for (let i: number = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
-                style: cells[i].style, formula: cells[i].formula,
+                style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
                 wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
                 colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
             });

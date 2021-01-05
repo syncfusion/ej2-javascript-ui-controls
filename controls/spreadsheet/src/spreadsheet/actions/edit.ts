@@ -633,7 +633,7 @@ export class Edit {
             let cell: CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
             let left: number = this.editCellData.position.left + 1;
             let top: number = this.editCellData.position.top + 1;
-            let minHeight: number = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
+            let minHeight: number = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex).offsetHeight - 3;
             let minWidth: number = this.editCellData.element.offsetWidth - 3;
             let mainContElement: HTMLElement = <HTMLElement>this.parent.getMainContent();
             let editWidth: number = mainContElement.offsetWidth - left - 28;

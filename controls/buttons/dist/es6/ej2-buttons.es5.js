@@ -572,7 +572,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
                 this.unWireEvents();
             }
             if (this.tagName === 'INPUT') {
-                if (this.getWrapper()) {
+                if (this.getWrapper() && wrapper.parentNode) {
                     wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
                 detach(wrapper);
@@ -1024,7 +1024,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             this.unWireEvents();
         }
         if (this.tagName === 'INPUT') {
-            radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            if (radioWrap.parentNode) {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            }
             detach(radioWrap);
             this.element.checked = false;
             ['name', 'value', 'disabled'].forEach(function (key) {
@@ -1810,12 +1812,13 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     ChipList.prototype.render = function () {
+        var property;
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
         if (!isBlazor() || !this.isServerRendered) {
             this.setAttributes();
             this.createChip();
             this.setRtl();
-            this.select(this.selectedChips);
+            this.select(this.selectedChips, property);
         }
         this.wireEvent(false);
         this.rippleFunction = rippleEffect(this.element, {
@@ -1998,8 +2001,8 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      *  or chip element or array of chip element.
      * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      */
-    ChipList.prototype.select = function (fields) {
-        this.onSelect(fields, false);
+    ChipList.prototype.select = function (fields, selectionType) {
+        this.onSelect(fields, false, selectionType);
     };
     ChipList.prototype.multiSelection = function (newProp) {
         var items = this.element.querySelectorAll('.' + 'e-chip');
@@ -2019,7 +2022,10 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    ChipList.prototype.onSelect = function (fields, callFromProperty) {
+    ChipList.prototype.onSelect = function (fields, callFromProperty, selectionType) {
+        var index;
+        var chipNodes;
+        var chipValue;
         if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 var chipElements = this.element.querySelectorAll('.' + classNames.chip);
@@ -2032,6 +2038,24 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             for (var i = 0; i < fieldData.length; i++) {
                 var chipElement = fieldData[i] instanceof HTMLElement ? fieldData[i]
                     : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i]];
+                if (selectionType !== 'index') {
+                    for (var j = 0; j < this.chips.length; j++) {
+                        chipNodes = this.element.querySelectorAll('.' + classNames.chip)[j];
+                        var fieldsData = this.getFieldValues(this.chips[j]);
+                        if (selectionType === 'value') {
+                            if (fieldsData.value !== null) {
+                                chipValue = chipNodes.dataset.value;
+                            }
+                        }
+                        else if (selectionType === 'text') {
+                            chipValue = chipNodes.innerText;
+                        }
+                        if (chipValue === fieldData[i].toString()) {
+                            index = j;
+                            chipElement = this.element.querySelectorAll('.' + classNames.chip)[index];
+                        }
+                    }
+                }
                 if (chipElement instanceof HTMLElement) {
                     this.selectionHandler(chipElement);
                 }
@@ -2328,14 +2352,15 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
+                    var property = void 0;
                     if (this.selection === 'Multiple') {
                         this.multiSelectedChip = [];
                         this.multiSelection(newProp.selectedChips);
-                        this.onSelect(this.multiSelectedChip, true);
+                        this.onSelect(this.multiSelectedChip, true, property);
                         this.updateSelectedChips();
                     }
                     else {
-                        this.onSelect(newProp.selectedChips, true);
+                        this.onSelect(newProp.selectedChips, true, property);
                     }
                     break;
                 case 'enableRtl':

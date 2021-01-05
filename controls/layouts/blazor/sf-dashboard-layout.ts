@@ -228,6 +228,10 @@ class SfDashboardLayout {
         if (this.element.querySelectorAll('.e-panel').length > 0 || this.panels.length > 0) {
             this.updateOldRowColumn();
             for (let i: number = 0; i < this.panels.length; i++) {
+                if (this.columns < this.panels[i].col || this.columns < this.panels[i].col + this.panels[i].sizeX) {
+                    let colValue: number = this.columns - this.panels[i].sizeX;
+                    this.updatePanelPosition(this.panels[i].id, colValue < 0 ? 0 : colValue, this.panels[i].row);
+                }
                 this.renderedElement.push(this.panelElements[i]);
                 let cell: HTMLElement = this.renderCell(cells[i]);
                 this.updatePanelLayout(cell, this.panels[i]);
@@ -283,6 +287,16 @@ class SfDashboardLayout {
         } else if (property.Columns !== this.columns) {
             this.columns = property.Columns;
             this.calculateCellSizeValue();
+            for (let i : number = 0; i < this.panels.length; i++) {
+                if (this.columns < this.panels[i].col || this.columns < this.panels[i].col + this.panels[i].sizeX) {
+                  let colValue: number = this.columns - this.panels[i].sizeX;
+                  this.updatePanelPosition(this.panels[i].id, (colValue < 0 ? 0 : colValue), this.panels[i].row);
+                }
+                this.updatePanelLayout(document.getElementById(this.panels[i].id), this.panels[i]);
+            }
+            this.renderDashBoardCells(this.panels);
+            this.updatePanels();
+            this.dotnetRef.invokeMethodAsync('UpdatedPanelsValues', this.panels);
         }
         this.getProperty(property);
     }
@@ -1379,13 +1393,6 @@ class SfDashboardLayout {
         if (!this.checkMediaQuery()) {
             if (this.element.classList.contains(RESPONSIVE)) {
                 removeClass([this.element], [RESPONSIVE]);
-                for (let i: number = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
-                    let currentElement: HTMLElement = <HTMLElement>this.element.querySelectorAll('.e-panel')[i];
-                    let cellInstance: PanelModel = this.getCellInstance(currentElement.id);
-                    let row: number = cellInstance.row;
-                    let col: number = cellInstance.col;
-                    this.updatePanelPosition(cellInstance.id, col, row);
-                }
             }
             this.element.classList.add('e-responsive');
             this.calculateCellSizeValue();

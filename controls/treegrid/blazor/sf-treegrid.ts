@@ -15,7 +15,7 @@ let TreeGrid: Object = {
     },
 
     modelChanged(element: BlazorTreeGridElement, options: ITreeGridOptions): void {
-      if (!isNullOrUndefined(element.blazor_instance)) {
+      if (!isNullOrUndefined(element) && !isNullOrUndefined(element.blazor_instance)) {
         element.blazor_instance.options = options;
       }
     },

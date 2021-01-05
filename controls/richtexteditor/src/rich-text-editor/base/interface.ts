@@ -344,6 +344,18 @@ export interface ImageDragEvent extends DragEvent {
 }
 
 /**
+ * Provides information about imageDrop event.
+ */
+export interface ImageDropEventArgs extends DragEvent {
+    /** Defines the prevent action. */
+    cancel: boolean;
+    /** Defines the parent of drop range. */
+    rangeParent?: Element;
+    /** Defines the offset value of drop range. */
+    rangeOffset?: number;
+}
+
+/**
  * Provides information about a Link added to the Rich Text Editor.
  */
 export interface ILinkCommandsArgs {

@@ -533,3 +533,8 @@ export const resizeInitialized: string = 'resizeInitialized';
  * @deprecated
  */
 export const renderFileManager: string = 'renderFileManager';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const beforeImageDrop: string = 'beforeImageDrop';

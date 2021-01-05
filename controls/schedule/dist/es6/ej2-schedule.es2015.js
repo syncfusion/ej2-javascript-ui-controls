@@ -8011,6 +8011,16 @@ class QuickPopups {
                 else {
                     this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
                         ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]');
+                    if (isNullOrUndefined(this.morePopup.relateTo)) {
+                        let workCells = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_WRAP_CLASS +
+                            ' tbody tr td[data-group-index="' + gIndex + '"]'));
+                        for (let i = 0; i < workCells.length; i++) {
+                            let date = workCells[i].getAttribute('data-date');
+                            if (date < tdDate) {
+                                this.morePopup.relateTo = workCells[i];
+                            }
+                        }
+                    }
                 }
             }
             else {
@@ -10199,6 +10209,9 @@ class EventWindow {
             }
             endObj.value = endDate;
             endObj.dataBind();
+        }
+        if (this.recurrenceEditor) {
+            this.recurrenceEditor.updateRuleUntilDate(this.eventWindowTime.startTime);
         }
     }
     renderResourceDetails(resourceData) {
@@ -13417,7 +13430,9 @@ class ResourceBase {
         return resourceObj;
     }
     refreshLayout(isSetModel) {
-        this.parent.uiStateValues.groupIndex = 0;
+        if (isNullOrUndefined(this.parent.uiStateValues.groupIndex) || !(this.parent.enablePersistence)) {
+            this.parent.uiStateValues.groupIndex = 0;
+        }
         this.parent.renderElements(isSetModel);
     }
     setResourceCollection() {
@@ -14372,10 +14387,12 @@ let Schedule = class Schedule extends Component {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.tzModule = new Timezone();
-        this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-            isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
-        };
+        if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
+            this.uiStateValues = {
+                expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
+            };
+        }
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
         this.getDefaultLocale();
@@ -15263,6 +15280,14 @@ let Schedule = class Schedule extends Component {
             return;
         }
         this.changeView(viewName, null, null, index);
+    }
+    /**
+     * Return the current view Index.
+     * @method getCurrentViewIndex
+     * @returns {number}
+     */
+    getCurrentViewIndex() {
+        return this.viewIndex;
     }
     /**
      * Retrieves the resource details based on the provided resource index.
@@ -17263,7 +17288,12 @@ class YearEvent extends TimelineEvent {
         for (let app of appointments) {
             let appStart = new Date(app[this.fields.startTime].getTime());
             let appEnd = new Date(app[this.fields.endTime].getTime());
-            if ((resetTime(appStart).getTime() >= dateStart) && (resetTime(appEnd).getTime() <= dateEnd)) {
+            if (this.parent.rowAutoHeight && (resetTime(appStart).getTime() <= dateStart)
+                && (resetTime(appEnd).getTime() >= dateEnd)) {
+                appointmentsList.push(app);
+            }
+            if (!this.parent.rowAutoHeight && (resetTime(appStart).getTime() <= dateStart)
+                && (resetTime(appEnd).getTime() > dateEnd)) {
                 appointmentsList.push(app);
             }
         }

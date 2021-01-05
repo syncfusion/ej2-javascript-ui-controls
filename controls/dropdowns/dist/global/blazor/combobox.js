@@ -350,8 +350,7 @@ var ComboBox = /** @class */ (function (_super) {
         }
     };
     ComboBox.prototype.clearAll = function (e, property) {
-        if (sf.base.isNullOrUndefined(property) || (!sf.base.isNullOrUndefined(property) && sf.base.isNullOrUndefined(property.dataSource)) ||
-            (sf.base.isNullOrUndefined(this.itemData) && this.allowFiltering)) {
+        if (sf.base.isNullOrUndefined(property) || (!sf.base.isNullOrUndefined(property) && sf.base.isNullOrUndefined(property.dataSource))) {
             _super.prototype.clearAll.call(this, e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line

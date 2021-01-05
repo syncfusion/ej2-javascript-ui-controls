@@ -1523,7 +1523,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 item_1 = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items_1 = item_1 ? item_1.items : this.items;
                 beforeCloseArgs = { element: ul_1, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item_1, ulIndex) : item_1,
-                    items: items_1, event: e, cancel: false, liElement: liElem_1 };
+                    items: items_1, event: e, cancel: false, isFocused: true };
                 this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
                     var popupEle;
                     var closeArgs;
@@ -1610,7 +1610,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                             if (sli_1) {
                                 sli_1.setAttribute('aria-expanded', 'false');
                                 sli_1.classList.remove(SELECTED);
-                                if (observedCloseArgs.liElement) {
+                                if (observedCloseArgs.isFocused && liElem_1) {
                                     sli_1.classList.add(FOCUSED);
                                     sli_1.focus();
                                 }
@@ -8302,7 +8302,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (!isNullOrUndefined(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
-                this.select(trgIndex);
+                this.select(trgIndex, args.originalEvent);
             }
         }
     };
@@ -8655,20 +8655,12 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, function (tabRemovingArgs) {
             if (!tabRemovingArgs.cancel) {
-                // tslint:disable-next-line:no-any
-                if (_this.isRect) {
-                    _this.clearTemplate([], index);
-                }
                 _this.tbObj.removeItems(index);
                 _this.items.splice(index, 1);
                 _this.itemIndexArray.splice(index, 1);
                 _this.refreshActiveBorder();
                 var cntTrg = select('#' + CLS_CONTENT$1 + _this.tabId + '_' + _this.extIndex(trg.id), select('.' + CLS_CONTENT$1, _this.element));
                 if (!isNullOrUndefined(cntTrg)) {
-                    // tslint:disable-next-line:no-any
-                    if (_this.isReact) {
-                        _this.clearTemplate();
-                    }
                     detach(cntTrg);
                 }
                 _this.trigger('removed', tabRemovingArgs);
@@ -8754,7 +8746,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
      * @param  {number | HTMLElement} args - Index or DOM element is used for selecting an item from the Tab.
      * @returns void.
      */
-    Tab.prototype.select = function (args) {
+    Tab.prototype.select = function (args, event) {
         var _this = this;
         var tabHeader = this.getTabHeader();
         this.tbItems = select('.' + CLS_TB_ITEMS, tabHeader);
@@ -8778,6 +8770,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.prevItem.children.item(0).setAttribute('tabindex', '-1');
         }
         var eventArg = {
+            event: event,
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],
@@ -10743,6 +10736,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
+            colArgs = this.getExpandEvent(liEle, null);
             this.trigger('nodeCollapsed', colArgs);
         }
     };

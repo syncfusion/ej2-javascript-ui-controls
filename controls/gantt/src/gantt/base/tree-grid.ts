@@ -418,7 +418,7 @@ export class GanttTreeGrid {
     /* tslint:disable-next-line:max-func-body-length */
     private createTreeGridColumn(column: GanttColumnModel, isDefined?: boolean): void {
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
-        column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
+        column.disableHtmlEncode = !isNullOrUndefined(column.disableHtmlEncode) ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
         if (taskSettings.id !== column.field) {
             column.clipMode = column.clipMode ? column.clipMode : 'EllipsisWithTooltip';
         }
@@ -475,8 +475,6 @@ export class GanttTreeGrid {
                     column.template = '<div class="e-ganttnotes-info">' +
                         '<span class="e-icons e-notes-info"></span></div>';
                 }
-            } else {
-                column.disableHtmlEncode = false;
             }
         } else if (taskSettings.baselineStartDate === column.field ||
             taskSettings.baselineEndDate === column.field) {

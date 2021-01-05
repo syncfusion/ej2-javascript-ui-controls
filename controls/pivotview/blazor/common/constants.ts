@@ -65,7 +65,6 @@ export const MOVABLEHEADER_DIV: string = 'e-movableheader';
 export const FROZENHEADER_DIV: string = 'e-frozenheader';
 export const HEADERCONTENT: string = 'e-headercontent';
 export const ROW_CELL_CLASS: string = 'e-rowcell';
-export const GRID_CONTENT: string = 'e-gridcontent';
 export const GRID_REMOVE: string = 'e-remove-report';
 export const GRID_TOOLBAR: string = 'e-pivot-toolbar';
 export const GRID_REPORT_INPUT: string = 'e-pivotview-report-input';

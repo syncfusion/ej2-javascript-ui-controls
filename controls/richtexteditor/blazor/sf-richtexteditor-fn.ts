@@ -1149,6 +1149,9 @@ export class SfRichTextEditor {
     public insertImageLink(url: string, target: string): void {
         this.imageModule.insertLink(url, target);
     }
+    public updateToolbarSettings(tbObj: ToolbarSettingsModel): void {
+        this.toolbarSettings = tbObj;
+    }
     public destroy(): void {
         this.unWireEvents();
     }

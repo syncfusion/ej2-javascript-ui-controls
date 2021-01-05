@@ -2505,7 +2505,7 @@ export class WordExport {
             let categoryType: string = 'cat';
             let categoryRef: string = 'strRef';
             let cacheType: string = 'strCache';
-            if (isScatterType) {
+            if (serializationChartType === 'scatterChart') {
                 categoryType = 'xVal';
                 categoryRef = 'numRef';
                 cacheType = 'numCache';
@@ -4008,6 +4008,9 @@ export class WordExport {
         this.serializeColumnSpan(collKey, writer);
         writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
         writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
+        writer.writeEndElement();
+        writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
+        this.serializeBorders(writer, cell.cellFormat.borders, 8);
         writer.writeEndElement();
         writer.writeEndElement(); //end tcPr
         writer.writeStartElement('w', 'p', this.wNamespace);

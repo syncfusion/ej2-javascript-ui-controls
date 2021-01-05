@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 18.4.32 (2020-12-29)
+
+### ColorPicker
+
+- `F160947` - Unwanted parent selector removed from the top level selector.
+
 ## 18.3.52 (2020-12-01)
 
 ### TextBox

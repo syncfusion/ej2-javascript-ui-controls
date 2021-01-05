@@ -3,7 +3,7 @@ import { PivotView } from '../../pivotview';
 import { DrillThroughEventArgs, EditCompletedEventArgs } from '../base/interface';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
-import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar } from '@syncfusion/ej2-grids';
+import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar, ExcelExport, PdfExport } from '@syncfusion/ej2-grids';
 import { VirtualScroll, Selection, Edit, Page, CommandColumn } from '@syncfusion/ej2-grids';
 import { IDataSet, INumberIndex, IDataOptions, PivotEngine } from '../../base/engine';
 import * as events from '../../common/base/constant';
@@ -363,6 +363,12 @@ export class DrillThroughDialog {
             gridObj: isBlazor() ? undefined : this.drillThroughGrid,
             type: 'editing'
         });
+        if (this.drillThroughGrid.allowExcelExport) {
+            Grid.Inject(ExcelExport);
+        }
+        if (this.drillThroughGrid.allowPdfExport) {
+            Grid.Inject(PdfExport);
+        }
         if (this.parent.editSettings.allowEditing) {
             Grid.Inject(Edit, Page);
             this.drillThroughGrid.editSettings = this.parent.editSettings;

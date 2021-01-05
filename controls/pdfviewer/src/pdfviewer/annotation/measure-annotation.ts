@@ -970,6 +970,8 @@ export class MeasureAnnotation {
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
                         if (pageAnnotations[i].shapeAnnotationType === 'Line' || pageAnnotations[i].shapeAnnotationType === 'Polyline') {
                             pageAnnotations[i].vertexPoints = annotationBase.vertexPoints;
+                            // tslint:disable-next-line:max-line-length
+                            pageAnnotations[i].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right, bottom: annotationBase.bounds.bottom };
                         } else if (pageAnnotations[i].shapeAnnotationType === 'Polygon') {
                             pageAnnotations[i].vertexPoints = annotationBase.vertexPoints;
                             // tslint:disable-next-line:max-line-length

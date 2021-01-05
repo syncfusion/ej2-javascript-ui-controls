@@ -947,7 +947,6 @@ export class DocumentHelper {
         }
         this.owner.commentReviewPane.reviewTab.hideTab(0, false);
         this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
-        this.owner.showRevisions = false;
     }
     /**
      * @private
@@ -957,9 +956,17 @@ export class DocumentHelper {
             let eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
-        this.owner.commentReviewPane.reviewTab.hideTab(0, false);
-        this.owner.commentReviewPane.showHidePane(show && this.owner.enableTrackChanges, 'Changes');
-        this.owner.showComments = false;
+        if (!show && this.owner.showComments) {
+            this.owner.commentReviewPane.reviewTab.hideTab(0, false);
+            this.owner.commentReviewPane.showHidePane(true, 'Comments');
+        } else if (!this.showRevision && !this.owner.enableTrackChanges && this.owner.showRevisions) {
+            this.owner.commentReviewPane.showHidePane(!show, 'Changes');
+            this.owner.showRevisions = false;
+        } else {
+            this.owner.commentReviewPane.showHidePane(show, 'Changes');
+            this.owner.commentReviewPane.reviewTab.hideTab(0, false);
+            this.showRevision = false;
+        }
     }
     /**
      * Initializes components.
@@ -1714,10 +1721,10 @@ export class DocumentHelper {
             /* tslint:disable:align */
             this.timer = setTimeout((): void => {
                 this.tapCount++;
-                if (this.tapCount === 4) {
+                if (this.tapCount > 1) {
                     this.tapCount = 1;
                 }
-            }, 200);
+            }, 100);
         }
     }
 

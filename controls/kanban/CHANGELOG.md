@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#308798` - The issue with "Script error thrown when drag and drop the cards in swimlane layout with responsive mode" has been resolved.
+
 ## 18.4.30 (2020-12-17)
 
 ### Kanban

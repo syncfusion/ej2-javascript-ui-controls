@@ -556,8 +556,7 @@ export class ComboBox extends DropDownList {
     }
 
     protected clearAll(e?: MouseEvent | KeyboardEventArgs, property?: ComboBoxModel): void {
-        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource)) ||
-        (isNullOrUndefined(this.itemData) && this.allowFiltering)) {
+        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
             super.clearAll(e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line

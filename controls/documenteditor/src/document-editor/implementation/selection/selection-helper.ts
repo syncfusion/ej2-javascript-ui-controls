@@ -771,6 +771,9 @@ export class TextPosition {
                     this.offset = this.currentWidget.getOffset(inline, 1);
                 }
             }
+        } else if (this.offset === nextOffset && inline instanceof FieldElementBox && inline.fieldType === 1 &&
+            inline.previousNode instanceof ImageElementBox) {
+            this.offset = nextOffset;
         } else if (this.offset === nextOffset && this.offset < length + 1 && isParagraphEnd) {
             this.offset = length + 1;
         } else {

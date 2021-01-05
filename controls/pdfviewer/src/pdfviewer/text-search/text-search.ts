@@ -79,7 +79,14 @@ export class TextSearch {
         let searchInputContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_search_input_container', className: 'e-input-group e-pv-search-input' });
         this.searchInput = createElement('input', { id: this.pdfViewer.element.id + '_search_input', className: 'e-input' });
         (this.searchInput as HTMLInputElement).type = 'text';
-        (this.searchInput as HTMLInputElement).placeholder = this.pdfViewer.localeObj.getConstant('Find in document');
+        if (isBlazor()) {
+            let promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Findindocument');
+            promise.then((value: string) => {
+                (this.searchInput as HTMLInputElement).placeholder  = value;
+            });
+        } else {
+            (this.searchInput as HTMLInputElement).placeholder = this.pdfViewer.localeObj.getConstant('Find in document');
+        }
         // tslint:disable-next-line:max-line-length
         this.searchBtn = createElement('span', { id: this.pdfViewer.element.id + '_search_box-icon', className: 'e-input-group-icon e-input-search-group-icon e-pv-search-icon' });
         searchInputContainer.appendChild(this.searchInput);
@@ -115,7 +122,10 @@ export class TextSearch {
         if (isBlazor()) {
             // tslint:disable-next-line:max-line-length
             let matchCaseText: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_search_box_text', styles: 'position: absolute; padding-top: 3px; padding-left: 8px; padding-right: 8px; font-size: 13px' });
-            matchCaseText.textContent = this.pdfViewer.localeObj.getConstant('Match case');
+            let promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Matchcase');
+            promise.then((value: string) => {
+                matchCaseText.textContent = value;
+            });
             matchCaseContainer.appendChild(matchCaseText);
         } else {
             // tslint:disable-next-line:max-line-length

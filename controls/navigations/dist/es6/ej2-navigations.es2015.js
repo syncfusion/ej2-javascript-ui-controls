@@ -1444,7 +1444,7 @@ let MenuBase = class MenuBase extends Component {
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null;
                 items = item ? item.items : this.items;
                 beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(item, ulIndex) : item,
-                    items: items, event: e, cancel: false, liElement: liElem };
+                    items: items, event: e, cancel: false, isFocused: true };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
                     let popupEle;
                     let closeArgs;
@@ -1531,7 +1531,7 @@ let MenuBase = class MenuBase extends Component {
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false');
                                 sli.classList.remove(SELECTED);
-                                if (observedCloseArgs.liElement) {
+                                if (observedCloseArgs.isFocused && liElem) {
                                     sli.classList.add(FOCUSED);
                                     sli.focus();
                                 }
@@ -8028,7 +8028,7 @@ let Tab = class Tab extends Component {
                 }
             }
             else if (!isNullOrUndefined(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
-                this.select(trgIndex);
+                this.select(trgIndex, args.originalEvent);
             }
         }
     }
@@ -8378,20 +8378,12 @@ let Tab = class Tab extends Component {
         let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs) => {
             if (!tabRemovingArgs.cancel) {
-                // tslint:disable-next-line:no-any
-                if (this.isRect) {
-                    this.clearTemplate([], index);
-                }
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
                 this.refreshActiveBorder();
                 let cntTrg = select('#' + CLS_CONTENT$1 + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT$1, this.element));
                 if (!isNullOrUndefined(cntTrg)) {
-                    // tslint:disable-next-line:no-any
-                    if (this.isReact) {
-                        this.clearTemplate();
-                    }
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);
@@ -8477,7 +8469,7 @@ let Tab = class Tab extends Component {
      * @param  {number | HTMLElement} args - Index or DOM element is used for selecting an item from the Tab.
      * @returns void.
      */
-    select(args) {
+    select(args, event) {
         let tabHeader = this.getTabHeader();
         this.tbItems = select('.' + CLS_TB_ITEMS, tabHeader);
         this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
@@ -8500,6 +8492,7 @@ let Tab = class Tab extends Component {
             this.prevItem.children.item(0).setAttribute('tabindex', '-1');
         }
         let eventArg = {
+            event: event,
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],
@@ -10425,6 +10418,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
+            colArgs = this.getExpandEvent(liEle, null);
             this.trigger('nodeCollapsed', colArgs);
         }
     }

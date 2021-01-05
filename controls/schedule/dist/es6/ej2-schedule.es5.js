@@ -8218,6 +8218,16 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 else {
                     this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
                         ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]');
+                    if (isNullOrUndefined(this.morePopup.relateTo)) {
+                        var workCells = [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_WRAP_CLASS +
+                            ' tbody tr td[data-group-index="' + gIndex + '"]'));
+                        for (var i = 0; i < workCells.length; i++) {
+                            var date = workCells[i].getAttribute('data-date');
+                            if (date < tdDate) {
+                                this.morePopup.relateTo = workCells[i];
+                            }
+                        }
+                    }
                 }
             }
             else {
@@ -10451,6 +10461,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             }
             endObj.value = endDate;
             endObj.dataBind();
+        }
+        if (this.recurrenceEditor) {
+            this.recurrenceEditor.updateRuleUntilDate(this.eventWindowTime.startTime);
         }
     };
     EventWindow.prototype.renderResourceDetails = function (resourceData) {
@@ -13931,7 +13944,9 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         return resourceObj;
     };
     ResourceBase.prototype.refreshLayout = function (isSetModel) {
-        this.parent.uiStateValues.groupIndex = 0;
+        if (isNullOrUndefined(this.parent.uiStateValues.groupIndex) || !(this.parent.enablePersistence)) {
+            this.parent.uiStateValues.groupIndex = 0;
+        }
         this.parent.renderElements(isSetModel);
     };
     ResourceBase.prototype.setResourceCollection = function () {
@@ -14950,10 +14965,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.tzModule = new Timezone();
-        this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-            isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
-        };
+        if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
+            this.uiStateValues = {
+                expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
+            };
+        }
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
         this.getDefaultLocale();
@@ -15848,6 +15865,14 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.changeView(viewName, null, null, index);
+    };
+    /**
+     * Return the current view Index.
+     * @method getCurrentViewIndex
+     * @returns {number}
+     */
+    Schedule.prototype.getCurrentViewIndex = function () {
+        return this.viewIndex;
     };
     /**
      * Retrieves the resource details based on the provided resource index.
@@ -17922,7 +17947,12 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             var app = _a[_i];
             var appStart = new Date(app[this.fields.startTime].getTime());
             var appEnd = new Date(app[this.fields.endTime].getTime());
-            if ((resetTime(appStart).getTime() >= dateStart) && (resetTime(appEnd).getTime() <= dateEnd)) {
+            if (this.parent.rowAutoHeight && (resetTime(appStart).getTime() <= dateStart)
+                && (resetTime(appEnd).getTime() >= dateEnd)) {
+                appointmentsList.push(app);
+            }
+            if (!this.parent.rowAutoHeight && (resetTime(appStart).getTime() <= dateStart)
+                && (resetTime(appEnd).getTime() > dateEnd)) {
                 appointmentsList.push(app);
             }
         }

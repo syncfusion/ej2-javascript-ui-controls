@@ -780,7 +780,7 @@ export class LayoutRender extends MobileLayout {
     public renderCardBasedOnIndex(data: { [key: string]: Object }, index?: number): void {
         let key: string = data[this.parent.keyField] as string;
         let cardRow: HTMLElement = this.parent.element.querySelector('.e-content-row:not(.e-swimlane-row)') as HTMLElement;
-        if (this.parent.swimlaneSettings.keyField) {
+        if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
             let rowSelector: string = `.e-content-row.e-swimlane-row[data-key="${data[this.parent.swimlaneSettings.keyField]}"]`;
             cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
         }

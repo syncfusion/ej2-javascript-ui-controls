@@ -971,7 +971,7 @@ console.log('Remove review pane when track change is disabled');
         container.selection.moveToPreviousCharacter();
         container.selection.moveToPreviousCharacter();
         container.documentHelper.showRevisions(true);
-        expect(container.showRevisions).toBe(true);
+        expect(container.showRevisions).toBe(false);
     });
 
 });

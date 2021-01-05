@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.32 (2020-12-29)
+## 18.4.33 (2021-01-05)
+
+### DataManager
+
+#### Bug Fixes
+
+- DataManager lazy load grouping script error issue has been fixed.
+
+## 18.3.42 (2020-10-20)
 
 ### DataManager
 

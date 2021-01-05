@@ -500,6 +500,8 @@ export class ShapeAnnotation {
                     if (property === 'bounds') {
                         if (pageAnnotations[i].shapeAnnotationType === 'Line') {
                             pageAnnotations[i].vertexPoints = annotationBase.vertexPoints;
+                            // tslint:disable-next-line:max-line-length
+                            pageAnnotations[i].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right, bottom: annotationBase.bounds.bottom };
                         } else if (pageAnnotations[i].shapeAnnotationType === 'Polygon') {
                             pageAnnotations[i].vertexPoints = annotationBase.vertexPoints;
                             // tslint:disable-next-line:max-line-length

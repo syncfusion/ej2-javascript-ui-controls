@@ -4987,7 +4987,10 @@ var Timeline = /** @class */ (function () {
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         var numberOfCells = this.calculateNumberOfTimelineCells(newTimeline);
-        newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
+        var scrollHeight = this.parent.ganttChartModule.scrollElement.offsetHeight - 17; //17 is horizontal scrollbar width
+        var contentHeight = this.parent.ganttChartModule.chartBodyContent.offsetHeight;
+        var emptySpace = contentHeight <= scrollHeight ? 0 : 17;
+        newTimeline.timelineUnitSize = Math.abs((chartWidth - emptySpace)) / numberOfCells;
         var args = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
@@ -6451,7 +6454,7 @@ var GanttTreeGrid = /** @class */ (function () {
     /* tslint:disable-next-line:max-func-body-length */
     GanttTreeGrid.prototype.createTreeGridColumn = function (column, isDefined) {
         var taskSettings = this.parent.taskFields;
-        column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
+        column.disableHtmlEncode = !sf.base.isNullOrUndefined(column.disableHtmlEncode) ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
         if (taskSettings.id !== column.field) {
             column.clipMode = column.clipMode ? column.clipMode : 'EllipsisWithTooltip';
         }
@@ -6516,9 +6519,6 @@ var GanttTreeGrid = /** @class */ (function () {
                     column.template = '<div class="e-ganttnotes-info">' +
                         '<span class="e-icons e-notes-info"></span></div>';
                 }
-            }
-            else {
-                column.disableHtmlEncode = false;
             }
         }
         else if (taskSettings.baselineStartDate === column.field ||
@@ -8639,7 +8639,7 @@ var ChartRows = /** @class */ (function (_super) {
             var tRow = this.getGanttChartRow(i, tempTemplateData);
             this.ganttChartTableBody.appendChild(tRow);
             // To maintain selection when virtualization is enabled
-            if (this.parent.selectionModule && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            if (this.parent.selectionModule && this.parent.allowSelection) {
                 this.parent.selectionModule.maintainSelectedRecords(parseInt(tRow.getAttribute('aria-rowindex'), 10));
             }
         }
@@ -14968,7 +14968,6 @@ var EditTooltip = /** @class */ (function () {
         var _this = this;
         this.toolTipObj = new sf.popups.Tooltip({
             opensOn: opensOn,
-            content: this.getTooltipText(-1),
             position: 'TopRight',
             mouseTrail: mouseTrail,
             cssClass: ganttTooltip,
@@ -15082,6 +15081,9 @@ var EditTooltip = /** @class */ (function () {
         }
         if (this.parent.tooltipSettings.editing) {
             var templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
+            if (sf.base.getValue('tooltipEle', this.toolTipObj)) {
+                this.parent.renderTemplates();
+            }
             tooltipString = templateNode[0];
         }
         else {
@@ -18323,6 +18325,9 @@ var DialogEdit = /** @class */ (function () {
                 item.content = this.renderNotesTab(item.content);
             }
             else if (item.content === 'Segments') {
+                if (this.editedRecord.hasChildRecords) {
+                    item.disabled = true;
+                }
                 item.content = this.renderSegmentsTab(item.content);
             }
         }
@@ -25579,7 +25584,7 @@ var RowDD$1 = /** @class */ (function () {
         var gridRow = sf.base.closest(args.target, '.e-row');
         var dropIndex = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) : args.dropIndex;
         args.dropIndex = dropIndex;
-        args.dropRecord = this.parent.currentViewData[args.dropIndex];
+        args.dropRecord = this.parent.updatedRecords[args.dropIndex];
         this.parent.trigger('rowDrop', args);
         if (this.parent.viewType === 'ResourceView') {
             if (args.dropPosition === 'middleSegment') {
@@ -25608,7 +25613,7 @@ var RowDD$1 = /** @class */ (function () {
                 var gObj = this.parent;
                 var draggedRecord = void 0;
                 var droppedRecord = void 0;
-                this.droppedRecord = gObj.currentViewData[args.dropIndex];
+                this.droppedRecord = gObj.updatedRecords[args.dropIndex];
                 var dragRecords = [];
                 droppedRecord = this.droppedRecord;
                 if (!args.data[0]) {
@@ -26114,7 +26119,7 @@ var RowDD$1 = /** @class */ (function () {
                 }
                 var idx = void 0;
                 var ganttData = dataSource.length > 0 && this.parent.viewType !== 'ResourceView' ?
-                    dataSource : this.parent.currentViewData;
+                    dataSource : this.parent.updatedRecords;
                 for (var i = 0; i < ganttData.length; i++) {
                     if (this.parent.viewType === 'ResourceView') {
                         if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
@@ -26210,7 +26215,7 @@ var RowDD$1 = /** @class */ (function () {
                 }
                 var data = [];
                 for (var i = 0; i < fromIndexes.length; i++) {
-                    data[i] = this.parent.currentViewData[fromIndexes[i]];
+                    data[i] = this.parent.updatedRecords[fromIndexes[i]];
                 }
                 var isByMethod = true;
                 var args = {

@@ -1634,6 +1634,7 @@ var TreeView = /** @class */ (function (_super) {
         this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
+            colArgs = this.getExpandEvent(liEle, null);
             this.trigger('nodeCollapsed', colArgs);
         }
     };

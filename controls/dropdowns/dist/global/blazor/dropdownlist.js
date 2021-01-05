@@ -2314,6 +2314,7 @@ var DropDownList = /** @class */ (function (_super) {
         }
         if (!(!sf.base.isNullOrUndefined(props) && (sf.base.isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof sf.data.DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
+            this.typedString = '';
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {

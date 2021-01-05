@@ -43,6 +43,7 @@ export class Table {
         this.parent.observer.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.observer.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.observer.on(events.tableToolbarAction, this.onToolbarAction, this);
+        this.parent.observer.on(events.mouseUp, this.selectionTable, this);
     }
     protected removeEventListener(): void {
         this.parent.observer.off(events.keyDown, this.keyDown);
@@ -55,6 +56,7 @@ export class Table {
         this.parent.observer.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.observer.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.observer.off(events.tableToolbarAction, this.onToolbarAction);
+        this.parent.observer.off(events.mouseUp, this.selectionTable);
     }
     private afterRender(): void {
         this.parent.observer.on(events.mouseDown, this.cellSelect, this);
@@ -64,6 +66,12 @@ export class Table {
         }
         if (!Browser.isDevice && this.parent.tableSettings.resize) {
             EventHandler.add(this.parent.getEditPanel(), 'mouseover', this.resizeHelper, this);
+        }
+    }
+    private selectionTable(e: ITableNotifyArgs): void {
+        let target: HTMLTableCellElement = (e.args as MouseEvent).target as HTMLTableCellElement;
+        if (Browser.info.name === 'mozilla' && !isNOU(closest(target, 'table')) && closest(target, 'table').tagName === 'TABLE') {
+            this.parent.getEditPanel().setAttribute('contenteditable', 'true');
         }
     }
     private tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
@@ -181,6 +189,10 @@ export class Table {
             this.curTable = (this.curTable) ? this.curTable : closest(target, 'table') as HTMLTableElement;
             this.removeResizeEle();
             if (this.helper && this.parent.getEditPanel().contains(this.helper)) { detach(this.helper); }
+        }
+        if (Browser.info.name === 'mozilla' && !isNOU(closest(target, 'table')) &&
+        closest(target, 'table').tagName === 'TABLE') {
+            this.parent.getEditPanel().setAttribute('contenteditable', 'false');
         }
     }
     private renderDlgContent(args?: ITableNotifyArgs): void {

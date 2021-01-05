@@ -4411,6 +4411,7 @@ describe('TreeView control', () => {
                     setTimeout(function() {
                         expect(i).toEqual(1);
                         expect(nodeData.id).toBe("01");
+                        expect(nodeData.expanded).toBe(false);
                         done();
                     }, 450);
                 }, 450);

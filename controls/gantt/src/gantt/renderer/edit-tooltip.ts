@@ -1,5 +1,5 @@
 import { Gantt } from '../base/gantt';
-import { Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getValue, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { BeforeTooltipRenderEventArgs, ITaskData } from '../base/interface';
 import { TaskbarEdit } from '../actions/taskbar-edit';
@@ -27,7 +27,6 @@ export class EditTooltip {
         this.toolTipObj = new Tooltip(
             {
                 opensOn: opensOn,
-                content: this.getTooltipText(-1),
                 position: 'TopRight',
                 mouseTrail: mouseTrail,
                 cssClass: cls.ganttTooltip,
@@ -143,6 +142,9 @@ export class EditTooltip {
         if (this.parent.tooltipSettings.editing) {
             let templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
                 this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
+            if (getValue('tooltipEle', this.toolTipObj)) {
+                this.parent.renderTemplates();
+            }
             tooltipString = (templateNode[0] as HTMLElement);
         } else {
             switch (this.taskbarEdit.taskBarEditAction) {

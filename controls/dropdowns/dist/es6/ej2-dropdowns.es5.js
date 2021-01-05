@@ -3689,6 +3689,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
+            this.typedString = '';
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
@@ -7577,8 +7578,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ComboBox.prototype.clearAll = function (e, property) {
-        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource)) ||
-            (isNullOrUndefined(this.itemData) && this.allowFiltering)) {
+        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
             _super.prototype.clearAll.call(this, e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line

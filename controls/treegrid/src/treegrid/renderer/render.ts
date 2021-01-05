@@ -86,7 +86,7 @@ export class Render {
         let pad: number = ispadfilter ? data.level : data.filterLevel;
         let totalIconsWidth: number = 0; let cellElement: HTMLElement;
         let column: Column = this.parent.getColumnByUid(args.column.uid);
-        let summaryRow: boolean = data.isSummaryRow;
+        let summaryRow: boolean = data.isSummaryRow; let frozenColumns: number = this.parent.getFrozenColumns();
         if (!isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;
         } else { index = data.index; }
@@ -143,14 +143,14 @@ export class Render {
         } else if (this.templateResult) {
             this.templateResult = null;
         }
-        if (this.parent.frozenColumns > this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
-            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns) {
+        if (frozenColumns > this.parent.treeColumnIndex && frozenColumns > 0 &&
+            grid.getColumnIndexByUid(args.column.uid) === frozenColumns) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
-        } else if (this.parent.frozenColumns < this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
-            (grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns
-                || grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1)) {
+        } else if (frozenColumns < this.parent.treeColumnIndex && frozenColumns > 0 &&
+            (grid.getColumnIndexByUid(args.column.uid) === frozenColumns
+                || grid.getColumnIndexByUid(args.column.uid) === frozenColumns - 1)) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
-        } else if (this.parent.frozenColumns === this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
+        } else if (frozenColumns === this.parent.treeColumnIndex && frozenColumns > 0 &&
             grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex - 1) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }

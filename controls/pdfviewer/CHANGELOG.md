@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### PDF Viewer
+
+#### New Features
+
+- `#297887`  - Provided the support to render the images inside the button fields.
+
 ## 18.4.31 (2020-12-22)
 
 ### PDF Viewer

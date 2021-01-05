@@ -3567,7 +3567,7 @@ private getGridEditSettings(): GridEditModel {
       });
       if (rows.length) {
         action === 'collapse' ? this.collapseRow(rows[0]) :  this.expandRow(rows[0]);
-      } else {
+      } else if (this.allowPaging) {
         let isExpandCollapseall : boolean = this.enableCollapseAll;
         this.setProperties({enableCollapseAll: true }, true);
         this.grid.pagerModule.goToPage(1);

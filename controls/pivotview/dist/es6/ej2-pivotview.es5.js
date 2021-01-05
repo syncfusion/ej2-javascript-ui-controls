@@ -13719,6 +13719,12 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
             gridObj: isBlazor() ? undefined : this.drillThroughGrid,
             type: 'editing'
         });
+        if (this.drillThroughGrid.allowExcelExport) {
+            Grid.Inject(ExcelExport);
+        }
+        if (this.drillThroughGrid.allowPdfExport) {
+            Grid.Inject(PdfExport);
+        }
         if (this.parent.editSettings.allowEditing) {
             Grid.Inject(Edit, Page);
             this.drillThroughGrid.editSettings = this.parent.editSettings;
@@ -22965,6 +22971,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                             this.pivotValues = [];
                         }
                         this.engineModule.fieldList = null;
+                        if (this.dataSourceSettings.groupSettings.length > 0) {
+                            this.clonedDataSet = newProp.dataSourceSettings.dataSource;
+                            this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
+                        }
                         this.showWaitingPopup();
                         clearTimeout(this.timeOutObj);
                         this.timeOutObj = setTimeout(this.refreshData.bind(this), 100);

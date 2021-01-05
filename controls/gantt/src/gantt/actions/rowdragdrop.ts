@@ -145,7 +145,7 @@ export class RowDD {
         let gridRow: Element = closest(args.target, '.e-row');
         let dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) : args.dropIndex;
         args.dropIndex = dropIndex;
-        args.dropRecord = this.parent.currentViewData[args.dropIndex];
+        args.dropRecord = this.parent.updatedRecords[args.dropIndex];
         this.parent.trigger('rowDrop', args);
         if (this.parent.viewType === 'ResourceView') {
             if (args.dropPosition === 'middleSegment') {
@@ -173,7 +173,7 @@ export class RowDD {
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             let gObj: Gantt = this.parent;
             let draggedRecord: IGanttData; let droppedRecord: IGanttData;
-            this.droppedRecord = gObj.currentViewData[args.dropIndex];
+            this.droppedRecord = gObj.updatedRecords[args.dropIndex];
             let dragRecords: IGanttData[] = [];
             droppedRecord = this.droppedRecord;
             if (!args.data[0]) {
@@ -667,7 +667,7 @@ export class RowDD {
                 }
                 let idx: number;
                 let ganttData: IGanttData[] = (dataSource as IGanttData[]).length > 0 && this.parent.viewType !== 'ResourceView' ?
-                    dataSource as IGanttData[] : this.parent.currentViewData;
+                    dataSource as IGanttData[] : this.parent.updatedRecords;
                 for (let i: number = 0; i < ganttData.length; i++) {
                     if (this.parent.viewType === 'ResourceView') {
                         if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
@@ -761,7 +761,7 @@ export class RowDD {
                 }
                 let data: IGanttData[] = [];
                 for (let i: number = 0; i < fromIndexes.length; i++) {
-                    data[i] = this.parent.currentViewData[fromIndexes[i]];
+                    data[i] = this.parent.updatedRecords[fromIndexes[i]];
                 }
                 let isByMethod: boolean = true;
                 let args: RowDropEventArgs = {

@@ -538,7 +538,7 @@ let CheckBox = class CheckBox extends Component {
                 this.unWireEvents();
             }
             if (this.tagName === 'INPUT') {
-                if (this.getWrapper()) {
+                if (this.getWrapper() && wrapper.parentNode) {
                     wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
                 detach(wrapper);
@@ -971,7 +971,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             this.unWireEvents();
         }
         if (this.tagName === 'INPUT') {
-            radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            if (radioWrap.parentNode) {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            }
             detach(radioWrap);
             this.element.checked = false;
             ['name', 'value', 'disabled'].forEach((key) => {
@@ -1722,12 +1724,13 @@ let ChipList = class ChipList extends Component {
      * @private
      */
     render() {
+        let property;
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
         if (!isBlazor() || !this.isServerRendered) {
             this.setAttributes();
             this.createChip();
             this.setRtl();
-            this.select(this.selectedChips);
+            this.select(this.selectedChips, property);
         }
         this.wireEvent(false);
         this.rippleFunction = rippleEffect(this.element, {
@@ -1909,8 +1912,8 @@ let ChipList = class ChipList extends Component {
      *  or chip element or array of chip element.
      * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      */
-    select(fields) {
-        this.onSelect(fields, false);
+    select(fields, selectionType) {
+        this.onSelect(fields, false, selectionType);
     }
     multiSelection(newProp) {
         const items = this.element.querySelectorAll('.' + 'e-chip');
@@ -1930,7 +1933,10 @@ let ChipList = class ChipList extends Component {
             }
         }
     }
-    onSelect(fields, callFromProperty) {
+    onSelect(fields, callFromProperty, selectionType) {
+        let index;
+        let chipNodes;
+        let chipValue;
         if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 let chipElements = this.element.querySelectorAll('.' + classNames.chip);
@@ -1943,6 +1949,24 @@ let ChipList = class ChipList extends Component {
             for (let i = 0; i < fieldData.length; i++) {
                 let chipElement = fieldData[i] instanceof HTMLElement ? fieldData[i]
                     : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i]];
+                if (selectionType !== 'index') {
+                    for (let j = 0; j < this.chips.length; j++) {
+                        chipNodes = this.element.querySelectorAll('.' + classNames.chip)[j];
+                        let fieldsData = this.getFieldValues(this.chips[j]);
+                        if (selectionType === 'value') {
+                            if (fieldsData.value !== null) {
+                                chipValue = chipNodes.dataset.value;
+                            }
+                        }
+                        else if (selectionType === 'text') {
+                            chipValue = chipNodes.innerText;
+                        }
+                        if (chipValue === fieldData[i].toString()) {
+                            index = j;
+                            chipElement = this.element.querySelectorAll('.' + classNames.chip)[index];
+                        }
+                    }
+                }
                 if (chipElement instanceof HTMLElement) {
                     this.selectionHandler(chipElement);
                 }
@@ -2234,14 +2258,15 @@ let ChipList = class ChipList extends Component {
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
+                    let property;
                     if (this.selection === 'Multiple') {
                         this.multiSelectedChip = [];
                         this.multiSelection(newProp.selectedChips);
-                        this.onSelect(this.multiSelectedChip, true);
+                        this.onSelect(this.multiSelectedChip, true, property);
                         this.updateSelectedChips();
                     }
                     else {
-                        this.onSelect(newProp.selectedChips, true);
+                        this.onSelect(newProp.selectedChips, true, property);
                     }
                     break;
                 case 'enableRtl':

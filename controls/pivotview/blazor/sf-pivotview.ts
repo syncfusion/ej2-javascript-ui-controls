@@ -240,7 +240,7 @@ let PivotView: object = {
     },
     getClientWidth (element: BlazorPivotElement, id: string): number {
         if (element && element.blazor__instance) {
-            (element.blazor__instance as SfPivotView).getClientWidth(element, id);
+            return (element.blazor__instance as SfPivotView).getClientWidth(element, id);
         }
         return null;
     },

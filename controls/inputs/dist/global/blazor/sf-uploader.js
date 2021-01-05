@@ -2451,12 +2451,25 @@ var SfUploader = /** @class */ (function () {
     SfUploader.prototype.getFilesInArray = function (files) {
         var uploadFiles = [];
         if (files instanceof Array) {
-            uploadFiles = files;
+            uploadFiles = this.getFileListData(files);
         }
         else {
             uploadFiles.push(files);
         }
         return uploadFiles;
+    };
+    SfUploader.prototype.getFileListData = function (files) {
+        var uploadFiles = [];
+        if (!sf.base.isNullOrUndefined(this.filesData) && !sf.base.isNullOrUndefined(files)) {
+            var _loop_5 = function (i) {
+                uploadFiles.push(this_3.filesData.filter(function (e) { return e.name === files[i].name; })[0]);
+            };
+            var this_3 = this;
+            for (var i = 0; i < files.length; i++) {
+                _loop_5(i);
+            }
+        }
+        return !sf.base.isNullOrUndefined(uploadFiles) ? uploadFiles : [];
     };
     SfUploader.prototype.serverReadFileBase64 = function (fileIndex, position, totalCount) {
         var _this = this;
@@ -2534,11 +2547,11 @@ var SfUploader = /** @class */ (function () {
         else {
             selectedFiles = files;
         }
-        var _loop_5 = function (i) {
-            if (!this_3.checkChunkUpload()) {
+        var _loop_6 = function (i) {
+            if (!this_4.checkChunkUpload()) {
                 /* tslint:disable */
                 if (selectedFiles[i] && selectedFiles[i].rawFile instanceof File) {
-                    this_3.getBase64(selectedFiles[i].rawFile).then(function (data) {
+                    this_4.getBase64(selectedFiles[i].rawFile).then(function (data) {
                         _this.base64String.push(data);
                         _this.uploadFilesRequest(selectedFiles, i, custom);
                     });
@@ -2546,12 +2559,12 @@ var SfUploader = /** @class */ (function () {
                 /* tslint:disable */
             }
             else {
-                this_3.uploadFilesRequest(selectedFiles, i, custom);
+                this_4.uploadFilesRequest(selectedFiles, i, custom);
             }
         };
-        var this_3 = this;
+        var this_4 = this;
         for (var i = 0; i < selectedFiles.length; i++) {
-            _loop_5(i);
+            _loop_6(i);
         }
     };
     SfUploader.prototype.uploadFilesRequest = function (selectedFiles, i, custom) {
@@ -2725,17 +2738,17 @@ var SfUploader = /** @class */ (function () {
                 eventArgs.filesData = removeFiles;
                 var removeUrl = this.asyncSettings.removeUrl;
                 var validUrl = (removeUrl === '' || sf.base.isNullOrUndefined(removeUrl)) ? false : true;
-                var _loop_6 = function (files) {
-                    index = this_4.filesData.indexOf(files);
-                    var fileUploadedIndex = this_4.uploadedFilesData.indexOf(files);
+                var _loop_7 = function (files) {
+                    index = this_5.filesData.indexOf(files);
+                    var fileUploadedIndex = this_5.uploadedFilesData.indexOf(files);
                     if ((files.statusCode === '2' || files.statusCode === '4' || (files.statusCode === '0' &&
                         fileUploadedIndex !== -1)) && validUrl) {
-                        this_4.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                        this_5.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
                     }
                     else {
-                        if (!removeDirectly && this_4.removingEnabled) {
+                        if (!removeDirectly && this_5.removingEnabled) {
                             // @ts-ignore-start
-                            this_4.dotNetRef.invokeMethodAsync('RemovingEvent', eventArgs).then(function (eventArgs) {
+                            this_5.dotNetRef.invokeMethodAsync('RemovingEvent', eventArgs).then(function (eventArgs) {
                                 // @ts-ignore-end
                                 if (!eventArgs.cancel) {
                                     _this.removeFilesData(files, customTemplate);
@@ -2743,17 +2756,17 @@ var SfUploader = /** @class */ (function () {
                             });
                         }
                         else {
-                            this_4.removeFilesData(files, customTemplate);
+                            this_5.removeFilesData(files, customTemplate);
                         }
                     }
                     if (args && !args.target.classList.contains(REMOVE_ICON)) {
-                        this_4.checkActionComplete(false);
+                        this_5.checkActionComplete(false);
                     }
                 };
-                var this_4 = this;
+                var this_5 = this;
                 for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
                     var files = removeFiles_1[_i];
-                    _loop_6(files);
+                    _loop_7(files);
                 }
             }
         }

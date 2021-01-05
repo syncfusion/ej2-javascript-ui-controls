@@ -137,31 +137,26 @@ export class SfPivotView {
             this.commonActionModule.keyboardModule.parent = this;
     }
 
-    public getChartHeight(height: number): string{
+    public getChartHeight(height: number): string {
         if (this.element.querySelector('.' + cls.PIVOT_CHART) && this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS)) {
             (this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement).style.width = (this.element.querySelector('.' + cls.PIVOT_CHART) as HTMLElement).style.width;
             height = this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS).clientHeight;
         }
-        let calculatedHeight:string;
+        let calculatedHeight: string;
         if (this.options.showToolbar && this.options.showGroupingBar) {
             calculatedHeight = (height - (this.element.querySelector('.e-pivot-toolbar') ? this.element.querySelector('.e-pivot-toolbar').clientHeight : 42) - (this.element.querySelector('.e-chart-grouping-bar') ? this.element.querySelector('.e-chart-grouping-bar').clientHeight : 76)).toString();
-          } else if (this.options.showToolbar) {
+        } else if (this.options.showToolbar) {
             calculatedHeight = (height - (this.element.querySelector('.e-pivot-toolbar') ? this.element.querySelector('.e-pivot-toolbar').clientHeight : 42)).toString();
-          } else if (this.options.showGroupingBar) {
+        } else if (this.options.showGroupingBar) {
             calculatedHeight = (height - (this.element.querySelector('.e-chart-grouping-bar') ? this.element.querySelector('.e-chart-grouping-bar').clientHeight : 76)).toString();
-          }
-    
-          return calculatedHeight;
+        }
+
+        return calculatedHeight;
     }
 
     public contentReady(): void {
         this.updateModuleProperties();
-        if (this.options.isEmptyData) {
-            (this.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).style.overflow = 'hidden';
-            (this.element.querySelector('.' + cls.GRID_CONTENT + ' > div') as HTMLElement).style.overflowY = 'hidden';
-        } else if (this.options.renderGrid) {
-            if ((this.element.querySelector('.' + cls.GRID_CONTENT + ' > div') as HTMLElement) !== null)
-                (this.element.querySelector('.' + cls.GRID_CONTENT + ' > div') as HTMLElement).style.overflowY = 'hidden';
+        if (this.options.renderGrid) {
             if (this.options.showGroupingBar && this.groupingBarModule) {
                 this.groupingBarModule.updatePivotButtons();
                 this.groupingBarModule.refreshUI();
@@ -388,46 +383,38 @@ export class SfPivotView {
             if (contentColGroupElements.length > 1 && (contentColGroupElements[contentColGroupElements.length - 1] as HTMLElement).style.width == 'auto')
                 (contentColGroupElements[contentColGroupElements.length - 1] as HTMLElement).style.width = columnWidth;
         }
-        let tableHeight: number = (element.querySelector('.' + cls.FROZENCONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight;
-        let contentHeight: number = (element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetHeight;
-        let tableWidth: number = (element.querySelector('.' + cls.MOVABLECONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetWidth;
-        let contentWidth: number = (element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetWidth;
-        (element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement).style.height = formatUnit(contentHeight - (((tableWidth - contentWidth) >= 18) ? 17 : 0));
+        (this.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).style.overflow = 'auto';
+        let hasVerticalScrollbar: boolean = element.querySelector('.' + cls.MOVABLECONTENT_DIV).scrollHeight > element.querySelector('.' + cls.MOVABLECONTENT_DIV).clientHeight;
         setStyleAttribute(element.querySelector('.' + cls.GRID_HEADER), this.options.enableRtl ? {
-            'paddingLeft': ((tableHeight - contentHeight) >= 18) ? '16px' : ''
+            'paddingLeft': hasVerticalScrollbar ? '16px' : ''
         } : {
-                'paddingRight': ((tableHeight - contentHeight) >= 18) ? '16px' : ''
+                'paddingRight': hasVerticalScrollbar ? '16px' : ''
             });
         setStyleAttribute(element.querySelector('.' + cls.HEADERCONTENT), this.options.enableRtl ? {
-            'borderLeftWidth': ((tableHeight - contentHeight) >= 18) ? '1px' : ''
+            'borderLeftWidth': hasVerticalScrollbar ? '1px' : ''
         } : {
-                'borderRightWidth': ((tableHeight - contentHeight) >= 18) ? '1px' : ''
+                'borderRightWidth': hasVerticalScrollbar ? '1px' : ''
             });
-        if (!((tableHeight - contentHeight) >= 18)) {
-            (element.querySelector('.' + cls.GRID_CONTENT + ' .' + cls.PIVOT_BUTTON_CONTENT_CLASS) as HTMLElement).style.height =
-                (element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement).style.height = '';
-        }
-        (element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).style.overflowY = ((tableHeight - contentHeight) >= 18) ? 'auto' : 'hidden';
-        (element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).style.overflowX = ((tableWidth - contentWidth) >= 18) ? 'auto' : 'hidden';
+        (element.querySelector('.' + cls.FROZENCONTENT_DIV) as HTMLElement).style.height = formatUnit(element.querySelector('.' + cls.MOVABLECONTENT_DIV).clientHeight);
     };
 
-    public updateView(element: BlazorPivotElement, displayOption:string): void {
+    public updateView(element: BlazorPivotElement, displayOption: string): void {
         if (element) {
-            this.displayOptions = JSON.parse(displayOption);    
+            this.displayOptions = JSON.parse(displayOption);
             if (this.displayOptions.view == 'Both' && this.displayOptions.primary == 'Table') {
-                (this.element.querySelector('.'+cls.PIVOT_CHART) as HTMLElement).style.display = 'none';
-                (this.element.querySelector('#'+this.element.id +'_grid') as HTMLElement).style.display = '';
-                if (this.options.showGroupingBar){
+                (this.element.querySelector('.' + cls.PIVOT_CHART) as HTMLElement).style.display = 'none';
+                (this.element.querySelector('#' + this.element.id + '_grid') as HTMLElement).style.display = '';
+                if (this.options.showGroupingBar) {
                     if (this.element.querySelector('.' + cls.PIVOT_CHART) && this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS)) {
                         (this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement).style.display = 'none';
                         (this.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement).style.display = '';
                     }
                 }
             } else if (this.displayOptions.view == 'Both' && this.displayOptions.primary == 'Chart') {
-                (this.element.querySelector('.'+cls.PIVOT_CHART) as HTMLElement).style.display = '';
-                (this.element.querySelector('#'+this.element.id +'_grid') as HTMLElement).style.display = 'none';
-                if (this.options.showGroupingBar){
-                    if ( this.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS)) {
+                (this.element.querySelector('.' + cls.PIVOT_CHART) as HTMLElement).style.display = '';
+                (this.element.querySelector('#' + this.element.id + '_grid') as HTMLElement).style.display = 'none';
+                if (this.options.showGroupingBar) {
+                    if (this.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS)) {
                         (this.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement).style.display = 'none';
                         (this.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement).style.display = '';
                     }
@@ -436,13 +423,13 @@ export class SfPivotView {
         }
     }
 
-    public updateGridSettings (element: BlazorPivotElement, gridSetting: string): void {
+    public updateGridSettings(element: BlazorPivotElement, gridSetting: string): void {
         if (element && gridSetting !== null) {
             this.gridSettings = JSON.parse(gridSetting);
         }
     }
 
-    public getClientWidth (element: BlazorPivotElement, id: string): number {
+    public getClientWidth(element: BlazorPivotElement, id: string): number {
         if (element && id !== null) {
             return document.getElementById(id).clientWidth;
         }
@@ -456,7 +443,7 @@ export class SfPivotView {
         return null;
     };
 
-    
+
     public updateColorPickerUI(dialogElemnt: HTMLElement): void {
         if (dialogElemnt) {
             let fontColorPicker: HTMLElement[] = [].slice.call(dialogElemnt.querySelectorAll('.' + cls.COLOR_PICKER_CONTAINER + '.' + cls.FORMAT_FONT_COLOR_PICKER_CONTAINER));

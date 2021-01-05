@@ -751,7 +751,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 let liElem: Element = e && e.target && this.getLI(e.target as Element);
                 item = this.navIdx.length ? this.getItem(this.navIdx) : null; items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: this.isMenu && isBlazor() ? this.getMenuItemModel(<obj>item, ulIndex) : item,
-                    items: items, event: e, cancel: false, liElement: liElem };
+                    items: items, event: e, cancel: false , isFocused: true };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
                     let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs; let popupId: string = '';
                     let popupObj: Popup; let isOpen: boolean = !observedCloseArgs.cancel;
@@ -818,7 +818,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             let cul: Element = this.getUlByNavIdx(); let sli: Element = this.getLIByClass(cul, SELECTED);
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false'); sli.classList.remove(SELECTED);
-                                if (observedCloseArgs.liElement) {
+                                if (observedCloseArgs.isFocused  && liElem) {
                                     sli.classList.add(FOCUSED); (sli as HTMLElement).focus();
                                 }
                             }
@@ -2238,7 +2238,7 @@ export interface BeforeOpenCloseMenuEventArgs extends BaseEventArgs {
     cancel: boolean;
     top?: number;
     left?: number;
-    liElement?: Element;
+    isFocused?: boolean;
 }
 
 /**

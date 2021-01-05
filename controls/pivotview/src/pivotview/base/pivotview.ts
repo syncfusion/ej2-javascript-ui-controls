@@ -2645,6 +2645,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.pivotValues = [];
                         }
                         this.engineModule.fieldList = null;
+                        if (this.dataSourceSettings.groupSettings.length > 0) {
+                            this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
+                            this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
+                        }
                         this.showWaitingPopup();
                         clearTimeout(this.timeOutObj);
                         this.timeOutObj = setTimeout(this.refreshData.bind(this), 100);

@@ -1228,10 +1228,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.tzModule = new Timezone();
-        this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-            isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
-        };
+        if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
+            this.uiStateValues = {
+                expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
+            };
+        }
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
         this.getDefaultLocale();
@@ -2142,6 +2144,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             return;
         }
         this.changeView(viewName, null, null, index);
+    }
+
+    /**
+     * Return the current view Index.
+     * @method getCurrentViewIndex
+     * @returns {number}
+     */
+    public getCurrentViewIndex(): number {
+        return this.viewIndex;
     }
 
     /**

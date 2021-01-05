@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs } from './interface';
 import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
@@ -909,6 +909,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
+    /**
+     * Triggers before drop the image.
+     * @event
+     * @blazorProperty 'OnImageDrop'
+     */
+    @Event()
+    public beforeImageDrop: EmitType<ImageDropEventArgs>;
     /**     
      * Customize keyCode to change the key value. 
      * 

@@ -220,7 +220,10 @@ export class Timeline {
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         let numberOfCells: number = this.calculateNumberOfTimelineCells(newTimeline);
-        newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
+        let scrollHeight: number = this.parent.ganttChartModule.scrollElement.offsetHeight - 17; //17 is horizontal scrollbar width
+        let contentHeight: number = this.parent.ganttChartModule.chartBodyContent.offsetHeight;
+        let emptySpace: number = contentHeight <= scrollHeight ? 0 : 17;
+        newTimeline.timelineUnitSize = Math.abs((chartWidth - emptySpace)) / numberOfCells;
         let args: ZoomEventArgs = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline

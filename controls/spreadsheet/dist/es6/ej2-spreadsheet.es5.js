@@ -5059,7 +5059,7 @@ var Parser = /** @__PURE__ @class */ (function () {
                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], false);
             }
             while (i < formula.length) {
-                if ((formula.indexOf('&') > -1) || (this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
+                if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
                     && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1)))) {
                     if (isNullOrUndefined(args)) {
@@ -5205,9 +5205,7 @@ var Parser = /** @__PURE__ @class */ (function () {
         var storedString = null;
         var condition;
         var ticLoc = tempString.indexOf(this.parent.tic);
-        var singleTicLoc = tempString.indexOf(this.parent.singleTic);
         if (ticLoc > -1) {
-            tempString = tempString.split(this.parent.singleTic).join(this.parent.tic);
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
                 if (storedString === null) {
@@ -7994,6 +7992,9 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
             if (!this.isUpperChar(s[0]) && (this.isDigit(s[0]) || s[0] === this.getParseDecimalSeparator() || s[0] === '-' || s[0] === 'n')) {
                 if (s[0] === 'n') {
                     s = s.substring(1);
+                    if (s.indexOf('"n') > -1) {
+                        s = s.replace('"n', '"');
+                    }
                 }
                 return s;
             }
@@ -15123,8 +15124,8 @@ function initSheet(context, sheet) {
         sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
-        sheet.rows = sheet.rows || [];
-        sheet.columns = sheet.columns || [];
+        context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
+        context.setSheetPropertyOnMute(sheet, 'columns', sheet.columns || []);
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
         sheet.state = sheet.state || 'Visible';
@@ -18849,7 +18850,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             var cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
             var left = this.editCellData.position.left + 1;
             var top_1 = this.editCellData.position.top + 1;
-            var minHeight = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
+            var minHeight = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex).offsetHeight - 3;
             var minWidth = this.editCellData.element.offsetWidth - 3;
             var mainContElement = this.parent.getMainContent();
             var editWidth = mainContElement.offsetWidth - left - 28;
@@ -19611,7 +19612,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(ele, range, sheet, this.parent.enableRtl, offset);
+                locateElem(ele, range, sheet, this.parent.enableRtl);
             }
         }
         var eArgs = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
@@ -19687,12 +19688,12 @@ var Selection = /** @__PURE__ @class */ (function () {
                 if (isMergeRange) {
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, offset);
+                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
             }
             this.parent.notify(activeCellChanged, null);
         }
         else {
-            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
         }
     };
     Selection.prototype.getOffset = function (rowIdx, colIdx) {
@@ -20191,7 +20192,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
                 if (temp < scrollTop) {
                     temp += getRowHeight(sheet, i);
                     if (temp > scrollTop) {
-                        return { idx: i, size: temp - getRowHeight(sheet, i) };
+                        return { idx: i, size: temp - getRowHeight(sheet, i) < 0 ? 0 : temp - getRowHeight(sheet, i) };
                     }
                     else {
                         return { idx: i + 1, size: temp };
@@ -23761,8 +23762,8 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 cell = getCell(i, j, sheet);
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
-                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
-                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
+                    style: cell && cell.style ? Object.assign({}, cell.style) : null, value: cell ? cell.value : '', formula: cell ?
+                        cell.formula : '', wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
                     hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
                 });
             }
@@ -23775,7 +23776,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
-                style: cells[i].style, formula: cells[i].formula,
+                style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
                 wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
                 colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
             });
@@ -23898,8 +23899,8 @@ var WrapText = /** @__PURE__ @class */ (function () {
                         ele.classList.add('e-ie-wrap');
                     }
                     if (!isCustomHgt) {
-                        colwidth = getColumnWidth(args.sheet, j);
                         cell = getCell(i, j, args.sheet);
+                        colwidth = getColumnsWidth(args.sheet, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         var displayText = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
                             var editElem = this.parent.element.querySelector('.e-spreadsheet-edit');
@@ -26063,6 +26064,7 @@ var Merge = /** @__PURE__ @class */ (function () {
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.rowSpan = mergeCount;
+                    args.td.style.display = '';
                 }
             }
         }
@@ -26079,6 +26081,7 @@ var Merge = /** @__PURE__ @class */ (function () {
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.colSpan = mergeCount;
+                    args.td.style.display = '';
                 }
             }
         }
@@ -36241,13 +36244,13 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             else if (model.rowSpan > 1) {
                 var prevTopIdx = range[2] + 1;
                 if (indexes[0] + model.rowSpan - 1 > prevTopIdx && indexes[0] < prevTopIdx) {
-                    this.refreshPrevMerge(prevTopIdx, indexes[1]);
+                    this.refreshPrevMerge(prevTopIdx, indexes[1], this.parent.viewport.topIndex);
                 }
             }
         }
     };
-    SheetRender.prototype.refreshPrevMerge = function (prevTopIdx, colIndex) {
-        var td = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(0));
+    SheetRender.prototype.refreshPrevMerge = function (prevTopIdx, colIndex, currTopIdx) {
+        var td = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ? currTopIdx : 0));
         if (td && td.rowSpan > 1) {
             this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }

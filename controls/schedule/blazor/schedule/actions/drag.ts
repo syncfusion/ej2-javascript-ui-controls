@@ -200,7 +200,8 @@ export class DragAndDrop extends ActionBase {
             if (this.parent.options.currentView === 'Month' || this.parent.options.currentView === 'TimelineYear' ||
                 (!this.parent.isTimelineView() && !this.parent.activeViewOptions.timeScale.enable)) {
                 this.updateOriginalElement(this.actionObj.clone);
-                this.cloneEventDetail = (this.actionObj.clone as HTMLElement).querySelector('.e-appointment-details');
+                let appDetail: HTMLElement = (this.actionObj.clone as HTMLElement).querySelector('.e-appointment-details');
+                this.cloneEventDetail = appDetail ? appDetail : (this.actionObj.clone as HTMLElement).querySelector('.e-subject');
                 this.monthEvent = new MonthEvent(this.parent);
             }
             if (this.parent.options.currentView === 'Day' || this.parent.options.currentView === 'Week' ||
@@ -693,7 +694,7 @@ export class DragAndDrop extends ActionBase {
         let index: number = this.getCursorCurrentIndex(colIndex, cloneIndex, tr);
         index = index < 0 ? 0 : index;
         let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[index].getTime()) :
-        this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
+            this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
         if (this.isStepDragging) {
             let widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {

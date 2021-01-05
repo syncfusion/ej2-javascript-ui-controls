@@ -324,7 +324,11 @@ export class FormFields {
                     if (currentData.Selected === false) {
                         this.pdfViewerBase.validateForm = true;
                     }
-                    datas[currentData.GroupName] = currentData.Selected;
+                    if (currentData.CheckboxIndex && currentData.Selected) {
+                        datas[currentData.GroupName] = currentData.CheckboxIndex;
+                    } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
+                        datas[currentData.GroupName] = currentData.Selected;
+                    }
                 } else if (currentData.Name === 'DropDown') {
                     if (currentData.SelectedValue === '') {
                         this.pdfViewerBase.validateForm = true;
@@ -693,12 +697,28 @@ export class FormFields {
                     }
                     currentData.Selected = true;
                 } else if (target.type === 'checkbox') {
+                    for (let l: number = 0; l < FormFieldsData.length; l++) {
+                        // tslint:disable-next-line
+                        let currentType: any = FormFieldsData[l];
+                        if (FormFieldsData[l].GroupName === target.name) {
+                            FormFieldsData[l].Selected = false;
+                            // tslint:disable-next-line
+                            let currentTarget: any = document.getElementById(FormFieldsData[l].uniqueID);
+                            if (currentTarget) {
+                                if ((currentData.GroupName === target.name) && (currentData.uniqueID !== currentTarget.id)) {
+                                    currentData.Selected = false;
+                                    currentTarget.checked = false;
+                                    currentTarget.style.webkitAppearance = 'none';
+                                }
+                            }
+                        }
+                    }
                     if (target.checked) {
                         currentData.Selected = true;
                     } else {
                         currentData.Selected = false;
                     }
-                } else if (target.type === 'select-one') {
+                } else if (target.type === 'select-one' && target.size === 0) {
                     // tslint:disable-next-line
                     let currentValue: any = target.options[target.selectedIndex].text;
                     // tslint:disable-next-line
@@ -709,7 +729,7 @@ export class FormFields {
                             currentData.SelectedValue = currentValue;
                         }
                     }
-                } else if (target.type === 'select-multiple') {
+                } else if (target.type === 'select-multiple' || target.size > 0) {
                     // tslint:disable-next-line
                     let currentValue: any = target.selectedOptions;
                     currentData.SelectedList = [];
@@ -798,8 +818,13 @@ export class FormFields {
     private createButtonField(data: any, pageIndex: number): any {
         // tslint:disable-next-line
         let inputField: any = document.createElement('input');
-        inputField.type = 'button';
-        inputField.classNme = 'e-pv-buttonItem';
+        if (data.Value) {
+            inputField.type = 'image';
+            inputField.src = data.Value;
+        } else {
+            inputField.type = 'button';
+        }
+        inputField.className = 'e-pv-buttonItem';
         if (data.Text !== '') {
             inputField.value = data.Text;
         } else {
@@ -1042,9 +1067,14 @@ export class FormFields {
     private createListBoxField(data: any, pageIndex: number): any {
         // tslint:disable-next-line
         let inputField: any = document.createElement('select');
-        inputField.multiple = true;
         // tslint:disable-next-line
         let childItems: any = data['TextList'];
+        if (data.Multiline) {
+            inputField.multiple = true;
+        } else {
+            inputField.multiple = false;
+            inputField.size = childItems.length;
+        }
         for (let j: number = 0; j < childItems.length; j++) {
             // tslint:disable-next-line
             let option: any = document.createElement('option');
@@ -1286,7 +1316,7 @@ export class FormFields {
                 this.currentTarget.value = currentData.TextList[0];
             }else if (currentData.Name === 'CheckBox') {
                 this.currentTarget.checked = false;
-            }else if (currentData.Name === 'SignatureField') {
+            } else if (currentData.Name === 'SignatureField') {
                 // tslint:disable-next-line
                 let annotation: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[currentData.uniqueID];
                 if (annotation) {

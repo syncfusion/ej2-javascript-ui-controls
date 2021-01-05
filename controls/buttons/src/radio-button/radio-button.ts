@@ -150,7 +150,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                 this.unWireEvents();
             }
             if (this.tagName === 'INPUT') {
-                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+                if (radioWrap.parentNode) {
+                    radioWrap.parentNode.insertBefore(this.element, radioWrap);
+                }
                 detach(radioWrap);
                 this.element.checked = false;
                 ['name', 'value', 'disabled'].forEach((key: string) => {

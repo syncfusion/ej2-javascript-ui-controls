@@ -127,7 +127,7 @@ var CheckBox = /** @class */ (function (_super) {
                 this.unWireEvents();
             }
             if (this.tagName === 'INPUT') {
-                if (this.getWrapper()) {
+                if (this.getWrapper() && wrapper.parentNode) {
                     wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
                 sf.base.detach(wrapper);

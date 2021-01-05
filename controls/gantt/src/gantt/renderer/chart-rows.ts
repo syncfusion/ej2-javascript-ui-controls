@@ -1227,7 +1227,7 @@ export class ChartRows extends DateProcessor {
             let tRow: Node = this.getGanttChartRow(i, tempTemplateData);
             this.ganttChartTableBody.appendChild(tRow);
             // To maintain selection when virtualization is enabled
-            if (this.parent.selectionModule && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            if (this.parent.selectionModule && this.parent.allowSelection) {
                 this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
             }
         }

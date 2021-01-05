@@ -22,6 +22,8 @@ export const classNames: ClassNames = {
     rtl: 'e-rtl',
 };
 
+export type selectionType = 'index' | 'value' | 'text';
+
 export type Selection = 'Single' | 'Multiple' | 'None';
 
 export interface ClassNames {
@@ -385,12 +387,13 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     protected render(): void {
+        let property: selectionType;
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
         if (!isBlazor() || !this.isServerRendered) {
             this.setAttributes();
             this.createChip();
             this.setRtl();
-            this.select(this.selectedChips);
+            this.select(this.selectedChips, property);
         }
         this.wireEvent(false);
         this.rippleFunction = rippleEffect(this.element, {
@@ -573,8 +576,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *  or chip element or array of chip element.
      * {% codeBlock src='chips/select/index.md' %}{% endcodeBlock %}
      */
-    public select(fields: number | number[] | HTMLElement | HTMLElement[] | string[]): void {
-        this.onSelect(fields, false);
+    public select(fields: number | number[] | HTMLElement | HTMLElement[] | string[], selectionType?: selectionType): void {
+        this.onSelect(fields, false, selectionType);
     }
 
     private multiSelection(newProp: number[] | string[]): void {
@@ -595,7 +598,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private onSelect(fields: number | number[] | HTMLElement | HTMLElement[] | string[], callFromProperty: boolean): void {
+    private onSelect(fields: number | number[] | HTMLElement | HTMLElement[] | string[],
+                     callFromProperty: boolean, selectionType?: selectionType): void {
+        let index: number;
+        let chipNodes: HTMLElement;
+        let chipValue: string | number;
         if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 let chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
@@ -608,6 +615,23 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             for (let i: number = 0; i < fieldData.length; i++) {
                 let chipElement: HTMLElement = fieldData[i] instanceof HTMLElement ? fieldData[i] as HTMLElement
                     : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i] as number] as HTMLElement;
+                if (selectionType !== 'index') {
+                    for (let j: number = 0; j < this.chips.length; j++) {
+                        chipNodes = this.element.querySelectorAll('.' + classNames.chip)[j] as HTMLElement;
+                        let fieldsData: ChipFields = this.getFieldValues(this.chips[j]);
+                        if (selectionType === 'value') {
+                            if (fieldsData.value !== null) {
+                                chipValue = chipNodes.dataset.value;
+                            }
+                        } else if (selectionType === 'text') {
+                            chipValue = chipNodes.innerText;
+                        }
+                        if (chipValue === fieldData[i].toString()) {
+                            index = j;
+                            chipElement = this.element.querySelectorAll('.' + classNames.chip)[index] as HTMLElement;
+                        }
+                    }
+                }
                 if (chipElement instanceof HTMLElement) {
                     this.selectionHandler(chipElement);
                 }
@@ -902,13 +926,14 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
+                    let property: selectionType;
                     if (this.selection === 'Multiple') {
                         this.multiSelectedChip = [];
                         this.multiSelection(newProp.selectedChips as number[] | string[]);
-                        this.onSelect(this.multiSelectedChip, true);
+                        this.onSelect(this.multiSelectedChip, true, property);
                         this.updateSelectedChips();
                     } else {
-                        this.onSelect(newProp.selectedChips, true);
+                        this.onSelect(newProp.selectedChips, true, property);
                     }
                     break;
                 case 'enableRtl':

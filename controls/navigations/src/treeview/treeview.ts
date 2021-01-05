@@ -2427,6 +2427,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
+            colArgs = this.getExpandEvent(liEle, null);
             this.trigger('nodeCollapsed', colArgs);
         }
     }

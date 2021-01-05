@@ -93,6 +93,8 @@ export interface SelectingEventArgs extends SelectEventArgs {
     selectingIndex: number;
     /** Defines the selecting Tab item content. */
     selectingContent: HTMLElement;
+    /** Defines the type of the event. */
+    event ?: Event;
 }
 /** An interface that holds options to control the removing and removed item action. */
 export interface RemoveEventArgs extends BaseEventArgs {
@@ -1407,7 +1409,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.select(trgIndex);
                 }
             } else if (!isNOU(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
-                this.select(trgIndex);
+                this.select(trgIndex,  args.originalEvent);
             }
         }
     }
@@ -1696,8 +1698,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
             if (!tabRemovingArgs.cancel) {
-                // tslint:disable-next-line:no-any
-                if ((this as any).isRect) { this.clearTemplate([], index); }
                 this.tbObj.removeItems(index);
                 this.items.splice(index, 1);
                 this.itemIndexArray.splice(index, 1);
@@ -1705,8 +1705,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 let cntTrg: HTEle =
                     <HTEle>select('#' + CLS_CONTENT + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_CONTENT, this.element));
                 if (!isNOU(cntTrg)) {
-                    // tslint:disable-next-line:no-any
-                    if ((this as any).isReact) { this.clearTemplate(); }
                     detach(cntTrg);
                 }
                 this.trigger('removed', tabRemovingArgs);
@@ -1780,7 +1778,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @param  {number | HTMLElement} args - Index or DOM element is used for selecting an item from the Tab.
      * @returns void.
      */
-    public select(args: number | HTEle): void {
+    public select(args: number | HTEle, event?: Event): void {
         let tabHeader: HTMLElement = this.getTabHeader();
         this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, tabHeader);
         this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
@@ -1801,6 +1799,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.prevItem.children.item(0).setAttribute('tabindex', '-1');
         }
         let eventArg: SelectingEventArgs = {
+            event: event,
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],

@@ -2294,16 +2294,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let isObject: boolean = typeof(rule.value) === 'object';
         if (this.allowValidation && (isNullOrUndefined(index) || (isObject ? (rule.value as string []).length > 0 : rule.value))) {
             let valElem: NodeListOf<Element> = ruleElem.querySelectorAll('.e-rule-value .e-control');
-            if (valElem[0].className.indexOf('e-tooltip') > -1) {
-                (getComponent(valElem[0] as HTMLElement, 'tooltip') as Tooltip).destroy();
-            } else if (valElem[0].parentElement.className.indexOf('e-tooltip') > -1) {
-                (getComponent(valElem[0].parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
-            }
-            if (valElem[1] && valElem[1].parentElement.className.indexOf('e-tooltip') > -1) {
-                (getComponent(valElem[1].parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
+            if (valElem.length > 0) {
+                if (valElem[0].className.indexOf('e-tooltip') > -1) {
+                    (getComponent(valElem[0] as HTMLElement, 'tooltip') as Tooltip).destroy();
+                } else if (valElem[0].parentElement.className.indexOf('e-tooltip') > -1) {
+                    (getComponent(valElem[0].parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
+                }
+                if (valElem[1] && valElem[1].parentElement.className.indexOf('e-tooltip') > -1) {
+                    (getComponent(valElem[1].parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
+                }
             }
         }
-
     }
     private getFormat(format: string | FormatObject): DateFormatOptions {
         let formatOptions: DateFormatOptions;
@@ -3246,9 +3247,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     ruleColl[i].value = null;
                 } else if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
                     let format: DateFormatOptions = this.getFormat(column.format);
-                    ruleValue = this.getDate(ruleColl[i].value as string, format);
-                    if (dateOperColl.indexOf(oper) > -1) {
-                        isDateFilter = true;
+                    if (!isNullOrUndefined(ruleColl[i].value)) {
+                        ruleValue = this.getDate(ruleColl[i].value as string, format);
+                        if (dateOperColl.indexOf(oper) > -1) {
+                            isDateFilter = true;
+                        }
+                    } else {
+                        ruleValue = null;
                     }
                 } else {
                     ruleValue = ruleColl[i].value as string | number;

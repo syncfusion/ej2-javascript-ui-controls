@@ -569,7 +569,7 @@ export class MoveTool extends ToolBase {
     }
     /**   @private  */
     /* tslint:disable */
-    public mouseMove(args: MouseEventArgs, isStamp?: boolean): boolean {
+    public mouseMove(args: MouseEventArgs, isStamp?: boolean, isSkip?: boolean): boolean {
         super.mouseMove(args);
         if (this.inAction) {
             this.currentPosition = args.position;
@@ -628,7 +628,7 @@ export class MoveTool extends ToolBase {
                 isStamp = true;
             }
             // tslint:disable-next-line:max-line-length
-            if (this.commandHandler.checkBoundaryConstraints(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, this.helper.wrapper.bounds, isStamp)) {
+            if (this.commandHandler.checkBoundaryConstraints(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, this.helper.wrapper.bounds, isStamp, isSkip)) {
                 this.commandHandler.dragSelectedObjects(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, currentSelctor, this.helper);
                 this.prevNode = this.helper;
                 this.prevPosition = this.currentPosition;
@@ -692,7 +692,7 @@ export class StampTool extends MoveTool {
             this.commandHandler.select([newObject.id]);
         }
         let currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
-        super.mouseMove.call(this, args, true);
+        super.mouseMove.call(this, args, true, true);
         this.commandHandler.renderSelector((args.source as PdfAnnotationBaseModel).pageIndex, currentSelctor);
         return this.inAction;
     }

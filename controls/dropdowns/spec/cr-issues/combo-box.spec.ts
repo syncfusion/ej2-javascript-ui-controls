@@ -877,4 +877,101 @@ describe('ComboBox', () => {
             }, 450);
         });
     });
+    describe('EJ2-45039', () => {
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            keyCode: 22,
+        };
+        let buttonEle: any;
+        let dynamicDataSource: { [key: string]: Object }[] = [
+            { Name: "Germany", Code: "DE" },
+            { Name: "Greenland", Code: "GL" },
+            { Name: "Hong Kong", Code: "HK" },
+            { Name: "India", Code: "IN" },
+            { Name: "Italy", Code: "IT" },
+            { Name: "Japan", Code: "JP" },
+            { Name: "Mexico", Code: "MX" },
+            { Name: "Norway", Code: "NO" },
+            { Name: "Poland", Code: "PL" },
+            { Name: "Switzerland", Code: "CH" },
+            { Name: "United Kingdom", Code: "GB" },
+            { Name: "United States", Code: "US" }
+          ];
+          let data: { [key: string]: Object }[] = [
+              { Name: "Australia", Code: "AU" },
+              { Name: "Bermuda", Code: "BM" },
+              { Name: "Canada", Code: "CA" },
+              { Name: "Cameroon", Code: "CM" },
+              { Name: "Denmark", Code: "DK" },
+              { Name: "France", Code: "FR" },
+              { Name: "Finland", Code: "FI" }
+            ];
+        let listObj: any;
+        let listObj1: any;
+        beforeAll(() => {
+            let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox' });
+            document.body.appendChild(comboEle);
+            buttonEle= createElement('button',{id: 'changedata'});
+            document.body.appendChild(buttonEle);
+        });
+        afterAll(() => {
+            if (listObj) {
+                listObj.destroy();
+            }
+            if (listObj1) {
+                listObj1.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Changing datasource in filtering event causes input element value is empty', () => {
+            listObj = new ComboBox({
+                dataSource: data,
+                fields: { text: "Name", value: "Code" },
+                sortOrder: 'Ascending',
+                width: '250px',
+                popupHeight: '200px',
+                popupWidth: '250px',
+                allowFiltering: true,
+                filtering: (e) => {
+                    if (listObj.dataSource == dynamicDataSource) {
+                        listObj.dataSource = data;
+                    } else {
+                        listObj.dataSource = dynamicDataSource;
+                    }
+                    listObj.dataBind();
+                    expect((listObj as any).inputElement.value !== "").toBe(true);
+                }
+            });
+            listObj.appendTo('#ComboBox');
+            (listObj as any).inputElement.value = "a";
+            keyboardEventArgs.keyCode = 65;
+            (listObj as any).searchLists(keyboardEventArgs);
+        });
+        it('Changing datasource dynamically should not change value property', () => {
+            listObj1 = new ComboBox({
+                dataSource: data,
+                fields: { text: "Name", value: "Code" },
+                sortOrder: 'Ascending',
+                value: "AU",
+                width: '250px',
+                popupHeight: '200px',
+                popupWidth: '250px',
+                allowFiltering: true,
+            });
+            listObj1.appendTo('#ComboBox');
+            buttonEle.onclick = ()=> {
+                if (listObj1.dataSource == dynamicDataSource) {
+                    listObj1.dataSource = data;
+                } else {
+                    listObj1.dataSource = dynamicDataSource;
+                }
+                listObj1.dataBind();
+                expect(listObj1.value).toBe("AU");
+            }
+            buttonEle.click();
+        });
+    });
 });

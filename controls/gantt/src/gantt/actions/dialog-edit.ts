@@ -1389,6 +1389,9 @@ export class DialogEdit {
             } else if (item.content === 'Notes') {
                 item.content = this.renderNotesTab(item.content);
             } else if (item.content === 'Segments') {
+                if (this.editedRecord.hasChildRecords) {
+                    item.disabled = true;
+                }
                 item.content = this.renderSegmentsTab(item.content);
             }
         }

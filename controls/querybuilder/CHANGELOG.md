@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with template destroy is fixed.
+
 ## 18.4.32 (2020-12-29)
 
 ### QueryBuilder

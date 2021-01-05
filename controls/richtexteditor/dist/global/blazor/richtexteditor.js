@@ -535,6 +535,11 @@ var resizeInitialized = 'resizeInitialized';
  * @deprecated
  */
 var renderFileManager = 'renderFileManager';
+/**
+ * @hidden
+ * @deprecated
+ */
+var beforeImageDrop = 'beforeImageDrop';
 
 /**
  * Rich Text Editor classes defined here.
@@ -17663,7 +17668,7 @@ var Image = /** @class */ (function () {
         else {
             this.captionEle = this.parent.createElement('span', {
                 className: CLS_CAPTION + ' ' + CLS_RTE_CAPTION,
-                attrs: { contenteditable: 'false', draggable: 'false' }
+                attrs: { contenteditable: 'false', draggable: 'false', style: 'width:' + this.parent.insertImageSettings.width }
             });
             var imgWrap = this.parent.createElement('span', { className: 'e-img-wrap' });
             var imgInner = this.parent.createElement('span', { className: 'e-img-inner', attrs: { contenteditable: 'true' } });
@@ -18195,49 +18200,54 @@ var Image = /** @class */ (function () {
     };
     
     /**
-     * USed to set range When drop an image
+     * Used to set range When drop an image
      */
-    Image.prototype.dragDrop = function (e) {
+    Image.prototype.dragDrop = function (args) {
         var _this = this;
-        var imgElement = this.parent.inputElement.ownerDocument.querySelector('.' + CLS_RTE_DRAG_IMAGE);
-        if ((imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0) {
-            this.parent.trigger(actionBegin, e, function (actionBeginArgs) {
-                if (actionBeginArgs.cancel) {
-                    e.preventDefault();
-                }
-                else {
-                    if (sf.base.closest(e.target, '#' + _this.parent.getID() + '_toolbar') ||
-                        _this.parent.inputElement.contentEditable === 'false') {
+        this.parent.trigger(beforeImageDrop, args, function (e) {
+            var imgElement = _this.parent.inputElement.ownerDocument.querySelector('.' + CLS_RTE_DRAG_IMAGE);
+            var isImgOrFileDrop = (imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0;
+            if (!e.cancel && isImgOrFileDrop) {
+                _this.parent.trigger(actionBegin, e, function (actionBeginArgs) {
+                    if (actionBeginArgs.cancel) {
                         e.preventDefault();
-                        return;
-                    }
-                    if (_this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
-                        sf.base.detach(_this.imgResizeDiv);
-                    }
-                    e.preventDefault();
-                    var range = void 0;
-                    if (_this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                        range = _this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                    }
-                    else if ((e.rangeParent)) { //For mozilla firefox
-                        range = _this.contentModule.getDocument().createRange();
-                        range.setStart(e.rangeParent, e.rangeOffset);
                     }
                     else {
-                        range = _this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                        if (sf.base.closest(e.target, '#' + _this.parent.getID() + '_toolbar') ||
+                            _this.parent.inputElement.contentEditable === 'false') {
+                            e.preventDefault();
+                            return;
+                        }
+                        if (_this.parent.element.querySelector('.' + CLS_IMG_RESIZE)) {
+                            sf.base.detach(_this.imgResizeDiv);
+                        }
+                        e.preventDefault();
+                        var range = void 0;
+                        if (_this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                            range = _this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                        }
+                        else if ((e.rangeParent)) { //For mozilla firefox
+                            range = _this.contentModule.getDocument().createRange();
+                            range.setStart(e.rangeParent, e.rangeOffset);
+                        }
+                        else {
+                            range = _this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                        }
+                        _this.parent.notify(selectRange, { range: range });
+                        var uploadArea = _this.parent.element.querySelector('.' + CLS_DROPAREA);
+                        if (uploadArea) {
+                            return;
+                        }
+                        _this.insertDragImage(e);
                     }
-                    _this.parent.notify(selectRange, { range: range });
-                    var uploadArea = _this.parent.element.querySelector('.' + CLS_DROPAREA);
-                    if (uploadArea) {
-                        return;
-                    }
-                    _this.insertDragImage(e);
+                });
+            }
+            else {
+                if (isImgOrFileDrop) {
+                    e.preventDefault();
                 }
-            });
-        }
-        else {
-            return true;
-        }
+            }
+        });
     };
     /**
      * Used to calculate range on internet explorer
@@ -18851,6 +18861,7 @@ var Table = /** @class */ (function () {
         this.parent.on(tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(dropDownSelect, this.dropdownSelect, this);
         this.parent.on(keyDown, this.keyDown, this);
+        this.parent.on(mouseUp, this.selectionTable, this);
         this.parent.on(destroy, this.destroy, this);
     };
     Table.prototype.removeEventListener = function () {
@@ -18866,7 +18877,14 @@ var Table = /** @class */ (function () {
         this.parent.off(mouseDown, this.cellSelect);
         this.parent.off(tableColorPickerChanged, this.setBGColor);
         this.parent.off(keyDown, this.keyDown);
+        this.parent.off(mouseUp, this.selectionTable);
         this.parent.off(destroy, this.destroy);
+    };
+    Table.prototype.selectionTable = function (e) {
+        var target = e.args.target;
+        if (sf.base.Browser.info.name === 'mozilla' && !sf.base.isNullOrUndefined(sf.base.closest(target, 'table')) && sf.base.closest(target, 'table').tagName === 'TABLE') {
+            this.parent.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+        }
     };
     Table.prototype.afterRender = function () {
         this.contentModule = this.rendererFactory.getRenderer(exports.RenderType.Content);
@@ -19247,6 +19265,10 @@ var Table = /** @class */ (function () {
             if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
                 sf.base.detach(this.helper);
             }
+        }
+        if (sf.base.Browser.info.name === 'mozilla' && !sf.base.isNullOrUndefined(sf.base.closest(target, 'table')) &&
+            sf.base.closest(target, 'table').tagName === 'TABLE') {
+            this.parent.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
         }
     };
     Table.prototype.resizeHelper = function (e) {
@@ -22702,6 +22724,9 @@ var RichTextEditor = /** @class */ (function (_super) {
         sf.base.Event()
     ], RichTextEditor.prototype, "resizeStop", void 0);
     __decorate$1([
+        sf.base.Event()
+    ], RichTextEditor.prototype, "beforeImageDrop", void 0);
+    __decorate$1([
         sf.base.Property(null)
     ], RichTextEditor.prototype, "formatter", void 0);
     RichTextEditor = __decorate$1([
@@ -22866,6 +22891,7 @@ exports.xhtmlValidation = xhtmlValidation;
 exports.beforeImageUpload = beforeImageUpload;
 exports.resizeInitialized = resizeInitialized;
 exports.renderFileManager = renderFileManager;
+exports.beforeImageDrop = beforeImageDrop;
 exports.CLS_RTE = CLS_RTE;
 exports.CLS_RTL = CLS_RTL;
 exports.CLS_CONTENT = CLS_CONTENT;

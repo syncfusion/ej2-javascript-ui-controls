@@ -2947,10 +2947,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 2000);
         });
     });
-    describe('Drag and Drop - Text', function() {
+    describe('Drag and Drop - Text', () => {
         let rteObj: RichTextEditor;
         let element: HTMLElement;
-        beforeAll(function(done) {
+        beforeAll((done: Function) => {
             element = createElement('form', {
                 id: "form-element",
                 innerHTML: " <div class=\"form-group\">\n                        <textarea id=\"defaultRTE\" name=\"defaultRTE\" required maxlength=\"100\" minlength=\"20\" data-msg-containerid=\"dateError\">\n                        </textarea>\n                        <div id=\"dateError\"></div>\n                    </div>\n                    "
@@ -2967,17 +2967,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             detach(element);
             done();
         });
-        it("dragStart event", function(done) {
+        it("dragStart event", (done: Function) => {
             var event = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), preventDefault: function() { return; } };
             let result : any = (rteObj.imageModule as any).dragStart(event);
-            setTimeout(function() {
-                expect(result).toBe(true);
-                done();
-            }, 200);
-        });
-        it("drop event", function(done) {
-            var event = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: {} }, preventDefault: function() { return; } };
-            let result : any = (rteObj.imageModule as any).dragDrop(event);
             setTimeout(function() {
                 expect(result).toBe(true);
                 done();
@@ -3130,6 +3122,49 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(count).toBe(1);
                 done();
             }, 100);
+        });
+    });
+    describe('EJ2CORE-480 - Provide event to restrict the image insertion when drag and drop', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                        </textarea>
+                        <div id="dateError"></div>
+                    </div>
+                    ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                beforeImageDrop: beforeImageDropFunc
+            });
+            function beforeImageDropFunc(args: any): void {
+                args.cancel = true;
+            }
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-imginline'))
+            done();
+        });
+        it(" imageDrop event args.cancel as `true` check", function () {
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.imageModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('img')[0];
+            expect(rteObj.element.getElementsByTagName('img').length).toBe(0);
         });
     });
 });

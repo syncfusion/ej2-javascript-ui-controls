@@ -68,7 +68,6 @@ var MOVABLEHEADER_DIV = 'e-movableheader';
 var FROZENHEADER_DIV = 'e-frozenheader';
 var HEADERCONTENT = 'e-headercontent';
 var ROW_CELL_CLASS = 'e-rowcell';
-var GRID_CONTENT = 'e-gridcontent';
 var GRID_REMOVE = 'e-remove-report';
 var GRID_TOOLBAR = 'e-pivot-toolbar';
 var GRID_REPORT_INPUT = 'e-pivotview-report-input';
@@ -2208,13 +2207,7 @@ var SfPivotView = /** @class */ (function () {
     };
     SfPivotView.prototype.contentReady = function () {
         this.updateModuleProperties();
-        if (this.options.isEmptyData) {
-            this.element.querySelector('.' + MOVABLECONTENT_DIV).style.overflow = 'hidden';
-            this.element.querySelector('.' + GRID_CONTENT + ' > div').style.overflowY = 'hidden';
-        }
-        else if (this.options.renderGrid) {
-            if (this.element.querySelector('.' + GRID_CONTENT + ' > div') !== null)
-                this.element.querySelector('.' + GRID_CONTENT + ' > div').style.overflowY = 'hidden';
+        if (this.options.renderGrid) {
             if (this.options.showGroupingBar && this.groupingBarModule) {
                 this.groupingBarModule.updatePivotButtons();
                 this.groupingBarModule.refreshUI();
@@ -2434,27 +2427,19 @@ var SfPivotView = /** @class */ (function () {
             if (contentColGroupElements.length > 1 && contentColGroupElements[contentColGroupElements.length - 1].style.width == 'auto')
                 contentColGroupElements[contentColGroupElements.length - 1].style.width = columnWidth;
         }
-        var tableHeight = element.querySelector('.' + FROZENCONTENT_DIV + ' .' + TABLE).offsetHeight;
-        var contentHeight = element.querySelector('.' + MOVABLECONTENT_DIV).offsetHeight;
-        var tableWidth = element.querySelector('.' + MOVABLECONTENT_DIV + ' .' + TABLE).offsetWidth;
-        var contentWidth = element.querySelector('.' + MOVABLECONTENT_DIV).offsetWidth;
-        element.querySelector('.' + FROZENCONTENT_DIV).style.height = sf.base.formatUnit(contentHeight - (((tableWidth - contentWidth) >= 18) ? 17 : 0));
+        this.element.querySelector('.' + MOVABLECONTENT_DIV).style.overflow = 'auto';
+        var hasVerticalScrollbar = element.querySelector('.' + MOVABLECONTENT_DIV).scrollHeight > element.querySelector('.' + MOVABLECONTENT_DIV).clientHeight;
         sf.base.setStyleAttribute(element.querySelector('.' + GRID_HEADER), this.options.enableRtl ? {
-            'paddingLeft': ((tableHeight - contentHeight) >= 18) ? '16px' : ''
+            'paddingLeft': hasVerticalScrollbar ? '16px' : ''
         } : {
-            'paddingRight': ((tableHeight - contentHeight) >= 18) ? '16px' : ''
+            'paddingRight': hasVerticalScrollbar ? '16px' : ''
         });
         sf.base.setStyleAttribute(element.querySelector('.' + HEADERCONTENT), this.options.enableRtl ? {
-            'borderLeftWidth': ((tableHeight - contentHeight) >= 18) ? '1px' : ''
+            'borderLeftWidth': hasVerticalScrollbar ? '1px' : ''
         } : {
-            'borderRightWidth': ((tableHeight - contentHeight) >= 18) ? '1px' : ''
+            'borderRightWidth': hasVerticalScrollbar ? '1px' : ''
         });
-        if (!((tableHeight - contentHeight) >= 18)) {
-            element.querySelector('.' + GRID_CONTENT + ' .' + PIVOT_BUTTON_CONTENT_CLASS).style.height =
-                element.querySelector('.' + FROZENCONTENT_DIV).style.height = '';
-        }
-        element.querySelector('.' + MOVABLECONTENT_DIV).style.overflowY = ((tableHeight - contentHeight) >= 18) ? 'auto' : 'hidden';
-        element.querySelector('.' + MOVABLECONTENT_DIV).style.overflowX = ((tableWidth - contentWidth) >= 18) ? 'auto' : 'hidden';
+        element.querySelector('.' + FROZENCONTENT_DIV).style.height = sf.base.formatUnit(element.querySelector('.' + MOVABLECONTENT_DIV).clientHeight);
     };
     
     SfPivotView.prototype.updateView = function (element, displayOption) {
@@ -2998,7 +2983,7 @@ var PivotView = {
     },
     getClientWidth: function (element, id) {
         if (element && element.blazor__instance) {
-            element.blazor__instance.getClientWidth(element, id);
+            return element.blazor__instance.getClientWidth(element, id);
         }
         return null;
     },

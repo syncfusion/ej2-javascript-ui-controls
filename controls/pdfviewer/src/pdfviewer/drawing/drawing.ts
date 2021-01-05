@@ -2471,7 +2471,7 @@ export class Drawing {
     /**
      * @private
      */
-    public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect, isStamp?: boolean): boolean {
+    public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect, isStamp?: boolean, isSkip?: boolean): boolean {
         let selectorBounds: Rect = !nodeBounds ? this.pdfViewer.selectedItems.wrapper.bounds : undefined;
         let bounds: Rect = nodeBounds;
         let canvas = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
@@ -2491,8 +2491,8 @@ export class Drawing {
                     }
                 }
             }
-            if (right <= width - 10 && left >= 10
-                && bottom <= height - 10 && top >= heightDifference) {
+            if ((right <= width - 10 && left >= 10
+                && bottom <= height - 10 && top >= heightDifference) || isSkip) {
                 return true;
             }
         }

@@ -988,18 +988,18 @@ describe('Chips', () => {
                 chips = new ChipList({ chips: deepCloning(jsonArray), selection: 'Multiple' }, '#chip');
                 let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                 //single selection
-                chips.select(chipCollection[1]);
+                chips.select(chipCollection[1], "index");
                 let resultantData: SelectedItems = chips.getSelectedChips() as SelectedItems;
                 expect(resultantData.Indexes.length).toBe(1);
                 expect((resultantData.data[0] as ChipModel).text).toBe('chip2');
                 expect(resultantData.elements[0]).toBe(chipCollection[1]);
                 expect(resultantData.Indexes[0]).toBe(1);
                 expect(resultantData.texts[0]).toBe('chip2');
-                chips.select(chipCollection[1]);
+                chips.select(chipCollection[1], "index");
                 resultantData = chips.getSelectedChips() as SelectedItems;
                 expect(resultantData).toBe(undefined);
                 //multiple selection
-                chips.select([chipCollection[1], chipCollection[2]]);
+                chips.select([chipCollection[1], chipCollection[2]], "index");
                 resultantData = chips.getSelectedChips() as SelectedItems;
                 expect(resultantData.Indexes.length).toBe(2);
                 expect((resultantData.data[0] as ChipModel).text).toBe('chip2');
@@ -1010,6 +1010,9 @@ describe('Chips', () => {
                 expect(resultantData.elements[1]).toBe(chipCollection[2]);
                 expect(resultantData.Indexes[1]).toBe(2);
                 expect(resultantData.texts[1]).toBe('chip3');
+                chips.select(['chip1'], "text");
+                resultantData = chips.getSelectedChips() as SelectedItems;
+                expect(resultantData.texts[0]).toBe('chip1');
             });
             it('Multiple selection without value property', () => {
                 chips = new ChipList({ chips: deepCloning(jsonArray), selection: 'Multiple' }, '#chip');
@@ -1021,9 +1024,12 @@ describe('Chips', () => {
             it('Multiple selection using value property', () => {
                 chips = new ChipList({ chips: deepCloning(jsonArrayValue), selection: 'Multiple' }, '#chip');
                 let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
-                chips.select(chipCollection[1]);
-                let selectedValule1: string = `${chips.selectedChips}`;
+                chips.select(chipCollection[1] , "index");
+                let selectedValule1: string | string[] = `${chips.selectedChips}`;
                 expect(selectedValule1).toBe('22');
+                chips.select([11], "value");
+                selectedValule1 = `${chips.selectedChips}`;
+                expect(selectedValule1).toBe('11,22');
             });
         });
     });

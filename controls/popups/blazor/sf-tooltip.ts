@@ -1,4 +1,4 @@
-import { isNullOrUndefined as NOU, BlazorDotnetObject, formatUnit, EventHandler, attributes, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as NOU, BlazorDotnetObject, formatUnit, EventHandler, attributes, closest, matches } from '@syncfusion/ej2-base';
 import { Touch, TapEventArgs, Browser, Animation as PopupAnimation, getAttributeOrDefault } from '@syncfusion/ej2-base';
 import { addClass, BaseEventArgs, setStyleAttribute, removeClass, ChildProperty } from '@syncfusion/ej2-base';
 import { Popup } from '../src/popup/popup';
@@ -299,11 +299,11 @@ class SfTooltip {
         }
         let isOpenable: boolean = true;
         if (opensOn === 'Hover') {
-            isOpenable = target.matches(':hover');
+            isOpenable = matches(target, ':hover');
         } else if (opensOn === 'Auto') {
-            isOpenable = (target.matches(':hover') || target.matches(':focus'));
+            isOpenable = (matches(target, ':hover') || matches(target, ':focus'));
         } else if (opensOn === 'Focus') {
-            isOpenable = target.matches(':focus');
+            isOpenable = matches(target, ':focus');
         } else if (opensOn === 'Click') {
             if (element === closest(e.target as HTMLElement, '.' + ROOT) &&
                     getAttributeOrDefault(target as HTMLElement, 'data-tooltip-id', null) === null) {
@@ -818,8 +818,10 @@ class SfTooltip {
     public reposition(target: HTMLElement): void {
         if (target === null || !this.tooltipEle) { return; }
         let elePos: OffsetPosition = this.getTooltipPosition(target);
-        this.popupObj.position = { X: elePos.left, Y: elePos.top };
-        this.popupObj.dataBind();
+        if (!NOU(this.popupObj)) {
+            this.popupObj.position = { X: elePos.left, Y: elePos.top };
+            this.popupObj.dataBind();
+        }
     }
     private renderPopup(target: HTMLElement): void {
         let elePos: OffsetPosition = this.properties.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);

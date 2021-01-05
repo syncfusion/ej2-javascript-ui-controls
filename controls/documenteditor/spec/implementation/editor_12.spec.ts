@@ -1610,7 +1610,7 @@ console.log('apply RTL');
         editor.selection.handleHomeKey();
         editor.selection.handleUpKey();
         editor.selection.handleTabKey(true, false);
-        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         expect(((editor.selection.start.paragraph.nextWidget as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
     });
     it('undo after list apply to RTL', () => {
@@ -1622,7 +1622,7 @@ console.log('undo after list apply to RTL');
     it('redo after list apply to RTL', () => {
 console.log('redo after list apply to RTL');
         editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
 
     });
     it('Footer widgets y position validation', () => {

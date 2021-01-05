@@ -84,7 +84,9 @@ var RadioButton = /** @class */ (function (_super) {
             this.unWireEvents();
         }
         if (this.tagName === 'INPUT') {
-            radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            if (radioWrap.parentNode) {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+            }
             sf.base.detach(radioWrap);
             this.element.checked = false;
             ['name', 'value', 'disabled'].forEach(function (key) {

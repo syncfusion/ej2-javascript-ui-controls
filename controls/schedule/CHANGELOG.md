@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I307462` - An issue when editing date time and End as until the last event not rendered has been fixed.
+- `#F159141` - An issue when enable persistence is true selected resource not rendered issue has been fixed.
+- `#I304107` - An issue when request to return current view or view model issue has been resolved.
+- `#I306554, #I307686` - An issue when rendering the appointments in timeline year view has been fixed.
+- `#F20602` - An issue with the position of the more event popup window is calculating wrongly when we setting the timescale interval has been fixed.
+
 ## 18.4.32 (2020-12-29)
 
 ### Schedule

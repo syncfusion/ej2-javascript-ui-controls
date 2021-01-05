@@ -461,7 +461,7 @@ export class Selection {
                 if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(ele, range, sheet, this.parent.enableRtl, offset);
+                locateElem(ele, range, sheet, this.parent.enableRtl);
             }
         }
         let eArgs: { action: string, sheetIndex: number } = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
@@ -524,11 +524,11 @@ export class Selection {
                 if (isMergeRange) {
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, offset);
+                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
             }
             this.parent.notify(activeCellChanged, null);
         } else {
-            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
         }
     }
 

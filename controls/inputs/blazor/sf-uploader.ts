@@ -2494,14 +2494,21 @@ class SfUploader {
     private getFilesInArray(files: FileInfo | FileInfo[]): FileInfo[] {
         let uploadFiles: FileInfo[] = [];
         if (files instanceof Array) {
-            uploadFiles = files;
+            uploadFiles = this.getFileListData(files as FileInfo[]);
         } else {
             uploadFiles.push(files);
         }
         return uploadFiles;
     }
-
-
+    private getFileListData(files: FileInfo[]): FileInfo[] {
+        let uploadFiles: FileInfo[] = [];
+        if (!isNullOrUndefined(this.filesData) && !isNullOrUndefined(files)) {
+            for (let i: number = 0; i < files.length; i++) {
+                uploadFiles.push(this.filesData.filter((e: FileInfo) => e.name === files[i].name)[0]);
+            }
+        }
+        return !isNullOrUndefined(uploadFiles) ? uploadFiles : [];
+    }
     public serverReadFileBase64(fileIndex: number, position: number, totalCount: number): Promise<string> {
         return new Promise((resolve: Function, reject: Function) => {
             let file: Blob = this.fileStreams[fileIndex].rawFile as Blob;

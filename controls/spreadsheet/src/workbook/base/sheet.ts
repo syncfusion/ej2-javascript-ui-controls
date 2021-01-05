@@ -418,8 +418,8 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
-        sheet.rows = sheet.rows || [];
-        sheet.columns = sheet.columns || [];
+        context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
+        context.setSheetPropertyOnMute(sheet, 'columns', sheet.columns || []);
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
         sheet.state = sheet.state || 'Visible';

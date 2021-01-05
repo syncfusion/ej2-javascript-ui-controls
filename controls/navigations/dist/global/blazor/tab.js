@@ -1206,7 +1206,7 @@ var Tab = /** @class */ (function (_super) {
                 }
             }
             else if (!sf.base.isNullOrUndefined(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
-                this.select(trgIndex);
+                this.select(trgIndex, args.originalEvent);
             }
         }
     };
@@ -1559,20 +1559,12 @@ var Tab = /** @class */ (function (_super) {
         var removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs, function (tabRemovingArgs) {
             if (!tabRemovingArgs.cancel) {
-                // tslint:disable-next-line:no-any
-                if (_this.isRect) {
-                    _this.clearTemplate([], index);
-                }
                 _this.tbObj.removeItems(index);
                 _this.items.splice(index, 1);
                 _this.itemIndexArray.splice(index, 1);
                 _this.refreshActiveBorder();
                 var cntTrg = sf.base.select('#' + CLS_CONTENT + _this.tabId + '_' + _this.extIndex(trg.id), sf.base.select('.' + CLS_CONTENT, _this.element));
                 if (!sf.base.isNullOrUndefined(cntTrg)) {
-                    // tslint:disable-next-line:no-any
-                    if (_this.isReact) {
-                        _this.clearTemplate();
-                    }
                     sf.base.detach(cntTrg);
                 }
                 _this.trigger('removed', tabRemovingArgs);
@@ -1658,7 +1650,7 @@ var Tab = /** @class */ (function (_super) {
      * @param  {number | HTMLElement} args - Index or DOM element is used for selecting an item from the Tab.
      * @returns void.
      */
-    Tab.prototype.select = function (args) {
+    Tab.prototype.select = function (args, event) {
         var _this = this;
         var tabHeader = this.getTabHeader();
         this.tbItems = sf.base.select('.' + CLS_TB_ITEMS, tabHeader);
@@ -1682,6 +1674,7 @@ var Tab = /** @class */ (function (_super) {
             this.prevItem.children.item(0).setAttribute('tabindex', '-1');
         }
         var eventArg = {
+            event: event,
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,
             selectedItem: this.tbItem[this.selectedItem],

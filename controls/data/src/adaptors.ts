@@ -173,7 +173,9 @@ export class JsonAdaptor extends Adaptor {
             result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[0]).comparer, true);
             count = result.length;
             let data: Object[] = result;
-            result = this.onPage(result, args.page, args.query);
+            if (args.page) {
+                result = this.onPage(result, args.page, args.query);
+            }
             this.formGroupResult(result, data);
         }
         return { result: result, count: count };

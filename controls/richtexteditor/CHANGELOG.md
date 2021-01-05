@@ -2,9 +2,13 @@
 
 ## [Unreleased]
 
-## 18.4.32 (2020-12-29)
+## 18.4.33 (2021-01-05)
 
 ### RichTextEditor
+
+#### New Features
+
+- `F160594` - Provided new event `beforeImageDrop` that triggers before drop a image in Rich Text Editor component.
 
 #### Bug Fixes
 
@@ -16,7 +20,7 @@
 
 #### New Features
 
-- **File Manager**: `F144048`, `#234755`, `#261368`, `#261882`, `#150871`, `#270549` - This feature allows the editor to browse and insert the images from FileManager using various remote service.
+- **File Manager**: `F144048`, `#234755`, `#261368`, `#261882`, `#150871`, `#270549` - This feature allows the editor to browse and insert the images from FileManager using various remote service. In ES5 RichTextEditor, it is mandatory to include the `ej2-filemanager` dependency to render properly.
 
 - `F149800` - Provided new property `removeUrl` in `insertImageSettings` API to trigger the image remove operation in server, when image removed from editor.
 

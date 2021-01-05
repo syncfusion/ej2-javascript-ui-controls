@@ -3633,6 +3633,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
+            this.typedString = '';
             this.resetList(this.dataSource);
         }
         if (!this.isCustomFilter && !this.isFilterFocus && document.activeElement !== this.filterInput) {
@@ -7468,8 +7469,7 @@ let ComboBox = class ComboBox extends DropDownList {
         }
     }
     clearAll(e, property) {
-        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource)) ||
-            (isNullOrUndefined(this.itemData) && this.allowFiltering)) {
+        if (isNullOrUndefined(property) || (!isNullOrUndefined(property) && isNullOrUndefined(property.dataSource))) {
             super.clearAll(e);
             if (this.isServerBlazor && this.isFiltering() && this.isPopupOpen && e) {
                 // tslint:disable-next-line

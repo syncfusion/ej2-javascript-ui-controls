@@ -212,7 +212,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 this.unWireEvents();
             }
             if (this.tagName === 'INPUT') {
-                if (this.getWrapper()) {
+                if (this.getWrapper() && wrapper.parentNode) {
                     wrapper.parentNode.insertBefore(this.element, wrapper);
                 }
                 detach(wrapper);

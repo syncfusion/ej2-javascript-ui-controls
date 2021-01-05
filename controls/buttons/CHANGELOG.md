@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.4.33 (2021-01-05)
+
+### CheckBox
+
+#### Bug Fixes
+
+- Issue with destroy has been fixed.
+
+## 18.4.30 (2020-12-17)
+
+### Chips
+
+#### Bug Fixes
+
+- `#293361` - The issue with "The Chip is not selected while setting the string values" has been resolved.
+
 ## 18.3.40 (2020-10-13)
 
 ### Button

@@ -135,6 +135,7 @@
 
     .e-rte-toolbar,
     .e-rte-toolbar.e-toolbar.e-extended-toolbar {
+      position: inherit;
       z-index: 101;
 
       .e-toolbar-extended {
@@ -701,6 +702,20 @@
 
   .e-rte-img-caption.e-imgcenter {
     display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .e-rte-img-caption.e-imgright {
+    display: block;
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  .e-rte-img-caption.e-imgleft {
+    display: block;
+    margin-left: 0;
+    margin-right: auto;
   }
 
   .e-rte-img-caption .e-rte-image.e-imgright {

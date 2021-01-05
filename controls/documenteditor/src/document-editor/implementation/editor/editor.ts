@@ -673,6 +673,7 @@ export class Editor {
             }
             if (this.owner.commentReviewPane) {
                 this.owner.showComments = showComments;
+                this.owner.commentReviewPane.selectedTab = 0;
                 this.owner.commentReviewPane.addComment(commentWidget, isNewComment, selectComment);
                 if (selectComment) {
                     this.owner.selection.selectComment(commentWidget);

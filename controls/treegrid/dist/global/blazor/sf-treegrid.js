@@ -733,7 +733,7 @@ var TreeGrid = {
         new SfTreeGrid(element, options, dotnetRef);
     },
     modelChanged: function (element, options) {
-        if (!sf.base.isNullOrUndefined(element.blazor_instance)) {
+        if (!sf.base.isNullOrUndefined(element) && !sf.base.isNullOrUndefined(element.blazor_instance)) {
             element.blazor_instance.options = options;
         }
     },

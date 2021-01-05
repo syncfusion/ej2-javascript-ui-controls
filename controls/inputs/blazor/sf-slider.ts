@@ -189,7 +189,6 @@ class SfSlider {
         } else {
             [xPostion, yPostion] = [event.changedTouches[0].clientX, event.changedTouches[0].clientY];
         }
-
         if (event.type === 'mousemove') {
             pos = { x: event.clientX, y: event.clientY };
         } else if (event.type === 'touchmove' || event.type === 'touchstart') {
@@ -244,6 +243,7 @@ class SfSlider {
         this.setHandlePosition(event);
         this.updateValue();
         if (this.options.Type !== DEFAULTSLIDER) {
+            this.rangeBar.style.transition = this.transition.rangeBar;
             this.setRangeBarPosition();
         }
         // tslint:disable-next-line:no-any
@@ -280,6 +280,10 @@ class SfSlider {
     public unWireEvents(): void {
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keydown', this.keyDown);
+        EventHandler.remove(this.element, 'focusout', this.focusOut);
+        if (this.options.Type === 'Range') {
+            EventHandler.remove(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown);
+        }
         window.removeEventListener('resize', this.onResize);
         this.unWireFirstHandleEventArgs();
         if (this.options.Type === 'Range') {
@@ -1083,6 +1087,7 @@ class SfSlider {
             this.options.IsImmediateValue = properties.IsImmediateValue;
         }
         if (this.options.Enabled && !this.options.ReadOnly) {
+            this.unWireEvents();
             this.wireEvents();
         } else {
             this.unWireEvents();

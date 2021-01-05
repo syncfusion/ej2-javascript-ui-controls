@@ -3082,6 +3082,7 @@ export class StickyNotesAnnotation {
                     } else {
                         updateAnnotation.bounds.left = newAnnotation.bounds.x;
                         updateAnnotation.bounds.top = newAnnotation.bounds.y;
+                        updateAnnotation.vertexPoints = newAnnotation.vertexPoints;
                     }
                     updateAnnotation.note = '';
                     updateAnnotation.comments = [];

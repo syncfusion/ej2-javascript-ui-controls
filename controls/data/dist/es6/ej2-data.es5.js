@@ -2710,7 +2710,9 @@ var JsonAdaptor = /** @__PURE__ @class */ (function (_super) {
             result = DataUtil.group(result, field, agg, null, null, args.group[0].comparer, true);
             count = result.length;
             var data = result;
-            result = this.onPage(result, args.page, args.query);
+            if (args.page) {
+                result = this.onPage(result, args.page, args.query);
+            }
             this.formGroupResult(result, data);
         }
         return { result: result, count: count };

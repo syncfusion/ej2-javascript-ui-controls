@@ -4937,7 +4937,10 @@ class Timeline {
         this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit);
         this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit);
         let numberOfCells = this.calculateNumberOfTimelineCells(newTimeline);
-        newTimeline.timelineUnitSize = Math.abs((chartWidth - 25)) / numberOfCells;
+        let scrollHeight = this.parent.ganttChartModule.scrollElement.offsetHeight - 17; //17 is horizontal scrollbar width
+        let contentHeight = this.parent.ganttChartModule.chartBodyContent.offsetHeight;
+        let emptySpace = contentHeight <= scrollHeight ? 0 : 17;
+        newTimeline.timelineUnitSize = Math.abs((chartWidth - emptySpace)) / numberOfCells;
         let args = {
             requestType: 'beforeZoomToProject',
             timeline: newTimeline
@@ -6387,7 +6390,7 @@ class GanttTreeGrid {
     /* tslint:disable-next-line:max-func-body-length */
     createTreeGridColumn(column, isDefined) {
         let taskSettings = this.parent.taskFields;
-        column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
+        column.disableHtmlEncode = !isNullOrUndefined(column.disableHtmlEncode) ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
         if (taskSettings.id !== column.field) {
             column.clipMode = column.clipMode ? column.clipMode : 'EllipsisWithTooltip';
         }
@@ -6452,9 +6455,6 @@ class GanttTreeGrid {
                     column.template = '<div class="e-ganttnotes-info">' +
                         '<span class="e-icons e-notes-info"></span></div>';
                 }
-            }
-            else {
-                column.disableHtmlEncode = false;
             }
         }
         else if (taskSettings.baselineStartDate === column.field ||
@@ -8260,7 +8260,7 @@ class ChartRows extends DateProcessor {
             let tRow = this.getGanttChartRow(i, tempTemplateData);
             this.ganttChartTableBody.appendChild(tRow);
             // To maintain selection when virtualization is enabled
-            if (this.parent.selectionModule && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            if (this.parent.selectionModule && this.parent.allowSelection) {
                 this.parent.selectionModule.maintainSelectedRecords(parseInt(tRow.getAttribute('aria-rowindex'), 10));
             }
         }
@@ -14553,7 +14553,6 @@ class EditTooltip {
     createTooltip(opensOn, mouseTrail, target) {
         this.toolTipObj = new Tooltip({
             opensOn: opensOn,
-            content: this.getTooltipText(-1),
             position: 'TopRight',
             mouseTrail: mouseTrail,
             cssClass: ganttTooltip,
@@ -14667,6 +14666,9 @@ class EditTooltip {
         }
         if (this.parent.tooltipSettings.editing) {
             let templateNode = this.parent.tooltipModule.templateCompiler(this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
+            if (getValue('tooltipEle', this.toolTipObj)) {
+                this.parent.renderTemplates();
+            }
             tooltipString = templateNode[0];
         }
         else {
@@ -17869,6 +17871,9 @@ class DialogEdit {
                 item.content = this.renderNotesTab(item.content);
             }
             else if (item.content === 'Segments') {
+                if (this.editedRecord.hasChildRecords) {
+                    item.disabled = true;
+                }
                 item.content = this.renderSegmentsTab(item.content);
             }
         }
@@ -25033,7 +25038,7 @@ class RowDD$1 {
         let gridRow = closest(args.target, '.e-row');
         let dropIndex = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) : args.dropIndex;
         args.dropIndex = dropIndex;
-        args.dropRecord = this.parent.currentViewData[args.dropIndex];
+        args.dropRecord = this.parent.updatedRecords[args.dropIndex];
         this.parent.trigger('rowDrop', args);
         if (this.parent.viewType === 'ResourceView') {
             if (args.dropPosition === 'middleSegment') {
@@ -25062,7 +25067,7 @@ class RowDD$1 {
                 let gObj = this.parent;
                 let draggedRecord;
                 let droppedRecord;
-                this.droppedRecord = gObj.currentViewData[args.dropIndex];
+                this.droppedRecord = gObj.updatedRecords[args.dropIndex];
                 let dragRecords = [];
                 droppedRecord = this.droppedRecord;
                 if (!args.data[0]) {
@@ -25568,7 +25573,7 @@ class RowDD$1 {
                 }
                 let idx;
                 let ganttData = dataSource.length > 0 && this.parent.viewType !== 'ResourceView' ?
-                    dataSource : this.parent.currentViewData;
+                    dataSource : this.parent.updatedRecords;
                 for (let i = 0; i < ganttData.length; i++) {
                     if (this.parent.viewType === 'ResourceView') {
                         if (ganttData[i].ganttProperties.rowUniqueID === deletedRow.ganttProperties.rowUniqueID) {
@@ -25664,7 +25669,7 @@ class RowDD$1 {
                 }
                 let data = [];
                 for (let i = 0; i < fromIndexes.length; i++) {
-                    data[i] = this.parent.currentViewData[fromIndexes[i]];
+                    data[i] = this.parent.updatedRecords[fromIndexes[i]];
                 }
                 let isByMethod = true;
                 let args = {

@@ -2211,14 +2211,16 @@ let QueryBuilder = class QueryBuilder extends Component {
         let isObject = typeof (rule.value) === 'object';
         if (this.allowValidation && (isNullOrUndefined(index) || (isObject ? rule.value.length > 0 : rule.value))) {
             let valElem = ruleElem.querySelectorAll('.e-rule-value .e-control');
-            if (valElem[0].className.indexOf('e-tooltip') > -1) {
-                getComponent(valElem[0], 'tooltip').destroy();
-            }
-            else if (valElem[0].parentElement.className.indexOf('e-tooltip') > -1) {
-                getComponent(valElem[0].parentElement, 'tooltip').destroy();
-            }
-            if (valElem[1] && valElem[1].parentElement.className.indexOf('e-tooltip') > -1) {
-                getComponent(valElem[1].parentElement, 'tooltip').destroy();
+            if (valElem.length > 0) {
+                if (valElem[0].className.indexOf('e-tooltip') > -1) {
+                    getComponent(valElem[0], 'tooltip').destroy();
+                }
+                else if (valElem[0].parentElement.className.indexOf('e-tooltip') > -1) {
+                    getComponent(valElem[0].parentElement, 'tooltip').destroy();
+                }
+                if (valElem[1] && valElem[1].parentElement.className.indexOf('e-tooltip') > -1) {
+                    getComponent(valElem[1].parentElement, 'tooltip').destroy();
+                }
             }
         }
     }
@@ -3241,9 +3243,14 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
                 else if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
                     let format = this.getFormat(column.format);
-                    ruleValue = this.getDate(ruleColl[i].value, format);
-                    if (dateOperColl.indexOf(oper) > -1) {
-                        isDateFilter = true;
+                    if (!isNullOrUndefined(ruleColl[i].value)) {
+                        ruleValue = this.getDate(ruleColl[i].value, format);
+                        if (dateOperColl.indexOf(oper) > -1) {
+                            isDateFilter = true;
+                        }
+                    }
+                    else {
+                        ruleValue = null;
                     }
                 }
                 else {

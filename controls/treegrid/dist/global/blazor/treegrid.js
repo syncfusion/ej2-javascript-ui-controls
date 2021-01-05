@@ -1451,6 +1451,7 @@ var Render = /** @class */ (function () {
         var cellElement;
         var column = this.parent.getColumnByUid(args.column.uid);
         var summaryRow = data.isSummaryRow;
+        var frozenColumns = this.parent.getFrozenColumns();
         if (!sf.base.isNullOrUndefined(data.parentItem)) {
             index = data.parentItem.index;
         }
@@ -1514,16 +1515,16 @@ var Render = /** @class */ (function () {
         else if (this.templateResult) {
             this.templateResult = null;
         }
-        if (this.parent.frozenColumns > this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
-            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns) {
+        if (frozenColumns > this.parent.treeColumnIndex && frozenColumns > 0 &&
+            grid.getColumnIndexByUid(args.column.uid) === frozenColumns) {
             sf.base.addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
-        else if (this.parent.frozenColumns < this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
-            (grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns
-                || grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1)) {
+        else if (frozenColumns < this.parent.treeColumnIndex && frozenColumns > 0 &&
+            (grid.getColumnIndexByUid(args.column.uid) === frozenColumns
+                || grid.getColumnIndexByUid(args.column.uid) === frozenColumns - 1)) {
             sf.base.addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
-        else if (this.parent.frozenColumns === this.parent.treeColumnIndex && this.parent.frozenColumns > 0 &&
+        else if (frozenColumns === this.parent.treeColumnIndex && frozenColumns > 0 &&
             grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex - 1) {
             sf.base.addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
@@ -2582,8 +2583,10 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
                                     treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                     if (editedData && editedData.taskData) {
                                         if (sf.base.isBlazor()) {
-                                            editedData.taskData[keys[j]] = editedData[keys[j]]
-                                                = control.grid.currentViewData[i][keys[j]] = treeData[i][keys[j]];
+                                            var taskData = 'taskData';
+                                            editedData.taskData[keys[j]]
+                                                = editedData[keys[j]] = control.grid.currentViewData[i][keys[j]]
+                                                    = control.grid.currentViewData[i][taskData][keys[j]] = treeData[i][keys[j]];
                                         }
                                         else {
                                             editedData.taskData[keys[j]] = editedData[keys[j]] = treeData[i][keys[j]];
@@ -2828,7 +2831,7 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
             }
             control.renderModule.cellRender({
                 data: record, cell: row.cells[index_2] ? row.cells[index_2]
-                    : movableRow.cells[index_2 - control.frozenColumns],
+                    : movableRow.cells[index_2 - control.getFrozenColumns()],
                 column: control.grid.getColumns()[control.treeColumnIndex],
                 requestType: action
             });
@@ -5269,7 +5272,7 @@ var TreeGrid = /** @class */ (function (_super) {
             if (rows.length) {
                 action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
             }
-            else {
+            else if (this.allowPaging) {
                 var isExpandCollapseall = this.enableCollapseAll;
                 this.setProperties({ enableCollapseAll: true }, true);
                 this.grid.pagerModule.goToPage(1);

@@ -1,7 +1,7 @@
 /**
  * Selection commands spec document
  */
-import { detach } from '@syncfusion/ej2-base';
+import { detach, Browser } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { SelectionCommands } from '../../../src/editor-manager/plugin/selection-commands';
 
@@ -625,5 +625,33 @@ describe('Bold the content', () => {
         domSelection.setSelectionText(document, text1, text1, 1, 1);
         SelectionCommands.applyFormat(document, 'bold', parentDiv);
         expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
+    });
+});
+
+describe('Bold the content inside table in fire fox', () => {
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let defaultUA: string = navigator.userAgent;
+    
+    let innervalue: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 33.3333%;" class="">dfbfdb</td><td style="width: 33.3333%;" class="">dfbdfb</td><td style="width: 33.3333%;" class="">dfbfdb</td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+
+    beforeAll(() => {
+        Browser.userAgent = fireFox;
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('divElement') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Apply bold to the content inside the table testing in firefox', () => {
+        let node1: Node = document.querySelector('tr');
+        domSelection.setSelectionText(document, node1, node1, 0, 3);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        expect(node1.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
 });

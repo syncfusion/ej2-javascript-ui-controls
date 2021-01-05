@@ -498,6 +498,11 @@ export class PdfViewerBase {
      * @private
      */
     public isPassword: boolean = false;
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public restrictionList: any;
 
     constructor(viewer: PdfViewer) {
         this.pdfViewer = viewer;
@@ -897,6 +902,8 @@ export class PdfViewerBase {
                 let toolbarHeight: any = this.pdfViewer.toolbarModule ? this.toolbarHeight : 0;
                 this.mobileScrollerContainer.style.top = (toolbarHeight) + 'px';
             }
+            this.restrictionList = data.RestrictionSummary;
+            this.RestrictionEnabled(this.restrictionList, false);
         } else {
             this.pageCount = 0;
             this.currentPageNumber = 0;
@@ -924,7 +931,31 @@ export class PdfViewerBase {
             annotationModule.textMarkupAnnotationModule.createAnnotationSelectElement();
         }
     }
-
+    // tslint:disable-next-line
+    private RestrictionEnabled(restrictionSummary: any, isEnable: boolean): void {
+        if (restrictionSummary) {
+            for (let i: number = 0; i < restrictionSummary.length; i++) {
+                switch (restrictionSummary[i]) {
+                    case 'Print':
+                        this.pdfViewer.enablePrint = isEnable;
+                        break;
+                    case 'CopyContent':
+                        this.pdfViewer.enableTextSelection = isEnable;
+                        break;
+                    case 'FillFields':
+                        this.pdfViewer.enableFormFields = isEnable;
+                        this.enableFormFieldButton(isEnable);
+                        break;
+                    case 'EditAnnotations':
+                        this.pdfViewer.enableAnnotation = isEnable;
+                        break;
+                }
+                if (this.pdfViewer.toolbarModule) {
+                    this.pdfViewer.toolbarModule.DisableToolbarItems(restrictionSummary[i], isEnable);
+                }
+            }
+        }
+    }
     // tslint:disable-next-line
     private pageRender(data: any): void {
         this.document = null;
@@ -1431,6 +1462,8 @@ export class PdfViewerBase {
         this.tilerequestLists = [];
         this.pdfViewer.formFieldCollections = [];
         this.initiateTextSelectMode();
+        this.RestrictionEnabled(this.restrictionList, true);
+        this.restrictionList = null;
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.navigationPane.sideBarToolbar) {
                 this.navigationPane.clear();
@@ -1488,6 +1521,7 @@ export class PdfViewerBase {
             this.pdfViewer.fireDocumentUnload(this.pdfViewer.fileName);
         }
         this.pdfViewer.fileName = null;
+        this.pdfViewer.downloadFileName = null;
     }
     /**
      * @private

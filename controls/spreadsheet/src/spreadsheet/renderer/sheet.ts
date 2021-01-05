@@ -499,14 +499,15 @@ export class SheetRender implements IRenderer {
             } else if (model.rowSpan > 1) {
                 let prevTopIdx: number = range[2] + 1;
                 if (indexes[0] + model.rowSpan - 1 > prevTopIdx && indexes[0] < prevTopIdx) {
-                    this.refreshPrevMerge(prevTopIdx, indexes[1]);
+                    this.refreshPrevMerge(prevTopIdx, indexes[1], this.parent.viewport.topIndex);
                 }
             }
         }
     }
 
-    private refreshPrevMerge(prevTopIdx: number, colIndex: number): void {
-        let td: HTMLTableCellElement = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(0)) as HTMLTableCellElement;
+    private refreshPrevMerge(prevTopIdx: number, colIndex: number, currTopIdx?: number): void {
+        let td: HTMLTableCellElement
+            = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ? currTopIdx : 0)) as HTMLTableCellElement;
         if (td && td.rowSpan > 1) {
             this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }

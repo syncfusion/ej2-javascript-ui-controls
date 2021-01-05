@@ -429,6 +429,7 @@ export class FreeTextAnnotation {
                     }
                     // tslint:disable-next-line:max-line-length
                     pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);

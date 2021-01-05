@@ -4807,7 +4807,7 @@ class Parser {
                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], false);
             }
             while (i < formula.length) {
-                if ((formula.indexOf('&') > -1) || (this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
+                if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
                     && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1)))) {
                     if (isNullOrUndefined(args)) {
@@ -4952,9 +4952,7 @@ class Parser {
         let storedString = null;
         let condition;
         let ticLoc = tempString.indexOf(this.parent.tic);
-        let singleTicLoc = tempString.indexOf(this.parent.singleTic);
         if (ticLoc > -1) {
-            tempString = tempString.split(this.parent.singleTic).join(this.parent.tic);
             i = tempString.indexOf(this.parent.tic);
             while (i > -1 && tempString.length > 0) {
                 if (storedString === null) {
@@ -7717,6 +7715,9 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             if (!this.isUpperChar(s[0]) && (this.isDigit(s[0]) || s[0] === this.getParseDecimalSeparator() || s[0] === '-' || s[0] === 'n')) {
                 if (s[0] === 'n') {
                     s = s.substring(1);
+                    if (s.indexOf('"n') > -1) {
+                        s = s.replace('"n', '"');
+                    }
                 }
                 return s;
             }
@@ -14694,8 +14695,8 @@ function initSheet(context, sheet) {
         sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
-        sheet.rows = sheet.rows || [];
-        sheet.columns = sheet.columns || [];
+        context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
+        context.setSheetPropertyOnMute(sheet, 'columns', sheet.columns || []);
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
         sheet.state = sheet.state || 'Visible';
@@ -18326,7 +18327,7 @@ class Edit {
             let cell = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
             let left = this.editCellData.position.left + 1;
             let top = this.editCellData.position.top + 1;
-            let minHeight = this.parent.getRow(this.editCellData.rowIndex).offsetHeight - 3;
+            let minHeight = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex).offsetHeight - 3;
             let minWidth = this.editCellData.element.offsetWidth - 3;
             let mainContElement = this.parent.getMainContent();
             let editWidth = mainContElement.offsetWidth - left - 28;
@@ -19079,7 +19080,7 @@ class Selection {
                 if (isMergeRange && offset) { // Need to handle half hidden merge cell in better way
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(ele, range, sheet, this.parent.enableRtl, offset);
+                locateElem(ele, range, sheet, this.parent.enableRtl);
             }
         }
         let eArgs = { action: 'getCurrentEditSheetIdx', sheetIndex: null };
@@ -19155,12 +19156,12 @@ class Selection {
                 if (isMergeRange) {
                     offset.left = { idx: 0, size: 0 };
                 }
-                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, offset);
+                locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
             }
             this.parent.notify(activeCellChanged, null);
         }
         else {
-            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl);
         }
     }
     getOffset(rowIdx, colIdx) {
@@ -19656,7 +19657,7 @@ class Scroll {
                 if (temp < scrollTop) {
                     temp += getRowHeight(sheet, i);
                     if (temp > scrollTop) {
-                        return { idx: i, size: temp - getRowHeight(sheet, i) };
+                        return { idx: i, size: temp - getRowHeight(sheet, i) < 0 ? 0 : temp - getRowHeight(sheet, i) };
                     }
                     else {
                         return { idx: i + 1, size: temp };
@@ -23200,8 +23201,8 @@ class UndoRedo {
                 cell = getCell(i, j, sheet);
                 cells.push({
                     rowIndex: i, colIndex: j, format: cell ? cell.format : null,
-                    style: cell ? cell.style : null, value: cell ? cell.value : '', formula: cell ? cell.formula : '',
-                    wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
+                    style: cell && cell.style ? Object.assign({}, cell.style) : null, value: cell ? cell.value : '', formula: cell ?
+                        cell.formula : '', wrap: cell && cell.wrap, rowSpan: cell && cell.rowSpan, colSpan: cell && cell.colSpan,
                     hyperlink: cell && cell.hyperlink, image: cell && cell.image && cell.chart
                 });
             }
@@ -23214,7 +23215,7 @@ class UndoRedo {
         for (let i = 0; i < len; i++) {
             setCell(cells[i].rowIndex, cells[i].colIndex, sheet, {
                 value: cells[i].value, format: cells[i].format,
-                style: cells[i].style, formula: cells[i].formula,
+                style: cells[i].style && Object.assign({}, cells[i].style), formula: cells[i].formula,
                 wrap: cells[i].wrap, rowSpan: cells[i].rowSpan,
                 colSpan: cells[i].colSpan, hyperlink: cells[i].hyperlink
             });
@@ -23336,8 +23337,8 @@ class WrapText {
                         ele.classList.add('e-ie-wrap');
                     }
                     if (!isCustomHgt) {
-                        colwidth = getColumnWidth(args.sheet, j);
                         cell = getCell(i, j, args.sheet);
+                        colwidth = getColumnsWidth(args.sheet, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
                             let editElem = this.parent.element.querySelector('.e-spreadsheet-edit');
@@ -25483,6 +25484,7 @@ class Merge {
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.rowSpan = mergeCount;
+                    args.td.style.display = '';
                 }
             }
         }
@@ -25499,6 +25501,7 @@ class Merge {
                 if (mergeCount > 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
                     args.td.colSpan = mergeCount;
+                    args.td.style.display = '';
                 }
             }
         }
@@ -35505,13 +35508,13 @@ class SheetRender {
             else if (model.rowSpan > 1) {
                 let prevTopIdx = range[2] + 1;
                 if (indexes[0] + model.rowSpan - 1 > prevTopIdx && indexes[0] < prevTopIdx) {
-                    this.refreshPrevMerge(prevTopIdx, indexes[1]);
+                    this.refreshPrevMerge(prevTopIdx, indexes[1], this.parent.viewport.topIndex);
                 }
             }
         }
     }
-    refreshPrevMerge(prevTopIdx, colIndex) {
-        let td = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(0));
+    refreshPrevMerge(prevTopIdx, colIndex, currTopIdx) {
+        let td = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ? currTopIdx : 0));
         if (td && td.rowSpan > 1) {
             this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
         }

@@ -4047,6 +4047,10 @@ export class Selection {
                         return (offset > count ? offset : count) + 1;
                     }
                 }
+                if (offset === count + inline.length && inline instanceof FieldElementBox &&
+                    inline.fieldType === 1 && inline.previousNode instanceof ImageElementBox) {
+                    return offset;
+                }
                 count += inline.length;
             }
         } else {
@@ -6119,6 +6123,7 @@ export class Selection {
      * Return line widget left
      * @private
      */
+    //tslint:disable: max-func-body-length
     public getLeftInternal(widget: LineWidget, elementBox: ElementBox, index: number): number {
         let left: number = widget.paragraph.x;
         let paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
@@ -6168,7 +6173,7 @@ export class Selection {
         }
         if (!isNullOrUndefined(elementBox)) {
             left += elementBox.margin.left;
-            if (isRtlText || (this.documentHelper.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
+            if ((isRtlText && !isParaBidi) || (this.documentHelper.moveCaretPosition === 1 && !isRtlText && isParaBidi)) {
                 left += elementBox.width;
             }
         }
@@ -6186,7 +6191,9 @@ export class Selection {
                 left += elementBox.width;
             } else if (index > (elementBox as TextElementBox).length) {
                 width = this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
-                if (isRtlText) {
+                if (isRtlText && isParaBidi) {
+                    left = left;
+                } else if (isRtlText) {
                     left -= elementBox.width + width;
                 } else {
                     left += elementBox.width + width;
@@ -6195,7 +6202,9 @@ export class Selection {
                 // tslint:disable-next-line:max-line-length
                 width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat);
                 (elementBox as TextElementBox).trimEndWidth = width;
-                if (isRtlText) {
+                if (isRtlText && isParaBidi) {
+                    left = left;
+                } else if (isRtlText) {
                     left -= width;
                 } else {
                     left += width;
@@ -7908,7 +7917,7 @@ export class Selection {
                 inline = element;
             }
             let width: number = element.margin.left + element.width;
-            if (isNullOrUndefined(element.nextNode) ) {
+            if (isNullOrUndefined(element.nextNode)) {
                 //Include width of Paragraph mark.
                 width += this.documentHelper.textHelper.getParagraphMarkWidth(element.line.paragraph.characterFormat);
             }

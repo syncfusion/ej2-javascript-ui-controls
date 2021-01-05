@@ -223,6 +223,7 @@ var SfSlider = /** @class */ (function () {
         this.setHandlePosition(event);
         this.updateValue();
         if (this.options.Type !== DEFAULTSLIDER) {
+            this.rangeBar.style.transition = this.transition.rangeBar;
             this.setRangeBarPosition();
         }
         // tslint:disable-next-line:no-any
@@ -260,6 +261,10 @@ var SfSlider = /** @class */ (function () {
     SfSlider.prototype.unWireEvents = function () {
         sf.base.EventHandler.remove(this.element, 'click', this.clickHandler);
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyDown);
+        sf.base.EventHandler.remove(this.element, 'focusout', this.focusOut);
+        if (this.options.Type === 'Range') {
+            sf.base.EventHandler.remove(this.rangeBar, 'mousedown touchstart', this.rangeBarMousedown);
+        }
         window.removeEventListener('resize', this.onResize);
         this.unWireFirstHandleEventArgs();
         if (this.options.Type === 'Range') {
@@ -1110,6 +1115,7 @@ var SfSlider = /** @class */ (function () {
             this.options.IsImmediateValue = properties.IsImmediateValue;
         }
         if (this.options.Enabled && !this.options.ReadOnly) {
+            this.unWireEvents();
             this.wireEvents();
         }
         else {

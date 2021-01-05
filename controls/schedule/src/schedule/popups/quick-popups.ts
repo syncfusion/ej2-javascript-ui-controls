@@ -845,6 +845,16 @@ export class QuickPopups {
                 } else {
                     this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
                         ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;
+                    if (isNullOrUndefined(this.morePopup.relateTo)) {
+                        let workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS +
+                            ' tbody tr td[data-group-index="' + gIndex + '"]'));
+                        for (let i: number = 0; i < workCells.length; i++) {
+                            let date: string = workCells[i].getAttribute('data-date');
+                            if (date < tdDate) {
+                                this.morePopup.relateTo = workCells[i] as HTMLElement;
+                            }
+                        }
+                    }
                 }
             } else {
                 this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;

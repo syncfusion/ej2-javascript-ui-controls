@@ -2737,7 +2737,12 @@ export class AnnotationToolbar {
         }
         if (!isBlazor()) {
             if (isPropertiesChanges) {
-                this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
+                // tslint:disable-next-line:max-line-length
+                if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line')) {
+                    this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
+                } else {
+                    this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
+                }
                 this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
                 this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
                 this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
