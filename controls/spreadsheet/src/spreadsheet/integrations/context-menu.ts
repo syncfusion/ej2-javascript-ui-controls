@@ -204,6 +204,26 @@ export class ContextMenu {
         } else {
             items = args.items;
         }
+        if (target === 'ColumnHeader' || target === 'RowHeader') {
+            if (args.element && args.element.childElementCount > 0) {
+                let insertEle: HTMLElement =
+                    target === 'ColumnHeader' ? args.element.querySelector('#' + this.parent.element.id + '_cmenu_insert_column') :
+                        args.element.querySelector('#' + this.parent.element.id + '_cmenu_insert_row');
+                let deleteEle: HTMLElement = target ===
+                    'ColumnHeader' ? args.element.querySelector('#' + this.parent.element.id + '_cmenu_delete_column') :
+                    args.element.querySelector('#' + this.parent.element.id + '_cmenu_delete_row');
+                if (this.parent.allowInsert && insertEle.classList.contains('e-disabled')) {
+                    insertEle.classList.remove('e-disabled');
+                } else if (!this.parent.allowInsert && !insertEle.classList.contains('e-disabled')) {
+                    insertEle.classList.add('e-disabled');
+                }
+                if (this.parent.allowDelete && deleteEle.classList.contains('e-disabled')) {
+                    deleteEle.classList.remove('e-disabled');
+                } else if (!this.parent.allowDelete && !deleteEle.classList.contains('e-disabled')) {
+                    deleteEle.classList.add('e-disabled');
+                }
+            }
+        }
         this.parent.trigger('contextMenuBeforeOpen', args);
         this.parent.notify(cMenuBeforeOpen, extend(args, { target: target, items: items }));
     }

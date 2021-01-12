@@ -1313,8 +1313,16 @@ export function getFrozenRightTbody(gObj: IGrid): Element {
     return tbody;
 }
 
-/** @hidden */
-// tslint:disable-next-line:no-any
-export function reorderArrayValues(arr: any[], from: number, to: number): void {
-    arr.splice(to, 0, arr.splice(from, 1)[0]);
+export function setRowsInTbody(
+    tbody: Element, mTbody: Element, frTbody: Element, tr: Element[], mTr: Element[], frTr: Element[], callBack: Function
+): void {
+    if (tbody && tr) {
+        callBack(tbody, tr);
+    }
+    if (mTbody && mTr) {
+        callBack(mTbody, mTr);
+    }
+    if (frTbody && frTr) {
+        callBack(frTbody, frTr);
+    }
 }

@@ -338,7 +338,7 @@ export class Edit {
     }
 
     private startEdit(address?: string, value?: string, refreshCurPos: boolean = true, preventFormulaReference?: boolean): void {
-        this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
+        if (this.parent.showSheetTabs) { this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true'); }
         let sheet: SheetModel = this.parent.getActiveSheet();
         let actCell: number[] = getCellIndexes(sheet.activeCell);
         let cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
@@ -691,7 +691,9 @@ export class Edit {
             let cell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             let eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
             this.editCellData.value = <string>eventArgs.value;
-            if (cell && cell.formula) { this.editCellData.formula = cell.formula; }
+            if (cell && cell.formula) {
+                this.editCellData.formula = cell.formula;
+            }
             if (cell.wrap) {
                 this.parent.notify(wrapEvent, { range: cellIndex, wrap: true, sheet: sheet });
             }
@@ -763,7 +765,7 @@ export class Edit {
         if (fSize !== '') {
             (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = fSize;
         }
-        this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
+        if (this.parent.showSheetTabs) { this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled'); }
     }
 
     public cancelEdit(refreshFormulaBar: boolean = true, trigEvent: boolean = true, event?: MouseEvent & TouchEvent |

@@ -197,6 +197,11 @@ export class Parser {
                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_expression], false);
             }
             while (i < formula.length) {
+                formula = formula.split('-*').join('-').split('/*').join('/').split('*/').join('*').split('-/').join('-').
+                    split('*+').join('*').split('+*').join('+');
+                if (formula.indexOf('*-') > - 1 || formula.indexOf('/-') > - 1) {
+                    formula = '-' + formula.split('*-').join('*').split('/-').join('/');
+                }
                 if ((this.parent.isDigit(formula[i]) && ((formula.length > i + 1)
                     && (this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) && ((formula.length > i + 2)
                         && (!isNullOrUndefined(formula[i + 2]) && this.indexOfAny(formula[i + 2], arithemeticArr) > -1)))) {
@@ -269,7 +274,7 @@ export class Parser {
                     }
                     if (formula[i] === '-') {
                         form = form + formula[i];
-                        form = form.split('++').join('+').split('+-').join('-').split('-').join('-');
+                        form = form.split('++').join('+').split('+-').join('-').split('-+').join('-');
                     }
                     if (formula[i] === '/' || formula[i] === '*') {
                         form = form + formula[i];

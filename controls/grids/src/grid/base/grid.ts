@@ -3782,12 +3782,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 let cells: string = 'cells';
                 let rowIdx: string = 'index';
                 let rowsObj: Row<Column>[] = this.getRowsObject();
+                let indent: number = this.getIndentCount();
                 let cellIndex: number = this.getNormalizedColumnIndex(columnUid);
                 for (let j: number = 0; j < rowsObj.length; j++) {
-                    let cell: Cell<Column> = rowsObj[j][cells][cellIndex];
-                    let cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
-                    let td: Element = this.getCellFromIndex(j, cellIndex);
-                    cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                    if (rowsObj[j].isDataRow && !isNullOrUndefined(rowsObj[j].index)) {
+                        let cell: Cell<Column> = rowsObj[j][cells][cellIndex];
+                        let cellRenderer: CellRenderer = new CellRenderer(this as IGrid, this.serviceLocator);
+                        let td: Element = this.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
+                        cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                    }
                 }
             })
         }

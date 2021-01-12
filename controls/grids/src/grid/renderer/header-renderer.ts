@@ -305,6 +305,7 @@ export class HeaderRender implements IRenderer {
     }
     private createHeaderContent(): { thead: Element, rows: Row<Column>[] } {
         let gObj: IGrid = this.parent;
+        let index: number = 1;
         let frozenMode: freezeMode = gObj.getFrozenMode();
         let columns: Column[] = <Column[]>gObj.getColumns();
         let thead: Element = this.parent.createElement('thead');
@@ -323,11 +324,12 @@ export class HeaderRender implements IRenderer {
         }
         rows = this.getHeaderCells(rows);
         if (frozenMode === 'Right') {
+            index = 0;
             rows = this.ensureColumns(rows);
         }
         let frzCols: number = this.parent.getFrozenColumns();
-        if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[1]) {
-            let colFreezeMode: freezeTable = rows[0].cells[1].column.getFreezeTableName();
+        if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[index]) {
+            let colFreezeMode: freezeTable = rows[0].cells[index].column.getFreezeTableName();
             if (colFreezeMode === 'movable' || (frozenMode === 'Left-Right' && colFreezeMode === 'frozen-right')) {
                 if (frozenMode === 'Right') {
                     rows[0].cells.pop();

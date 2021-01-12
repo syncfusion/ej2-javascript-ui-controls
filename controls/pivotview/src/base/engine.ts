@@ -168,6 +168,7 @@ export class PivotEngine {
     /* tslint:disable-next-line:max-line-length */
     private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
+    private clonedReport: IDataOptions;
     /* tslint:disable:max-func-body-length */
     public renderEngine(
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function): void {
@@ -216,6 +217,7 @@ export class PivotEngine {
         this.globalize = new Internationalization();
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.fieldsType = customProperties ? customProperties.fieldsType : {};
+        this.clonedReport = customProperties ? customProperties.clonedReport : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
@@ -445,7 +447,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setFullYear(date.getFullYear())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setFullYear(date.getFullYear())).toString()));
                                         }
                                         break;
                                     case 'Quarters':
@@ -479,7 +481,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString()));
                                         }
                                         break;
                                     case 'Days':
@@ -489,7 +491,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString()));
                                         }
                                         break;
                                     case 'Hours':
@@ -499,7 +501,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setHours(date.getHours())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setHours(date.getHours())).toString()));
                                         }
                                         break;
                                     case 'Minutes':
@@ -509,7 +511,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setMinutes(date.getMinutes())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMinutes(date.getMinutes())).toString()));
                                         }
                                         break;
                                     case 'Seconds':
@@ -519,7 +521,7 @@ export class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : new Date(newDate.setSeconds(date.getSeconds())).toString());
+                                            item[this.fieldKeys[newFieldName] as any] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setSeconds(date.getSeconds())).toString()));
                                         }
                                         break;
                                 }
@@ -574,11 +576,20 @@ export class PivotEngine {
                                     let dataFields: IFieldOptions[] = this.rows;
                                     dataFields = dataFields.concat(this.columns, this.values, this.filters);
                                     while (gCnt--) {
+                                        let caption: string = actualField.caption ? actualField.caption : actualField.name;
+                                        if (this.clonedReport) {
+                                            let clonedFields: IFieldOptions[] = this.clonedReport.rows;
+                                            clonedFields = clonedFields.concat(this.clonedReport.columns, this.clonedReport.values, this.clonedReport.filters);
+                                            let cloneField: IFieldOptions = PivotUtil.getFieldByName(groupKeys[gCnt], clonedFields) as IFieldOptions;
+                                            if (cloneField) {
+                                                caption = cloneField.caption ? cloneField.caption : cloneField.name;
+                                            }
+                                        }
                                         if (!PivotUtil.getFieldByName(groupKeys[gCnt], dataFields)) {
                                             groupField = groupFields[groupKeys[gCnt]];
                                             let newField: IFieldOptions = {
                                                 name: groupKeys[gCnt],
-                                                caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + (actualField.caption ? actualField.caption : actualField.name) + ')',
+                                                caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')',
                                                 type: 'Count' as SummaryTypes,
                                                 showNoDataItems: actualField.showNoDataItems,
                                                 baseField: actualField.baseField,
@@ -5521,6 +5532,10 @@ export interface ICustomProperties {
      * Specifies the customized field type information.
      */
     fieldsType?: IStringIndex;
+    /**
+     * Specifies the cloned report.
+     */
+    clonedReport?: IDataOptions;
 }
 /**
  * @hidden

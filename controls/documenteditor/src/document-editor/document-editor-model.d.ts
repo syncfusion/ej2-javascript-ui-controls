@@ -14,7 +14,7 @@ export interface DocumentEditorSettingsModel {
 
     /**
      * Specifies the user preferred font family of Document Editor.
-     * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Windings']
+     * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Wingdings']
      */
     fontFamilies?: string[];
 

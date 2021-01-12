@@ -112,7 +112,7 @@ export class Year extends ViewBase implements IRenderer {
             let weekDates: Date[] = dateCollection.splice(0, util.WEEK_LENGTH);
             let tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
             if (this.parent.activeViewOptions.showWeekNumber) {
-                let weekNumber: number = util.getWeekNumber(weekDates.slice(-1)[0]);
+                let weekNumber: number = this.getWeekNumberContent(weekDates);
                 let td: HTMLElement = createElement('td', {
                     className: 'e-week-number',
                     attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },

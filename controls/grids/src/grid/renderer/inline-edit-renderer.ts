@@ -171,6 +171,10 @@ export class InlineEditRender {
             frozenRightForm?: HTMLFormElement
         }): void {
         let td: Element = row.firstChild as Element;
+        if (this.parent.getVisibleFrozenColumns() && this.parent.editSettings.template) {
+                td.querySelector('colgroup').innerHTML = this.parent.getHeaderContent().querySelector('.e-frozenheader').
+                 querySelector('colgroup').innerHTML;
+        }
         let fCls: string;
         let cont: Element;
         let frozen: string = 'frozen';
@@ -252,22 +256,18 @@ export class InlineEditRender {
 
     private updateFrozenRightCont(row: Element, ele: Element, frEle: Element): void {
         row.innerHTML = '';
-        if (!this.parent.editSettings.template) {
-            this.renderRightFrozen(ele, frEle);
-            frEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
-                .querySelector('.e-frozen-right-header').querySelector('colgroup').innerHTML;
-        }
+        this.renderRightFrozen(ele, frEle);
+        frEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
+            .querySelector('.e-frozen-right-header').querySelector('colgroup').innerHTML;
         ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() - this.parent.getFrozenRightColumnsCount() + '');
         frEle.setAttribute('colspan', this.parent.getFrozenRightColumnsCount() + '');
     }
 
     private updateFrozenCont(row: Element, ele: Element, mEle: Element): void {
         row.innerHTML = '';
-        if (!this.parent.editSettings.template) {
-            this.renderMovable(ele, mEle);
-            mEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
+        this.renderMovable(ele, mEle);
+        mEle.querySelector('colgroup').innerHTML = this.parent.getHeaderContent()
             .querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
-        }
         ele.setAttribute('colspan', this.parent.getVisibleFrozenColumns() + '');
         mEle.setAttribute('colspan', this.parent.getVisibleColumns().length - this.parent.getVisibleFrozenColumns() + '');
     }

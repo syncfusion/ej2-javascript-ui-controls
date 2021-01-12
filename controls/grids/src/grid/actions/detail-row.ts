@@ -117,6 +117,8 @@ export class DetailRow {
                         parentKeyFieldValue: data[gObj.childGrid.queryString],
                         parentRowData: data
                     };
+                    (<{ isLegacyTemplate?: boolean }>childGrid).isLegacyTemplate = gObj.isReact
+                        || (<{ isLegacyTemplate?: boolean }>gObj).isLegacyTemplate;
                     if (gObj.isPrinting) {
                         (childGrid as IGrid).isPrinting = true;
                         childGrid.on(events.contentReady, this.promiseResolve(childGrid), this);

@@ -1,6 +1,6 @@
 import { isNullOrUndefined , isBlazor} from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
-import { iterateArrayOrObject } from '../base/util';
+import { iterateArrayOrObject, isGroupAdaptive } from '../base/util';
 import * as events from '../base/constant';
 import { IGrid } from '../base/interface';
 
@@ -112,6 +112,8 @@ export class ShowHide {
                 }
                 return;
             }
+            if ( isGroupAdaptive(this.parent)) {
+            this.parent.contentModule.emptyVcRows(); }
             if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
                 this.parent.clearSelection();
             }

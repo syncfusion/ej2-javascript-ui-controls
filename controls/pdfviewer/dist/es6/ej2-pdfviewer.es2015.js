@@ -4917,6 +4917,28 @@ class ResizeTool extends ToolBase {
      * Aspect ratio used to resize the width or height based on resizing the height or width
      */
     scaleObjects(deltaWidth, deltaHeight, corner, startPoint, endPoint, source) {
+        // tslint:disable-next-line
+        let annotationSettings = this.commandHandler.annotationModule.findAnnotationSettings(source);
+        let annotationMaxHeight = 0;
+        let annotationMaxWidth = 0;
+        let annotationMinHeight = 0;
+        let annotationMinWidth = 0;
+        let x = this.currentPosition.x - this.startPosition.x;
+        let y = this.currentPosition.y - this.startPosition.y;
+        x = x / this.commandHandler.viewerBase.getZoomFactor();
+        y = y / this.commandHandler.viewerBase.getZoomFactor();
+        // tslint:disable-next-line
+        let annotationElement = source;
+        // tslint:disable-next-line
+        let size = this.getPoints(x, y);
+        let width = annotationElement.bounds.width + size.x;
+        let height = annotationElement.bounds.height + size.y;
+        if (annotationSettings.minWidth || annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
+            annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+            annotationMinHeight = annotationSettings.minHeight ? annotationSettings.minHeight : 0;
+            annotationMinWidth = annotationSettings.minWidth ? annotationSettings.minWidth : 0;
+        }
         if (source instanceof Selector && source.annotations.length === 1 &&
             // tslint:disable-next-line:max-line-length
             (source.annotations[0].shapeAnnotationType === 'Perimeter' || source.annotations[0].shapeAnnotationType === 'Radius' || source.shapeAnnotationType === 'Stamp')) {
@@ -4933,21 +4955,21 @@ class ResizeTool extends ToolBase {
         }
         else if (source.shapeAnnotationType === 'Image' || source.shapeAnnotationType === 'HandWrittenSignature') {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
-                deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
+                if (width >= annotationMaxWidth && height < annotationMaxHeight) {
+                    deltaHeight = Math.max(deltaHeight, deltaWidth);
+                }
+                if (height >= annotationMaxHeight && width < annotationMaxWidth) {
+                    deltaWidth = Math.max(deltaHeight, deltaWidth);
+                }
+                if (width < annotationMaxWidth && height < annotationMaxHeight) {
+                    deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
+                }
             }
         }
         else {
             // tslint:disable-next-line:max-line-length
             if (source.shapeAnnotationType === 'Perimeter' || source.shapeAnnotationType === 'Radius'
                 || source.shapeAnnotationType === 'Stamp') {
-                // tslint:disable-next-line
-                let annotationSettings = this.commandHandler.annotationModule.findAnnotationSettings(source);
-                let annotationMaxHeight = 0;
-                let annotationMaxWidth = 0;
-                if (annotationSettings.maxHeight || annotationSettings.maxWidth) {
-                    annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
-                    annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
-                }
                 if (!annotationMaxHeight || !annotationMaxWidth) {
                     if (!(deltaHeight === 1 && deltaWidth === 1)) {
                         deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
@@ -20760,9 +20782,10 @@ class StickyNotesAnnotation {
     /**
      * @private
      */
+    // tslint:disable-next-line
     getDateAndTime(date) {
         if (!date) {
-            date = new Date().toLocaleString();
+            date = new Date();
         }
         this.globalize = new Internationalization();
         let dateOptions = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime' };
@@ -23162,38 +23185,34 @@ class NavigationPane {
         }
     }
     createSidebarToolBar() {
-        // tslint:disable-next-line:max-line-length
-        this.thumbnailButton = createElement('button', { id: this.pdfViewer.element.id + '_thumbnail-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Page Thumbnails', 'tabindex': '-1' } });
-        this.thumbnailButton.className = 'e-pv-tbar-btn e-pv-thumbnail-view-button e-btn';
-        this.thumbnailButton.setAttribute('type', 'button');
-        // tslint:disable-next-line:max-line-length
-        let thumbnailButtonSpan = createElement('span', { id: this.pdfViewer.element.id + '_thumbnail-view' + '_icon', className: 'e-pv-thumbnail-view-disable-icon e-pv-icon' });
-        this.thumbnailButton.appendChild(thumbnailButtonSpan);
         if (!isBlazor()) {
+            // tslint:disable-next-line:max-line-length
+            this.thumbnailButton = createElement('button', { id: this.pdfViewer.element.id + '_thumbnail-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Page Thumbnails', 'tabindex': '-1' } });
+            this.thumbnailButton.className = 'e-pv-tbar-btn e-pv-thumbnail-view-button e-btn';
+            this.thumbnailButton.setAttribute('type', 'button');
+            // tslint:disable-next-line:max-line-length
+            let thumbnailButtonSpan = createElement('span', { id: this.pdfViewer.element.id + '_thumbnail-view' + '_icon', className: 'e-pv-thumbnail-view-disable-icon e-pv-icon' });
+            this.thumbnailButton.appendChild(thumbnailButtonSpan);
             // tslint:disable-next-line:max-line-length
             let thumbnailTooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Page Thumbnails'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             thumbnailTooltip.appendTo(this.thumbnailButton);
-        }
-        else {
-            thumbnailButtonSpan.title = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
-        }
-        // tslint:disable-next-line:max-line-length
-        this.bookmarkButton = createElement('button', { id: this.pdfViewer.element.id + '_bookmark', attrs: { 'disabled': 'disabled', 'aria-label': 'Bookmarks', 'tabindex': '-1' } });
-        this.bookmarkButton.setAttribute('type', 'button');
-        this.bookmarkButton.className = 'e-pv-tbar-btn e-pv-bookmark-button e-btn';
-        // tslint:disable-next-line:max-line-length
-        let buttonSpan = createElement('span', { id: this.pdfViewer.element.id + '_bookmark' + '_icon', className: 'e-pv-bookmark-disable-icon e-pv-icon' });
-        this.bookmarkButton.appendChild(buttonSpan);
-        if (!isBlazor()) {
+            // tslint:disable-next-line:max-line-length
+            this.bookmarkButton = createElement('button', { id: this.pdfViewer.element.id + '_bookmark', attrs: { 'disabled': 'disabled', 'aria-label': 'Bookmarks', 'tabindex': '-1' } });
+            this.bookmarkButton.setAttribute('type', 'button');
+            this.bookmarkButton.className = 'e-pv-tbar-btn e-pv-bookmark-button e-btn';
+            // tslint:disable-next-line:max-line-length
+            let buttonSpan = createElement('span', { id: this.pdfViewer.element.id + '_bookmark' + '_icon', className: 'e-pv-bookmark-disable-icon e-pv-icon' });
+            this.bookmarkButton.appendChild(buttonSpan);
             // tslint:disable-next-line:max-line-length
             let bookMarkTooltip = new Tooltip({ content: this.pdfViewer.localeObj.getConstant('Bookmarks'), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             bookMarkTooltip.appendTo(this.bookmarkButton);
+            this.sideBarToolbar.appendChild(this.thumbnailButton);
+            this.sideBarToolbar.appendChild(this.bookmarkButton);
         }
         else {
-            buttonSpan.title = this.pdfViewer.localeObj.getConstant('Bookmarks');
+            this.thumbnailButton = this.pdfViewer.element.querySelector('.e-pv-thumbnail-view-button');
+            this.bookmarkButton = this.pdfViewer.element.querySelector('.e-pv-bookmark-button');
         }
-        this.sideBarToolbar.appendChild(this.thumbnailButton);
-        this.sideBarToolbar.appendChild(this.bookmarkButton);
         this.thumbnailButton.addEventListener('click', this.sideToolbarOnClick);
         this.bookmarkButton.addEventListener('click', this.bookmarkButtonOnClick);
     }
@@ -47541,6 +47560,13 @@ class TextSearch {
             let checkBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), change: this.checkBoxOnChange.bind(this) });
             checkBox.appendTo(matchCaseInput);
         }
+        let waitingPopup = createElement('div', { id: this.pdfViewer.element.id + '_textSearchLoadingIndicator' });
+        searchInputContainer.appendChild(waitingPopup);
+        waitingPopup.style.position = 'absolute';
+        waitingPopup.style.top = '15px';
+        waitingPopup.style.left = searchInputContainer.clientWidth - 46 + 'px';
+        createSpinner({ target: waitingPopup, cssClass: 'e-spin-center' });
+        this.setLoaderProperties(waitingPopup);
         this.showSearchBox(false);
         if (this.pdfViewer.enableRtl) {
             this.searchBox.classList.add('e-rtl');
@@ -47560,6 +47586,25 @@ class TextSearch {
         this.searchBtn.addEventListener('click', this.searchClickHandler.bind(this));
         this.nextSearchBtn.addEventListener('click', this.nextButtonOnClick.bind(this));
         this.prevSearchBtn.addEventListener('click', this.prevButtonOnClick.bind(this));
+    }
+    setLoaderProperties(element) {
+        let spinnerElement = element.firstChild.firstChild.firstChild;
+        if (spinnerElement) {
+            spinnerElement.style.height = '18px';
+            spinnerElement.style.width = '18px';
+            spinnerElement.style.transformOrigin = '9px 9px 9px';
+        }
+    }
+    showLoadingIndicator(isShow) {
+        let waitingPopup = document.getElementById(this.pdfViewer.element.id + '_textSearchLoadingIndicator');
+        if (waitingPopup) {
+            if (isShow) {
+                showSpinner(waitingPopup);
+            }
+            else {
+                hideSpinner(waitingPopup);
+            }
+        }
     }
     /**
      * @private
@@ -47648,6 +47693,7 @@ class TextSearch {
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
             this.searchCount = 0;
             this.isTextSearchEventTriggered = false;
+            this.showLoadingIndicator(true);
             this.pdfViewer.fireTextSearchStart(inputString, this.isMatchCase);
             if (this.pdfViewer.isExtractText) {
                 if (this.isTextRetrieved) {
@@ -47678,11 +47724,13 @@ class TextSearch {
                     this.searchIndex = 0;
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
                     this.initSearch(this.searchPageIndex, false);
+                    this.showLoadingIndicator(true);
                 }
                 else {
                     this.highlightSearchedTexts(this.searchPageIndex, false);
+                    this.showLoadingIndicator(false);
                 }
-                this.highlightOthers();
+                this.highlightOthers(true);
             }
             else {
                 this.initiateTextSearch(this.searchInput);
@@ -47701,11 +47749,13 @@ class TextSearch {
             if (this.searchIndex < 0) {
                 this.searchPageIndex = ((this.searchPageIndex - 1) < 0) ? (this.pdfViewerBase.pageCount - 1) : this.searchPageIndex - 1;
                 this.initSearch(this.searchPageIndex, false);
+                this.showLoadingIndicator(true);
             }
             else {
                 this.highlightSearchedTexts(this.searchPageIndex, false);
+                this.showLoadingIndicator(false);
             }
-            this.highlightOthers();
+            this.highlightOthers(true);
         }
         else {
             this.searchIndex = this.searchIndex - 1;
@@ -47830,6 +47880,7 @@ class TextSearch {
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
                 }
                 if (this.searchedPages.indexOf(this.searchPageIndex) === -1 && this.searchedPages.length !== this.pdfViewerBase.pageCount) {
+                    this.showLoadingIndicator(true);
                     this.initSearch(this.searchPageIndex, false);
                 }
                 else {
@@ -47997,6 +48048,9 @@ class TextSearch {
             count = this.addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount);
             divCount++;
         }
+        if (className === 'e-pv-search-text-highlight') {
+            this.showLoadingIndicator(false);
+        }
     }
     // tslint:disable-next-line
     addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount) {
@@ -48159,12 +48213,15 @@ class TextSearch {
     highlightOtherOccurrences(pageNumber) {
         this.initSearch(pageNumber, true);
     }
-    highlightOthers() {
+    highlightOthers(isSearched) {
         let indexes = this.getIndexes();
         let lowerPageValue = parseFloat(indexes.lowerPageValue.toString());
         let higherPageValue = parseFloat(indexes.higherPageValue.toString());
         for (let i = lowerPageValue; i <= higherPageValue; i++) {
             this.highlightOtherOccurrences(i);
+        }
+        if (isSearched) {
+            this.showLoadingIndicator(false);
         }
     }
     /**
@@ -48447,6 +48504,7 @@ class TextSearch {
             this.initiateTextSearch(inputElement);
         }
         else if (element.classList.contains('e-pv-search-close')) {
+            this.showLoadingIndicator(false);
             inputElement.value = '';
             this.resetTextSearch();
             inputElement.focus();
@@ -48470,6 +48528,7 @@ class TextSearch {
         }
     }
     onMessageBoxOpen() {
+        this.showLoadingIndicator(false);
         this.pdfViewerBase.getElement('_search_input').blur();
         this.isMessagePopupOpened = true;
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
@@ -48960,16 +49019,16 @@ class FormFields {
         this.maxTabIndex = 0;
         this.minTabIndex = -1;
         // tslint:disable-next-line
-        let data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        if (data !== null) {
+        this.data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        if (this.data !== null) {
             // tslint:disable-next-line
-            let formFieldsData = JSON.parse(data);
+            this.formFieldsData = JSON.parse(this.data);
             let textLayer = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
             let canvasElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
-            if (formFieldsData !== null && canvasElement !== null && textLayer !== null) {
-                for (let i = 0; i < formFieldsData.length; i++) {
+            if (this.formFieldsData !== null && canvasElement !== null && textLayer !== null) {
+                for (let i = 0; i < this.formFieldsData.length; i++) {
                     // tslint:disable-next-line
-                    let currentData = formFieldsData[i];
+                    let currentData = this.formFieldsData[i];
                     // tslint:disable-next-line
                     if (parseFloat(currentData['PageIndex']) == pageIndex) {
                         // tslint:disable-next-line
@@ -48984,8 +49043,10 @@ class FormFields {
                             if (currentData.Name === 'Textbox') {
                                 divElement.style.background = 'white';
                             }
-                            this.applyPosition(divElement, bounds, font);
-                            this.applyPosition(inputField, bounds, font);
+                            // tslint:disable-next-line
+                            this.applyPosition(divElement, bounds, font, pageIndex, currentData['Rotation']);
+                            // tslint:disable-next-line
+                            this.applyPosition(inputField, bounds, font, pageIndex, currentData['Rotation']);
                             // tslint:disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
                             this.applyCommonProperties(inputField, pageIndex, i, currentData);
@@ -48993,6 +49054,11 @@ class FormFields {
                             this.applyTabIndex(currentData, inputField, pageIndex);
                             this.checkIsRequiredField(currentData, inputField);
                             this.applyDefaultColor(inputField);
+                            // tslint:disable-next-line
+                            if (currentData['Rotation'] === 0) {
+                                let rotationAngle = this.getAngle(pageIndex);
+                                divElement.style.transform = 'rotate(' + rotationAngle + 'deg)';
+                            }
                             divElement.appendChild(inputField);
                             textLayer.appendChild(divElement);
                             inputField.addEventListener('focus', this.focusFormFields.bind(this));
@@ -49000,13 +49066,37 @@ class FormFields {
                             inputField.addEventListener('click', this.updateFormFields.bind(this));
                             inputField.addEventListener('change', this.changeFormFields.bind(this));
                             inputField.addEventListener('keydown', this.updateFormFieldsValue.bind(this));
+                            inputField.addEventListener('keyup', this.updateSameFieldsValue.bind(this));
                         }
                     }
                 }
                 window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
-                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(formFieldsData));
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
             }
         }
+    }
+    getAngle(pageIndex) {
+        // tslint:disable-next-line
+        let angle = 0;
+        // tslint:disable-next-line
+        let pageDetails = this.pdfViewerBase.pageSize[pageIndex];
+        if (pageDetails.rotation) {
+            switch (pageDetails.rotation) {
+                case 0:
+                    angle = 0;
+                    break;
+                case 1:
+                    angle = 90;
+                    break;
+                case 2:
+                    angle = 180;
+                    break;
+                case 3:
+                    angle = 270;
+                    break;
+            }
+        }
+        return angle;
     }
     nextField() {
         this.signatureFieldNavigate(true);
@@ -49197,6 +49287,28 @@ class FormFields {
         }
         return currentField;
     }
+    // tslint:disable-next-line
+    getSignatureBounds(LineBounds, bounds, pageIndex) {
+        // tslint:disable-next-line
+        let pageDetails = this.pdfViewerBase.pageSize[pageIndex];
+        // tslint:disable-next-line
+        let bound = 0;
+        switch (pageDetails.rotation) {
+            case 0:
+                bound = bounds;
+                break;
+            case 1:
+                bound = { x: bounds.x + LineBounds.Width, y: pageDetails.width - LineBounds.X + bounds.height };
+                break;
+            case 2:
+                bound = { x: pageDetails.width - bounds.x - bounds.width, y: pageDetails.height - bounds.y - bounds.height };
+                break;
+            case 3:
+                bound = { x: bounds.y - bounds.width + bounds.height, y: pageDetails.height + bounds.width + LineBounds.Height };
+                break;
+        }
+        return bound;
+    }
     /**
      * @private
      */
@@ -49290,6 +49402,10 @@ class FormFields {
                     }
                     datas[currentData.FieldName] = JSON.stringify(csData);
                     if (currentData.Bounds) {
+                        // tslint:disable-next-line
+                        let bounds = this.getSignatureBounds(currentData.LineBounds, currentData.Bounds, currentData.PageIndex);
+                        currentData.Bounds.x = bounds.x;
+                        currentData.Bounds.y = bounds.y;
                         datas[currentData.FieldName + 'bounds'] = JSON.stringify(currentData.Bounds);
                     }
                     else {
@@ -49390,7 +49506,7 @@ class FormFields {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
+                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
             };
             signString = annot.data;
             signatureFontFamily = annot.fontFamily;
@@ -49401,7 +49517,7 @@ class FormFields {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
             signString = annot.data;
         }
@@ -49418,7 +49534,7 @@ class FormFields {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
         }
         this.pdfViewer.add(annot);
@@ -49435,6 +49551,26 @@ class FormFields {
         // tslint:disable-next-line
         this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);
         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
+    }
+    // tslint:disable-next-line
+    updateSameFieldsValue(event) {
+        if (this.formFieldsData) {
+            for (let i = 0; i < this.formFieldsData.length; i++) {
+                // tslint:disable-next-line
+                let currentField = this.formFieldsData[i];
+                if (event.target.name === currentField.FieldName && event.target.id !== currentField.uniqueID) {
+                    // tslint:disable-next-line
+                    let currentTarget = document.getElementById(this.formFieldsData[i].uniqueID);
+                    if (currentTarget) {
+                        currentTarget.value = event.target.value;
+                    }
+                    else {
+                        currentField.Text = event.target.value;
+                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
+                    }
+                }
+            }
+        }
     }
     updateFormFieldsValue(event) {
         // tslint:disable-next-line
@@ -50072,8 +50208,14 @@ class FormFields {
         span.style.position = 'absolute';
         span.id = 'signIcon' + pageIndex + '_' + index;
         let zoomvalue = this.pdfViewerBase.getZoomFactor();
-        span.style.left = left * zoomvalue + 'px';
-        span.style.top = top * zoomvalue + 'px';
+        let rotation = this.getAngle(pageIndex);
+        // tslint:disable-next-line
+        let annotBounds = { left: left, top: top, width: width, height: height };
+        // tslint:disable-next-line
+        let fieldBounds = this.getBounds(annotBounds, pageIndex);
+        span.style.transform = 'rotate(' + rotation + 'deg)';
+        span.style.left = fieldBounds.left * zoomvalue + 'px';
+        span.style.top = fieldBounds.top * zoomvalue + 'px';
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             span.style.height = 5 + 'px';
             span.style.width = 10 + 'px';
@@ -50120,13 +50262,66 @@ class FormFields {
         return this.isSignatureField;
     }
     // tslint:disable-next-line
-    applyPosition(inputField, bounds, font) {
+    getBounds(bound, pageIndex, rotation) {
+        // tslint:disable-next-line
+        let pageDetails = this.pdfViewerBase.pageSize[pageIndex];
+        // tslint:disable-next-line
+        let bounds;
+        if (rotation > 0) {
+            bounds = this.getBoundsPosition(rotation, bound, pageDetails);
+        }
+        else {
+            bounds = this.getBoundsPosition(pageDetails.rotation, bound, pageDetails);
+        }
+        return bounds;
+    }
+    // tslint:disable-next-line
+    getBoundsPosition(rotation, bound, pageDetails) {
+        // tslint:disable-next-line
+        let bounds;
+        switch (rotation) {
+            case 90:
+                // tslint:disable-next-line
+                bounds = { left: pageDetails.width - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
+                break;
+            case 180:
+                // tslint:disable-next-line
+                bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                break;
+            case 270:
+                // tslint:disable-next-line
+                bounds = { left: bound.top, top: pageDetails.height - bound.left - bound.width, width: bound.height, height: bound.width };
+                break;
+            case 0:
+                bounds = bound;
+                break;
+            case 1:
+                // tslint:disable-next-line
+                bounds = { left: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2), top: bound.left + (bound.width / 2 - bound.height / 2), width: bound.width, height: bound.height };
+                break;
+            case 2:
+                // tslint:disable-next-line
+                bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                break;
+            case 3:
+                // tslint:disable-next-line
+                bounds = { left: bound.top - (bound.width / 2 - bound.height / 2), top: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)), width: bound.width, height: bound.height };
+                break;
+        }
+        return bounds;
+    }
+    // tslint:disable-next-line
+    applyPosition(inputField, bounds, font, pageIndex, rotation) {
         if (bounds) {
             let left = this.ConvertPointToPixel(bounds.X);
             let top = this.ConvertPointToPixel(bounds.Y);
             let width = this.ConvertPointToPixel(bounds.Width);
             let height = this.ConvertPointToPixel(bounds.Height);
             let fontHeight = 0;
+            // tslint:disable-next-line
+            let fieldBounds = { left: left, top: top, width: width, height: height };
+            // tslint:disable-next-line
+            let annotBounds = this.getBounds(fieldBounds, pageIndex, rotation);
             if (font !== null && font.Height) {
                 inputField.style.fontfamily = font.Name;
                 if (font.Italic) {
@@ -50137,7 +50332,7 @@ class FormFields {
                 }
                 fontHeight = this.ConvertPointToPixel(font.Size);
             }
-            this.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, false);
+            this.setStyleToTextDiv(inputField, annotBounds.left, annotBounds.top, fontHeight, annotBounds.width, annotBounds.height, false);
         }
     }
     /**

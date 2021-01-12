@@ -3202,6 +3202,20 @@ describe('Diagram Control', () => {
                 expect(diagram.nodes.length == 0).toBe(true);
                 done();
             });
+            it('clear - collection', (done: Function) => {
+                diagram.undo();
+                expect(diagram.nodes.length > 0).toBe(true);
+                diagram.clear();
+                var x=100, y=200;
+                mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 20);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 40);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 70);
+                mouseEvents.mouseUpEvent(diagramCanvas, x, y + 70);
+                expect(diagram['eventHandler']['hoverElement'] === null).toBe(true);
+                done();
+            });
+
 
         });
     });
@@ -3787,24 +3801,24 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Copy, paste the swimlane', (done: Function) => {
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 let swimlane = diagram.nodes[0];
                 diagram.select([swimlane]);
                 diagram.copy();
                 diagram.paste();
                 diagram.paste();
-                expect(diagram.nodes.length == 30).toBe(true);
+                expect(diagram.nodes.length == 27).toBe(true);
                 done();
             });
 
             it('Undo, redo after Copy, paste the swimlane', (done: Function) => {
                 let swimlane = diagram.nodes[0];
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 diagram.redo(); diagram.redo();
-                expect(diagram.nodes.length == 30).toBe(true);
+                expect(diagram.nodes.length == 27).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 done();
             });
 
@@ -3813,20 +3827,20 @@ describe('Diagram Control', () => {
                 let laneId: string = (swimlane.shape as SwimLaneModel).lanes[0].id;
                 let targetElement = diagram.nameTable[swimlane.id + laneId + '0'];
                 diagram.select([targetElement]);
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 diagram.copy();
                 diagram.paste();
                 diagram.paste();
-                expect(diagram.nodes.length == 24).toBe(true);
+                expect(diagram.nodes.length == 21).toBe(true);
                 done();
             });
             it('Undo, redo after Copy, paste the lane', (done: Function) => {
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 diagram.redo(); diagram.redo();
-                expect(diagram.nodes.length == 24).toBe(true);
+                expect(diagram.nodes.length == 21).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 done();
             });
 
@@ -3838,18 +3852,18 @@ describe('Diagram Control', () => {
                 diagram.cut();
                 diagram.paste();
                 diagram.paste();
-                expect(diagram.nodes.length == 21).toBe(true);
+                expect(diagram.nodes.length == 18).toBe(true);
                 done();
             });
 
             it('Undo, redo after cut, paste the lane', (done: Function) => {
-                expect(diagram.nodes.length == 21).toBe(true);
+                expect(diagram.nodes.length == 18).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 7).toBe(true);
+                expect(diagram.nodes.length == 4).toBe(true);
                 diagram.redo(); diagram.redo();
-                expect(diagram.nodes.length == 21).toBe(true);
+                expect(diagram.nodes.length == 18).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 7).toBe(true);
+                expect(diagram.nodes.length == 4).toBe(true);
                 done();
             });
 
@@ -4105,19 +4119,19 @@ describe('Diagram Control', () => {
                 diagram.copy();
                 diagram.paste();
                 diagram.paste();
-                expect(diagram.nodes.length == 30).toBe(true);
+                expect(diagram.nodes.length == 27).toBe(true);
                 done();
             });
 
             it('Undo, redo after Copy, paste the swimlane', (done: Function) => {
                 let swimlane = diagram.nodes[0];
-                expect(diagram.nodes.length == 30).toBe(true);
+                expect(diagram.nodes.length == 27).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 diagram.redo(); diagram.redo();
-                expect(diagram.nodes.length == 30).toBe(true);
+                expect(diagram.nodes.length == 27).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 done();
             });
 
@@ -4129,17 +4143,17 @@ describe('Diagram Control', () => {
                 diagram.copy();
                 diagram.paste();
                 diagram.paste();
-                expect(diagram.nodes.length == 24).toBe(true);
+                expect(diagram.nodes.length == 21).toBe(true);
                 done();
             });
             it('Undo, redo after Copy, paste the lane', (done: Function) => {
-                expect(diagram.nodes.length == 24).toBe(true);
+                expect(diagram.nodes.length == 21).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 diagram.redo(); diagram.redo();
-                expect(diagram.nodes.length == 24).toBe(true);
+                expect(diagram.nodes.length == 21).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 10).toBe(true);
+                expect(diagram.nodes.length == 7).toBe(true);
                 done();
             });
 
@@ -4151,18 +4165,18 @@ describe('Diagram Control', () => {
                 diagram.cut();
                 diagram.paste();
                 diagram.paste();
-                expect(diagram.nodes.length == 21).toBe(true);
+                expect(diagram.nodes.length == 18).toBe(true);
                 done();
             });
 
             it('Undo, redo after cut, paste the lane', (done: Function) => {
-                expect(diagram.nodes.length == 21).toBe(true);
+                expect(diagram.nodes.length == 18).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 7).toBe(true);
+                expect(diagram.nodes.length == 4).toBe(true);
                 diagram.redo(); diagram.redo();
-                expect(diagram.nodes.length == 21).toBe(true);
+                expect(diagram.nodes.length == 18).toBe(true);
                 diagram.undo(); diagram.undo();
-                expect(diagram.nodes.length == 7).toBe(true);
+                expect(diagram.nodes.length == 4).toBe(true);
                 done();
             });
 

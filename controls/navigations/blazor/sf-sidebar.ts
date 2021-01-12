@@ -44,16 +44,7 @@ class SfSidebar {
         this.element = element;
         this.element.blazor__instance = this;
         this.dotnetRef = dotnetRef;
-        this.type = property.Type;
-        this.position = property.Position;
-        this.enableDock = property.EnableDock;
-        this.showBackdrop = property.ShowBackdrop;
-        this.target = property.Target;
-        this.enableGestures = property.EnableGestures;
-        this.closeOnDocumentClick = property.CloseOnDocumentClick;
-        this.mediaQuery = property.MediaQuery;
-        this.dockSize = property.DockSize;
-        this.width = property.Width;
+        this.resetProperty(property);
     }
 
     public initialize(): void {
@@ -269,22 +260,27 @@ class SfSidebar {
 
     private resetProperty(property: ISidebar): void {
         if (!isNOU(property)) {
+            this.type = property.Type;
             this.isOpen = property.IsOpen;
-            this.enableGestures = property.EnableGestures;
-            this.showBackdrop = property.ShowBackdrop;
-            this.closeOnDocumentClick = property.CloseOnDocumentClick;
             this.isPositionChange = this.position !== property.Position;
             this.position = property.Position;
-            this.type = property.Type;
+            this.enableDock = property.EnableDock;
+            this.showBackdrop = property.ShowBackdrop;
+            this.target = property.Target;
+            this.enableGestures = property.EnableGestures;
+            this.closeOnDocumentClick = property.CloseOnDocumentClick;
+            this.mediaQuery = property.MediaQuery;
+            this.dockSize = property.DockSize;
+            this.width = property.Width;
         }
     }
 
     public setType(property?: ISidebar): void {
+        this.resetProperty(property);
         let elementWidth: number | string = this.element.getBoundingClientRect().width;
         elementWidth = this.enableDock && !this.isOpen ? this.dockSize : elementWidth;
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetElement;
         this.isPositionChange = false;
-        this.resetProperty(property);
         if (sibling) {
             if (this.isPositionChange) { this.position === LEFT ? sibling.style.marginRight = '0px' : sibling.style.marginLeft = '0px'; }
             sibling.style.transform = 'translateX(' + 0 + 'px)';
@@ -364,7 +360,7 @@ let Sidebar: object = {
     },
     destroy(element: BlazorSidebarElement): void {
         if (this.isValid(element)) {
-            if(element){ element.blazor__instance.destroy(); }
+            if (element) { element.blazor__instance.destroy(); }
         }
     },
     isValid(element: BlazorSidebarElement): boolean {

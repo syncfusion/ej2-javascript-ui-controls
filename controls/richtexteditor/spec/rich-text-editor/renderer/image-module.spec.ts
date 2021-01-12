@@ -5,6 +5,7 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, IRenderer } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
+import { SelectEventArgs } from '@syncfusion/ej2-navigations';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -2561,6 +2562,57 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
             }, 4000);
+        });
+    });
+
+    describe('EJ2CORE-479 - Insert image imageSelected event args cancel true - ', () => {
+        let rteObj: RichTextEditor;
+        let isImageUploadSuccess: boolean = false;
+        let isImageUploadFailed: boolean = false;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                imageSelected: imageSelectedEvent,
+                imageUploadSuccess: imageUploadSuccessEvent,
+                imageUploadFailed: imageUploadFailedEvent,
+                insertImageSettings: {
+                    saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Images/"
+                }
+            });
+            function imageSelectedEvent(e: any) {
+                e.cancel = true;
+            }
+            function imageUploadSuccessEvent(e: any) {
+                isImageUploadSuccess = true;
+            }
+            function imageUploadFailedEvent(e: any) {
+                isImageUploadFailed = true;
+            }
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the component insert image events - case 1 ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect(isImageUploadSuccess).toBe(false);
+                expect(isImageUploadFailed).toBe(false);
+                done();
+            }, 4000);
+            
         });
     });
 

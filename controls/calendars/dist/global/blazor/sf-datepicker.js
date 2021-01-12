@@ -101,6 +101,10 @@ var SfDatePicker = /** @class */ (function () {
     SfDatePicker.prototype.renderPopup = function (popupElement, popupHolderEle, openEventArgs, options) {
         this.options = options;
         this.popupHolder = popupHolderEle;
+        var oldPopupEle = document.body.querySelector('.e-datepicker.e-popup-open');
+        if (oldPopupEle) {
+            sf.base.remove(oldPopupEle);
+        }
         this.createCalendar(popupElement, options);
         if (sf.base.Browser.isDevice && options.isDatePopup) {
             this.mobilePopupContainer = sf.base.createElement('div', { className: 'e-datepick-mob-popup-wrap' });

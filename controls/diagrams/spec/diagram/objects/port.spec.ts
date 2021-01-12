@@ -333,6 +333,13 @@ describe('Diagram Control', () => {
             expect(((diagram.nodes[0].ports[1]).outEdges[0] === "connector1")).toBe(true);
             done();
         });
+        it('Checking port inedges and out edges after copy paste', (done: Function) => {
+            diagram.selectAll();
+            diagram.copy();
+            diagram.paste();
+            expect(((diagram.nodes[1].ports[1]).outEdges[0] == diagram.connectors[1].id)).toBe(true);
+            done();
+        });
     });
     describe('Port edges', () => {
         let diagram: Diagram;

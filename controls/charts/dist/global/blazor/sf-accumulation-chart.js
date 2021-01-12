@@ -19,10 +19,24 @@ var AccumulationChart = {
     mouseY: 0,
     mouseX: 0,
     eventInterval: 80,
-    getElementBoundsById: function (id) {
-        this.id = id;
+    getElementBoundsById: function (id, isSetId) {
+        if (isSetId === void 0) { isSetId = true; }
+        if (isSetId) {
+            this.id = id;
+        }
         var element = document.getElementById(id);
-        return { width: element.clientWidth || element.offsetWidth, height: element.clientHeight || element.offsetHeight };
+        if (element) {
+            var elementRect = element.getBoundingClientRect();
+            return {
+                width: element.clientWidth || element.offsetWidth,
+                height: element.clientHeight || element.offsetHeight,
+                left: elementRect.left,
+                top: elementRect.top,
+                right: elementRect.right,
+                bottom: elementRect.bottom
+            };
+        }
+        return { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0 };
     },
     charCollection: [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '"', '#', '$', '%', '&', '\\', '(', ')', '*', '+', ',', '-', '.', '/', ':',

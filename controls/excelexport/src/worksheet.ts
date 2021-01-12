@@ -2,6 +2,7 @@ import { Column } from './column';
 import { Rows } from './row';
 import { HyperLinkType } from './enum';
 import { Image } from './image';
+import { AutoFilters } from './auto-filters';
 /**
  * Worksheet class
  * @private
@@ -18,6 +19,7 @@ export class Worksheet {
     public hyperLinks: HyperLink[];
     public images: Image[];
     public enableRtl: boolean = false;
+    public autoFilters: AutoFilters;
 }
 /**
  * Hyperlink class

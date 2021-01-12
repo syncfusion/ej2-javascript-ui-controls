@@ -8208,7 +8208,7 @@ let Tab = class Tab extends Component {
                         document.body.appendChild(this.element.querySelector(oldVal)).style.display = 'none';
                         cntItem.innerHTML = newVal;
                     }
-                    else {
+                    else if (typeof newVal !== 'function') {
                         cntItem.innerHTML = newVal;
                     }
                 }
@@ -8654,19 +8654,7 @@ let Tab = class Tab extends Component {
             if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1)) {
                 detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).children[0]);
                 detach(this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).children[0]);
-                let checkValues = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).id;
-                let num = checkValues.indexOf('_');
-                let checkValue = parseInt(checkValues.substring(num + 1), 10);
-                let i = 0;
-                let id;
-                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach((elem) => {
-                    let idValue = ((elem.id).indexOf('_'));
-                    id = parseInt(elem.id.substring(idValue + 1), 10);
-                    if (id < checkValue) {
-                        i++;
-                    }
-                });
-                let item = this.items[i];
+                let item = this.items[this.selectedItem];
                 let txtWrap;
                 let pos = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
                 let css = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
@@ -8676,7 +8664,7 @@ let Tab = class Tab extends Component {
                     txtWrap.appendChild(text);
                 }
                 else {
-                    this.headerTextCompile(txtWrap, text, i);
+                    this.headerTextCompile(txtWrap, text, this.selectedItem);
                 }
                 let tEle;
                 let icon = this.createElement('span', {
@@ -8710,7 +8698,36 @@ let Tab = class Tab extends Component {
                     this.element.classList.add('e-vertical-icon');
                 }
                 this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).appendChild(wraper);
-                let crElem = this.createElement('div', { innerHTML: item.content });
+                let crElem = this.createElement('div');
+                let cnt = item.content;
+                let eleStr;
+                if (typeof cnt === 'string' || isNullOrUndefined(cnt.innerHTML)) {
+                    if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
+                        cnt = SanitizeHtmlHelper.sanitize(cnt);
+                    }
+                    if (cnt[0] === '.' || cnt[0] === '#') {
+                        if (document.querySelectorAll(cnt).length) {
+                            let eleVal = document.querySelector(cnt);
+                            eleStr = eleVal.outerHTML.trim();
+                            crElem.appendChild(eleVal);
+                            eleVal.style.display = '';
+                        }
+                        else {
+                            this.compileElement(crElem, cnt, 'content', this.selectedItem);
+                        }
+                    }
+                    else {
+                        this.compileElement(crElem, cnt, 'content', this.selectedItem);
+                    }
+                }
+                else {
+                    crElem.appendChild(cnt);
+                }
+                if (!isNullOrUndefined(eleStr)) {
+                    if (this.templateEle.indexOf(cnt.toString()) === -1) {
+                        this.templateEle.push(cnt.toString());
+                    }
+                }
                 this.element.querySelector('.' + CLS_ITEM$2 + '.' + CLS_ACTIVE$1).appendChild(crElem);
             }
         }

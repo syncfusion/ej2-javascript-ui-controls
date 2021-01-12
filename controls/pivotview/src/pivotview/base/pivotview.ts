@@ -49,7 +49,7 @@ import { ConditionalFormatting } from '../../common/conditionalformatting/condit
 import { VirtualScroll } from '../actions/virtualscroll';
 import { DrillThrough } from '../actions/drill-through';
 import { Condition, GroupType } from '../../base/types';
-import { EditMode, ToolbarItems, View, Primary, AggregateTypes, ChartSeriesType } from '../../common';
+import { EditMode, ToolbarItems, View, Primary, AggregateTypes, ChartSeriesType, PivotTableContextMenuItem } from '../../common';
 import { PivotUtil } from '../../base/util';
 import { Toolbar } from '../../common/popups/toolbar';
 import { PivotChart } from '../../pivotchart/index';
@@ -519,6 +519,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private isMouseUp: boolean = false;
     private lastSelectedElement: HTMLElement;
     private fieldsType: IStringIndex = {};
+    private serverCustomProperties: any = {};
     private remoteData: string[][] | IDataSet[] = [];
     private defaultItems: { [key: string]: ContextMenuItemModel } = {};
     private isCellBoxMultiSelection: boolean = false;
@@ -2027,8 +2028,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             }
             if (this.allowGrouping && this.dataType === 'pivot') {
-                groupItems.push(this.buildDefaultItems('Group'));
-                groupItems.push(this.buildDefaultItems('Ungroup'));
+                if (!this.getFieldByID(this.element.id + '_custom_group', this.gridSettings.contextMenuItems)) {
+                    groupItems.push(this.buildDefaultItems('Group'));
+                }
+                if (!this.getFieldByID(this.element.id + '_custom_ungroup', this.gridSettings.contextMenuItems)) {
+                    groupItems.push(this.buildDefaultItems('Ungroup'));
+                }
             }
             if (exportItems.length > 0) {
                 let exportGroupItems: ContextMenuItemModel = this.buildDefaultItems('export');
@@ -2042,6 +2047,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
         }
+    }
+
+    private getFieldByID(id: string, fields: PivotTableContextMenuItem[] | ContextMenuItemModel[]): PivotTableContextMenuItem | ContextMenuItemModel {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('id', 'equal', id))[0] as PivotTableContextMenuItem | ContextMenuItemModel;
     }
 
     /**
@@ -2421,7 +2430,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.guid
+            hash: this.guid,
+            customArguments: this.serverCustomProperties
         };
         this.request.open("POST", this.dataSourceSettings.url, true);
         this.request.withCredentials = false;
@@ -3133,7 +3143,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         enableValueSorting: pivot.enableValueSorting,
                         isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
                         localeObj: pivot.localeObj,
-                        fieldsType: pivot.fieldsType
+                        fieldsType: pivot.fieldsType,
+                        clonedReport: pivot.clonedReport
                     };
                     /* tslint:enable:align */
                     if (isBlazor() && pivot.enableVirtualization) {
@@ -4579,7 +4590,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 enableValueSorting: this.enableValueSorting,
                 isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
                 localeObj: this.localeObj,
-                fieldsType: this.fieldsType
+                fieldsType: this.fieldsType,
+                clonedReport: this.clonedReport
             };
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {

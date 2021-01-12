@@ -4247,6 +4247,7 @@ describe('isInteracted property in rowSelecting and rowDeselected events indexes
     it('isInteracted property testing in selectall - rowselected', () => {
         rowSelected = (args: any) => {
             expect(args.isInteracted).toBeTruthy();
+            gridObj.rowSelected = null;
         };
         gridObj.rowSelected = rowSelected;
         (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
@@ -4781,5 +4782,48 @@ describe(' EJ242851 => Column Selection testing', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = preventDefault = selectionModule = null;
+    });
+});
+
+describe('EJ2-44995 - isInteracted property in rowDeselecting and rowDeselected events with Selectall and paging', () => {
+    let gridObj: Grid;
+    let rowDeselecting: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [{type:'checkbox'},{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Both' },
+            }, done);
+    });
+
+    it('isInteracted property testing - Click', (done: Function) => {
+        rowDeselecting = (args: any) => {
+            expect(args.isInteracted).toBeTruthy();
+            done();
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        let selectAll: HTMLElement = (<HTMLElement>gridObj.element.querySelector('.e-checkselectall'));
+        selectAll.click();
+        selectAll.click();
+    });
+
+    it('isInteracted property testing - clearSelection method', (done: Function) => {
+        rowDeselecting = (args: any) => {
+            expect(args.isInteracted).toBeFalsy();
+            done();
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        gridObj.clearSelection();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = rowDeselecting = null;
     });
 });

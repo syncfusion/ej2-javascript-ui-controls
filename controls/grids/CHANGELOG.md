@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### Grid
+
+#### Bug Fixes
+
+- `#309059` - The horizontal scroll bar is not displayed while using Frozen column issue has been fixed.
+
 ## 18.4.33 (2021-01-05)
+
+### Grid
+
+#### Bug Fixes
+
+- `#306851` - Virtualization with `selectRow` method issue has been fixed.
+- `#297879` - Alignment issue has been fixed when we have the hidden frozen column with empty data set.
+- `#160660` - Grid query included in foreign key column issue has been resolved.
+- `#306162` - Pager dropdown overlap issue has been resolved.
+- `#307973` - The `isInteracted` property issue in row deselect events has been fixed.
+- `#160548` - Frozen grid duplicate template rendering issue has been fixed.
+- `#296093` - Grouping with `virtualization` hide column issue has been fixed.
+
+## 18.4.32 (2020-12-29)
 
 ### Grid
 
@@ -22,7 +44,6 @@
 
 - `#303869` - Event argument type issue has been fixed.
 - `#160246` - Sorting column not removed while changing `groupSettings` issue has been resolved.
-- `#296093` - Grouping with `virtualization` hide column issue has been fixed.
 - `#301282` - Export `aggregations` misalignment while using the custom datasource, issue has been fixed.
 - `#305619` - Export `aggregations` misalignment while using the stacked header, issue has been fixed.
 - `#306030` - Filtering numeric column by pressing `Enter Key` is not working, has been fixed.

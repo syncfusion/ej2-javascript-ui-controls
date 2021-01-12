@@ -2275,3 +2275,58 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
         expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
     });   
 });
+describe('EJ2-43971 : After cleared the typed value, popup not shown the entire datasource with ng-template', () => {
+    let comboBoxObj: any;
+    let element: any;
+    let keyEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        keyCode: 74
+    };
+    let datasource: { [key: string]: Object }[] = [
+        { Name: 'Mona Sak',  country: 'USA' },
+        { Name: 'Kapil Sharma', country: 'USA' },
+        { Name: 'Erik Linden',  country: 'England' },
+        { Name: 'Kavi Tam',  country: 'England' },
+        { Name: "Harish Sree",  country: 'USA' },
+    ];
+
+    beforeAll(() => {
+        element = createElement('EJS-COMBOBOX', { id: 'combobox' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        comboBoxObj.destroy();
+        element.remove();
+    });
+    it('Checking the li element while open popup, after cleared the filtered value', () => {
+        comboBoxObj = new ComboBox({
+            dataSource: datasource,
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+            filtering: function (e: FilteringEventArgs) {
+                let query: Query = new Query();
+                query = (e.text !== '') ? query.where('Name', 'startswith', e.text, true) : query;
+                e.updateData(datasource, query);
+            }
+        });
+        comboBoxObj.appendTo(element);
+        expect(comboBoxObj.element.tagName).toEqual('EJS-COMBOBOX');
+        comboBoxObj.filterInput.value = "e";
+        comboBoxObj.onInput(keyEventArgs);
+        comboBoxObj.onFilterUp(keyEventArgs);
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
+        comboBoxObj.onBlur(keyEventArgs);
+        comboBoxObj.clearAll();
+        comboBoxObj.showPopup();
+        expect(comboBoxObj.list.querySelectorAll('li').length > 0).toBe(true);
+        expect(comboBoxObj.list.querySelectorAll('li')[0].textContent === '').toBe(false);
+        comboBoxObj.addItem({ country: 'USA', Name: 'Robert King' }, 0);
+        comboBoxObj.addItem({ country: 'USA', Name: 'Nancy Davolio' });
+        expect(comboBoxObj.list.querySelectorAll('li').length > 0).toBe(true);
+        expect(comboBoxObj.list.querySelectorAll('li')[0].textContent === '').toBe(false);
+        comboBoxObj.hidePopup();
+    });
+});

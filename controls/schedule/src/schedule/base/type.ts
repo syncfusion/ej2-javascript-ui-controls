@@ -39,3 +39,7 @@ export type ExcelFormat = 'csv' | 'xlsx';
  * An enum that holds the type where the quick info template applies.
  */
 export type TemplateType = 'Both' | 'Cell' | 'Event';
+/**
+ * An enum that holds the type week options available in scheduler.
+ */
+export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';

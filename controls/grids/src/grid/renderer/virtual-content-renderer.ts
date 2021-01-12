@@ -1,7 +1,7 @@
 import { remove, createElement, closest, formatUnit, Browser, KeyboardEventArgs, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
-import { IGrid, IRenderer, NotifyArgs, VirtualInfo, IModelGenerator, InterSection } from '../base/interface';
+import { IGrid, IRenderer, NotifyArgs, VirtualInfo, IModelGenerator, InterSection, RowSelectEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { dataReady, modelChanged, refreshVirtualBlock, contentReady } from '../base/constant';
@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex } from '../base/util';
+import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues } from '../base/util';
 import { isBlazor, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 /**
@@ -82,6 +82,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private emptyRowData: Object = {};
     private vfColIndex: number[] = [];
     private frzIdx: number = 1;
+    private initialRowTop: number;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -442,6 +443,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.focusCell(e);
         this.restoreEdit(e);
         this.restoreAdd(e);
+        if (!this.initialRowTop) {
+            this.initialRowTop = this.parent.getRowByIndex(0).getBoundingClientRect().top;
+        }
     }
 
     private checkFirstBlockColIndexes(e: NotifyArgs): void {
@@ -655,8 +659,24 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private rowSelected(): void {
+    private rowSelected(args: RowSelectEventArgs): void {
+        if (this.isSelection && !this.isLastBlockRow(args.rowIndex)) {
+            let transform: { width: number, height: number } = getTransformValues(this.content.firstElementChild);
+            let rowTop: number = (args.row as HTMLElement).getBoundingClientRect().top;
+            let height: number = this.content.getBoundingClientRect().height;
+            let isBottom: boolean = height < rowTop;
+            let remainHeight: number = isBottom ? rowTop - height : this.initialRowTop - rowTop;
+            let translateY: number = isBottom ? transform.height - remainHeight : transform.height + remainHeight;
+            this.virtualEle.adjustTable(transform.width, translateY);
+        }
         this.isSelection = false;
+    }
+
+    private isLastBlockRow(index: number): boolean {
+        let scrollEle: Element = this.parent.getContent().firstElementChild;
+        let visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight()) - 1;
+        let startIdx: number = (this.maxPage * this.parent.pageSettings.pageSize) - visibleRowCount;
+        return index >= startIdx;
     }
 
     public eventListener(action: string): void {
@@ -1077,8 +1097,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             && !this.requestTypes.some((value: string) => value === this.requestType) && !this.parent.selectionModule.isInteracted) {
             let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);
             let rowHeight: number = this.parent.getRowHeight();
-            let eleOffsHeight: number = (this.content as HTMLElement).offsetHeight;
-            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, this.content, eleOffsHeight, rowHeight)) {
+            if (!selectedRow || !this.isRowInView(selectedRow)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
                 let scrollTop: number = (args.selectedIndex + 1) * rowHeight;
@@ -1099,18 +1118,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private isRowInView(index: number, selectedRow: Element, ele: Element, eleOffsHeight: number, rowHeight: number): boolean {
-        if (isBlazor()) {
-            let exactTopIndex: number = ele.scrollTop / rowHeight;
-            let exactEndIndex: number = exactTopIndex + (eleOffsHeight / rowHeight);
-            return (index < exactTopIndex || index > exactEndIndex);
-        } else {
-            if (this.parent.frozenRows && index < this.parent.frozenRows) {
-                return false;
-            }
-            let rectTop: number = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
-            return (rectTop < rowHeight || rectTop > eleOffsHeight);
-        }
+    private isRowInView(row: Element): boolean {
+        let top: number = row.getBoundingClientRect().top;
+        return (top >= this.initialRowTop && top <= this.content.offsetHeight);
     }
 }
 /**

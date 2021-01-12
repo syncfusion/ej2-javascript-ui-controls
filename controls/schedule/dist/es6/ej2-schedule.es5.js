@@ -127,6 +127,10 @@ function getWeekNumber(dt) {
     var dayOfYear = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
     return Math.ceil(dayOfYear / 7);
 }
+function getWeekMiddleDate(weekFirst, weekLast) {
+    var date = new Date(weekLast.valueOf() - ((weekLast.valueOf() - weekFirst.valueOf()) / 2));
+    return date;
+}
 function setTime(date, time) {
     var tzOffsetBefore = date.getTimezoneOffset();
     var d = new Date(date.getTime() + time);
@@ -6765,7 +6769,8 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         var overlapCount = this.getIndex(startTime);
         event.Index = overlapCount;
         var elem = this.element.querySelector('.' + APPOINTMENT_CLASS);
-        var appHeight = (elem && elem.offsetHeight > 0) ? elem.offsetHeight : this.eventHeight;
+        var eleHeight = (elem) ? elem.offsetHeight : 0;
+        var appHeight = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
         var diffInDays = eventData.count;
         var eventObj = extend({}, event, null, true);
         eventObj[this.fields.startTime] = eventData[this.fields.startTime];
@@ -6805,8 +6810,8 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
                     var firstChild = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
-                if (appointmentElement_1.offsetWidth < this.cellWidth && this.parent.activeViewOptions.timeScale.enable
-                    && this.parent.activeViewOptions.option !== 'TimelineMonth') {
+                if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
+                    && appointmentElement_1.offsetWidth < this.cellWidth) {
                     var resizeHandlers = [].slice.call(appointmentElement_1.querySelectorAll('.' + EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach(function (resizeHandler) {
                         resizeHandler.style.width = Math.ceil(appointmentElement_1.offsetWidth / resizeHandler.offsetWidth) + 'px';
@@ -7742,7 +7747,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 this_1.parent.trigger(eventRendered, args, function (eventArgs) {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentElement);
-                        _this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, _this.parent.isAdaptive);
+                        var isPreventCrud = _this.parent.isAdaptive || _this.parent.currentView === 'Year';
+                        _this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, isPreventCrud);
                         _this.parent.eventBase.applyResourceColor(appointmentElement, eventData, 'backgroundColor', groupOrder);
                     }
                 });
@@ -15550,6 +15556,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             case 'eventDragArea':
                 this.notify(dataReady, {});
                 break;
+            case 'weekRule':
+                state.isLayout = true;
+                break;
         }
     };
     Schedule.prototype.setRtlClass = function () {
@@ -16379,6 +16388,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(0)
     ], Schedule.prototype, "firstDayOfWeek", void 0);
+    __decorate([
+        Property('FirstDay')
+    ], Schedule.prototype, "weekRule", void 0);
     __decorate([
         Property([1, 2, 3, 4, 5])
     ], Schedule.prototype, "workDays", void 0);
@@ -17952,7 +17964,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
                 appointmentsList.push(app);
             }
             if (!this.parent.rowAutoHeight && (resetTime(appStart).getTime() <= dateStart)
-                && (resetTime(appEnd).getTime() > dateEnd)) {
+                && (resetTime(appEnd).getTime() >= dateEnd)) {
                 appointmentsList.push(app);
             }
         }
@@ -19363,6 +19375,24 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             scrollWrap.scrollLeft = dateElement.offsetLeft;
         }
     };
+    ViewBase.prototype.getWeekNumberContent = function (dates) {
+        var weekNumber;
+        if (this.parent.weekRule === 'FirstDay') {
+            var weekNumberDate = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            weekNumber = getWeekNumber(weekNumberDate);
+        }
+        else if (this.parent.weekRule === 'FirstFourDayWeek') {
+            var weekFirstDate = getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            var weekLastDate = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            var weekMidDate = getWeekMiddleDate(weekFirstDate, weekLastDate);
+            weekNumber = getWeekNumber(weekMidDate);
+        }
+        else if (this.parent.weekRule === 'FirstFullWeek') {
+            var weekFirstDate = getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            weekNumber = getWeekNumber(weekFirstDate);
+        }
+        return weekNumber;
+    };
     return ViewBase;
 }());
 
@@ -19842,9 +19872,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             var data_1 = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data_1.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data_1.className.push(WEEK_NUMBER_CLASS);
-                var weekNumberDate = getWeekLastDate(this.renderDates.slice(-1)[0], this.parent.firstDayOfWeek);
-                var weekNo = this.parent.currentView === 'Day' ? getWeekNumber(weekNumberDate) :
-                    getWeekNumber(this.renderDates.slice(-1)[0]);
+                var weekNo = this.getWeekNumberContent(this.renderDates);
                 data_1.template = [createElement('span', {
                         innerHTML: '' + weekNo,
                         attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
@@ -20570,7 +20598,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             this.parent.activeViewOptions.workDays.length;
         for (var i = 0, length_1 = (this.renderDates.length / noOfDays); i < length_1; i++) {
             var dates = dateCol.splice(0, noOfDays);
-            var weekNumber = getWeekNumber(dates.slice(-1)[0]).toString();
+            var weekNumber = this.getWeekNumberContent(dates).toString();
             contentWrapTable.querySelector('tbody').appendChild(this.createWeekNumberElement(weekNumber));
         }
         return td;
@@ -21035,7 +21063,7 @@ var Year = /** @__PURE__ @class */ (function (_super) {
             var weekDates = dateCollection.splice(0, WEEK_LENGTH);
             var tr_1 = createElement('tr', { attrs: { 'role': 'row' } });
             if (this.parent.activeViewOptions.showWeekNumber) {
-                var weekNumber = getWeekNumber(weekDates.slice(-1)[0]);
+                var weekNumber = this.getWeekNumberContent(weekDates);
                 var td = createElement('td', {
                     className: 'e-week-number',
                     attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },
@@ -23611,5 +23639,5 @@ var Print = /** @__PURE__ @class */ (function () {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, inlineClick, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, isDaylightSavingTime, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Year, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, inlineClick, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, getWeekMiddleDate, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, isDaylightSavingTime, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Year, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es5.js.map

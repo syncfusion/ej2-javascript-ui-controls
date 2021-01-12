@@ -942,6 +942,9 @@ export class DiagramEventHandler {
             this.diagram.updatePortVisibility(this.eventArgs.source as Node, PortVisibility.Hover, true);
             this.hoverElement = null;
         }
+        if (this.eventArgs && !this.eventArgs.source && this.hoverElement) {
+            this.hoverElement = null;
+        }
         if (this.tool instanceof ConnectTool && this.eventArgs && this.eventArgs.target && this.eventArgs.target instanceof Node) {
             this.diagram.updatePortVisibility(this.eventArgs.target as Node, PortVisibility.Hover | PortVisibility.Connect, true);
             this.hoverElement = null;

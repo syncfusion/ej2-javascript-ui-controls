@@ -267,6 +267,7 @@ export class Data implements IDataProcessor {
         let predicateList: Predicate[] = [];
         let actualFilter: PredicateModel[] = [];
         let foreignColumn: Column[] = this.parent.getForeignKeyColumns();
+        let foreignColEmpty: boolean;
         if (gObj.allowFiltering && gObj.filterSettings.columns.length) {
             let columns: PredicateModel[] = column ? column : gObj.filterSettings.columns;
             let colType: Object = {};
@@ -307,6 +308,9 @@ export class Data implements IDataProcessor {
                     }
                     if (column.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
+                        if (!column.columnData.length) {
+                            foreignColEmpty = true;
+                        }
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     } else {
                         let excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(columns);
@@ -316,7 +320,7 @@ export class Data implements IDataProcessor {
                     }
                 }
             }
-            if (predicateList.length) {
+            if (predicateList.length && !foreignColEmpty) {
                 query.where(Predicate.and(predicateList));
             } else {
                 this.parent.notify(events.showEmptyGrid, {});

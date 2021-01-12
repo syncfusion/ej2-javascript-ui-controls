@@ -129,6 +129,8 @@ export class WorkbookFormula {
                     <number>args.rowIndex, <number>args.colIndex, <string>args.value,
                     <boolean>args.isFormula, <number>args.sheetIndex
                 );
+                args.value = args.value ? args.value.toString().split('-*').join('-').split('/*').join('/').split('*/').
+                    join('*').split('-/').join('-').split('*+').join('*').split('+*').join('+') : args.value;
                 break;
             case 'getArgumentSeparator':
                 args.argumentSeparator = this.calculateInstance.getParseArgumentSeparator();
@@ -137,9 +139,7 @@ export class WorkbookFormula {
                 args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName);
                 break;
             case 'removeDefinedName':
-                args.isRemoved = this.removeDefinedName(
-                    <string>args.definedName, <string>args.scope
-                );
+                args.isRemoved = this.removeDefinedName(<string>args.definedName, <string>args.scope);
                 break;
             case 'initiateDefinedNames':
                 this.initiateDefinedNames();

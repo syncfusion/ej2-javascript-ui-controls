@@ -1,5 +1,5 @@
 import { BlazorDotnetObject, Browser, Animation, closest, EventHandler, isNullOrUndefined, } from '@syncfusion/ej2-base';
-import { select, createElement, extend, KeyboardEvents, KeyboardEventArgs, removeClass, formatUnit } from '@syncfusion/ej2-base';
+import { select, createElement, extend, KeyboardEvents, KeyboardEventArgs, removeClass, remove, formatUnit } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 const ROOT: string = 'e-datepicker';
 const POPUPDIMENSION: string = '240px';
@@ -117,6 +117,10 @@ class SfDatePicker {
     public renderPopup(popupElement: HTMLElement, popupHolderEle: HTMLElement, openEventArgs: PopupObjectArgs, options: IDatePickerOptions): void {
         this.options = options;
         this.popupHolder = popupHolderEle;
+        let oldPopupEle: HTMLElement = document.body.querySelector('.e-datepicker.e-popup-open');
+        if (oldPopupEle) {
+            remove(oldPopupEle);
+        }
         this.createCalendar(popupElement, options);
         if (Browser.isDevice && options.isDatePopup) {
             this.mobilePopupContainer = createElement('div', { className: 'e-datepick-mob-popup-wrap' });

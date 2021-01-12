@@ -418,7 +418,7 @@ export class YearEvent extends TimelineEvent {
                 appointmentsList.push(app);
             }
             if (!this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)
-                && (util.resetTime(appEnd).getTime() > dateEnd)) {
+                && (util.resetTime(appEnd).getTime() >= dateEnd)) {
                 appointmentsList.push(app);
             }
         }

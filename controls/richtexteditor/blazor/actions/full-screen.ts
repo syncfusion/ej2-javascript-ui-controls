@@ -81,13 +81,9 @@ export class FullScreen {
         let originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
         switch (originalEvent.action) {
             case 'full-screen':
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync(events.showFullScreenClient).then((e: object) => {
-                    // @ts-ignore-end
-                    this.parent.toolbarSettings = e;
-                    this.showFullScreen(event.args as KeyboardEventArgs);
-                    originalEvent.preventDefault();
-                });
+                this.parent.dotNetRef.invokeMethodAsync(events.showFullScreenClient);
+                this.showFullScreen(event.args as KeyboardEventArgs);
+                originalEvent.preventDefault();
                 break;
             case 'escape':
                 this.parent.dotNetRef.invokeMethodAsync(events.hideFullScreenClient);

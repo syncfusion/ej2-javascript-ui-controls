@@ -894,6 +894,9 @@ export class SfdtReader {
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty('chartType')) {
                 // chartPreservation
+                if (this.documentHelper.owner.editor) {
+                    this.documentHelper.owner.editor.chartType = true;
+                }
                 let chartElement: ChartElementBox = new ChartElementBox();
                 chartElement.title = inline.chartTitle;
                 chartElement.type = inline.chartType;

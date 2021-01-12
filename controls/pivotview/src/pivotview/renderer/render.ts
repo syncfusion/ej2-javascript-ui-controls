@@ -100,7 +100,7 @@ export class Render {
             if (this.parent.grid.height == 'auto') {
                 let mCntHeight: number = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as any).offsetHeight;
                 let dataHeight: number = (this.parent.grid.dataSource as []).length * this.parent.gridSettings.rowHeight;
-                if (mCntHeight < dataHeight) {
+                if (mCntHeight > 50 && mCntHeight < dataHeight) {
                     (this.parent.grid.contentModule as any).setHeightToContent(dataHeight);
                 }
             }

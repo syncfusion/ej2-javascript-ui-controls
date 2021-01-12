@@ -1760,7 +1760,8 @@ export class Layout {
             this.addElementToLine(paragraph, textElement);
         }
     }
-    private updateRevisionForSpittedElement(item: TextElementBox, spittedElement: TextElementBox, isSpitted: boolean): void {
+    // tslint:disable-next-line:max-line-length
+    private updateRevisionForSpittedElement(item: TextElementBox, spittedElement: TextElementBox, isSpitted: boolean, isJustify?: boolean): void {
         if (item.revisions.length > 0) {
             for (let i: number = 0; i < item.revisions.length; i++) {
                 let currentRevision: Revision = item.revisions[i];
@@ -1774,7 +1775,11 @@ export class Layout {
                         if (rangeIndex < 0) {
                             currentRevision.range.push(spittedElement);
                         } else {
-                            currentRevision.range.splice(rangeIndex + 1, 0, spittedElement);
+                            if (isJustify) {
+                                currentRevision.range.splice(rangeIndex, 0, spittedElement);
+                            } else {
+                                currentRevision.range.splice(rangeIndex + 1, 0, spittedElement);
+                            }
                         }
                     }
                 } else {
@@ -1822,7 +1827,7 @@ export class Layout {
                     splittedElement.baselineOffset = textElement.baselineOffset;
                     lineWidget.children.splice(indexOf, 0, splittedElement);
                     if (textElement.revisions.length > 0) {
-                        this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0);
+                        this.updateRevisionForSpittedElement(textElement, splittedElement, index > 0, true);
                         splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
                     }
                     textElement.text = text;
@@ -2663,12 +2668,9 @@ export class Layout {
         let position: number = viewer.clientActiveArea.x -
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(this.documentHelper.defaultTabWidth);
-        if (tabs.length === 0) {
-            if (position > 0 && defaultTabWidth > position && isList ||
-                defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
-                return defaultTabWidth - position;
-            }
-            return defaultTabWidth;
+        if (tabs.length === 0 && (position > 0 && defaultTabWidth > position && isList ||
+            defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position)) {
+            return defaultTabWidth - position;
         } else {
             if (tabs.length > 0) {
                 for (let i: number = 0; i < tabs.length; i++) {
@@ -5216,9 +5218,9 @@ export class Layout {
         cell.updatedTopBorders = [];
         if (cell.ownerTable.tableFormat.cellSpacing === 0) {
             let cellTopBorder: WBorder = cell.cellFormat.borders.top;
-            let cellStartPos: number = cell.x;
+            let cellStartPos: number = cell.x - cell.margin.left;
             let cellEndPos: number = cell.x + cell.width + cell.margin.left + cell.margin.right;
-            let adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cell.x, cell.x + cell.width, cell.ownerRow.indexInOwner - 1);
+            let adjCells: TableCellWidget[] = this.getAdjacentRowCell(cell, cellStartPos, cellEndPos, cell.ownerRow.indexInOwner - 1);
             for (let j: number = 0; j < adjCells.length; j++) {
                 let adjCell: TableCellWidget = adjCells[j];
                 let prevCellBottomBorder: WBorder = adjCell.cellFormat.borders.bottom;

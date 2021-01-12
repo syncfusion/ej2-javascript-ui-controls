@@ -51,6 +51,7 @@ export class BatchEdit {
         this.parent.on('batchPageAction', this.batchPageAction, this);
         this.parent.on('batchCancelAction', this.batchCancelAction, this);
         this.parent.grid.on('immutable-batch-cancel', this.immutableBatchAction, this);
+        this.parent.grid.on('next-cell-index', this.nextCellIndex, this);
     }
       /**
        * @hidden
@@ -66,6 +67,7 @@ export class BatchEdit {
         this.parent.off('batchPageAction', this.batchPageAction);
         this.parent.off('batchCancelAction', this.batchCancelAction);
         this.parent.grid.off('immutable-batch-cancel', this.immutableBatchAction);
+        this.parent.grid.off('next-cell-index', this.nextCellIndex);
       }
       /**
        * To destroy the editModule 
@@ -533,6 +535,11 @@ private immutableBatchAction(e: { rows: Row<Column>[], args?: NotifyArgs }): voi
   for (let i: number = 0; i < addedRecords.length; i++) {
     e.rows.splice(addedRecords[i][index], 1);
   }
+}
+
+private nextCellIndex(args: NotifyArgs): void {
+  let index: string = 'index'; let rowIndex: string = 'rowIndex';
+  args[index] = this.parent.getSelectedRows()[0][rowIndex];
 }
 
 }

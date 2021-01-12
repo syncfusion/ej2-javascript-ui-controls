@@ -14009,6 +14009,16 @@ function getInterval(intervals, isLine) {
 /**
  * @private
  */
+function setPortsEdges(node) {
+    for (var k = 0; k < node.ports.length; k++) {
+        node.ports[k].inEdges = [];
+        node.ports[k].outEdges = [];
+    }
+    return node;
+}
+/**
+ * @private
+ */
 function setUMLActivityDefaults(child, node) {
     if (node instanceof Node) {
         var shape = (sf.base.isBlazor() ? child.shape.umlActivityShape :
@@ -17646,6 +17656,9 @@ var Node = /** @class */ (function (_super) {
         }
         if (_this.shape && _this.shape.type === 'SwimLane') {
             setSwimLaneDefaults(defaultValue, _this);
+        }
+        if (_this.ports && _this.ports.length) {
+            setPortsEdges(_this);
         }
         return _this;
     }
@@ -27702,6 +27715,9 @@ var DiagramEventHandler = /** @class */ (function () {
         }
         if (this.eventArgs && this.eventArgs.source) {
             this.diagram.updatePortVisibility(this.eventArgs.source, exports.PortVisibility.Hover, true);
+            this.hoverElement = null;
+        }
+        if (this.eventArgs && !this.eventArgs.source && this.hoverElement) {
             this.hoverElement = null;
         }
         if (this.tool instanceof ConnectTool && this.eventArgs && this.eventArgs.target && this.eventArgs.target instanceof Node) {
@@ -43369,6 +43385,19 @@ var Diagram = /** @class */ (function (_super) {
             node.margin.right = changes.margin.right;
         }
     };
+    Diagram.prototype.removePreviewChildren = function (preview) {
+        if (preview.children && preview.children.length &&
+            preview.shape && preview.shape.type === 'SwimLane') {
+            for (var z = 0; z < preview.children.length; z++) {
+                var previewChildId = preview.children[z];
+                var previewIndex_1 = this.nodes.indexOf(this.nameTable[previewChildId]);
+                this.nodes.splice(previewIndex_1, 1);
+                delete this.nameTable[previewChildId];
+            }
+            var previewIndex = this.nodes.indexOf(this.nameTable[this.currentSymbol.id]);
+            this.nodes.splice(previewIndex, 1);
+        }
+    };
     //property changes - end region
     /* tslint:disable */
     Diagram.prototype.initDroppables = function () {
@@ -43676,6 +43705,7 @@ var Diagram = /** @class */ (function (_super) {
                             isPhase = true;
                             orientation_2 = this.currentSymbol.shape.orientation;
                         }
+                        this.removePreviewChildren(this.currentSymbol);
                         delete this.nameTable[this.currentSymbol.id];
                         this.currentSymbol = null;
                         this.protectPropertyChange(true);
@@ -43769,6 +43799,7 @@ var Diagram = /** @class */ (function (_super) {
                     _this.removeElements(_this.currentSymbol);
                 }
                 _this.removeObjectsFromLayer(_this.nameTable[_this.currentSymbol.id]);
+                _this.removePreviewChildren(_this.currentSymbol);
                 delete _this.nameTable[_this.currentSymbol.id];
                 var args_1 = {
                     element: cloneBlazorObject(_this.currentSymbol),
@@ -45150,7 +45181,7 @@ var DataBinding = /** @class */ (function () {
         }
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);
-            diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
+            diagram.trigger('dataLoaded', { diagram: (sf.base.isBlazor()) ? null : cloneBlazorObject(diagram) });
         }
     };
     /**
@@ -45176,7 +45207,7 @@ var DataBinding = /** @class */ (function () {
                     _this.applyDataSource(data, result, diagram);
                     diagram.refreshDiagram();
                     diagram.protectPropertyChange(false);
-                    diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
+                    diagram.trigger('dataLoaded', { diagram: (sf.base.isBlazor()) ? null : cloneBlazorObject(diagram) });
                 }
             });
         }
@@ -54316,12 +54347,12 @@ var HierarchicalTree = /** @class */ (function () {
             var count = void 0;
             count = info.tree.children.length;
             var columns = void 0;
-            columns = Math.ceil(count / info.tree.rows);
+            columns = info.tree.rows;
             if (columns % 2 === 0) {
                 column = columns;
             }
             else {
-                column = columns + 1;
+                column = columns - 1;
             }
         }
         else if (info.tree.children.length === 3 || info.tree.children.length === 4) {
@@ -54333,11 +54364,16 @@ var HierarchicalTree = /** @class */ (function () {
         while (childNodes > 0) {
             rows[rows.length] = children.splice(0, column);
             childNodes -= column;
-            if (childNodes === 3) {
-                column = 2;
-            }
-            else if (childNodes < column) {
-                column = childNodes;
+            if (childNodes < column) {
+                if (childNodes % 2 === 0) {
+                    column = childNodes;
+                }
+                else if (childNodes !== 1) {
+                    column = childNodes - 1;
+                }
+                if (childNodes < column) {
+                    column = childNodes;
+                }
             }
         }
         return rows;
@@ -60470,6 +60506,7 @@ exports.findObjectType = findObjectType;
 exports.setSwimLaneDefaults = setSwimLaneDefaults;
 exports.getSpaceValue = getSpaceValue;
 exports.getInterval = getInterval;
+exports.setPortsEdges = setPortsEdges;
 exports.setUMLActivityDefaults = setUMLActivityDefaults;
 exports.setConnectorDefaults = setConnectorDefaults;
 exports.findNearestPoint = findNearestPoint;

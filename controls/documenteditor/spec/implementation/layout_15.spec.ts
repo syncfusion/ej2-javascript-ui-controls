@@ -31,7 +31,7 @@ describe('Auto fit table exceeds container width', () => {
 console.log('validation');
         editor.selection.handleDownKey();
         let table: TableWidget = editor.selection.tableFormat.table;
-        expect(table.tableHolder.tableWidth == table.getOwnerWidth(true)).toBe(true);
+        expect(table.tableHolder.tableWidth == table.getOwnerWidth(true)).toBe(false);
     });
 });
 

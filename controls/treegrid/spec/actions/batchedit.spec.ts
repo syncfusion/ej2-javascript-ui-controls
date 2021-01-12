@@ -1090,6 +1090,48 @@ describe('Batch Edit module', () => {
       destroy(gridObj);
     });
   }); 
+  describe('Batch Editing - validation checking for in-between position', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Below" },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [
+            {
+                field: "taskID",
+                headerText: "Task ID",
+                isPrimaryKey: true,
+                textAlign: "Right",
+                validationRules: { required: true, number: true },
+                width: 90
+            },
+            {
+                field: "taskName",
+                headerText: "Task Name",
+                editType: "stringedit",
+                width: 220,
+                validationRules: { required: true }
+            }
+        ]
+        },
+        done
+      );
+    });
+   it('validation rule', () => {
+      gridObj.selectRow(2);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect(gridObj.element.querySelectorAll(".e-griderror").length === 1).toBe(true); 
+    }); 
+     afterAll(() => {
+      destroy(gridObj);
+    });
+  }); 
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with remote data has been fixed.
+
 ## 18.4.32 (2020-12-29)
 
 ### AutoComplete

@@ -1382,31 +1382,34 @@ export class Image {
                     selectArgs.filesData = rawFile;
                 }
                 this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
-                    this.checkExtension(selectArgs.filesData[0]); altText = selectArgs.filesData[0].name;
-                    if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                        let reader: FileReader = new FileReader();
-                        reader.addEventListener('load', (e: MouseEvent) => {
-                            let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
-                                URL.createObjectURL(convertToBlob(reader.result as string));
-                            proxy.uploadUrl = {
-                                url: url, selection: save, altText: altText,
-                                selectParent: selectParent,
-                                width: {
-                                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.parent.getInsertImgMaxWidth()
-                                }, height: {
-                                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                                    maxHeight: proxy.parent.insertImageSettings.maxHeight
-                                }
-                            };
-                            proxy.inputUrl.setAttribute('disabled', 'true');
-                        });
-                        reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);
-                    }
-                    if (this.parent.isServerRendered) {
-                        /* tslint:disable */
-                        (this.uploadObj as any)._internalRenderSelect(selectArgs, rawFile);
-                        /* tslint:enable */
+                    if (!selectArgs.cancel) {
+                        this.checkExtension(selectArgs.filesData[0]); altText = selectArgs.filesData[0].name;
+                        if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                            let reader: FileReader = new FileReader();
+                            reader.addEventListener('load', (e: MouseEvent) => {
+                                let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
+                                    URL.createObjectURL(convertToBlob(reader.result as string));
+                                proxy.uploadUrl = {
+                                    url: url, selection: save, altText: altText,
+                                    selectParent: selectParent,
+                                    width: {
+                                        width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
+                                        maxWidth: proxy.parent.getInsertImgMaxWidth()
+                                    }, height: {
+                                        height: proxy.parent.insertImageSettings.height,
+                                        minHeight: proxy.parent.insertImageSettings.minHeight,
+                                        maxHeight: proxy.parent.insertImageSettings.maxHeight
+                                    }
+                                };
+                                proxy.inputUrl.setAttribute('disabled', 'true');
+                            });
+                            reader.readAsDataURL(selectArgs.filesData[0].rawFile as Blob);
+                        }
+                        if (this.parent.isServerRendered) {
+                            /* tslint:disable */
+                            (this.uploadObj as any)._internalRenderSelect(selectArgs, rawFile);
+                            /* tslint:enable */
+                        }
                     }
                 });
             },

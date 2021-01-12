@@ -44,6 +44,11 @@ export class StringFilterUI implements IFilterMUI {
 
     private getAutoCompleteOptions(args: IFilterCreate): AutoComplete {
         let isForeignColumn: boolean = args.column.isForeignColumn();
+        let foreignColumnQuery: Query;
+        if (isForeignColumn) {
+            foreignColumnQuery = new Query();
+            foreignColumnQuery.params = this.parent.query.params;
+        }
         let dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
         let fields: Object = { value: isForeignColumn ? args.column.foreignKeyValue : args.column.field };
         let autoComplete: AutoComplete = new AutoComplete(extend(
@@ -52,7 +57,7 @@ export class StringFilterUI implements IFilterMUI {
             fields: fields,
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
-            query: this.parent.query.clone(),
+            query: isForeignColumn ? foreignColumnQuery : this.parent.query.clone(),
             sortOrder: 'Ascending',
             open: this.openPopup.bind(this),
             cssClass: 'e-popup-flmenu',

@@ -502,13 +502,6 @@ export class DropDownList extends DropDownBase implements IInput {
             } else {
                 if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
                     && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
-                    let actionList: HTMLElement = this.actionCompleteData.ulElement.querySelector('li');
-                    let ulElement: HTMLElement = this.ulElement && this.ulElement.querySelector('li');
-                    if (this.element.tagName === 'EJS-COMBOBOX' && actionList && ulElement &&
-                        actionList.childElementCount > 0 && ulElement.childElementCount > 0 &&
-                        actionList.textContent !== ulElement.textContent && this.itemTemplate) {
-                        this.cloneElements();
-                    }
                     this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true) as HTMLElement, this.actionCompleteData.list);
                 }
                 this.resetFocusElement();
@@ -1858,7 +1851,15 @@ export class DropDownList extends DropDownBase implements IInput {
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
-                    this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
+                    if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                        setTimeout(
+                            () => {
+                            this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
+                            },
+                            0);
+                    } else {
+                        this.actionCompleteData = { ulElement: ulElement.cloneNode(true) as HTMLElement, list: list, isUpdated: true };
+                    }
                 }
                 this.addNewItem(list, selectedItem);
                 if (!isNullOrUndefined(this.itemData)) {
@@ -1886,14 +1887,26 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }, index?: number): void {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            if (index != null) {
-                this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                setTimeout(
+                    () => {
+                        this.actionCompleteDataUpdate(li, item, index);
+                    },
+                    0);
             } else {
-                this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+                this.actionCompleteDataUpdate(li, item, index);
             }
-            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
-                this.actionCompleteData.list.push(item);
-            }
+        }
+    }
+
+    private actionCompleteDataUpdate(li: HTMLElement, item: { [key: string]: Object }, index?: number): void {
+        if (index != null) {
+            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+        } else {
+            this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+        }
+        if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
+            this.actionCompleteData.list.push(item);
         }
     }
 
@@ -2105,7 +2118,8 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.actionCompleteData.ulElement.querySelector('li');
                 let ulElement: HTMLElement = this.list.querySelector('ul li');
                 if (this.isFiltering() && this.itemTemplate && (this.element.tagName === this.getNgDirective()) &&
-                    (actionList && ulElement && actionList.textContent !== ulElement.textContent)) {
+                    (actionList && ulElement && actionList.textContent !== ulElement.textContent) &&
+                    this.element.tagName !== 'EJS-COMBOBOX') {
                     this.cloneElements();
                 }
                 if (this.isFilterLayout()) {

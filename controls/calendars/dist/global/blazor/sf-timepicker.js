@@ -10,18 +10,15 @@ var LISTCLASS = 'e-list-item';
 var SELECTED = 'e-active';
 var HOVER = 'e-hover';
 var NAVIGATION = 'e-navigation';
-var DISABLED = 'e-disabled';
 var POPUP_CONTENT = 'e-content';
 var MODEL_POPUP = 'e-timepicker-mob-popup-wrap';
 var ARIA_SELECT = 'aria-selected';
-var LIST_CLICK = 'OnListItemClick';
 var HIDE_POPUP = 'HidePopup';
 var TIME_MODAL = 'e-time-modal';
 var RIGHT = 'right';
 var LEFT = 'left';
 var TAB = 'tab';
 var ENTER = 'enter';
-var SELECT = 'select';
 var CLOSE_POPUP = 'ClosePopup';
 var OFFSETVALUE = 4;
 var OPENDURATION = 300;
@@ -60,7 +57,6 @@ var SfTimePicker = /** @class */ (function () {
         this.timeCollections = [];
         this.listWrapper = popupHolderEle.querySelector('.' + POPUP_CONTENT) || sf.base.select('.' + POPUP_CONTENT);
         this.getTimeCollection();
-        this.wireListEvents();
         if (!sf.base.isNullOrUndefined(this.element.value)) {
             this.removeSelection();
             this.selectedElement = this.listWrapper.querySelector('li[data-value = "' + this.element.value + '"]');
@@ -98,17 +94,6 @@ var SfTimePicker = /** @class */ (function () {
         if (selectElement) {
             sf.base.addClass([selectElement], SELECTED);
             selectElement.setAttribute(ARIA_SELECT, 'true');
-        }
-    };
-    SfTimePicker.prototype.updateListStatus = function (index, status) {
-        if (!sf.base.isNullOrUndefined(this.listWrapper) && !sf.base.isNullOrUndefined(index)) {
-            this.selectedElement = this.listWrapper.querySelectorAll('.' + LISTCLASS)[index];
-            if (status === SELECT) {
-                this.removeSelection();
-                this.updateSelection(this.selectedElement);
-            }
-            this.setHover(this.selectedElement, NAVIGATION);
-            this.setScrollPosition();
         }
     };
     SfTimePicker.prototype.setScrollPosition = function () {
@@ -195,7 +180,6 @@ var SfTimePicker = /** @class */ (function () {
             open: function () {
                 _this.popupWrapper.style.visibility = 'visible';
             }, close: function () {
-                _this.unWireListEvents();
                 _this.popupHolder.appendChild(_this.popupWrapper);
                 if (_this.popupObj) {
                     _this.popupObj.destroy();
@@ -218,39 +202,6 @@ var SfTimePicker = /** @class */ (function () {
         sf.base.removeClass([document.body], OVERFLOW);
         this.closeEventCallback(closeEventArgs);
     };
-    SfTimePicker.prototype.wireListEvents = function () {
-        sf.base.EventHandler.add(this.listWrapper, 'click', this.onMouseClick, this);
-        if (!sf.base.Browser.isDevice) {
-            sf.base.EventHandler.add(this.listWrapper, 'mouseover', this.onMouseOver, this);
-            sf.base.EventHandler.add(this.listWrapper, 'mouseout', this.onMouseLeave, this);
-        }
-    };
-    SfTimePicker.prototype.onMouseClick = function (event) {
-        var target = event.target;
-        var li = this.selectedElement = sf.base.closest(target, '.' + LISTCLASS);
-        var dataVal = li.getAttribute('data-value');
-        if (this.isValidLI(li) && !li.classList.contains(SELECTED)) {
-            this.removeSelection();
-            this.updateSelection(this.selectedElement);
-            this.dotNetRef.invokeMethodAsync(LIST_CLICK, dataVal, event);
-        }
-        else {
-            this.dotNetRef.invokeMethodAsync(HIDE_POPUP, event);
-        }
-    };
-    SfTimePicker.prototype.onMouseOver = function (event) {
-        var currentLi = sf.base.closest(event.target, '.' + LISTCLASS);
-        this.setHover(currentLi, HOVER);
-    };
-    SfTimePicker.prototype.setHover = function (li, className) {
-        if (this.isValidLI(li) && !li.classList.contains(className)) {
-            this.removeHover(className);
-            sf.base.addClass([li], className);
-            if (className === NAVIGATION) {
-                li.setAttribute(ARIA_SELECT, 'true');
-            }
-        }
-    };
     SfTimePicker.prototype.removeSelection = function () {
         this.removeHover(HOVER);
         if (!sf.base.isNullOrUndefined(this.popupWrapper)) {
@@ -268,21 +219,6 @@ var SfTimePicker = /** @class */ (function () {
             sf.base.removeClass(hoveredItem, className);
             if (className === NAVIGATION) {
                 hoveredItem[0].removeAttribute(ARIA_SELECT);
-            }
-        }
-    };
-    SfTimePicker.prototype.isValidLI = function (li) {
-        return (li && li.classList.contains(LISTCLASS) && !li.classList.contains(DISABLED));
-    };
-    SfTimePicker.prototype.onMouseLeave = function () {
-        this.removeHover(HOVER);
-    };
-    SfTimePicker.prototype.unWireListEvents = function () {
-        if (this.listWrapper) {
-            sf.base.EventHandler.remove(this.listWrapper, 'click', this.onMouseClick);
-            if (!sf.base.Browser.isDevice) {
-                sf.base.EventHandler.remove(this.listWrapper, 'mouseover', this.onMouseOver);
-                sf.base.EventHandler.remove(this.listWrapper, 'mouseout', this.onMouseLeave);
             }
         }
     };
@@ -354,9 +290,13 @@ var SfTimePicker = /** @class */ (function () {
             popupWrapper.style.zIndex = index.toString();
         }
     };
-    SfTimePicker.prototype.selectInputText = function (element) {
+    SfTimePicker.prototype.selectInputText = function (element, isNavigation, index) {
         if (!sf.base.Browser.isDevice) {
             element.setSelectionRange(0, element.value.length);
+            if (isNavigation && this.listWrapper) {
+                this.selectedElement = this.listWrapper.querySelectorAll('.' + LISTCLASS)[index];
+                this.setScrollPosition();
+            }
         }
     };
     SfTimePicker.prototype.isDevice = function () {
@@ -404,14 +344,9 @@ var TimePicker = {
             element.blazor__instance.closePopup(closeEventArgs, options);
         }
     },
-    selectInputText: function (element) {
+    selectInputText: function (element, isNavigation, index) {
         if (element && element.blazor__instance) {
-            element.blazor__instance.selectInputText(element);
-        }
-    },
-    updateListStatus: function (element, index, status) {
-        if (element && element.blazor__instance) {
-            element.blazor__instance.updateListStatus(index, status);
+            element.blazor__instance.selectInputText(element, isNavigation, index);
         }
     },
     focusIn: function (inputEle) {

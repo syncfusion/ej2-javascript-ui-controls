@@ -466,4 +466,21 @@ export class ViewBase {
         }
     }
 
+    public getWeekNumberContent(dates: Date[]): number {
+        let weekNumber: number;
+        if (this.parent.weekRule === 'FirstDay') {
+            let weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            weekNumber = util.getWeekNumber(weekNumberDate);
+        } else if (this.parent.weekRule === 'FirstFourDayWeek') {
+            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            let weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            let weekMidDate: Date = util.getWeekMiddleDate(weekFirstDate, weekLastDate);
+            weekNumber = util.getWeekNumber(weekMidDate);
+        } else if (this.parent.weekRule === 'FirstFullWeek') {
+            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            weekNumber = util.getWeekNumber(weekFirstDate);
+        }
+        return weekNumber;
+    }
+
 }

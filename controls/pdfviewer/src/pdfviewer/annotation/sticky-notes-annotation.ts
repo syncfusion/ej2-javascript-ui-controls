@@ -2352,14 +2352,15 @@ export class StickyNotesAnnotation {
     /**
      * @private
      */
-    public getDateAndTime(date?: string): string {
+    // tslint:disable-next-line
+    public getDateAndTime(date?: any): string {
         if (!date) {
-           date = new Date().toLocaleString();
+            date = new Date();
         }
         this.globalize = new Internationalization();
         let dateOptions: object = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime' };
         // tslint:disable-next-line
-        let dateTime: string =  this.globalize.formatDate(new Date(date), dateOptions);
+        let dateTime: string = this.globalize.formatDate(new Date(date), dateOptions);
         return dateTime;
     };
 

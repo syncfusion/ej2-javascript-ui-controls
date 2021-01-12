@@ -306,6 +306,7 @@ export interface MergeArgs {
     insertModel?: ModelType;
     preventRefresh?: boolean;
     refreshRibbon?: boolean;
+    sheet?: SheetModel;
 }
 
 /**

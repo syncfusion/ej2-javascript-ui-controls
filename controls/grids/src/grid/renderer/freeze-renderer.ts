@@ -98,7 +98,7 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         super.renderEmpty(tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
         addClass([this.getMovableContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
-        this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenLeftCount();
+        this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getVisibleFrozenColumns();
         (this.getFrozenContent() as HTMLElement).style.borderRightWidth = '0px';
         if (this.parent.frozenRows) {
             this.parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('tbody').innerHTML = '';
@@ -279,7 +279,10 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         }
     }
 
-    protected refreshScrollOffset(): void {
+    /**
+     * @hidden
+     */
+    public refreshScrollOffset(): void {
         if (this.parent.height !== 'auto') {
             let height: number = (this.getTable() as HTMLElement).offsetHeight + 1;
             this.setHeightToContent(height);

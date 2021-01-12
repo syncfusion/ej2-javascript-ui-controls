@@ -8,6 +8,7 @@ import { Diagram } from '../diagram';
 import { randomId, getFunction } from '../utility/base-util';
 import { cloneBlazorObject } from '../utility/diagram-util';
 import { updateDefaultValues } from '../utility/diagram-util';
+import { isBlazor } from '@syncfusion/ej2-base';
 
 /**
  * data source defines the basic unit of diagram
@@ -68,7 +69,7 @@ export class DataBinding {
         }
         if (dataSource && (dataSource as Object[]).length) {
             this.applyDataSource(data, dataSource as Object[], diagram);
-            diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
+            diagram.trigger('dataLoaded', { diagram: (isBlazor()) ? null : cloneBlazorObject(diagram) });
         }
     }
 
@@ -94,7 +95,7 @@ export class DataBinding {
                     this.applyDataSource(data, result, diagram);
                     diagram.refreshDiagram();
                     diagram.protectPropertyChange(false);
-                    diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
+                    diagram.trigger('dataLoaded', { diagram: (isBlazor()) ? null : cloneBlazorObject(diagram) });
                 }
             });
         }

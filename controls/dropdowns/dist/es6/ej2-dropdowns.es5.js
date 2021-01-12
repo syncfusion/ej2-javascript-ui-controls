@@ -1584,13 +1584,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             else {
                 if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
                     && !isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
-                    var actionList = this.actionCompleteData.ulElement.querySelector('li');
-                    var ulElement = this.ulElement && this.ulElement.querySelector('li');
-                    if (this.element.tagName === 'EJS-COMBOBOX' && actionList && ulElement &&
-                        actionList.childElementCount > 0 && ulElement.childElementCount > 0 &&
-                        actionList.textContent !== ulElement.textContent && this.itemTemplate) {
-                        this.cloneElements();
-                    }
                     this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
                 }
                 this.resetFocusElement();
@@ -2944,7 +2937,14 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     && ((this.dataSource instanceof DataManager)
                         || (!isNullOrUndefined(this.dataSource) && !isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
-                    this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
+                    if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                        setTimeout(function () {
+                            _this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
+                        }, 0);
+                    }
+                    else {
+                        this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
+                    }
                 }
                 this.addNewItem(list, selectedItem);
                 if (!isNullOrUndefined(this.itemData)) {
@@ -2970,16 +2970,27 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.updateActionCompleteData = function (li, item, index) {
+        var _this = this;
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            if (index != null) {
-                this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                setTimeout(function () {
+                    _this.actionCompleteDataUpdate(li, item, index);
+                }, 0);
             }
             else {
-                this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+                this.actionCompleteDataUpdate(li, item, index);
             }
-            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
-                this.actionCompleteData.list.push(item);
-            }
+        }
+    };
+    DropDownList.prototype.actionCompleteDataUpdate = function (li, item, index) {
+        if (index != null) {
+            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+        }
+        else {
+            this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+        }
+        if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
+            this.actionCompleteData.list.push(item);
         }
     };
     DropDownList.prototype.focusIndexItem = function () {
@@ -3221,7 +3232,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     _this.actionCompleteData.ulElement.querySelector('li');
                 var ulElement = _this.list.querySelector('ul li');
                 if (_this.isFiltering() && _this.itemTemplate && (_this.element.tagName === _this.getNgDirective()) &&
-                    (actionList && ulElement && actionList.textContent !== ulElement.textContent)) {
+                    (actionList && ulElement && actionList.textContent !== ulElement.textContent) &&
+                    _this.element.tagName !== 'EJS-COMBOBOX') {
                     _this.cloneElements();
                 }
                 if (_this.isFilterLayout()) {
@@ -13428,6 +13440,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 filterElem.focus();
             }
         }
+        if (this.toolbarSettings.items.length && this.scope && this.scope.indexOf('#') > -1 && !isNullOrUndefined(e)) {
+            var scope = this.scope.replace('#', '');
+            var scopedLB = getComponent(document.getElementById(scope), this.getModuleName());
+            scopedLB.initToolbar();
+        }
         this.initLoad = false;
     };
     ListBox.prototype.initToolbarAndStyles = function () {
@@ -13467,7 +13484,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListBox.prototype.beforeDragEnd = function (args) {
-        var dragValue = args.droppedElement.getAttribute('data-value');
+        var dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         if (this.value.indexOf(dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
         }
@@ -14100,7 +14117,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.setFiltering = function () {
         var filterInputObj;
-        if (isNullOrUndefined(this.filterParent)) {
+        if (this.initLoad || isNullOrUndefined(this.filterParent)) {
             if (isBlazor() && this.isServerRendered) {
                 this.filterParent = this.list.querySelector('.e-filter-parent');
                 this.filterInput = this.list.querySelector('.e-input-filter');
@@ -14690,6 +14707,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.keyDownHandler = function (e) {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {
+            if (e.target && e.target.className.indexOf('e-edit-template') > -1) {
+                return;
+            }
             e.preventDefault();
             if (e.keyCode === 32 && this.ulElement.children.length) {
                 this.selectHandler({

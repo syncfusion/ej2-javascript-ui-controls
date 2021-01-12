@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#301753` - Now, the stamp annotation can be added in the page when the firefox browser language is german.
+
 ## 18.4.33 (2021-01-05)
 
 ### PDF Viewer

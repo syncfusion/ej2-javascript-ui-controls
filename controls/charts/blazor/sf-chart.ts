@@ -515,15 +515,19 @@ let Chart: IChartOptions = {
             this.id = id;
         }
         let element: HTMLElement = document.getElementById(id);
-        let elementRect: ClientRect = element.getBoundingClientRect();
-        return {
-            width: element.clientWidth || element.offsetWidth,
-            height: element.clientHeight || element.offsetHeight,
-            left: elementRect.left,
-            top: elementRect.top,
-            right: elementRect.right,
-            bottom: elementRect.bottom
-        };
+        if(element)
+        {
+            let elementRect: ClientRect = element.getBoundingClientRect();
+            return {
+                width: element.clientWidth || element.offsetWidth,
+                height: element.clientHeight || element.offsetHeight,
+                left: elementRect.left,
+                top: elementRect.top,
+                right: elementRect.right,
+                bottom: elementRect.bottom
+            };
+        }
+        return { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0 };
     },
     getBrowserDeviceInfo(): object {
         return {

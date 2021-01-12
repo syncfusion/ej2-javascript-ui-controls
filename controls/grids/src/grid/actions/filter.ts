@@ -183,11 +183,14 @@ export class Filter implements IAction {
         if (this.parent.detailTemplate || this.parent.childGrid) {
             cells.push(this.generateCell({} as Column, CellType.DetailHeader));
         }
-        if (this.parent.isRowDragable()) {
+        if (this.parent.isRowDragable() && this.parent.getFrozenMode() !== 'Right') {
             cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
         }
         for (let dummy of this.parent.getColumns() as Column[]) {
             cells.push(this.generateCell(dummy));
+        }
+        if (this.parent.getFrozenMode() === 'Right') {
+            cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
         }
         return cells;
     }
@@ -1081,7 +1084,8 @@ export class Filter implements IAction {
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
-            if (parentsUntil(target, 'e-excel-ascending') || parentsUntil(target , 'e-excel-descending')) {
+            if ((hasDialogClosed && (parentsUntil(target, 'e-excel-ascending') ||
+                parentsUntil(target, 'e-excel-descending')))) {
                 this.filterModule.closeDialog(target);
             }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {

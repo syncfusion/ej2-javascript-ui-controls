@@ -1069,6 +1069,7 @@ var PivotEngine = /** @class */ (function () {
         this.globalize = new sf.base.Internationalization();
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.fieldsType = customProperties ? customProperties.fieldsType : {};
+        this.clonedReport = customProperties ? customProperties.clonedReport : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showHeaderWhenEmpty = sf.base.isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
@@ -1309,7 +1310,7 @@ var PivotEngine = /** @class */ (function () {
                                             if (this_1.fields.indexOf(newFieldName) === -1) {
                                                 this_1.fields.push(newFieldName);
                                             }
-                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setFullYear(date.getFullYear())).toString());
+                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setFullYear(date.getFullYear())).toString()));
                                         }
                                         break;
                                     case 'Quarters':
@@ -1347,7 +1348,7 @@ var PivotEngine = /** @class */ (function () {
                                             if (this_1.fields.indexOf(newFieldName) === -1) {
                                                 this_1.fields.push(newFieldName);
                                             }
-                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
+                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString()));
                                         }
                                         break;
                                     case 'Days':
@@ -1358,7 +1359,7 @@ var PivotEngine = /** @class */ (function () {
                                             if (this_1.fields.indexOf(newFieldName) === -1) {
                                                 this_1.fields.push(newFieldName);
                                             }
-                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
+                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString()));
                                         }
                                         break;
                                     case 'Hours':
@@ -1369,7 +1370,7 @@ var PivotEngine = /** @class */ (function () {
                                             if (this_1.fields.indexOf(newFieldName) === -1) {
                                                 this_1.fields.push(newFieldName);
                                             }
-                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setHours(date.getHours())).toString());
+                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setHours(date.getHours())).toString()));
                                         }
                                         break;
                                     case 'Minutes':
@@ -1380,7 +1381,7 @@ var PivotEngine = /** @class */ (function () {
                                             if (this_1.fields.indexOf(newFieldName) === -1) {
                                                 this_1.fields.push(newFieldName);
                                             }
-                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setMinutes(date.getMinutes())).toString());
+                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMinutes(date.getMinutes())).toString()));
                                         }
                                         break;
                                     case 'Seconds':
@@ -1391,7 +1392,7 @@ var PivotEngine = /** @class */ (function () {
                                             if (this_1.fields.indexOf(newFieldName) === -1) {
                                                 this_1.fields.push(newFieldName);
                                             }
-                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setSeconds(date.getSeconds())).toString());
+                                            item[this_1.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setSeconds(date.getSeconds())).toString()));
                                         }
                                         break;
                                 }
@@ -1452,11 +1453,20 @@ var PivotEngine = /** @class */ (function () {
                                     var dataFields = this_1.rows;
                                     dataFields = dataFields.concat(this_1.columns, this_1.values, this_1.filters);
                                     while (gCnt--) {
+                                        var caption_1 = actualField.caption ? actualField.caption : actualField.name;
+                                        if (this_1.clonedReport) {
+                                            var clonedFields = this_1.clonedReport.rows;
+                                            clonedFields = clonedFields.concat(this_1.clonedReport.columns, this_1.clonedReport.values, this_1.clonedReport.filters);
+                                            var cloneField = PivotUtil.getFieldByName(groupKeys[gCnt], clonedFields);
+                                            if (cloneField) {
+                                                caption_1 = cloneField.caption ? cloneField.caption : cloneField.name;
+                                            }
+                                        }
                                         if (!PivotUtil.getFieldByName(groupKeys[gCnt], dataFields)) {
                                             groupField = groupFields[groupKeys[gCnt]];
                                             var newField = {
                                                 name: groupKeys[gCnt],
-                                                caption: (this_1.localeObj ? this_1.localeObj.getConstant(groupField) : groupField) + ' (' + (actualField.caption ? actualField.caption : actualField.name) + ')',
+                                                caption: (this_1.localeObj ? this_1.localeObj.getConstant(groupField) : groupField) + ' (' + caption_1 + ')',
                                                 type: 'Count',
                                                 showNoDataItems: actualField.showNoDataItems,
                                                 baseField: actualField.baseField,
@@ -6721,7 +6731,7 @@ var Render = /** @class */ (function () {
             if (this.parent.grid.height == 'auto') {
                 var mCntHeight = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).offsetHeight;
                 var dataHeight = this.parent.grid.dataSource.length * this.parent.gridSettings.rowHeight;
-                if (mCntHeight < dataHeight) {
+                if (mCntHeight > 50 && mCntHeight < dataHeight) {
                     this.parent.grid.contentModule.setHeightToContent(dataHeight);
                 }
             }
@@ -18822,9 +18832,9 @@ var OlapEngine = /** @class */ (function () {
             var memberUName = member.querySelector('UName').textContent;
             /* tslint:disable:no-any */
             if (Number(member.querySelector('MEMBER_TYPE').textContent) > 3) {
-                member.querySelector('MEMBER_TYPE').textContent = memberUName.startsWith('[Measures]') ? '3' : '1';
+                member.querySelector('MEMBER_TYPE').textContent = memberUName.indexOf('[Measures]') === 0 ? '3' : '1';
             }
-            var memberType = memberUName.startsWith('[Measures]') ? '3' :
+            var memberType = memberUName.indexOf('[Measures]') === 0 ? '3' :
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
             /* tslint:enable:no-any */
             var memberCaption = member.querySelector('Caption').textContent;
@@ -18889,10 +18899,30 @@ var OlapEngine = /** @class */ (function () {
                     }
                 }
                 /* tslint:disable:no-any */
-                var uNames = Object.values(this.headerGrouping[memPos].UName).join('~~');
+                var uNames = '';
+                var uNamesKeys = Object.keys(this.headerGrouping[memPos].UName);
+                for (var i = 0; i < uNamesKeys.length; i++) {
+                    var j = uNamesKeys[i];
+                    if (i === 0) {
+                        uNames = this.headerGrouping[memPos].UName[j];
+                    }
+                    else {
+                        uNames = uNames + '~~' + this.headerGrouping[memPos].UName[j];
+                    }
+                }
                 uNameCollection = uNameCollection === '' ? uNames :
                     (uNameCollection + '::' + uNames);
-                var captions = Object.values(this.headerGrouping[memPos].Caption).join('~~');
+                var captions = '';
+                var captionsKeys = Object.keys(this.headerGrouping[memPos].Caption);
+                for (var i = 0; i < captionsKeys.length; i++) {
+                    var j = captionsKeys[i];
+                    if (i === 0) {
+                        captions = this.headerGrouping[memPos].Caption[j];
+                    }
+                    else {
+                        captions = captions + '~~' + this.headerGrouping[memPos].Caption[j];
+                    }
+                }
                 /* tslint:enable:no-any */
                 if (memPos !== measurePosition) {
                     captionCollection = captionCollection === '' ? captions :
@@ -19374,7 +19404,17 @@ var OlapEngine = /** @class */ (function () {
                         colMembers[member.querySelector('UName').textContent] = member.querySelector('Caption').textContent;
                     }
                     /* tslint:disable */
-                    var levelName = Object.values(colMembers).join('.');
+                    var levelName = '';
+                    var levelNameKeys = Object.keys(colMembers);
+                    for (var i = 0; i < levelNameKeys.length; i++) {
+                        var j = levelNameKeys[i];
+                        if (i === 0) {
+                            levelName = colMembers[j];
+                        }
+                        else {
+                            levelName = levelName + '.' + colMembers[j];
+                        }
+                    }
                     var isNamedSet = this.namedSetsPosition['column'][memPos] ? true : false;
                     var uName = this.getUniqueName(member.querySelector('UName').textContent);
                     var depth = this.getDepth(this.tupColumnInfo[tupPos], uName, Number(memberType));
@@ -19671,7 +19711,8 @@ var OlapEngine = /** @class */ (function () {
                                 }
                                 else if (arrange[header[k].formattedText] && this.pivotValues[j - 1]) {
                                     var prevRowCell = this.pivotValues[j - 1][header[k].colIndex];
-                                    var prevColIndex = Object.values(arrange[header[k].formattedText])[0].colIndex;
+                                    var prevColValue = Number(Object.keys(arrange[header[k].formattedText])[0]);
+                                    var prevColIndex = ((arrange[header[k].formattedText])[prevColValue]).colIndex;
                                     var prevColRowCell = this.pivotValues[j - 1][prevColIndex];
                                     if (prevRowCell.formattedText !== prevColRowCell.formattedText) {
                                         var key_1 = Object.keys(arrange);
@@ -21898,6 +21939,7 @@ var PivotView = /** @class */ (function (_super) {
         _this_1.isMouseDown = false;
         _this_1.isMouseUp = false;
         _this_1.fieldsType = {};
+        _this_1.serverCustomProperties = {};
         _this_1.remoteData = [];
         _this_1.defaultItems = {};
         _this_1.isCellBoxMultiSelection = false;
@@ -22348,8 +22390,12 @@ var PivotView = /** @class */ (function (_super) {
                 }
             }
             if (this.allowGrouping && this.dataType === 'pivot') {
-                groupItems.push(this.buildDefaultItems('Group'));
-                groupItems.push(this.buildDefaultItems('Ungroup'));
+                if (!this.getFieldByID(this.element.id + '_custom_group', this.gridSettings.contextMenuItems)) {
+                    groupItems.push(this.buildDefaultItems('Group'));
+                }
+                if (!this.getFieldByID(this.element.id + '_custom_ungroup', this.gridSettings.contextMenuItems)) {
+                    groupItems.push(this.buildDefaultItems('Ungroup'));
+                }
             }
             if (exportItems.length > 0) {
                 var exportGroupItems = this.buildDefaultItems('export');
@@ -22363,6 +22409,9 @@ var PivotView = /** @class */ (function (_super) {
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
         }
+    };
+    PivotView.prototype.getFieldByID = function (id, fields) {
+        return new sf.data.DataManager({ json: fields }).executeLocal(new sf.data.Query().where('id', 'equal', id))[0];
     };
     /**
      * @hidden
@@ -22743,7 +22792,8 @@ var PivotView = /** @class */ (function (_super) {
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.guid
+            hash: this.guid,
+            customArguments: this.serverCustomProperties
         };
         this.request.open("POST", this.dataSourceSettings.url, true);
         this.request.withCredentials = false;
@@ -23463,7 +23513,8 @@ var PivotView = /** @class */ (function (_super) {
                         enableValueSorting: pivot.enableValueSorting,
                         isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
                         localeObj: pivot.localeObj,
-                        fieldsType: pivot.fieldsType
+                        fieldsType: pivot.fieldsType,
+                        clonedReport: pivot.clonedReport
                     };
                     /* tslint:enable:align */
                     if (sf.base.isBlazor() && pivot.enableVirtualization) {
@@ -24949,7 +25000,8 @@ var PivotView = /** @class */ (function (_super) {
                 enableValueSorting: _this_1.enableValueSorting,
                 isDrillThrough: (_this_1.allowDrillThrough || _this_1.editSettings.allowEditing),
                 localeObj: _this_1.localeObj,
-                fieldsType: _this_1.fieldsType
+                fieldsType: _this_1.fieldsType,
+                clonedReport: _this_1.clonedReport
             };
             if (_this_1.dataType === 'pivot') {
                 if (_this_1.dataSourceSettings.groupSettings && _this_1.dataSourceSettings.groupSettings.length > 0) {
@@ -29360,7 +29412,8 @@ var PivotFieldList = /** @class */ (function (_super) {
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: localeObj
+                localeObj: localeObj,
+                clonedReport: this.clonedReport
             };
         }
         return customProperties;

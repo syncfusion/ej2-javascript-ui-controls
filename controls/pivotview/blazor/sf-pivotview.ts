@@ -205,9 +205,9 @@ let PivotView: object = {
             (element.blazor__instance as SfPivotView).exportDocument(element, filename, bytesBase64);
         }
     },
-    calculateGridHeight(element: BlazorPivotElement, elementCreated: boolean, rowCount: number): string {
+    calculateGridHeight(element: BlazorPivotElement, elementCreated: boolean, rowCount: number, columnCount: number): string {
         if (element && element.blazor__instance) {
-            return (element.blazor__instance as SfPivotView).calculateGridHeight(elementCreated, rowCount);
+            return (element.blazor__instance as SfPivotView).calculateGridHeight(elementCreated, rowCount, columnCount);
         }
         return null;
     },

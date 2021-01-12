@@ -1436,6 +1436,35 @@ describe('Schedule Month view', () => {
         });
     });
 
+    describe('Getting Week numbers while changing weekRule property', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                selectedDate: new Date(2020, 11, 29),
+                currentView: 'Month',
+                showWeekNumber: true
+            };
+            schObj = util.createSchedule(schOptions, testData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Week number testing for when weekRule set to FirstDay', () => {
+            schObj.weekRule = 'FirstDay';
+            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('50');
+        });
+        it('Week number testing for when weekRule set to FirstFourDayWeek', () => {
+            schObj.weekRule = 'FirstFourDayWeek';
+            schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-week-number')[4].innerHTML).toBe('53');
+        });
+        it('Week number testing for when weekRule set to FirstFullWeek', () => {
+            schObj.weekRule = 'FirstFullWeek';
+            schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('49');
+        });
+    });
+
     describe('More indicator event rendering based on the provided template', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {

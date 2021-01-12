@@ -127,6 +127,10 @@ function getWeekNumber(dt) {
     let dayOfYear = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
     return Math.ceil(dayOfYear / 7);
 }
+function getWeekMiddleDate(weekFirst, weekLast) {
+    let date = new Date(weekLast.valueOf() - ((weekLast.valueOf() - weekFirst.valueOf()) / 2));
+    return date;
+}
 function setTime(date, time) {
     let tzOffsetBefore = date.getTimezoneOffset();
     let d = new Date(date.getTime() + time);
@@ -6582,7 +6586,8 @@ class TimelineEvent extends MonthEvent {
         let overlapCount = this.getIndex(startTime);
         event.Index = overlapCount;
         let elem = this.element.querySelector('.' + APPOINTMENT_CLASS);
-        let appHeight = (elem && elem.offsetHeight > 0) ? elem.offsetHeight : this.eventHeight;
+        let eleHeight = (elem) ? elem.offsetHeight : 0;
+        let appHeight = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
         let diffInDays = eventData.count;
         let eventObj = extend({}, event, null, true);
         eventObj[this.fields.startTime] = eventData[this.fields.startTime];
@@ -6622,8 +6627,8 @@ class TimelineEvent extends MonthEvent {
                     let firstChild = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
-                if (appointmentElement.offsetWidth < this.cellWidth && this.parent.activeViewOptions.timeScale.enable
-                    && this.parent.activeViewOptions.option !== 'TimelineMonth') {
+                if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
+                    && appointmentElement.offsetWidth < this.cellWidth) {
                     let resizeHandlers = [].slice.call(appointmentElement.querySelectorAll('.' + EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach((resizeHandler) => {
                         resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';
@@ -7547,7 +7552,8 @@ class QuickPopups {
                 this.parent.trigger(eventRendered, args, (eventArgs) => {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentElement);
-                        this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, this.parent.isAdaptive);
+                        let isPreventCrud = this.parent.isAdaptive || this.parent.currentView === 'Year';
+                        this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, isPreventCrud);
                         this.parent.eventBase.applyResourceColor(appointmentElement, eventData, 'backgroundColor', groupOrder);
                     }
                 });
@@ -14969,6 +14975,9 @@ let Schedule = class Schedule extends Component {
             case 'eventDragArea':
                 this.notify(dataReady, {});
                 break;
+            case 'weekRule':
+                state.isLayout = true;
+                break;
         }
     }
     setRtlClass() {
@@ -15792,6 +15801,9 @@ __decorate([
 __decorate([
     Property(0)
 ], Schedule.prototype, "firstDayOfWeek", void 0);
+__decorate([
+    Property('FirstDay')
+], Schedule.prototype, "weekRule", void 0);
 __decorate([
     Property([1, 2, 3, 4, 5])
 ], Schedule.prototype, "workDays", void 0);
@@ -17293,7 +17305,7 @@ class YearEvent extends TimelineEvent {
                 appointmentsList.push(app);
             }
             if (!this.parent.rowAutoHeight && (resetTime(appStart).getTime() <= dateStart)
-                && (resetTime(appEnd).getTime() > dateEnd)) {
+                && (resetTime(appEnd).getTime() >= dateEnd)) {
                 appointmentsList.push(app);
             }
         }
@@ -18672,6 +18684,24 @@ class ViewBase {
             scrollWrap.scrollLeft = dateElement.offsetLeft;
         }
     }
+    getWeekNumberContent(dates) {
+        let weekNumber;
+        if (this.parent.weekRule === 'FirstDay') {
+            let weekNumberDate = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            weekNumber = getWeekNumber(weekNumberDate);
+        }
+        else if (this.parent.weekRule === 'FirstFourDayWeek') {
+            let weekFirstDate = getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            let weekLastDate = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            let weekMidDate = getWeekMiddleDate(weekFirstDate, weekLastDate);
+            weekNumber = getWeekNumber(weekMidDate);
+        }
+        else if (this.parent.weekRule === 'FirstFullWeek') {
+            let weekFirstDate = getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
+            weekNumber = getWeekNumber(weekFirstDate);
+        }
+        return weekNumber;
+    }
 }
 
 /**
@@ -19125,9 +19155,7 @@ class VerticalView extends ViewBase {
             let data = { className: [(this.colLevels[i][0] && this.colLevels[i][0].className[0])], type: 'emptyCells' };
             if (this.parent.activeViewOptions.showWeekNumber && data.className.indexOf(HEADER_CELLS_CLASS) !== -1) {
                 data.className.push(WEEK_NUMBER_CLASS);
-                let weekNumberDate = getWeekLastDate(this.renderDates.slice(-1)[0], this.parent.firstDayOfWeek);
-                let weekNo = this.parent.currentView === 'Day' ? getWeekNumber(weekNumberDate) :
-                    getWeekNumber(this.renderDates.slice(-1)[0]);
+                let weekNo = this.getWeekNumberContent(this.renderDates);
                 data.template = [createElement('span', {
                         innerHTML: '' + weekNo,
                         attrs: { title: this.parent.localeObj.getConstant('week') + ' ' + weekNo }
@@ -19783,7 +19811,7 @@ class Month extends ViewBase {
             this.parent.activeViewOptions.workDays.length;
         for (let i = 0, length = (this.renderDates.length / noOfDays); i < length; i++) {
             let dates = dateCol.splice(0, noOfDays);
-            let weekNumber = getWeekNumber(dates.slice(-1)[0]).toString();
+            let weekNumber = this.getWeekNumberContent(dates).toString();
             contentWrapTable.querySelector('tbody').appendChild(this.createWeekNumberElement(weekNumber));
         }
         return td;
@@ -20228,7 +20256,7 @@ class Year extends ViewBase {
             let weekDates = dateCollection.splice(0, WEEK_LENGTH);
             let tr = createElement('tr', { attrs: { 'role': 'row' } });
             if (this.parent.activeViewOptions.showWeekNumber) {
-                let weekNumber = getWeekNumber(weekDates.slice(-1)[0]);
+                let weekNumber = this.getWeekNumberContent(weekDates);
                 let td = createElement('td', {
                     className: 'e-week-number',
                     attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },
@@ -22673,5 +22701,5 @@ class Print {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, inlineClick, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, isDaylightSavingTime, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Year, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, inlineClick, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, getWeekMiddleDate, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, isDaylightSavingTime, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Year, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

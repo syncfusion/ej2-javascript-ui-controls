@@ -257,14 +257,15 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
         if (obj.case === 'filter') {
             let filterRow: Element = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
-                let index: number = left ? left : 0;
-                let total: number = left ? (left + movable) : left + movable;
+                let isDraggable: boolean = this.parent.isRowDragable();
+                let index: number = left ? isDraggable ? left + 1 : left : 0;
+                let total: number = left + movable + (left && isDraggable ? 1 : 0);
                 this.getMovableHeader().querySelector('thead')
                     .appendChild(this.filterRenderer(filterRow, index, total));
                 if (this.parent.getFrozenMode() === 'Left-Right') {
                     let ele: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
                         querySelectorAll('thead .e-filterbarcell .e-input'));
-                    this.getFrozenRightHeader().querySelector('thead').appendChild(this.filterRenderer(filterRow, left, left + right));
+                    this.getFrozenRightHeader().querySelector('thead').appendChild(this.filterRenderer(filterRow, index, index + right));
                     this.adjudtFilterBarCell(ele);
                 }
                 let elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
@@ -592,7 +593,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
         super.renderFrozenRightEmpty(tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
         addClass([this.parent.getMovableContentTbody().querySelector('tr')], ['e-emptyrow']);
-        this.getFrozenRightContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenRightColumnsCount();
+        this.getFrozenRightContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getVisibleFrozenRightCount();
         if (this.parent.frozenRows) {
             this.parent.getFrozenRightHeaderTbody().innerHTML = '';
             this.parent.getMovableHeaderTbody().innerHTML = '';
@@ -664,12 +665,14 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
     public renderEmpty(tbody: HTMLElement): void {
         if (this.parent.getFrozenLeftColumnsCount()) {
             super.renderEmpty(tbody);
+            this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getVisibleFrozenLeftCount();
             if (this.parent.getFrozenRightColumnsCount()) {
                 this.renderFrozenLeftWithRightEmptyRow();
             }
         } else {
            this.renderFrozenRightEmptyRowAlone(tbody);
         }
+        this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
     }
 
     protected setHeightToContent(height: number): void {

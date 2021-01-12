@@ -504,6 +504,13 @@ class BlobHelper {
 }
 
 /**
+ * AutoFilters class
+ * @private
+ */
+class AutoFilters {
+}
+
+/**
  * Workbook class
  */
 class Workbook {
@@ -701,6 +708,9 @@ class Workbook {
             }
             if (jsonSheet.images !== undefined) {
                 this.parserImages(jsonSheet.images, sheet);
+            }
+            if (jsonSheet.autoFilters !== null && jsonSheet.autoFilters !== undefined) {
+                this.parseFilters(jsonSheet.autoFilters, sheet);
             }
             sheet.index = (i + 1);
             sheet.mergeCells = this.mergeCells;
@@ -1510,6 +1520,25 @@ class Workbook {
             sheet.images.push(image);
         }
     }
+    parseFilters(json, sheet) {
+        sheet.autoFilters = new AutoFilters();
+        if (json.row !== null && json.row !== undefined)
+            sheet.autoFilters.row = json.row;
+        else
+            throw new Error('Argument Null Exception: row null or empty');
+        if (json.lastRow !== null && json.lastRow !== undefined)
+            sheet.autoFilters.lastRow = json.lastRow;
+        else
+            throw new Error('Argument Null Exception: lastRow cannot be null or empty');
+        if (json.column !== null && json.column !== undefined)
+            sheet.autoFilters.column = json.column;
+        else
+            throw new Error('Argument Null Exception: column cannot be null or empty');
+        if (json.lastColumn !== null && json.row !== undefined)
+            sheet.autoFilters.lastColumn = json.lastColumn;
+        else
+            throw new Error('Argument Null Exception: lastColumn cannot be null or empty');
+    }
     parserImage(json) {
         let image = new Image();
         if (json.image !== null && json.image !== undefined) {
@@ -1708,6 +1737,9 @@ class Workbook {
             }
             sheetString += ('</hyperlinks>');
         }
+        /* tslint:disable-next-line:max-line-length */
+        if (sheet.autoFilters !== null && sheet.autoFilters !== undefined)
+            sheetString += ('<autoFilter ref="' + this.getCellName(sheet.autoFilters.row, sheet.autoFilters.column) + ':' + this.getCellName(sheet.autoFilters.lastRow, sheet.autoFilters.lastColumn) + '"/>');
         /* tslint:disable-next-line:max-line-length */
         sheetString += ('<pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5" /><headerFooter scaleWithDoc="1" alignWithMargins="0" differentFirst="0" differentOddEven="0" />');
         if (sheet.images != undefined && sheet.images.length > 0) {

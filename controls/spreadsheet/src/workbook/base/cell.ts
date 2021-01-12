@@ -183,5 +183,7 @@ export function wrap(address: string, wrap: boolean = true, context?: Workbook):
         }
     }
     context.setProperties({ sheets: context.sheets }, true);
-    context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
+    if (addressInfo.sheetIndex === context.activeSheetIndex) {
+        context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
+    }
 }

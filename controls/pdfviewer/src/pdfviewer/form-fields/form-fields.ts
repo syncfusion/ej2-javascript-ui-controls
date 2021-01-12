@@ -38,7 +38,10 @@ export class FormFields {
     private isSignatureRendered: boolean = false;
     // tslint:disable-next-line
     private signatureFieldCollection: any = [];
-
+    // tslint:disable-next-line
+    private data: any;
+    // tslint:disable-next-line
+    private formFieldsData: any;
 
     /**
      * @private
@@ -54,16 +57,16 @@ export class FormFields {
         this.maxTabIndex = 0;
         this.minTabIndex = -1;
         // tslint:disable-next-line
-        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
-        if (data !== null) {
+        this.data = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        if (this.data !== null) {
             // tslint:disable-next-line
-            let formFieldsData: any = JSON.parse(data);
+            this.formFieldsData = JSON.parse(this.data);
             let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
             let canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
-            if (formFieldsData !== null && canvasElement !== null && textLayer !== null) {
-                for (let i: number = 0; i < formFieldsData.length; i++) {
+            if (this.formFieldsData !== null && canvasElement !== null && textLayer !== null) {
+                for (let i: number = 0; i < this.formFieldsData.length; i++) {
                     // tslint:disable-next-line
-                    let currentData: any = formFieldsData[i];
+                    let currentData: any = this.formFieldsData[i];
                     // tslint:disable-next-line
                     if (parseFloat(currentData['PageIndex']) == pageIndex) {
                         // tslint:disable-next-line
@@ -78,8 +81,10 @@ export class FormFields {
                             if (currentData.Name === 'Textbox') {
                                 divElement.style.background = 'white';
                             }
-                            this.applyPosition(divElement, bounds, font);
-                            this.applyPosition(inputField, bounds, font);
+                            // tslint:disable-next-line
+                            this.applyPosition(divElement, bounds, font, pageIndex, currentData['Rotation']);
+                            // tslint:disable-next-line
+                            this.applyPosition(inputField, bounds, font, pageIndex, currentData['Rotation']);
                             // tslint:disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
                             this.applyCommonProperties(inputField, pageIndex, i, currentData);
@@ -87,6 +92,11 @@ export class FormFields {
                             this.applyTabIndex(currentData, inputField, pageIndex);
                             this.checkIsRequiredField(currentData, inputField);
                             this.applyDefaultColor(inputField);
+                            // tslint:disable-next-line
+                            if (currentData['Rotation'] === 0) {
+                                let rotationAngle: number = this.getAngle(pageIndex);
+                                divElement.style.transform = 'rotate(' + rotationAngle + 'deg)';
+                            }
                             divElement.appendChild(inputField);
                             textLayer.appendChild(divElement);
                             inputField.addEventListener('focus', this.focusFormFields.bind(this));
@@ -94,13 +104,37 @@ export class FormFields {
                             inputField.addEventListener('click', this.updateFormFields.bind(this));
                             inputField.addEventListener('change', this.changeFormFields.bind(this));
                             inputField.addEventListener('keydown', this.updateFormFieldsValue.bind(this));
+                            inputField.addEventListener('keyup', this.updateSameFieldsValue.bind(this));
                         }
                     }
                 }
                 window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_formfields');
-                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(formFieldsData));
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
             }
         }
+    }
+    private getAngle(pageIndex: number): number {
+        // tslint:disable-next-line
+        let angle: any = 0;
+        // tslint:disable-next-line
+        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+        if (pageDetails.rotation) {
+            switch (pageDetails.rotation) {
+                case 0:
+                    angle = 0;
+                    break;
+                case 1:
+                    angle = 90;
+                    break;
+                case 2:
+                    angle = 180;
+                    break;
+                case 3:
+                    angle = 270;
+                    break;
+            }
+        }
+        return angle;
     }
     public nextField(): void {
         this.signatureFieldNavigate(true);
@@ -211,7 +245,7 @@ export class FormFields {
                 let type: FormFieldType = currentData['Name'];
                 if (currentData.Name !== 'ink') {
                     // tslint:disable-next-line
-                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData), signatureType:[], fontName: '' };
+                    let formFieldCollection: FormFieldModel = { name: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type, value: this.retriveCurrentValue(currentData), signatureType: [], fontName: '' };
                     this.pdfViewer.formFieldCollections.push(formFieldCollection);
                 }
             }
@@ -288,6 +322,28 @@ export class FormFields {
                 break;
         }
         return currentField;
+    }
+    // tslint:disable-next-line
+    private getSignatureBounds(LineBounds: any, bounds: any, pageIndex: any): any {
+        // tslint:disable-next-line
+        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+        // tslint:disable-next-line
+        let bound: any = 0;
+        switch (pageDetails.rotation) {
+            case 0:
+                bound = bounds;
+                break;
+            case 1:
+                bound = { x: bounds.x + LineBounds.Width, y: pageDetails.width - LineBounds.X + bounds.height };
+                break;
+            case 2:
+                bound = { x: pageDetails.width - bounds.x - bounds.width, y: pageDetails.height - bounds.y - bounds.height };
+                break;
+            case 3:
+                bound = { x: bounds.y - bounds.width + bounds.height, y: pageDetails.height + bounds.width + LineBounds.Height };
+                break;
+        }
+        return bound;
     }
     /**
      * @private
@@ -370,6 +426,10 @@ export class FormFields {
                     }
                     datas[currentData.FieldName] = JSON.stringify(csData);
                     if (currentData.Bounds) {
+                        // tslint:disable-next-line
+                        let bounds: any = this.getSignatureBounds(currentData.LineBounds, currentData.Bounds, currentData.PageIndex)
+                        currentData.Bounds.x = bounds.x;
+                        currentData.Bounds.y = bounds.y;
                         datas[currentData.FieldName + 'bounds'] = JSON.stringify(currentData.Bounds);
                     } else {
                         // tslint:disable-next-line
@@ -464,7 +524,7 @@ export class FormFields {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
+                shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: (bounds.height / 2)
             };
             signString = annot.data;
             signatureFontFamily = annot.fontFamily;
@@ -474,7 +534,7 @@ export class FormFields {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
             signString = annot.data;
         } else {
@@ -489,7 +549,7 @@ export class FormFields {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: 0, annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
             };
         }
         this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -504,8 +564,27 @@ export class FormFields {
         currentField.parentElement.style.pointerEvents = 'none';
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         // tslint:disable-next-line
-        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString );
+        this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);
         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
+    }
+    // tslint:disable-next-line
+    private updateSameFieldsValue(event: any) {
+        if (this.formFieldsData) {
+            for (let i: number = 0; i < this.formFieldsData.length; i++) {
+                // tslint:disable-next-line
+                let currentField: any = this.formFieldsData[i];
+                if (event.target.name === currentField.FieldName && event.target.id !== currentField.uniqueID) {
+                    // tslint:disable-next-line
+                    let currentTarget: any = document.getElementById(this.formFieldsData[i].uniqueID);
+                    if (currentTarget) {
+                        currentTarget.value = event.target.value;
+                    } else {
+                        currentField.Text = event.target.value;
+                        window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
+                    }
+                }
+            }
+        }
     }
 
     private updateFormFieldsValue(event: MouseEvent): void {
@@ -651,7 +730,7 @@ export class FormFields {
             let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             let currentLeft: number = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
             // tslint:disable-next-line:max-line-length
-            let currentTop : number = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
+            let currentTop: number = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
             return { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
         } else {
             return { left: currentLeftDiff, top: currentTopDiff, width: currentWidth, height: currentHeight };
@@ -1119,8 +1198,14 @@ export class FormFields {
         span.style.position = 'absolute';
         span.id = 'signIcon' + pageIndex + '_' + index;
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-        span.style.left = left * zoomvalue + 'px';
-        span.style.top = top * zoomvalue + 'px';
+        let rotation: number = this.getAngle(pageIndex);
+        // tslint:disable-next-line
+        let annotBounds: any = { left: left, top: top, width: width, height: height };
+        // tslint:disable-next-line
+        let fieldBounds: any = this.getBounds(annotBounds, pageIndex);
+        span.style.transform = 'rotate(' + rotation + 'deg)';
+        span.style.left = fieldBounds.left * zoomvalue + 'px';
+        span.style.top = fieldBounds.top * zoomvalue + 'px';
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             span.style.height = 5 + 'px';
             span.style.width = 10 + 'px';
@@ -1137,7 +1222,7 @@ export class FormFields {
         span.innerHTML = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text : 'Sign';
         span.style.color = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.color : 'black';
         // tslint:disable-next-line
-        span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor :'orange';
+        span.style.backgroundColor = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.backgroundColor : 'orange';
         span.style.opacity = this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity ? this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.opacity : 1;
         textLayer.appendChild(span);
         this.addSignaturePath(data);
@@ -1166,13 +1251,65 @@ export class FormFields {
         return this.isSignatureField;
     }
     // tslint:disable-next-line
-    private applyPosition(inputField: any, bounds: any, font: any): void {
+    private getBounds(bound: any, pageIndex: number, rotation?: any): any {
+        // tslint:disable-next-line
+        let pageDetails: any = this.pdfViewerBase.pageSize[pageIndex];
+        // tslint:disable-next-line
+        let bounds: any;
+        if (rotation > 0) {
+            bounds = this.getBoundsPosition(rotation, bound, pageDetails);
+        } else {
+            bounds = this.getBoundsPosition(pageDetails.rotation, bound, pageDetails);
+        }
+        return bounds;
+    }
+    // tslint:disable-next-line
+    private getBoundsPosition(rotation: number, bound: any, pageDetails: any):void {
+        // tslint:disable-next-line
+        let bounds: any;
+        switch (rotation) {
+            case 90:
+                // tslint:disable-next-line
+                bounds = { left: pageDetails.width - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
+                break;
+            case 180:
+                // tslint:disable-next-line
+                bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                break;
+            case 270:
+                // tslint:disable-next-line
+                bounds = { left: bound.top, top: pageDetails.height - bound.left - bound.width, width: bound.height, height: bound.width };
+                break;
+            case 0:
+                    bounds = bound;
+                    break;
+            case 1:
+                    // tslint:disable-next-line
+                    bounds = { left: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2), top: bound.left + (bound.width / 2 - bound.height / 2), width: bound.width, height: bound.height };
+                    break;
+            case 2:
+                    // tslint:disable-next-line
+                    bounds = { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+                    break;
+            case 3:
+                    // tslint:disable-next-line
+                    bounds = { left: bound.top - (bound.width / 2 - bound.height / 2), top: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)), width: bound.width, height: bound.height };
+                    break;
+        }
+        return bounds;
+    }
+    // tslint:disable-next-line
+    private applyPosition(inputField: any, bounds: any, font: any, pageIndex?: number, rotation?: number): void {
         if (bounds) {
             let left: number = this.ConvertPointToPixel(bounds.X);
             let top: number = this.ConvertPointToPixel(bounds.Y);
             let width: number = this.ConvertPointToPixel(bounds.Width);
             let height: number = this.ConvertPointToPixel(bounds.Height);
             let fontHeight: number = 0;
+            // tslint:disable-next-line
+            let fieldBounds: any = { left: left, top: top, width: width, height: height };
+            // tslint:disable-next-line
+            let annotBounds: any = this.getBounds(fieldBounds, pageIndex, rotation);
             if (font !== null && font.Height) {
                 inputField.style.fontfamily = font.Name;
                 if (font.Italic) {
@@ -1183,7 +1320,7 @@ export class FormFields {
                 }
                 fontHeight = this.ConvertPointToPixel(font.Size);
             }
-            this.setStyleToTextDiv(inputField, left, top, fontHeight, width, height, false);
+            this.setStyleToTextDiv(inputField, annotBounds.left, annotBounds.top, fontHeight, annotBounds.width, annotBounds.height, false);
         }
     }
     /**

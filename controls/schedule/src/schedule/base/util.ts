@@ -48,6 +48,10 @@ export function getWeekNumber(dt: Date): number {
     let dayOfYear: number = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
     return Math.ceil(dayOfYear / 7);
 }
+export function getWeekMiddleDate(weekFirst: Date, weekLast: Date): Date {
+    let date: Date = new Date(weekLast.valueOf() - ((weekLast.valueOf() - weekFirst.valueOf()) / 2));
+    return date;
+}
 export function setTime(date: Date, time: number): Date {
     let tzOffsetBefore: number = date.getTimezoneOffset();
     let d: Date = new Date(date.getTime() + time);

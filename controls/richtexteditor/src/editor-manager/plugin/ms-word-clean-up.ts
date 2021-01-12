@@ -241,7 +241,8 @@ export class MsWordPaste {
     private findDetachElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement) &&
-        element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD') {
+        element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD' &&
+        isNOU(element.parentElement.querySelector('img'))) {
             removableElement = this.findDetachElem(element.parentElement);
         } else {
             removableElement = element as HTMLElement;
@@ -425,7 +426,7 @@ export class MsWordPaste {
     private listConverter(listNodes: Element[]): void {
         let level: number;
         let data: { content: HTMLElement, node: Element }[] = [];
-        let collection: { listType: string, content: string[], nestedLevel: number }[] = [];
+        let collection: { listType: string, content: string[], nestedLevel: number, class: string }[] = [];
         let content: string = '';
         let stNode: Element;
         for (let i: number = 0; i < listNodes.length; i++) {
@@ -449,7 +450,11 @@ export class MsWordPaste {
                 for (let j: number = 1; j < this.listContents.length; j++) {
                     tempNode.push(this.listContents[j]);
                 }
-                collection.push({ listType: type, content: tempNode, nestedLevel: level });
+                let currentClassName: string;
+                if (!isNOU(listNodes[i].className)) {
+                    currentClassName = listNodes[i].className;
+                }
+                collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName });
             }
         }
         stNode = listNodes.shift();
@@ -474,7 +479,7 @@ export class MsWordPaste {
         }
     }
 
-    private makeConversion(collection: { listType: string, content: string[], nestedLevel: number }[]): HTMLElement {
+    private makeConversion(collection: { listType: string, content: string[], nestedLevel: number, class: string }[]): HTMLElement {
         let root: HTMLElement = createElement('div');
         let temp: HTMLElement;
         let pLevel: number = 1;
@@ -557,6 +562,7 @@ export class MsWordPaste {
                     continue;
                 }
             }
+            prevList.setAttribute('class', collection[index].class);
             pLevel = collection[index].nestedLevel;
             listCount++;
         }

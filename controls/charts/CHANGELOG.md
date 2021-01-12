@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### Chart
+
+#### Bug Fixes
+
+- `#293532` - Chart gets crash while using small values issue fixed.
+
 ## 18.4.30 (2020-12-17)
 
 ### Chart

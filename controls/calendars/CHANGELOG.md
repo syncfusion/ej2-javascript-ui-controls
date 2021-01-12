@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#309143` - Issue with "timepicker popup is not opened when render component with `openOnFocus` as true and click on the time icon" has been resolved.
+
 ## 18.3.52 (2020-12-01)
 
 ### Calendar

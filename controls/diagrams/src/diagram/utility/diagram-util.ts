@@ -145,6 +145,16 @@ export function getInterval(intervals: number[], isLine: boolean): number[] {
 /**
  * @private
  */
+export function setPortsEdges(node: Node): Node {
+    for (let k: number = 0; k < node.ports.length; k++) {
+        node.ports[k].inEdges = [];
+        node.ports[k].outEdges = [];
+    }
+    return node;
+}
+/**
+ * @private
+ */
 export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: NodeModel | ConnectorModel): void {
     if (node instanceof Node) {
         let shape: UmlActivityShapes = (isBlazor() ? (child.shape as DiagramShape).umlActivityShape :

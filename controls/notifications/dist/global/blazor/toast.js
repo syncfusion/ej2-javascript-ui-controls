@@ -32,7 +32,6 @@ var PROGRESS = 'e-toast-progress';
 var ACTIOBUTTONS = 'e-toast-actions';
 var CLOSEBTN = 'e-toast-close-icon';
 var RTL = 'e-rtl';
-var TOAST_REF_ELEMENT = 'e-toast-ref-element';
 var TOAST_BLAZOR_HIDDEN = 'e-blazor-toast-hidden';
 /**
  * An object that is used to configure the Toast X Y positions.
@@ -182,11 +181,6 @@ var Toast = /** @class */ (function (_super) {
             new sf.base.Touch(this.element, { swipe: this.swipeHandler.bind(this) });
         }
         this.renderComplete();
-        if (!sf.base.isNullOrUndefined(this.element.parentElement)) {
-            var parentEle = this.element.parentElement;
-            this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
-            parentEle.insertBefore(this.refElement, this.element);
-        }
         this.initRenderClass = this.element.className;
     };
     /**

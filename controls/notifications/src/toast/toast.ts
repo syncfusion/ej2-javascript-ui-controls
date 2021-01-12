@@ -569,11 +569,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
     }
     this.renderComplete();
-    if (!isNOU(this.element.parentElement)) {
-      let parentEle: HTMLElement = this.element.parentElement;
-      this.refElement = this.createElement('div', { className: TOAST_REF_ELEMENT });
-      parentEle.insertBefore(this.refElement, this.element);
-    }
     this.initRenderClass = this.element.className;
   }
   /**

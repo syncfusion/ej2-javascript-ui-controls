@@ -13064,7 +13064,8 @@ class MsWordPaste {
     findDetachElem(element) {
         let removableElement;
         if (!isNullOrUndefined(element.parentElement) &&
-            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD') {
+            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD' &&
+            isNullOrUndefined(element.parentElement.querySelector('img'))) {
             removableElement = this.findDetachElem(element.parentElement);
         }
         else {
@@ -13271,7 +13272,11 @@ class MsWordPaste {
                 for (let j = 1; j < this.listContents.length; j++) {
                     tempNode.push(this.listContents[j]);
                 }
-                collection.push({ listType: type, content: tempNode, nestedLevel: level });
+                let currentClassName;
+                if (!isNullOrUndefined(listNodes[i].className)) {
+                    currentClassName = listNodes[i].className;
+                }
+                collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName });
             }
         }
         stNode = listNodes.shift();
@@ -13386,6 +13391,7 @@ class MsWordPaste {
                     continue;
                 }
             }
+            prevList.setAttribute('class', collection[index].class);
             pLevel = collection[index].nestedLevel;
             listCount++;
         }
@@ -17951,32 +17957,35 @@ class Image {
                     selectArgs.filesData = rawFile;
                 }
                 this.parent.trigger(imageSelected, selectArgs, (selectArgs) => {
-                    this.checkExtension(selectArgs.filesData[0]);
-                    altText = selectArgs.filesData[0].name;
-                    if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                        let reader = new FileReader();
-                        reader.addEventListener('load', (e) => {
-                            let url = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result :
-                                URL.createObjectURL(convertToBlob(reader.result));
-                            proxy.uploadUrl = {
-                                url: url, selection: save, altText: altText,
-                                selectParent: selectParent,
-                                width: {
-                                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.parent.getInsertImgMaxWidth()
-                                }, height: {
-                                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                                    maxHeight: proxy.parent.insertImageSettings.maxHeight
-                                }
-                            };
-                            proxy.inputUrl.setAttribute('disabled', 'true');
-                        });
-                        reader.readAsDataURL(selectArgs.filesData[0].rawFile);
-                    }
-                    if (this.parent.isServerRendered) {
-                        /* tslint:disable */
-                        this.uploadObj._internalRenderSelect(selectArgs, rawFile);
-                        /* tslint:enable */
+                    if (!selectArgs.cancel) {
+                        this.checkExtension(selectArgs.filesData[0]);
+                        altText = selectArgs.filesData[0].name;
+                        if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                            let reader = new FileReader();
+                            reader.addEventListener('load', (e) => {
+                                let url = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result :
+                                    URL.createObjectURL(convertToBlob(reader.result));
+                                proxy.uploadUrl = {
+                                    url: url, selection: save, altText: altText,
+                                    selectParent: selectParent,
+                                    width: {
+                                        width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
+                                        maxWidth: proxy.parent.getInsertImgMaxWidth()
+                                    }, height: {
+                                        height: proxy.parent.insertImageSettings.height,
+                                        minHeight: proxy.parent.insertImageSettings.minHeight,
+                                        maxHeight: proxy.parent.insertImageSettings.maxHeight
+                                    }
+                                };
+                                proxy.inputUrl.setAttribute('disabled', 'true');
+                            });
+                            reader.readAsDataURL(selectArgs.filesData[0].rawFile);
+                        }
+                        if (this.parent.isServerRendered) {
+                            /* tslint:disable */
+                            this.uploadObj._internalRenderSelect(selectArgs, rawFile);
+                            /* tslint:enable */
+                        }
                     }
                 });
             },

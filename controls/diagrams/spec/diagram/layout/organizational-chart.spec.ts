@@ -17,7 +17,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Selector } from '../../../src/diagram/objects/node';
 /**
  * Organizational Chart
- */
+Â */
 
 let assitants: object[] = [
     { 'Id': 'parent', 'Role': 'Board', 'color': '#71AF17' },
@@ -4336,5 +4336,58 @@ describe('EJ2-44231-Exception occurs while change the datasource for layout at r
 
 });
 
+describe('balanced layout at runtime not wroking properly', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    var updated = [
+        { id: 1, Label: 'updatedchild 1', color: "#71AF17" },
+        { id: 2, Label: 'updatedchild 2', parentId: 1, color: "red" },
+        { id: 3, Label: 'updatedGrandChild 1', parentId: 2, color: "#2E95D8" },
+        { id: 4, Label: 'updatedGrandChild 2', parentId: 2, color: "#2E95D8" },
+        { id: 5, Label: 'updatedChild 3', parentId: 1, color: "red" },
+        { id: 6, Label: 'updatedGrandChild 3', parentId: 5, color: "#2E95D8" }
+    ];
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMap' });
+        document.body.appendChild(ele);
+ 
+
+        diagram = new Diagram({
+                width: '1250px', height: '590px', nodes:[{id:"node1",offsetX:500,offsetY:500}],
+                snapSettings: { constraints: 0 },
+                layout: {
+                    enableAnimation: true,
+                    type: 'OrganizationalChart', margin: { top: 20 },
+                    getLayoutInfo: (node: Node, tree: TreeInfo) => {
+                        if (!tree.hasSubTree) {
+                            tree.orientation = 'Horizontal';
+                            tree.type = 'Balanced';
+                            tree.rows = 10
+                        }
+                    }
+                   
+                    }
+            });
+        diagram.appendTo('#diagramdataMap');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('balance layout at runtime', (done: Function) => {
+        let diagramCanvas: HTMLElement; 
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        for(let g:number = 0; g <= 12; g++) {
+        var Iid = diagram.nodes[diagram.nodes.length -1].id+"_1";
+        diagram.add({id:Iid});
+        diagram.add({sourceID: diagram.nodes[0].id, targetID:Iid});
+    }
+    diagram.doLayout();
+    console.log("balance layout at runtime  "+diagram.nodes[12].offsetX+"   " + diagram.nodes[12].offsetY)
+        expect(diagram.nodes[12].offsetX === 665 &&diagram.nodes[12].offsetY === 205).toBe(true)
+        done();
+        });
+
+});
 
 

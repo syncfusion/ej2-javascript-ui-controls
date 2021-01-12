@@ -142,6 +142,10 @@ class SfDateRangePicker {
     public renderPopup(popupElement: HTMLElement, popupHolderEle: HTMLElement, openEventArgs: PopupObjectArgs, options: IDateRangePickerOptions): void {
         this.options = options;
         this.popupHolder = popupHolderEle;
+        let oldPopupEle: HTMLElement = document.body.querySelector('.e-daterangepicker.e-popup-open');
+        if (oldPopupEle) {
+            remove(oldPopupEle);
+        }
         this.createCalendar(popupElement, options);
         if (Browser.isDevice) {
             this.mobilePopupContainer = this.popupHolder.querySelector('.e-daterangepick-mob-popup-wrap');

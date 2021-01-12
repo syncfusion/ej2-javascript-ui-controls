@@ -9436,6 +9436,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             node.margin.right = changes.margin.right;
         }
     }
+    private removePreviewChildren(preview: Node): void {
+        if (preview.children && preview.children.length &&
+            preview.shape && preview.shape.type === 'SwimLane') {
+            for (let z: number = 0; z < preview.children.length; z++) {
+                let previewChildId: string = preview.children[z];
+                let previewIndex: number = this.nodes.indexOf(this.nameTable[previewChildId]);
+                this.nodes.splice(previewIndex, 1);
+                delete this.nameTable[previewChildId];
+            }
+            let previewIndex: number = this.nodes.indexOf(this.nameTable[this.currentSymbol.id]);
+            this.nodes.splice(previewIndex, 1);
+        }
+    }
 
     //property changes - end region
     /* tslint:disable */
@@ -9713,6 +9726,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     isPhase = true;
                     orientation = (this.currentSymbol.shape as SwimLaneModel).orientation;
                 }
+                this.removePreviewChildren(this.currentSymbol as Node);
                 delete this.nameTable[this.currentSymbol.id]; this.currentSymbol = null;
                 this.protectPropertyChange(true);
                 if (!arg.cancel) {
@@ -9792,6 +9806,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.removeElements(this.currentSymbol);
                 }
                 this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
+                this.removePreviewChildren(this.currentSymbol as Node);
                 delete this.nameTable[this.currentSymbol.id];
                 let args: IDragLeaveEventArgs | IBlazorDragLeaveEventArgs = {
                     element: cloneBlazorObject(this.currentSymbol),

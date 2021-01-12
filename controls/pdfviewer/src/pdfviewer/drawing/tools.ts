@@ -1226,6 +1226,28 @@ export class ResizeTool extends ToolBase {
         deltaWidth: number, deltaHeight: number, corner: string, startPoint: PointModel, endPoint: PointModel,
         source?: SelectorModel | PdfAnnotationBaseModel)
         : boolean {
+        // tslint:disable-next-line
+        let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(source);
+        let annotationMaxHeight: number = 0;
+        let annotationMaxWidth: number = 0;
+        let annotationMinHeight: number = 0;
+        let annotationMinWidth: number = 0;
+        let x: number = this.currentPosition.x - this.startPosition.x;
+        let y: number = this.currentPosition.y - this.startPosition.y;
+        x = x / this.commandHandler.viewerBase.getZoomFactor();
+        y = y / this.commandHandler.viewerBase.getZoomFactor();
+        // tslint:disable-next-line
+        let annotationElement : any = source;
+        // tslint:disable-next-line
+        let size: any = this.getPoints(x, y);
+        let width: number = annotationElement.bounds.width + size.x;
+        let height: number = annotationElement.bounds.height + size.y;
+        if (annotationSettings.minWidth || annotationSettings.maxWidth || annotationSettings.minHeight || annotationSettings.maxHeight) {
+            annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
+            annotationMaxWidth = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
+            annotationMinHeight = annotationSettings.minHeight ? annotationSettings.minHeight : 0;
+            annotationMinWidth = annotationSettings.minWidth ? annotationSettings.minWidth : 0;
+        }
         if (source instanceof Selector && source.annotations.length === 1 &&
             // tslint:disable-next-line:max-line-length
             (source.annotations[0].shapeAnnotationType === 'Perimeter' || source.annotations[0].shapeAnnotationType === 'Radius' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp')) {
@@ -1239,20 +1261,20 @@ export class ResizeTool extends ToolBase {
             // tslint:disable-next-line:max-line-length
         } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature') {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
-                deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
+                if (width >= annotationMaxWidth && height < annotationMaxHeight) {
+                    deltaHeight = Math.max(deltaHeight, deltaWidth);
+                }
+                if (height >= annotationMaxHeight && width < annotationMaxWidth) {
+                    deltaWidth = Math.max(deltaHeight, deltaWidth);
+                }
+                if (width < annotationMaxWidth && height < annotationMaxHeight) {
+                    deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
+                }
             }
         } else {
             // tslint:disable-next-line:max-line-length
             if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Perimeter' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Radius'
                 || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
-                // tslint:disable-next-line
-                let annotationSettings: any = this.commandHandler.annotationModule.findAnnotationSettings(source);
-                let annotationMaxHeight: number = 0;
-                let annotationMaxWidth: number = 0;
-                if (annotationSettings.maxHeight || annotationSettings.maxWidth) {
-                    annotationMaxHeight = annotationSettings.maxHeight ? annotationSettings.maxHeight : 2000;
-                    annotationMaxWidth  = annotationSettings.maxWidth ? annotationSettings.maxWidth : 2000;
-                }
                 if (!annotationMaxHeight || !annotationMaxWidth) {
                     if (!(deltaHeight === 1 && deltaWidth === 1)) {
                         deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);

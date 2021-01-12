@@ -209,13 +209,6 @@ var DropDownList = /** @class */ (function (_super) {
             else {
                 if (this.allowFiltering && this.getModuleName() !== 'autocomplete'
                     && !sf.base.isNullOrUndefined(this.actionCompleteData.ulElement) && !sf.base.isNullOrUndefined(this.actionCompleteData.list)) {
-                    var actionList = this.actionCompleteData.ulElement.querySelector('li');
-                    var ulElement = this.ulElement && this.ulElement.querySelector('li');
-                    if (this.element.tagName === 'EJS-COMBOBOX' && actionList && ulElement &&
-                        actionList.childElementCount > 0 && ulElement.childElementCount > 0 &&
-                        actionList.textContent !== ulElement.textContent && this.itemTemplate) {
-                        this.cloneElements();
-                    }
                     this.onActionComplete(this.actionCompleteData.ulElement.cloneNode(true), this.actionCompleteData.list);
                 }
                 this.resetFocusElement();
@@ -1569,7 +1562,14 @@ var DropDownList = /** @class */ (function (_super) {
                     && ((this.dataSource instanceof sf.data.DataManager)
                         || (!sf.base.isNullOrUndefined(this.dataSource) && !sf.base.isNullOrUndefined(this.dataSource.length) &&
                             this.dataSource.length !== 0)))) {
-                    this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
+                    if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                        setTimeout(function () {
+                            _this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
+                        }, 0);
+                    }
+                    else {
+                        this.actionCompleteData = { ulElement: ulElement.cloneNode(true), list: list, isUpdated: true };
+                    }
                 }
                 this.addNewItem(list, selectedItem);
                 if (!sf.base.isNullOrUndefined(this.itemData)) {
@@ -1595,16 +1595,27 @@ var DropDownList = /** @class */ (function (_super) {
         }
     };
     DropDownList.prototype.updateActionCompleteData = function (li, item, index) {
+        var _this = this;
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
-            if (index != null) {
-                this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+            if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                setTimeout(function () {
+                    _this.actionCompleteDataUpdate(li, item, index);
+                }, 0);
             }
             else {
-                this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+                this.actionCompleteDataUpdate(li, item, index);
             }
-            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
-                this.actionCompleteData.list.push(item);
-            }
+        }
+    };
+    DropDownList.prototype.actionCompleteDataUpdate = function (li, item, index) {
+        if (index != null) {
+            this.actionCompleteData.ulElement.insertBefore(li.cloneNode(true), this.actionCompleteData.ulElement.childNodes[index]);
+        }
+        else {
+            this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
+        }
+        if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
+            this.actionCompleteData.list.push(item);
         }
     };
     DropDownList.prototype.focusIndexItem = function () {
@@ -1846,7 +1857,8 @@ var DropDownList = /** @class */ (function (_super) {
                     _this.actionCompleteData.ulElement.querySelector('li');
                 var ulElement = _this.list.querySelector('ul li');
                 if (_this.isFiltering() && _this.itemTemplate && (_this.element.tagName === _this.getNgDirective()) &&
-                    (actionList && ulElement && actionList.textContent !== ulElement.textContent)) {
+                    (actionList && ulElement && actionList.textContent !== ulElement.textContent) &&
+                    _this.element.tagName !== 'EJS-COMBOBOX') {
                     _this.cloneElements();
                 }
                 if (_this.isFilterLayout()) {

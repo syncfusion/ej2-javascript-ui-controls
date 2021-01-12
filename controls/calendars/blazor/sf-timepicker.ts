@@ -74,7 +74,6 @@ class SfTimePicker {
         this.timeCollections = [];
         this.listWrapper = popupHolderEle.querySelector('.' + POPUP_CONTENT) as HTMLElement || select('.' + POPUP_CONTENT) as HTMLElement;
         this.getTimeCollection();
-        this.wireListEvents();
         if (!isNullOrUndefined((this.element as HTMLInputElement).value)) {
             this.removeSelection();
             this.selectedElement = this.listWrapper.querySelector(
@@ -113,17 +112,6 @@ class SfTimePicker {
         if (selectElement) {
             addClass([selectElement], SELECTED);
             selectElement.setAttribute(ARIA_SELECT, 'true');
-        }
-    }
-    public updateListStatus(index: number, status: string): void {
-        if (!isNullOrUndefined(this.listWrapper) && !isNullOrUndefined(index)) {
-            this.selectedElement = this.listWrapper.querySelectorAll('.' + LISTCLASS)[index] as HTMLElement;
-            if (status === SELECT) {
-                this.removeSelection();
-                this.updateSelection(this.selectedElement);
-            }
-            this.setHover(this.selectedElement, NAVIGATION);
-            this.setScrollPosition();
         }
     }
     private setScrollPosition(): void {
@@ -205,7 +193,6 @@ class SfTimePicker {
             open: () => {
                 this.popupWrapper.style.visibility = 'visible';
             }, close: () => {
-                this.unWireListEvents();
                 this.popupHolder.appendChild(this.popupWrapper);
                 if (this.popupObj) {
                     this.popupObj.destroy();
@@ -226,38 +213,6 @@ class SfTimePicker {
         removeClass([document.body], OVERFLOW);
         this.closeEventCallback(closeEventArgs);
     }
-    private wireListEvents(): void {
-        EventHandler.add(this.listWrapper, 'click', this.onMouseClick, this);
-        if (!Browser.isDevice) {
-            EventHandler.add(this.listWrapper, 'mouseover', this.onMouseOver, this);
-            EventHandler.add(this.listWrapper, 'mouseout', this.onMouseLeave, this);
-        }
-    }
-    private onMouseClick(event: MouseEvent): void {
-        let target: Element = <Element>event.target;
-        let li: HTMLElement = this.selectedElement = <HTMLElement>closest(target, '.' + LISTCLASS);
-        let dataVal: string = li.getAttribute('data-value');
-        if (this.isValidLI(li) && !li.classList.contains(SELECTED)) {
-            this.removeSelection();
-            this.updateSelection(this.selectedElement);
-            this.dotNetRef.invokeMethodAsync(LIST_CLICK, dataVal, event);
-        } else {
-            this.dotNetRef.invokeMethodAsync(HIDE_POPUP, event);
-        }
-    }
-    private onMouseOver(event: MouseEvent): void {
-        let currentLi: HTMLElement = <HTMLElement>closest(<Element>event.target, '.' + LISTCLASS);
-        this.setHover(currentLi, HOVER);
-    }
-    private setHover(li: HTMLElement, className: string): void {
-        if (this.isValidLI(li) && !li.classList.contains(className)) {
-            this.removeHover(className);
-            addClass([li], className);
-            if (className === NAVIGATION) {
-                li.setAttribute(ARIA_SELECT, 'true');
-            }
-        }
-    }
     private removeSelection(): void {
         this.removeHover(HOVER);
         if (!isNullOrUndefined(this.popupWrapper)) {
@@ -275,21 +230,6 @@ class SfTimePicker {
             removeClass(hoveredItem, className);
             if (className === NAVIGATION) {
                 hoveredItem[0].removeAttribute(ARIA_SELECT);
-            }
-        }
-    }
-    private isValidLI(li: Element | HTMLElement): boolean {
-        return (li && li.classList.contains(LISTCLASS) && !li.classList.contains(DISABLED));
-    }
-    private onMouseLeave(): void {
-        this.removeHover(HOVER);
-    }
-    private unWireListEvents(): void {
-        if (this.listWrapper) {
-            EventHandler.remove(this.listWrapper, 'click', this.onMouseClick);
-            if (!Browser.isDevice) {
-                EventHandler.remove(this.listWrapper, 'mouseover', this.onMouseOver);
-                EventHandler.remove(this.listWrapper, 'mouseout', this.onMouseLeave);
             }
         }
     }
@@ -359,9 +299,13 @@ class SfTimePicker {
             popupWrapper.style.zIndex = index.toString();
         }
     }
-    public selectInputText(element: BlazorTimePickerElement | HTMLInputElement): void {
+    public selectInputText(element: BlazorTimePickerElement | HTMLInputElement, isNavigation: boolean, index: number): void {
         if (!Browser.isDevice) {
             (element as HTMLInputElement).setSelectionRange(0, (element as HTMLInputElement).value.length);
+            if (isNavigation && this.listWrapper) {
+                this.selectedElement = this.listWrapper.querySelectorAll('.' + LISTCLASS)[index] as HTMLElement;
+                this.setScrollPosition();
+            }
         }
     }
     public isDevice(): Boolean {
@@ -406,14 +350,9 @@ let TimePicker: object = {
             element.blazor__instance.closePopup(closeEventArgs, options);
         }
     },
-    selectInputText(element: BlazorTimePickerElement): void {
+    selectInputText(element: BlazorTimePickerElement, isNavigation: boolean, index: number): void {
         if (element && element.blazor__instance) {
-            element.blazor__instance.selectInputText(element);
-        }
-    },
-    updateListStatus(element: BlazorTimePickerElement, index: number, status: string): void {
-        if (element && element.blazor__instance) {
-            element.blazor__instance.updateListStatus(index, status);
+            element.blazor__instance.selectInputText(element, isNavigation, index);
         }
     },
     focusIn(inputEle: HTMLInputElement): void {

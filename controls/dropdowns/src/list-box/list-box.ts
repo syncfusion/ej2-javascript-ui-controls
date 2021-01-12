@@ -662,6 +662,11 @@ export class ListBox extends DropDownBase {
                 filterElem.focus();
             }
         }
+        if (this.toolbarSettings.items.length && this.scope && this.scope.indexOf('#') > -1 && !isNullOrUndefined(e)) {
+            let scope: string = this.scope.replace('#', '');
+            let scopedLB: ListBox = getComponent(document.getElementById(scope), this.getModuleName());
+            scopedLB.initToolbar();
+        }
         this.initLoad = false;
     }
 
@@ -703,7 +708,7 @@ export class ListBox extends DropDownBase {
     }
 
     private beforeDragEnd(args: DropEventArgs): void {
-        let dragValue: string = args.droppedElement.getAttribute('data-value');
+        let dragValue: string = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
         if ((this.value as string[]).indexOf(dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
         } else {
@@ -1291,7 +1296,7 @@ export class ListBox extends DropDownBase {
 
     private setFiltering(): InputObject | void {
         let filterInputObj: InputObject;
-        if (isNullOrUndefined(this.filterParent)) {
+        if (this.initLoad || isNullOrUndefined(this.filterParent)) {
             if (isBlazor() && this.isServerRendered) {
                 this.filterParent = this.list.querySelector('.e-filter-parent');
                 this.filterInput = this.list.querySelector('.e-input-filter');
@@ -1860,6 +1865,9 @@ export class ListBox extends DropDownBase {
 
     private keyDownHandler(e: KeyboardEvent): void {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {
+            if (e.target && (e.target as Element).className.indexOf('e-edit-template') > -1) {
+                return;
+            }
             e.preventDefault();
             if (e.keyCode === 32 && this.ulElement.children.length) {
                 this.selectHandler({

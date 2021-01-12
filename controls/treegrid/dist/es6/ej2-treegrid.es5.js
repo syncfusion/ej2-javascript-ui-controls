@@ -6558,12 +6558,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             rowPositionHeight = rowEle.offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        if (tObj.allowTextWrap) {
-            rowTop = row[0].offsetHeight;
-        }
-        else {
-            rowTop = rowPositionHeight + contentHeight + roundOff;
-        }
+        rowTop = rowPositionHeight + contentHeight + roundOff;
         var rowBottom = rowTop + row[0].offsetHeight;
         var difference = rowBottom - rowTop;
         var divide = difference / 3;
@@ -8787,6 +8782,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.on('batchPageAction', this.batchPageAction, this);
         this.parent.on('batchCancelAction', this.batchCancelAction, this);
         this.parent.grid.on('immutable-batch-cancel', this.immutableBatchAction, this);
+        this.parent.grid.on('next-cell-index', this.nextCellIndex, this);
     };
     /**
      * @hidden
@@ -8804,6 +8800,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.off('batchPageAction', this.batchPageAction);
         this.parent.off('batchCancelAction', this.batchCancelAction);
         this.parent.grid.off('immutable-batch-cancel', this.immutableBatchAction);
+        this.parent.grid.off('next-cell-index', this.nextCellIndex);
     };
     /**
      * To destroy the editModule
@@ -9304,6 +9301,11 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < addedRecords.length; i++) {
             e.rows.splice(addedRecords[i][index], 1);
         }
+    };
+    BatchEdit.prototype.nextCellIndex = function (args) {
+        var index = 'index';
+        var rowIndex = 'rowIndex';
+        args[index] = this.parent.getSelectedRows()[0][rowIndex];
     };
     return BatchEdit;
 }());

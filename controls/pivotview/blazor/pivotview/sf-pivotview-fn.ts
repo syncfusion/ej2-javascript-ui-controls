@@ -312,6 +312,8 @@ export class SfPivotView {
                 height = (parseFloat(this.options.height.toString()) / 100) * this.element.offsetHeight;
             } else if (this.options.height.toString().indexOf('px') > -1) {
                 height = Number(this.options.height.toString().split('px')[0]);
+            } else if (this.options.height === 'auto') {
+                height = this.element.offsetHeight;
             }
         } else {
             height = Number(this.options.height);
@@ -322,7 +324,7 @@ export class SfPivotView {
         return height;
     }
 
-    public calculateGridHeight(elementCreated?: boolean, rowCount?: number): string {
+    public calculateGridHeight(elementCreated?: boolean, rowCount?: number, columnCount?: number): string {
         let gridHeight: number | string = this.options.height;
         let parHeight: number = this.getHeightAsNumber();
         let tableHeight: number = (rowCount * this.gridSettings.rowHeight);
@@ -330,10 +332,10 @@ export class SfPivotView {
             parHeight = parHeight > 300 ? parHeight : 300;
         }
         if (this.gridSettings.height === 'auto' && parHeight && this.element.querySelector('.' + cls.GRID_HEADER)) {
-            let rowColHeight: number = (this.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
-            let gBarHeight: number = rowColHeight + (this.element.querySelector('.' + cls.GROUPING_BAR_CLASS) ?
+            let colHeaderHeight: number = (columnCount * this.gridSettings.rowHeight) + ((this.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight - (this.element.querySelector('.' + cls.HEADERCONTENT) as HTMLElement).offsetHeight);
+            let gBarHeight: number = colHeaderHeight + (this.element.querySelector('.' + cls.GROUPING_BAR_CLASS) ?
                 (this.element.querySelector('.' + cls.GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
-            let toolBarHeight: number = this.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
+            let toolBarHeight: number = this.element.querySelector('.' + cls.GRID_TOOLBAR) ? this.element.querySelector('.' + cls.GRID_TOOLBAR).clientHeight : 0;
             gridHeight = parHeight - (gBarHeight + toolBarHeight) - 1;
             if (elementCreated) {
                 let contentHeight: number = this.internalGrid && this.internalGrid.options && !isNaN(this.internalGrid.options.height) ?

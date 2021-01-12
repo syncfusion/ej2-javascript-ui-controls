@@ -6334,6 +6334,9 @@ var SfSchedule = /** @class */ (function () {
             this.currentCell = this.element.querySelector('.e-appointment[data-guid="' + guid + '"]');
             this.activeEventData = { element: this.currentCell, guid: [guid] };
         }
+        if (sf.base.isNullOrUndefined(this.currentCell)) {
+            this.currentCell = this.element.querySelector('.e-table-container');
+        }
         var isWorkCell = this.currentCell.classList.contains(WORK_CELLS_CLASS) ||
             this.currentCell.classList.contains(ALLDAY_CELLS_CLASS);
         if (isWorkCell && this.getSelectedElements().length === 0) {

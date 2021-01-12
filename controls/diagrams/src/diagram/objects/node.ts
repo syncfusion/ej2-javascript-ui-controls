@@ -35,7 +35,7 @@ import { TextModel, NativeModel, HtmlModel, DiagramShapeModel } from './node-mod
 import { LayoutModel } from '../layout/layout-base-model';
 import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';
 import { updatePortEdges, initfixedUserHandlesSymbol } from './../utility/diagram-util';
-import { setSwimLaneDefaults } from './../utility/diagram-util';
+import { setSwimLaneDefaults, setPortsEdges } from './../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { NodeBase } from './node-base';
 import { canShadow } from './../utility/constraints-util';
@@ -2369,6 +2369,9 @@ export class Node extends NodeBase implements IElement {
         }
         if (this.shape && this.shape.type === 'SwimLane') {
             setSwimLaneDefaults(defaultValue, this);
+        }
+        if (this.ports && this.ports.length) {
+            setPortsEdges(this);
         }
     }
 

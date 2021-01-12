@@ -142,7 +142,7 @@ $schedule-event-popup-fields-padding: 12px !default;
 $schedule-popup-title-color:  $grey-light !default;
 $schedule-popup-btn-border: none !default;
 $schedule-btn-txt-bgr-padding: 5px 12px !default;
-$schedule-icon-color: rgba($shadow, .54) !default;
+$schedule-icon-color: $grey-light-font !default;
 
 $schedule-event-box-shadow-1: 0 6px 10px 0 rgba($shadow, .14) !default;
 $schedule-event-box-shadow-2: 0 1px 18px 0 rgba($shadow, .12) !default;
@@ -187,3 +187,5 @@ $schedule-bigger-resource-color-size: 16px !default;
 @mixin tbar-btn-animation-after {
   content: '';
 }
+
+$schedule-tree-content-color: #fff !default;

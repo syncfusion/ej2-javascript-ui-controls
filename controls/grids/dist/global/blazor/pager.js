@@ -2480,6 +2480,7 @@ var Data = /** @class */ (function () {
         var predicateList = [];
         var actualFilter = [];
         var foreignColumn = this.parent.getForeignKeyColumns();
+        var foreignColEmpty;
         if (gObj.allowFiltering && gObj.filterSettings.columns.length) {
             var columns = column ? column : gObj.filterSettings.columns;
             var colType = {};
@@ -2525,6 +2526,9 @@ var Data = /** @class */ (function () {
                     }
                     if (column_1.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
+                        if (!column_1.columnData.length) {
+                            foreignColEmpty = true;
+                        }
                         predicateList = this.fGeneratePredicate(column_1, predicateList);
                     }
                     else {
@@ -2536,7 +2540,7 @@ var Data = /** @class */ (function () {
                     }
                 }
             }
-            if (predicateList.length) {
+            if (predicateList.length && !foreignColEmpty) {
                 query.where(sf.data.Predicate.and(predicateList));
             }
             else {
@@ -3980,8 +3984,7 @@ var ContentRender = /** @class */ (function () {
         if (isGroupAdaptive(gObj)) {
             if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
                 .some(function (value) { return args.requestType === value; })) {
-                gObj.vcRows = [];
-                gObj.vRows = [];
+                this.emptyVcRows();
             }
         }
         var modelData;
@@ -4328,6 +4331,10 @@ var ContentRender = /** @class */ (function () {
             }
             frag = null;
         }, this.rafCallback(sf.base.extend({}, args)));
+    };
+    ContentRender.prototype.emptyVcRows = function () {
+        this.parent.vcRows = [];
+        this.parent.vRows = [];
     };
     ContentRender.prototype.appendContent = function (tbody, frag, args, tableName) {
         var isReact = this.parent.isReact && !sf.base.isNullOrUndefined(this.parent.rowTemplate);
@@ -5242,6 +5249,7 @@ var HeaderRender = /** @class */ (function () {
     };
     HeaderRender.prototype.createHeaderContent = function () {
         var gObj = this.parent;
+        var index = 1;
         var frozenMode = gObj.getFrozenMode();
         var columns = gObj.getColumns();
         var thead = this.parent.createElement('thead');
@@ -5260,11 +5268,12 @@ var HeaderRender = /** @class */ (function () {
         }
         rows = this.getHeaderCells(rows);
         if (frozenMode === 'Right') {
+            index = 0;
             rows = this.ensureColumns(rows);
         }
         var frzCols = this.parent.getFrozenColumns();
-        if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[1]) {
-            var colFreezeMode = rows[0].cells[1].column.getFreezeTableName();
+        if (this.parent.isRowDragable() && this.parent.isFrozenGrid() && rows[0].cells[index]) {
+            var colFreezeMode = rows[0].cells[index].column.getFreezeTableName();
             if (colFreezeMode === 'movable' || (frozenMode === 'Left-Right' && colFreezeMode === 'frozen-right')) {
                 if (frozenMode === 'Right') {
                     rows[0].cells.pop();
@@ -5940,8 +5949,7 @@ var CellRenderer = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
         }
-        if ((!cell.visible && !cell.isDataCell) ||
-            (!sf.base.isNullOrUndefined(cell.column.visible) && !cell.column.visible)) {
+        if (!cell.visible) {
             classes.push('e-hide');
         }
         attr.class = classes;
@@ -9602,6 +9610,7 @@ var Selection = /** @class */ (function () {
             if (_this.isRowSelected) {
                 _this.onActionComplete(args, rowSelected);
             }
+            _this.isInteracted = false;
         });
     };
     /**
@@ -9648,7 +9657,12 @@ var Selection = /** @class */ (function () {
                     selectedMovableRow.removeAttribute('aria-selected');
                     this_1.addRemoveClassesForRow(selectedMovableRow, false, null, 'e-selectionbackground', 'e-active');
                 }
-                this_1.rowDeselect(rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
+                if (selectedFrozenRightRow) {
+                    this_1.selectedRecords.splice(this_1.selectedRecords.indexOf(selectedFrozenRightRow), 1);
+                    selectedFrozenRightRow.removeAttribute('aria-selected');
+                    this_1.addRemoveClassesForRow(selectedFrozenRightRow, false, null, 'e-selectionbackground', 'e-active');
+                }
+                this_1.rowDeselect(rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow], undefined, [selectedFrozenRightRow]);
                 this_1.isInteracted = false;
                 this_1.isMultiSelection = false;
                 this_1.isAddRowsToSelection = false;
@@ -13015,6 +13029,9 @@ var ShowHide = /** @class */ (function () {
                 }
                 return;
             }
+            if (isGroupAdaptive(_this.parent)) {
+                _this.parent.contentModule.emptyVcRows();
+            }
             if (_this.parent.allowSelection && _this.parent.getSelectedRecords().length) {
                 _this.parent.clearSelection();
             }
@@ -13140,6 +13157,9 @@ var Scroll = /** @class */ (function () {
         this.parent.element.style.height = '100%';
         var height = this.widthService.getSiblingsHeight(content);
         content.style.height = 'calc(100% - ' + height + 'px)'; //Set the height to the '.e-gridcontent';
+        if (this.parent.isFrozenGrid()) {
+            content.firstElementChild.style.height = 'calc(100% - ' + getScrollBarWidth() + 'px)';
+        }
     };
     Scroll.prototype.getThreshold = function () {
         /* Some browsers places the scroller outside the content,
@@ -15804,12 +15824,15 @@ var Grid = /** @class */ (function (_super) {
                 var cells = 'cells';
                 var rowIdx = 'index';
                 var rowsObj = _this.getRowsObject();
+                var indent = _this.getIndentCount();
                 var cellIndex = _this.getNormalizedColumnIndex(columnUid);
                 for (var j = 0; j < rowsObj.length; j++) {
-                    var cell = rowsObj[j][cells][cellIndex];
-                    var cellRenderer = new CellRenderer(_this, _this.serviceLocator);
-                    var td = _this.getCellFromIndex(j, cellIndex);
-                    cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                    if (rowsObj[j].isDataRow && !sf.base.isNullOrUndefined(rowsObj[j].index)) {
+                        var cell = rowsObj[j][cells][cellIndex];
+                        var cellRenderer = new CellRenderer(_this, _this.serviceLocator);
+                        var td = _this.getCellFromIndex(rowsObj[j].index, cellIndex - indent);
+                        cellRenderer.refreshTD(td, cell, rowsObj[j].data, { index: rowsObj[j][rowIdx] });
+                    }
                 }
             });
         }
@@ -20084,9 +20107,6 @@ function getCellByColAndRowIndex(gObj, col, rowIndex, index) {
 /** @hidden */
 
 /** @hidden */
-
-/** @hidden */
-// tslint:disable-next-line:no-any
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {

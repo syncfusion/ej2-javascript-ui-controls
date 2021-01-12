@@ -120,6 +120,7 @@ var SfToast = /** @class */ (function () {
         }
     };
     SfToast.prototype.toastHoverAction = function (id) {
+        this.dotNetRef.invokeMethodAsync('ClearTimeout', id);
         clearTimeout(this.progressObj[id].timeOutId);
         clearInterval(this.progressObj[id].intervalId);
         this.progressObj[id].hideEta = 0;

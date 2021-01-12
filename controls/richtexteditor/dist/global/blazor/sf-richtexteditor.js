@@ -10997,7 +10997,8 @@ var MsWordPaste = /** @class */ (function () {
     MsWordPaste.prototype.findDetachElem = function (element) {
         var removableElement;
         if (!sf.base.isNullOrUndefined(element.parentElement) &&
-            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD') {
+            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD' &&
+            sf.base.isNullOrUndefined(element.parentElement.querySelector('img'))) {
             removableElement = this.findDetachElem(element.parentElement);
         }
         else {
@@ -11204,7 +11205,11 @@ var MsWordPaste = /** @class */ (function () {
                 for (var j = 1; j < this.listContents.length; j++) {
                     tempNode.push(this.listContents[j]);
                 }
-                collection.push({ listType: type, content: tempNode, nestedLevel: level });
+                var currentClassName = void 0;
+                if (!sf.base.isNullOrUndefined(listNodes[i].className)) {
+                    currentClassName = listNodes[i].className;
+                }
+                collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName });
             }
         }
         stNode = listNodes.shift();
@@ -11319,6 +11324,7 @@ var MsWordPaste = /** @class */ (function () {
                     continue;
                 }
             }
+            prevList.setAttribute('class', collection[index].class);
             pLevel = collection[index].nestedLevel;
             listCount++;
         }
@@ -11947,17 +11953,12 @@ var FullScreen = /** @class */ (function () {
         }
     };
     FullScreen.prototype.onKeyDown = function (event) {
-        var _this = this;
         var originalEvent = event.args;
         switch (originalEvent.action) {
             case 'full-screen':
-                // @ts-ignore-start
-                this.parent.dotNetRef.invokeMethodAsync(showFullScreenClient).then(function (e) {
-                    // @ts-ignore-end
-                    _this.parent.toolbarSettings = e;
-                    _this.showFullScreen(event.args);
-                    originalEvent.preventDefault();
-                });
+                this.parent.dotNetRef.invokeMethodAsync(showFullScreenClient);
+                this.showFullScreen(event.args);
+                originalEvent.preventDefault();
                 break;
             case 'escape':
                 this.parent.dotNetRef.invokeMethodAsync(hideFullScreenClient);
@@ -16804,9 +16805,6 @@ var SfRichTextEditor = /** @class */ (function () {
     SfRichTextEditor.prototype.insertImageLink = function (url, target) {
         this.imageModule.insertLink(url, target);
     };
-    SfRichTextEditor.prototype.updateToolbarSettings = function (tbObj) {
-        this.toolbarSettings = tbObj;
-    };
     SfRichTextEditor.prototype.destroy = function () {
         this.unWireEvents();
     };
@@ -17595,11 +17593,6 @@ var RichTextEditor = {
     },
     getXhtml: function (element) {
         return element.blazor__instance.getXhtml();
-    },
-    updateToolbarSettings: function (element, tbObj) {
-        if (element) {
-            element.blazor__instance.updateToolbarSettings(tbObj);
-        }
     },
     destroy: function (element) {
         if (element) {

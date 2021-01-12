@@ -2995,6 +2995,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         _this.checkPreviousValue = null;
         _this.isAngular = false;
         _this.preventChange = false;
+        _this.isIconClicked = false;
         _this.datepickerOptions = options;
         return _this;
     }
@@ -3410,6 +3411,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     };
     DatePicker.prototype.dateIconHandler = function (e) {
+        this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
             this.inputElement.blur();
@@ -3434,6 +3436,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.isIconClicked = false;
     };
     DatePicker.prototype.updateHtmlAttributeToWrapper = function () {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -3526,7 +3529,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
-        if (this.openOnFocus) {
+        if (this.openOnFocus && !this.isIconClicked) {
             this.show();
         }
     };
@@ -11996,6 +11999,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.timeHandler = function (e) {
+        this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -12015,6 +12019,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 addClass([this.inputWrapper.container], [INPUTFOCUS$2]);
             }
         }
+        this.isIconClicked = false;
     };
     DateTimePicker.prototype.dateHandler = function (e) {
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
@@ -12169,9 +12174,6 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
             }
-        }
-        if (this.openOnFocus) {
-            this.show();
         }
     };
     DateTimePicker.prototype.isTimePopupOpen = function () {

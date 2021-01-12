@@ -55,9 +55,9 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     /* tslint:disable */
     /**
      * Specifies the user preferred font family of Document Editor.
-     * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Windings']
+     * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Wingdings']
      */
-    @Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Windings'])
+    @Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Wingdings'])
     public fontFamilies: string[];
     /* tslint:enable */
 
@@ -1909,7 +1909,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Unlock': 'Unlock',
         'Already locked': 'Selected or part of region is already locked by another user',
         'Click to View/Edit Footnote': 'Click to View/Edit Footnote',
-        'Click to View/Edit Endnote': 'Click to View/Edit Endnote'
+        'Click to View/Edit Endnote': 'Click to View/Edit Endnote',
+        'Multiple Comment': 'Please post your comment'
     };
     // Public Implementation Starts
     /**

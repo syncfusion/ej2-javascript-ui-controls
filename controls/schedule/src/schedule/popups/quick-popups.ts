@@ -369,7 +369,8 @@ export class QuickPopups {
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentElement);
-                        this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, this.parent.isAdaptive);
+                        let isPreventCrud: Boolean = this.parent.isAdaptive || this.parent.currentView === 'Year';
+                        this.parent.eventBase.wireAppointmentEvents(appointmentElement, eventData, isPreventCrud);
                         this.parent.eventBase.applyResourceColor(appointmentElement, eventData, 'backgroundColor', groupOrder);
                     }
                 });

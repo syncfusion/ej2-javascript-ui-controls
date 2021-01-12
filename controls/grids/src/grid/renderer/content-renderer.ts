@@ -245,8 +245,7 @@ export class ContentRender implements IRenderer {
         if (isGroupAdaptive(gObj)) {
             if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
                 .some((value: string) => { return args.requestType === value; })) {
-                gObj.vcRows = [];
-                gObj.vRows = [];
+                this.emptyVcRows();
             }
         }
         let modelData: Row<Column>[];
@@ -582,6 +581,12 @@ export class ContentRender implements IRenderer {
             },
             this.rafCallback(extend({}, args)));
     }
+
+    public emptyVcRows(): void {
+        this.parent.vcRows = [];
+        this.parent.vRows = [];
+    }
+
     public appendContent(tbody: Element, frag: DocumentFragment, args: NotifyArgs, tableName?: string): void {
         let isReact: boolean = this.parent.isReact && !isNullOrUndefined(this.parent.rowTemplate);
         if (isReact) {

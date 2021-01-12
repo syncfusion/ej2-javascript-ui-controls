@@ -94,7 +94,7 @@ export interface SelectingEventArgs extends SelectEventArgs {
     /** Defines the selecting Tab item content. */
     selectingContent: HTMLElement;
     /** Defines the type of the event. */
-    event ?: Event;
+    event?: Event;
 }
 /** An interface that holds options to control the removing and removed item action. */
 export interface RemoveEventArgs extends BaseEventArgs {
@@ -1409,7 +1409,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.select(trgIndex);
                 }
             } else if (!isNOU(trgParent) && (trgIndex !== this.selectedItem || trgIndex !== this.prevIndex)) {
-                this.select(trgIndex,  args.originalEvent);
+                this.select(trgIndex, args.originalEvent);
             }
         }
     }
@@ -1565,7 +1565,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     } else if (newVal === '' && oldVal[0] === '#') {
                         (<HTEle>document.body.appendChild(this.element.querySelector(oldVal))).style.display = 'none';
                         cntItem.innerHTML = <Str>newVal;
-                    } else { cntItem.innerHTML = <Str>newVal; }
+                    } else if (typeof newVal !== 'function') { cntItem.innerHTML = <Str>newVal; }
                 }
                 if (property === 'cssClass') {
                     if (!isNOU(hdrItem)) {
@@ -1951,19 +1951,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE)) {
                 detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).children[0]);
                 detach(this.element.querySelector('.' + CLS_CONTENT).querySelector('.' + CLS_ACTIVE).children[0]);
-                let checkValues: string = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).id;
-                let num: number = checkValues.indexOf('_');
-                let checkValue: number = parseInt(checkValues.substring(num + 1), 10);
-                let i: number = 0;
-                let id: number;
-                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach((elem: HTEle) => {
-                    let idValue: number = ((elem.id).indexOf('_'));
-                    id = parseInt(elem.id.substring(idValue + 1), 10);
-                    if (id < checkValue) {
-                        i++;
-                    }
-                });
-                let item: TabItemModel = this.items[i];
+                let item: TabItemModel = this.items[this.selectedItem];
                 let txtWrap: HTEle;
                 let pos: Str = (isNOU(item.header) || isNOU(item.header.iconPosition)) ? '' : item.header.iconPosition;
                 let css: Str = (isNOU(item.header) || isNOU(item.header.iconCss)) ? '' : item.header.iconCss;
@@ -1972,7 +1960,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if (!isNOU((<HTEle>text).tagName)) {
                     txtWrap.appendChild(text as HTEle);
                 } else {
-                    this.headerTextCompile(txtWrap, text as string, i);
+                    this.headerTextCompile(txtWrap, text as string, this.selectedItem);
                 }
                 let tEle: HTEle;
                 let icon: HTEle = this.createElement('span', {
@@ -1983,17 +1971,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if ((text !== '' && text !== undefined) && css !== '') {
                     if ((pos === 'left' || pos === 'top')) {
                         tConts.insertBefore(icon, tConts.firstElementChild);
-                    } else {
-                        tConts.appendChild(icon);
-                    }
+                    } else { tConts.appendChild(icon); }
                     tEle = txtWrap;
                     this.isIconAlone = false;
                 } else {
                     tEle = ((css === '') ? txtWrap : icon);
                     if (tEle === icon) {
-                        detach(txtWrap);
-                        tConts.appendChild(icon);
-                        this.isIconAlone = true;
+                        detach(txtWrap); tConts.appendChild(icon); this.isIconAlone = true;
                     }
                 }
                 let wrapAtt: { [key: string]: string } = (item.disabled) ? {} : { tabIndex: '-1' };
@@ -2002,7 +1986,30 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 wraper.appendChild(tConts);
                 if (pos === 'top' || pos === 'bottom') { this.element.classList.add('e-vertical-icon'); }
                 this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE).appendChild(wraper);
-                let crElem: HTEle = this.createElement('div', { innerHTML: item.content as string });
+                let crElem: HTEle = this.createElement('div');
+                let cnt: string | HTMLElement = item.content; let eleStr: string;
+                if (typeof cnt === 'string' || isNOU((<HTEle>cnt).innerHTML)) {
+                    if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
+                        cnt = SanitizeHtmlHelper.sanitize(<Str>cnt);
+                    }
+                    if ((<Str>cnt)[0] === '.' || (<Str>cnt)[0] === '#') {
+                        if (document.querySelectorAll(<string>cnt).length) {
+                            let eleVal: HTEle = <HTEle>document.querySelector(<string>cnt);
+                            eleStr = eleVal.outerHTML.trim();
+                            crElem.appendChild(eleVal);
+                            eleVal.style.display = '';
+                        } else {
+                            this.compileElement(crElem, <Str>cnt, 'content', this.selectedItem);
+                        }
+                    } else {
+                        this.compileElement(crElem, <Str>cnt, 'content', this.selectedItem);
+                    }
+                } else { crElem.appendChild(cnt); }
+                if (!isNOU(eleStr)) {
+                    if (this.templateEle.indexOf(cnt.toString()) === -1) {
+                        this.templateEle.push(cnt.toString());
+                    }
+                }
                 this.element.querySelector('.' + CLS_ITEM + '.' + CLS_ACTIVE).appendChild(crElem);
             }
         } else {

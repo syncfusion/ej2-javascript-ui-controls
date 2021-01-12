@@ -2,7 +2,6 @@ import { BlazorDotnetObject } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { SfRichTextEditor } from './sf-richtexteditor-fn';
-import { ToolbarSettingsModel } from '../src/rich-text-editor/models/toolbar-settings-model';
 import { BlazorRteElement, ToolbarClickEventArgs, LinkFormModel, EditTableModel } from './interfaces';
 import { IDropDownClickArgs, ITableCommandsArgs, ExecuteCommandOption } from '../src/rich-text-editor/base/interface';
 import { CommandName, IToolsItems, ILinkCommandsArgs, IImageCommandsArgs } from '../src/rich-text-editor/base/interface';
@@ -197,9 +196,6 @@ let RichTextEditor: object = {
     },
     getXhtml(element: BlazorRteElement): string {
         return element.blazor__instance.getXhtml();
-    },
-    updateToolbarSettings(element: BlazorRteElement, tbObj: ToolbarSettingsModel): void {
-        if (element) { element.blazor__instance.updateToolbarSettings(tbObj); }
     },
     destroy(element: BlazorRteElement): void {
         if (element) { element.blazor__instance.destroy(); }

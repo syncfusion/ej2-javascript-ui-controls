@@ -89,6 +89,7 @@ export class DatePicker extends Calendar implements IInput {
     protected mobilePopupWrapper: HTMLElement;
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
+    protected isIconClicked : boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      * @default null
@@ -811,6 +812,7 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     private dateIconHandler(e?: MouseEvent): void {
+        this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
             this.inputElement.blur();
@@ -832,6 +834,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
             }
         }
+        this.isIconClicked = false;
     }
     protected updateHtmlAttributeToWrapper(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -917,7 +920,7 @@ export class DatePicker extends Calendar implements IInput {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
-        if (this.openOnFocus) {
+        if (this.openOnFocus && !this.isIconClicked) {
             this.show();
         }
     }

@@ -2358,6 +2358,9 @@ var SfPivotView = /** @class */ (function () {
             else if (this.options.height.toString().indexOf('px') > -1) {
                 height = Number(this.options.height.toString().split('px')[0]);
             }
+            else if (this.options.height === 'auto') {
+                height = this.element.offsetHeight;
+            }
         }
         else {
             height = Number(this.options.height);
@@ -2367,7 +2370,7 @@ var SfPivotView = /** @class */ (function () {
         }
         return height;
     };
-    SfPivotView.prototype.calculateGridHeight = function (elementCreated, rowCount) {
+    SfPivotView.prototype.calculateGridHeight = function (elementCreated, rowCount, columnCount) {
         var gridHeight = this.options.height;
         var parHeight = this.getHeightAsNumber();
         var tableHeight = (rowCount * this.gridSettings.rowHeight);
@@ -2375,10 +2378,10 @@ var SfPivotView = /** @class */ (function () {
             parHeight = parHeight > 300 ? parHeight : 300;
         }
         if (this.gridSettings.height === 'auto' && parHeight && this.element.querySelector('.' + GRID_HEADER)) {
-            var rowColHeight = this.element.querySelector('.' + GRID_HEADER).offsetHeight;
-            var gBarHeight = rowColHeight + (this.element.querySelector('.' + GROUPING_BAR_CLASS) ?
+            var colHeaderHeight = (columnCount * this.gridSettings.rowHeight) + (this.element.querySelector('.' + GRID_HEADER).offsetHeight - this.element.querySelector('.' + HEADERCONTENT).offsetHeight);
+            var gBarHeight = colHeaderHeight + (this.element.querySelector('.' + GROUPING_BAR_CLASS) ?
                 this.element.querySelector('.' + GROUPING_BAR_CLASS).offsetHeight : 0);
-            var toolBarHeight = this.element.querySelector('.' + GRID_TOOLBAR) ? 42 : 0;
+            var toolBarHeight = this.element.querySelector('.' + GRID_TOOLBAR) ? this.element.querySelector('.' + GRID_TOOLBAR).clientHeight : 0;
             gridHeight = parHeight - (gBarHeight + toolBarHeight) - 1;
             if (elementCreated) {
                 var contentHeight = this.internalGrid && this.internalGrid.options && !isNaN(this.internalGrid.options.height) ?
@@ -2948,9 +2951,9 @@ var PivotView = {
             element.blazor__instance.exportDocument(element, filename, bytesBase64);
         }
     },
-    calculateGridHeight: function (element, elementCreated, rowCount) {
+    calculateGridHeight: function (element, elementCreated, rowCount, columnCount) {
         if (element && element.blazor__instance) {
-            return element.blazor__instance.calculateGridHeight(elementCreated, rowCount);
+            return element.blazor__instance.calculateGridHeight(elementCreated, rowCount, columnCount);
         }
         return null;
     },

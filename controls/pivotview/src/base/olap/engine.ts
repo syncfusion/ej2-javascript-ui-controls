@@ -666,9 +666,9 @@ export class OlapEngine {
             let memberUName: string = member.querySelector('UName').textContent;
             /* tslint:disable:no-any */
             if (Number(member.querySelector('MEMBER_TYPE').textContent) > 3) {
-                member.querySelector('MEMBER_TYPE').textContent = (memberUName as any).startsWith('[Measures]') ? '3' : '1';
+                member.querySelector('MEMBER_TYPE').textContent = (memberUName as any).indexOf('[Measures]') === 0 ? '3' : '1';
             }
-            let memberType: string = (memberUName as any).startsWith('[Measures]') ? '3' :
+            let memberType: string = (memberUName as any).indexOf('[Measures]') === 0 ? '3' :
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
             /* tslint:enable:no-any */
             let memberCaption: string = member.querySelector('Caption').textContent;
@@ -728,10 +728,30 @@ export class OlapEngine {
                     }
                 }
                 /* tslint:disable:no-any */
-                let uNames: string = (Object as any).values(this.headerGrouping[memPos].UName).join('~~');
+                let uNames: string = '';
+                let uNamesKeys: any = Object.keys(this.headerGrouping[memPos].UName);
+                for (let i: number = 0; i < uNamesKeys.length; i++) {
+                    let j: any = uNamesKeys[i];
+                    if (i === 0) {
+                        uNames = this.headerGrouping[memPos].UName[j];
+                    }
+                    else {
+                        uNames = uNames + '~~' + this.headerGrouping[memPos].UName[j];
+                    }
+                }
                 uNameCollection = uNameCollection === '' ? uNames :
                     (uNameCollection + '::' + uNames);
-                let captions: string = (Object as any).values(this.headerGrouping[memPos].Caption).join('~~');
+                let captions: string = '';
+                let captionsKeys: any = Object.keys(this.headerGrouping[memPos].Caption);
+                for (let i: number = 0; i < captionsKeys.length; i++) {
+                    let j: any = captionsKeys[i];
+                    if (i === 0) {
+                        captions = this.headerGrouping[memPos].Caption[j]
+                    }
+                    else {
+                        captions = captions + '~~' + this.headerGrouping[memPos].Caption[j]
+                    }
+                }
                 /* tslint:enable:no-any */
                 if (memPos !== measurePosition) {
                     captionCollection = captionCollection === '' ? captions :
@@ -1220,7 +1240,17 @@ export class OlapEngine {
                         colMembers[member.querySelector('UName').textContent] = member.querySelector('Caption').textContent;
                     }
                     /* tslint:disable */
-                    let levelName: string = (Object as any).values(colMembers).join('.');
+                    let levelName: string = '';
+                    let levelNameKeys: any = Object.keys(colMembers);
+                    for (let i: number = 0; i < levelNameKeys.length; i++) {
+                        let j: any = levelNameKeys[i];
+                        if (i === 0) {
+                            levelName = colMembers[j as any];
+                        }
+                        else {
+                            levelName = levelName + '.' + colMembers[j as any];
+                        }
+                    }
                     let isNamedSet: boolean = this.namedSetsPosition['column'][memPos] ? true : false;
                     let uName: string = this.getUniqueName(member.querySelector('UName').textContent);
                     let depth: number = this.getDepth(this.tupColumnInfo[tupPos], uName, Number(memberType));
@@ -1511,7 +1541,8 @@ export class OlapEngine {
                                     arrange[header[k].formattedText][header[k].colIndex] = header[k];
                                 } else if (arrange[header[k].formattedText] && this.pivotValues[j - 1]) {
                                     let prevRowCell: any = this.pivotValues[j - 1][header[k].colIndex];
-                                    let prevColIndex: number = (Object as any).values(arrange[header[k].formattedText])[0].colIndex;
+                                    let prevColValue: number = Number(Object.keys(arrange[header[k].formattedText])[0]);
+                                    let prevColIndex: number = ((arrange[header[k].formattedText])[prevColValue]).colIndex;
                                     let prevColRowCell: any = this.pivotValues[j - 1][prevColIndex];
                                     if (prevRowCell.formattedText !== prevColRowCell.formattedText) {
                                         let key: string[] = Object.keys(arrange);

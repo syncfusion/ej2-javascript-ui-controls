@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I309395` - Merge method for different sheet is not working issue fixed.
+`#I309076` - Formula parsing issue fixed.
+
 ## 18.4.33 (2021-01-05)
 
 ### Spreadsheet

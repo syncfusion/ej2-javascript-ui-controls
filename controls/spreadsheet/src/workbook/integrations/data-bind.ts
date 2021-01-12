@@ -330,7 +330,7 @@ export class DataBind {
                         row = sheet.rows[i + indexes[0]];
                         if (row) {
                             for (let j: number = indexes[1]; j < indexes[1] + range.info.fldLen; j++) {
-                                if (row.cells && row.cells[i]) {
+                                if (row.cells && row.cells[j]) {
                                     delete row.cells[j];
                                 }
                             }

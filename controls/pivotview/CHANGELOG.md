@@ -1,6 +1,18 @@
 # Changelog
 
-## [Unreleased]  
+## [Unreleased]
+
+## 18.4.34 (2021-01-12)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#301448` - The pivot table now displays no unnecessary scrollbars when the browser is resized.
+
+#### New Features
+
+- `#298512` - The drill-through grid can now be exported, like the pivot table.
 
 ## 18.4.31 (2020-12-22)
  

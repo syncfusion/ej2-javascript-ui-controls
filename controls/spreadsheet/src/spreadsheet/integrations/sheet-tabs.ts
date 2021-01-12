@@ -239,6 +239,7 @@ export class SheetTabs {
                 args.element.children[1].classList.add('e-disabled'); args.element.children[3].classList.add('e-disabled');
             }
             if (!this.parent.allowInsert) { args.element.children[0].classList.add('e-disabled'); }
+            if (!this.parent.allowDelete) { args.element.children[1].classList.add('e-disabled'); }
         }
     }
 

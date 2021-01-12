@@ -686,9 +686,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns void
      */
     public merge(range?: string, type?: MergeType): void {
-        range = range || this.getActiveSheet().selectedRange;
-        this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', refreshRibbon:
-            range.indexOf(this.getActiveSheet().activeCell) > -1 ? true : false });
+        let sheetIdx: number = this.getAddressInfo(range).sheetIndex;
+        let sheet: SheetModel = getSheet(this, sheetIdx);
+        range = range || sheet.selectedRange;
+        this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', sheet: sheet, refreshRibbon:
+            range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
     }
 
     /** Used to compute the specified expression/formula.

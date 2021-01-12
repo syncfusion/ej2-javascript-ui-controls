@@ -378,6 +378,7 @@ var DateTimePicker = /** @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.timeHandler = function (e) {
+        this.isIconClicked = true;
         if (sf.base.Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -397,6 +398,7 @@ var DateTimePicker = /** @class */ (function (_super) {
                 sf.base.addClass([this.inputWrapper.container], [INPUTFOCUS]);
             }
         }
+        this.isIconClicked = false;
     };
     DateTimePicker.prototype.dateHandler = function (e) {
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
@@ -551,9 +553,6 @@ var DateTimePicker = /** @class */ (function (_super) {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (sf.base.Browser.isIE || sf.base.Browser.info.name === 'edge')
                     && target === this.popupObject.element);
             }
-        }
-        if (this.openOnFocus) {
-            this.show();
         }
     };
     DateTimePicker.prototype.isTimePopupOpen = function () {

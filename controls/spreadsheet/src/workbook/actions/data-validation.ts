@@ -1,4 +1,4 @@
-import { Workbook, setCell, SheetModel, setRow, CellModel } from '../base/index';
+import { Workbook, setCell, SheetModel, setRow, CellModel, getSheet } from '../base/index';
 import { setValidation, applyCellFormat, isValidation, removeValidation, addHighlight, CellStyleModel } from '../common/index';
 import { removeHighlight } from '../common/index';
 import { getRangeIndexes } from '../common/index';
@@ -54,7 +54,7 @@ export class WorkbookDataValidation {
 
     private ValidationHandler(rules: ValidationModel, range: string, isRemoveValidation: boolean): void {
         let cell: CellModel;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        let sheet: SheetModel = getSheet(this.parent, this.parent.getAddressInfo(range).sheetIndex);
         range = range || sheet.selectedRange;
         let indexes: number[] = getRangeIndexes(range);
         for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {

@@ -437,6 +437,36 @@ describe('Treegrid Row Reorder', () => {
     });
 });
 
+describe('Drag and Drop with TextWrap', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        allowRowDragAndDrop: true,
+        allowTextWrap: true,
+        columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 90, textAlign: 'Right' },
+            { field: 'taskName', headerText: 'TaskName', width: 50 },
+            { field: 'startDate', headerText: 'Start Date', format: 'yMd', textAlign: 'Right', width: 90},
+            { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+            { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+            { field: 'priority', headerText: 'Priority', width: 90 },
+    ]
+        
+      },done); 
+    });
+
+  it('Drag action with text wrap', () => {
+    TreeGridObj.reorderRows([2], 1, 'child');
+    expect((TreeGridObj.grid.dataSource[1] as ITreeData).childRecords.length).toBe(1);
+  });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
 
 describe('Treegrid Row Drop as Child', () => {
   let gridObj: TreeGrid;

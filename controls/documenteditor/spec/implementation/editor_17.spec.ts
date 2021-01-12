@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
+import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition, WSectionFormat } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
 /**
@@ -294,5 +294,47 @@ describe('Paste in list validation', () => {
         editor.editor.applyNumbering('%1.', 'Number');
         editor.editor.paste();
         expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.listFormat).not.toBe(undefined);
+    }); 
+});
+describe('Paste contents in document with header distance greater than 36', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableComment: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Paste contents in document with header distance greater than 36', () => {
+        editor.openBlank();
+        let sectoinFormat: WSectionFormat = new WSectionFormat();
+        sectoinFormat.footerDistance = 50;
+        sectoinFormat.headerDistance = 50;
+        editor.editorModule.onApplySectionFormat(undefined, sectoinFormat);
+        editor.editorModule.insertText('Adventure');
+        editor.editorModule.onEnter();
+        editor.editorModule.insertText('world');
+        editor.editorModule.onEnter();
+        editor.enableLocalPaste = true;
+        editor.selection.selectAll();
+        editor.selection.copy();
+        editor.selection.selectAll();
+        editor.editorModule.paste();
+        expect(editor.selection.start.paragraph.bodyWidget.sectionFormat.footerDistance).toBe(50);
+        expect(editor.selection.start.paragraph.bodyWidget.sectionFormat.headerDistance).toBe(50);
     }); 
 });

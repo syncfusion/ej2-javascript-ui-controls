@@ -2918,6 +2918,15 @@
       .e-gridcontent .e-content .e-movablecontent.e-noscroll {
         overflow-y: hidden;
       }
+
+      .e-label.e-fltrcheck {
+        width: $grid-filter-checkbox-width;
+      }
+
+      .e-checkboxlist .e-fltrcheck {
+        white-space: $grid-filter-checkbox-white-space;
+      }
+
     }
   }
 }
@@ -2946,11 +2955,61 @@
   }
 }
 
+#{&}.e-grid-min-height .e-grid-height {
+  .e-rowcell {
+    line-height: $grid-rowcell-line-height;
+    padding: $grid-content-padding $grid-content-right-padding;
+ }
+
+  .e-gridheader .e-headercell,
+  .e-gridheader .e-detailheadercell,
+  .e-gridheader .e-headercell .e-headercelldiv {
+    height: $grid-header-height;
+  }
+
+  .e-gridcontent .e-groupcaption {
+    line-height: $grid-group-captioncell-line-height;
+    padding: .7em;
+  }
+
+  .e-summarycell {
+    line-height: $grid-summary-cell-line-height;
+    padding: $grid-content-padding $grid-content-right-padding;
+   }
+}
+
+.e-device.e-grid-min-height .e-grid-height .e-rowcell {
+  padding: $grid-device-rowcell-padding;
+}
+
+.e-device.e-grid-min-height .e-grid-height .e-rowcell:first-child {
+  padding: $grid-device-rowcell-firstchild-padding;
+}
+
+.e-device.e-grid-min-height .e-grid-height .e-rowcell:last-child {
+  padding: $grid-device-rowcell-lastchild-padding;
+}
+
 .e-device.e-grid-min-height .e-rowcell,
 .e-device.e-grid-min-height .e-rowcell:first-child,
 .e-device.e-grid-min-height .e-rowcell:last-child {
   padding-bottom: 0;
   padding-top: 0;
+}
+
+.e-bigger .e-grid.e-grid-min-height .e-grid-height .e-rowcell {
+  line-height: $grid-bigger-rowcell-line-height;
+  padding: $grid-bigger-content-padding $grid-bigger-content-right-padding;
+}
+
+.e-bigger .e-grid.e-grid-min-height .e-grid-height .e-rowcell:first-child {
+  line-height: $grid-bigger-first-last-rowcell-padding;
+  padding-left: $grid-bigger-first-last-rowcell-padding;
+}
+
+.e-bigger .e-grid.e-grid-min-height .e-grid-height .e-rowcell:last-child {
+  line-height: $grid-bigger-first-last-rowcell-padding;
+  padding-right: $grid-bigger-first-last-rowcell-padding;
 }
 
 .e-bigger .e-grid.e-grid-min-height {
@@ -2960,6 +3019,20 @@
     line-height: 0;
     padding-bottom: 0;
     padding-top: 0;
+  }
+}
+
+.e-bigger .e-wrap.e-grid-min-height .e-grid-height {
+  .e-rowcell {
+    line-height: $grid-bigger-wrap-line-height;
+  }
+
+  .e-frozencontent table tr td:first-child:empty,
+  .e-movablecontent table tr td:first-child:empty,
+  .e-frozenhdrcont table tr td:first-child:empty,
+  &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+  &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
+    height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding + $grid-bigger-content-padding;
   }
 }
 

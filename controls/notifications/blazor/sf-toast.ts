@@ -148,6 +148,7 @@ class SfToast {
     }
 
     private toastHoverAction(id: number): void {
+      this.dotNetRef.invokeMethodAsync('ClearTimeout', id);
       clearTimeout(this.progressObj[id].timeOutId);
       clearInterval(this.progressObj[id].intervalId);
       this.progressObj[id].hideEta = 0;

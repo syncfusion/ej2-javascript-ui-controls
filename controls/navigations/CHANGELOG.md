@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### Tab
+
+#### Bug Fixes
+
+- `#301347` - An issue with `refreshActiveTab` public method has been fixed.
+
 ## 18.4.33 (2021-01-05)
 
 ### Context Menu
@@ -22,6 +30,7 @@
 
 - `#306302` -  The original event parameter is exposed in tab selecting event.
 - `#306228` - An issue with closing the tab item clear the content of all the tab items has been fixed.
+- `F159991` -  An issue with Contents of the tab content are displayed incorrectly has been fixed.
 
 ## 18.4.31 (2020-12-22)
 

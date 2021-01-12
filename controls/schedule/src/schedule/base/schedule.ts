@@ -9,7 +9,7 @@ import { Scroll } from '../actions/scroll';
 import { ScheduleTouch } from '../actions/touch';
 import { KeyboardInteraction } from '../actions/keyboard';
 import { Data } from '../actions/data';
-import { View, CurrentAction, ReturnType } from '../base/type';
+import { View, CurrentAction, ReturnType, WeekRule } from '../base/type';
 import { EventBase } from '../event-renderer/event-base';
 import { InlineEdit } from '../event-renderer/inline-edit';
 import { QuickPopups } from '../popups/quick-popups';
@@ -277,6 +277,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(0)
     public firstDayOfWeek: number;
+    /**
+     * It allows the Scheduler to display week numbers based on following available week options. The week
+     *  option specified in this property will be initially loaded on the schedule.
+     * * FirstDay
+     * * FirstFourDayWeek
+     * * FirstFullWeek
+     * {% codeBlock src='schedule/WeekRule/index.md' %}{% endcodeBlock %}
+     * @default 'FirstDay'
+     */
+    @Property('FirstDay')
+    public weekRule: WeekRule;
     /**
      * It is used to set the working days on Schedule. The only days that are defined in this collection will be rendered on the `workWeek`
      * view whereas on other views, it will display all the usual days and simply highlights the working days with different shade.
@@ -1829,6 +1840,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'eventDragArea':
                 this.notify(events.dataReady, {});
                 break;
+            case 'weekRule':
+                state.isLayout = true;
+                break;
+
         }
     }
 

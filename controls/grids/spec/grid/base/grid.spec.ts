@@ -1238,6 +1238,7 @@ describe('Grid base module', () => {
             rowSelected = (args?: any): void => {
                 expect(args.data.length).toBe(6);
                 expect(args.isInteracted).toBeTruthy();
+                gridObj.rowSelected = null;
             }
             gridObj.rowSelected = rowSelected;
             (gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-frame.e-icons')[0] as any).click();

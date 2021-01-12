@@ -27,16 +27,7 @@ var SfSidebar = /** @class */ (function () {
         this.element = element;
         this.element.blazor__instance = this;
         this.dotnetRef = dotnetRef;
-        this.type = property.Type;
-        this.position = property.Position;
-        this.enableDock = property.EnableDock;
-        this.showBackdrop = property.ShowBackdrop;
-        this.target = property.Target;
-        this.enableGestures = property.EnableGestures;
-        this.closeOnDocumentClick = property.CloseOnDocumentClick;
-        this.mediaQuery = property.MediaQuery;
-        this.dockSize = property.DockSize;
-        this.width = property.Width;
+        this.resetProperty(property);
     }
     SfSidebar.prototype.initialize = function () {
         this.setTarget();
@@ -247,21 +238,26 @@ var SfSidebar = /** @class */ (function () {
     };
     SfSidebar.prototype.resetProperty = function (property) {
         if (!sf.base.isNullOrUndefined(property)) {
+            this.type = property.Type;
             this.isOpen = property.IsOpen;
-            this.enableGestures = property.EnableGestures;
-            this.showBackdrop = property.ShowBackdrop;
-            this.closeOnDocumentClick = property.CloseOnDocumentClick;
             this.isPositionChange = this.position !== property.Position;
             this.position = property.Position;
-            this.type = property.Type;
+            this.enableDock = property.EnableDock;
+            this.showBackdrop = property.ShowBackdrop;
+            this.target = property.Target;
+            this.enableGestures = property.EnableGestures;
+            this.closeOnDocumentClick = property.CloseOnDocumentClick;
+            this.mediaQuery = property.MediaQuery;
+            this.dockSize = property.DockSize;
+            this.width = property.Width;
         }
     };
     SfSidebar.prototype.setType = function (property) {
+        this.resetProperty(property);
         var elementWidth = this.element.getBoundingClientRect().width;
         elementWidth = this.enableDock && !this.isOpen ? this.dockSize : elementWidth;
         var sibling = document.querySelector('.e-main-content') || this.targetElement;
         this.isPositionChange = false;
-        this.resetProperty(property);
         if (sibling) {
             if (this.isPositionChange) {
                 this.position === LEFT ? sibling.style.marginRight = '0px' : sibling.style.marginLeft = '0px';

@@ -87,6 +87,10 @@ export class Editor {
      * @private
      */
     public tocStyles: TocLevelSettings = {};
+    /**
+     * @private
+     */
+    public chartType: boolean = false;
     private refListNumber: number = undefined;
     private incrementListNumber: number = -1;
     private removedBookmarkElements: BookmarkElementBox[] = [];
@@ -145,6 +149,7 @@ export class Editor {
     private copiedTextContent: string = '';
     private previousParaFormat: WParagraphFormat = undefined;
     private previousCharFormat: WCharacterFormat = undefined;
+    private previousSectionFormat : WSectionFormat = undefined;
     private currentPasteOptions: PasteOptions;
     private pasteTextPosition: PositionInfo = undefined;
     public isSkipHistory: boolean = false;
@@ -337,6 +342,12 @@ export class Editor {
         return index;
     }
 
+    private alertBox(): void {
+        let localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        DialogUtility.alert(localObj.getConstant('Multiple Comment'));
+    }
+
     /**
      * Insert comment 
      * @param text - comment text.
@@ -346,6 +357,9 @@ export class Editor {
         if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode || this.viewer.owner.enableHeaderAndFooter
             || !this.viewer.owner.enableComment) {
             return;
+        }
+        if (this.viewer.owner.commentReviewPane.commentPane.isEditMode) {
+            return this.alertBox();
         }
         if (isNullOrUndefined(text)) {
             text = '';
@@ -831,6 +845,7 @@ export class Editor {
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
+            this.previousSectionFormat = undefined;
             this.previousParaFormat = undefined;
             this.previousCharFormat = undefined;
             this.selection.isViewPasteOptions = false;
@@ -1357,6 +1372,7 @@ export class Editor {
                         this.copiedTextContent = '';
                         this.previousParaFormat = undefined;
                         this.previousCharFormat = undefined;
+                        this.previousSectionFormat = undefined;
                         this.selection.isViewPasteOptions = false;
                         if (this.isPasteListUpdated) {
                             this.isPasteListUpdated = false;
@@ -3912,6 +3928,10 @@ export class Editor {
             let document: any = JSON.parse(sfdt);
             this.pasteContents(document);
             this.applyPasteOptions(this.currentPasteOptions);
+            if (this.chartType) {
+                setTimeout((): void => { this.viewer.updateScrollBars(); }, 30);
+                this.chartType = false;
+            }
         }
     }
     private getUniqueListOrAbstractListId(isList: boolean): number {
@@ -4365,7 +4385,11 @@ export class Editor {
             this.documentHelper.layout.isBidiReLayout = false;
         }
         if (this.isPaste && this.isSectionEmpty(this.selection) && !this.selection.start.paragraph.isInHeaderFooter) {
-            this.selection.start.paragraph.bodyWidget.sectionFormat.copyFormat(bodyWidget[0].sectionFormat);
+           this.previousSectionFormat = new WSectionFormat();
+           this.previousSectionFormat.copyFormat(this.selection.start.paragraph.bodyWidget.sectionFormat);
+           this.selection.start.paragraph.bodyWidget.sectionFormat.copyFormat(bodyWidget[0].sectionFormat);
+           this.selection.start.paragraph.bodyWidget.sectionFormat.footerDistance = this.previousSectionFormat.footerDistance;
+           this.selection.start.paragraph.bodyWidget.sectionFormat.headerDistance = this.previousSectionFormat.headerDistance;
             if (this.owner.viewer instanceof PageLayoutViewer) {
                 let page: Page = this.selection.start.paragraph.bodyWidget.page;
                 this.owner.viewer.updatePageBoundingRectange(this.selection.start.paragraph.bodyWidget, page, page.boundingRectangle.y);
@@ -4781,7 +4805,7 @@ export class Editor {
             insertIndex++;
         }
         if (paragraphFormat && (isNullOrUndefined(paragraph.paragraphFormat.listFormat.list) ||
-           (!isNullOrUndefined(paragraph.paragraphFormat.listFormat) && paragraph.paragraphFormat.listFormat.listId === -1))) {
+            (!isNullOrUndefined(paragraph.paragraphFormat.listFormat) && paragraph.paragraphFormat.listFormat.listId === -1))) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         // tslint:disable-next-line:max-line-length

@@ -8482,7 +8482,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                         document.body.appendChild(this.element.querySelector(oldVal)).style.display = 'none';
                         cntItem.innerHTML = newVal;
                     }
-                    else {
+                    else if (typeof newVal !== 'function') {
                         cntItem.innerHTML = newVal;
                     }
                 }
@@ -8933,19 +8933,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             if (this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1)) {
                 detach(this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).children[0]);
                 detach(this.element.querySelector('.' + CLS_CONTENT$1).querySelector('.' + CLS_ACTIVE$1).children[0]);
-                var checkValues = this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).id;
-                var num = checkValues.indexOf('_');
-                var checkValue_1 = parseInt(checkValues.substring(num + 1), 10);
-                var i_2 = 0;
-                var id_1;
-                [].slice.call(this.element.querySelectorAll('.' + CLS_TB_ITEM)).forEach(function (elem) {
-                    var idValue = ((elem.id).indexOf('_'));
-                    id_1 = parseInt(elem.id.substring(idValue + 1), 10);
-                    if (id_1 < checkValue_1) {
-                        i_2++;
-                    }
-                });
-                var item = this.items[i_2];
+                var item = this.items[this.selectedItem];
                 var txtWrap = void 0;
                 var pos = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
                 var css = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
@@ -8955,7 +8943,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     txtWrap.appendChild(text);
                 }
                 else {
-                    this.headerTextCompile(txtWrap, text, i_2);
+                    this.headerTextCompile(txtWrap, text, this.selectedItem);
                 }
                 var tEle = void 0;
                 var icon = this.createElement('span', {
@@ -8989,7 +8977,36 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.element.classList.add('e-vertical-icon');
                 }
                 this.element.querySelector('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE$1).appendChild(wraper);
-                var crElem = this.createElement('div', { innerHTML: item.content });
+                var crElem = this.createElement('div');
+                var cnt = item.content;
+                var eleStr = void 0;
+                if (typeof cnt === 'string' || isNullOrUndefined(cnt.innerHTML)) {
+                    if (typeof cnt === 'string' && this.enableHtmlSanitizer) {
+                        cnt = SanitizeHtmlHelper.sanitize(cnt);
+                    }
+                    if (cnt[0] === '.' || cnt[0] === '#') {
+                        if (document.querySelectorAll(cnt).length) {
+                            var eleVal = document.querySelector(cnt);
+                            eleStr = eleVal.outerHTML.trim();
+                            crElem.appendChild(eleVal);
+                            eleVal.style.display = '';
+                        }
+                        else {
+                            this.compileElement(crElem, cnt, 'content', this.selectedItem);
+                        }
+                    }
+                    else {
+                        this.compileElement(crElem, cnt, 'content', this.selectedItem);
+                    }
+                }
+                else {
+                    crElem.appendChild(cnt);
+                }
+                if (!isNullOrUndefined(eleStr)) {
+                    if (this.templateEle.indexOf(cnt.toString()) === -1) {
+                        this.templateEle.push(cnt.toString());
+                    }
+                }
                 this.element.querySelector('.' + CLS_ITEM$2 + '.' + CLS_ACTIVE$1).appendChild(crElem);
             }
         }

@@ -21,10 +21,25 @@ let AccumulationChart: object = {
     mouseY: 0,
     mouseX: 0,
     eventInterval: 80,
-    getElementBoundsById(id: string): { width: number, height: number } {
-        this.id = id;
+    getElementBoundsById(id: string, isSetId: boolean = true):
+    { width: number, height: number, left: number, top: number, right: number, bottom: number } {
+        if (isSetId) {
+            this.id = id;
+        }
         let element: HTMLElement = document.getElementById(id);
-        return { width: element.clientWidth || element.offsetWidth, height: element.clientHeight || element.offsetHeight };
+        if(element)
+        {
+            let elementRect: ClientRect = element.getBoundingClientRect();
+            return {
+                width: element.clientWidth || element.offsetWidth,
+                height: element.clientHeight || element.offsetHeight,
+                left: elementRect.left,
+                top: elementRect.top,
+                right: elementRect.right,
+                bottom: elementRect.bottom
+            };
+        }
+        return { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0 };
     },
     charCollection: [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '"', '#', '$', '%', '&', '\\', '(', ')', '*', '+', ',', '-', '.', '/', ':',

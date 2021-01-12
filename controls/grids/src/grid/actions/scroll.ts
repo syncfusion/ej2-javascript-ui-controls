@@ -119,6 +119,9 @@ export class Scroll implements IAction {
 
         let height: number = this.widthService.getSiblingsHeight(content);
         content.style.height = 'calc(100% - ' + height + 'px)'; //Set the height to the '.e-gridcontent';
+        if (this.parent.isFrozenGrid()) {
+            (content.firstElementChild as HTMLElement).style.height = 'calc(100% - ' + getScrollBarWidth() + 'px)';
+        }
     }
 
     private getThreshold(): number {

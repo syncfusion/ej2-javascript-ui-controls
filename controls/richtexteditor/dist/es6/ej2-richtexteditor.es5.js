@@ -13188,7 +13188,8 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
     MsWordPaste.prototype.findDetachElem = function (element) {
         var removableElement;
         if (!isNullOrUndefined(element.parentElement) &&
-            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD') {
+            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD' &&
+            isNullOrUndefined(element.parentElement.querySelector('img'))) {
             removableElement = this.findDetachElem(element.parentElement);
         }
         else {
@@ -13395,7 +13396,11 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
                 for (var j = 1; j < this.listContents.length; j++) {
                     tempNode.push(this.listContents[j]);
                 }
-                collection.push({ listType: type, content: tempNode, nestedLevel: level });
+                var currentClassName = void 0;
+                if (!isNullOrUndefined(listNodes[i].className)) {
+                    currentClassName = listNodes[i].className;
+                }
+                collection.push({ listType: type, content: tempNode, nestedLevel: level, class: currentClassName });
             }
         }
         stNode = listNodes.shift();
@@ -13510,6 +13515,7 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
                     continue;
                 }
             }
+            prevList.setAttribute('class', collection[index].class);
             pLevel = collection[index].nestedLevel;
             listCount++;
         }
@@ -18068,32 +18074,35 @@ var Image = /** @__PURE__ @class */ (function () {
                     selectArgs.filesData = rawFile;
                 }
                 _this.parent.trigger(imageSelected, selectArgs, function (selectArgs) {
-                    _this.checkExtension(selectArgs.filesData[0]);
-                    altText = selectArgs.filesData[0].name;
-                    if (_this.parent.editorMode === 'HTML' && isNullOrUndefined(_this.parent.insertImageSettings.path)) {
-                        var reader_1 = new FileReader();
-                        reader_1.addEventListener('load', function (e) {
-                            var url = _this.parent.insertImageSettings.saveFormat === 'Base64' ? reader_1.result :
-                                URL.createObjectURL(convertToBlob(reader_1.result));
-                            proxy.uploadUrl = {
-                                url: url, selection: save, altText: altText,
-                                selectParent: selectParent,
-                                width: {
-                                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                                    maxWidth: proxy.parent.getInsertImgMaxWidth()
-                                }, height: {
-                                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                                    maxHeight: proxy.parent.insertImageSettings.maxHeight
-                                }
-                            };
-                            proxy.inputUrl.setAttribute('disabled', 'true');
-                        });
-                        reader_1.readAsDataURL(selectArgs.filesData[0].rawFile);
-                    }
-                    if (_this.parent.isServerRendered) {
-                        /* tslint:disable */
-                        _this.uploadObj._internalRenderSelect(selectArgs, rawFile);
-                        /* tslint:enable */
+                    if (!selectArgs.cancel) {
+                        _this.checkExtension(selectArgs.filesData[0]);
+                        altText = selectArgs.filesData[0].name;
+                        if (_this.parent.editorMode === 'HTML' && isNullOrUndefined(_this.parent.insertImageSettings.path)) {
+                            var reader_1 = new FileReader();
+                            reader_1.addEventListener('load', function (e) {
+                                var url = _this.parent.insertImageSettings.saveFormat === 'Base64' ? reader_1.result :
+                                    URL.createObjectURL(convertToBlob(reader_1.result));
+                                proxy.uploadUrl = {
+                                    url: url, selection: save, altText: altText,
+                                    selectParent: selectParent,
+                                    width: {
+                                        width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
+                                        maxWidth: proxy.parent.getInsertImgMaxWidth()
+                                    }, height: {
+                                        height: proxy.parent.insertImageSettings.height,
+                                        minHeight: proxy.parent.insertImageSettings.minHeight,
+                                        maxHeight: proxy.parent.insertImageSettings.maxHeight
+                                    }
+                                };
+                                proxy.inputUrl.setAttribute('disabled', 'true');
+                            });
+                            reader_1.readAsDataURL(selectArgs.filesData[0].rawFile);
+                        }
+                        if (_this.parent.isServerRendered) {
+                            /* tslint:disable */
+                            _this.uploadObj._internalRenderSelect(selectArgs, rawFile);
+                            /* tslint:enable */
+                        }
                     }
                 });
             },

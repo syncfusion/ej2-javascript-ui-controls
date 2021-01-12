@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.34 (2021-01-12)
+
+### Toast
+
+#### Bug Fixes
+
+- `308530` - The issue with "Toast elements are not destroyed properly when open and hide the toast" has been fixed.
+
 ## 17.4.40 (2019-12-24)
 
 ### Toast

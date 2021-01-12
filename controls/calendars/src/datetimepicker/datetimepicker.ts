@@ -797,6 +797,7 @@ export class DateTimePicker extends DatePicker {
 
     }
     private timeHandler(e?: MouseEvent): void {
+        this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -815,7 +816,7 @@ export class DateTimePicker extends DatePicker {
                 addClass([this.inputWrapper.container], [INPUTFOCUS]);
             }
         }
-
+        this.isIconClicked = false;
     }
 
     private dateHandler(e?: MouseEvent): void {
@@ -965,9 +966,6 @@ export class DateTimePicker extends DatePicker {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
             }
-        }
-        if (this.openOnFocus) {
-            this.show();
         }
     }
     private isTimePopupOpen(): boolean {

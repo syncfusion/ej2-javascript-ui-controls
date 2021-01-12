@@ -953,11 +953,11 @@ export class HierarchicalTree {
             let count: number;
             count = info.tree.children.length;
             let columns: number;
-            columns = Math.ceil(count / info.tree.rows);
+            columns = info.tree.rows;
             if (columns % 2 === 0) {
                 column = columns;
             } else {
-                column = columns + 1;
+                column = columns - 1;
             }
         } else if (info.tree.children.length === 3 || info.tree.children.length === 4) {
             column = 2;
@@ -967,10 +967,15 @@ export class HierarchicalTree {
         while (childNodes > 0) {
             rows[rows.length] = children.splice(0, column);
             childNodes -= column;
-            if (childNodes === 3) {
-                column = 2;
-            } else if (childNodes < column) {
-                column = childNodes;
+            if (childNodes < column) {
+                if (childNodes % 2 === 0) {
+                    column = childNodes;
+                } else if (childNodes !== 1) {
+                    column = childNodes - 1;
+                }
+                if (childNodes < column) {
+                    column = childNodes;
+                }
             }
         }
         return rows;

@@ -1054,6 +1054,7 @@ class PivotEngine {
         this.globalize = new Internationalization();
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.fieldsType = customProperties ? customProperties.fieldsType : {};
+        this.clonedReport = customProperties ? customProperties.clonedReport : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
@@ -1292,7 +1293,7 @@ class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setFullYear(date.getFullYear())).toString());
+                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setFullYear(date.getFullYear())).toString()));
                                         }
                                         break;
                                     case 'Quarters':
@@ -1330,7 +1331,7 @@ class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
+                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString()));
                                         }
                                         break;
                                     case 'Days':
@@ -1341,7 +1342,7 @@ class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
+                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString()));
                                         }
                                         break;
                                     case 'Hours':
@@ -1352,7 +1353,7 @@ class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setHours(date.getHours())).toString());
+                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setHours(date.getHours())).toString()));
                                         }
                                         break;
                                     case 'Minutes':
@@ -1363,7 +1364,7 @@ class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setMinutes(date.getMinutes())).toString());
+                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setMinutes(date.getMinutes())).toString()));
                                         }
                                         break;
                                     case 'Seconds':
@@ -1374,7 +1375,7 @@ class PivotEngine {
                                             if (this.fields.indexOf(newFieldName) === -1) {
                                                 this.fields.push(newFieldName);
                                             }
-                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : new Date(newDate.setSeconds(date.getSeconds())).toString());
+                                            item[this.fieldKeys[newFieldName]] = (isInRangeAvail ? undefined : (fieldName === newFieldName ? date : new Date(newDate.setSeconds(date.getSeconds())).toString()));
                                         }
                                         break;
                                 }
@@ -1433,11 +1434,20 @@ class PivotEngine {
                                     let dataFields = this.rows;
                                     dataFields = dataFields.concat(this.columns, this.values, this.filters);
                                     while (gCnt--) {
+                                        let caption = actualField.caption ? actualField.caption : actualField.name;
+                                        if (this.clonedReport) {
+                                            let clonedFields = this.clonedReport.rows;
+                                            clonedFields = clonedFields.concat(this.clonedReport.columns, this.clonedReport.values, this.clonedReport.filters);
+                                            let cloneField = PivotUtil.getFieldByName(groupKeys[gCnt], clonedFields);
+                                            if (cloneField) {
+                                                caption = cloneField.caption ? cloneField.caption : cloneField.name;
+                                            }
+                                        }
                                         if (!PivotUtil.getFieldByName(groupKeys[gCnt], dataFields)) {
                                             groupField = groupFields[groupKeys[gCnt]];
                                             let newField = {
                                                 name: groupKeys[gCnt],
-                                                caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + (actualField.caption ? actualField.caption : actualField.name) + ')',
+                                                caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')',
                                                 type: 'Count',
                                                 showNoDataItems: actualField.showNoDataItems,
                                                 baseField: actualField.baseField,
@@ -6617,7 +6627,7 @@ class Render {
             if (this.parent.grid.height == 'auto') {
                 let mCntHeight = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).offsetHeight;
                 let dataHeight = this.parent.grid.dataSource.length * this.parent.gridSettings.rowHeight;
-                if (mCntHeight < dataHeight) {
+                if (mCntHeight > 50 && mCntHeight < dataHeight) {
                     this.parent.grid.contentModule.setHeightToContent(dataHeight);
                 }
             }
@@ -18249,9 +18259,9 @@ class OlapEngine {
             let memberUName = member.querySelector('UName').textContent;
             /* tslint:disable:no-any */
             if (Number(member.querySelector('MEMBER_TYPE').textContent) > 3) {
-                member.querySelector('MEMBER_TYPE').textContent = memberUName.startsWith('[Measures]') ? '3' : '1';
+                member.querySelector('MEMBER_TYPE').textContent = memberUName.indexOf('[Measures]') === 0 ? '3' : '1';
             }
-            let memberType = memberUName.startsWith('[Measures]') ? '3' :
+            let memberType = memberUName.indexOf('[Measures]') === 0 ? '3' :
                 (Number(member.querySelector('MEMBER_TYPE').textContent) > 3 ? '1' : member.querySelector('MEMBER_TYPE').textContent);
             /* tslint:enable:no-any */
             let memberCaption = member.querySelector('Caption').textContent;
@@ -18316,10 +18326,30 @@ class OlapEngine {
                     }
                 }
                 /* tslint:disable:no-any */
-                let uNames = Object.values(this.headerGrouping[memPos].UName).join('~~');
+                let uNames = '';
+                let uNamesKeys = Object.keys(this.headerGrouping[memPos].UName);
+                for (let i = 0; i < uNamesKeys.length; i++) {
+                    let j = uNamesKeys[i];
+                    if (i === 0) {
+                        uNames = this.headerGrouping[memPos].UName[j];
+                    }
+                    else {
+                        uNames = uNames + '~~' + this.headerGrouping[memPos].UName[j];
+                    }
+                }
                 uNameCollection = uNameCollection === '' ? uNames :
                     (uNameCollection + '::' + uNames);
-                let captions = Object.values(this.headerGrouping[memPos].Caption).join('~~');
+                let captions = '';
+                let captionsKeys = Object.keys(this.headerGrouping[memPos].Caption);
+                for (let i = 0; i < captionsKeys.length; i++) {
+                    let j = captionsKeys[i];
+                    if (i === 0) {
+                        captions = this.headerGrouping[memPos].Caption[j];
+                    }
+                    else {
+                        captions = captions + '~~' + this.headerGrouping[memPos].Caption[j];
+                    }
+                }
                 /* tslint:enable:no-any */
                 if (memPos !== measurePosition) {
                     captionCollection = captionCollection === '' ? captions :
@@ -18790,7 +18820,17 @@ class OlapEngine {
                         colMembers[member.querySelector('UName').textContent] = member.querySelector('Caption').textContent;
                     }
                     /* tslint:disable */
-                    let levelName = Object.values(colMembers).join('.');
+                    let levelName = '';
+                    let levelNameKeys = Object.keys(colMembers);
+                    for (let i = 0; i < levelNameKeys.length; i++) {
+                        let j = levelNameKeys[i];
+                        if (i === 0) {
+                            levelName = colMembers[j];
+                        }
+                        else {
+                            levelName = levelName + '.' + colMembers[j];
+                        }
+                    }
                     let isNamedSet = this.namedSetsPosition['column'][memPos] ? true : false;
                     let uName = this.getUniqueName(member.querySelector('UName').textContent);
                     let depth = this.getDepth(this.tupColumnInfo[tupPos], uName, Number(memberType));
@@ -19086,7 +19126,8 @@ class OlapEngine {
                                 }
                                 else if (arrange[header[k].formattedText] && this.pivotValues[j - 1]) {
                                     let prevRowCell = this.pivotValues[j - 1][header[k].colIndex];
-                                    let prevColIndex = Object.values(arrange[header[k].formattedText])[0].colIndex;
+                                    let prevColValue = Number(Object.keys(arrange[header[k].formattedText])[0]);
+                                    let prevColIndex = ((arrange[header[k].formattedText])[prevColValue]).colIndex;
                                     let prevColRowCell = this.pivotValues[j - 1][prevColIndex];
                                     if (prevRowCell.formattedText !== prevColRowCell.formattedText) {
                                         let key = Object.keys(arrange);
@@ -21240,6 +21281,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.isMouseDown = false;
         this.isMouseUp = false;
         this.fieldsType = {};
+        this.serverCustomProperties = {};
         this.remoteData = [];
         this.defaultItems = {};
         this.isCellBoxMultiSelection = false;
@@ -21687,8 +21729,12 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 }
             }
             if (this.allowGrouping && this.dataType === 'pivot') {
-                groupItems.push(this.buildDefaultItems('Group'));
-                groupItems.push(this.buildDefaultItems('Ungroup'));
+                if (!this.getFieldByID(this.element.id + '_custom_group', this.gridSettings.contextMenuItems)) {
+                    groupItems.push(this.buildDefaultItems('Group'));
+                }
+                if (!this.getFieldByID(this.element.id + '_custom_ungroup', this.gridSettings.contextMenuItems)) {
+                    groupItems.push(this.buildDefaultItems('Ungroup'));
+                }
             }
             if (exportItems.length > 0) {
                 let exportGroupItems = this.buildDefaultItems('export');
@@ -21702,6 +21748,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
         }
+    }
+    getFieldByID(id, fields) {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('id', 'equal', id))[0];
     }
     /**
      * @hidden
@@ -22082,7 +22131,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.guid
+            hash: this.guid,
+            customArguments: this.serverCustomProperties
         };
         this.request.open("POST", this.dataSourceSettings.url, true);
         this.request.withCredentials = false;
@@ -22799,7 +22849,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         enableValueSorting: pivot.enableValueSorting,
                         isDrillThrough: (pivot.allowDrillThrough || pivot.editSettings.allowEditing),
                         localeObj: pivot.localeObj,
-                        fieldsType: pivot.fieldsType
+                        fieldsType: pivot.fieldsType,
+                        clonedReport: pivot.clonedReport
                     };
                     /* tslint:enable:align */
                     if (isBlazor() && pivot.enableVirtualization) {
@@ -24262,7 +24313,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 enableValueSorting: this.enableValueSorting,
                 isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
                 localeObj: this.localeObj,
-                fieldsType: this.fieldsType
+                fieldsType: this.fieldsType,
+                clonedReport: this.clonedReport
             };
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
@@ -28600,7 +28652,8 @@ let PivotFieldList = class PivotFieldList extends Component {
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: localeObj
+                localeObj: localeObj,
+                clonedReport: this.clonedReport
             };
         }
         return customProperties;

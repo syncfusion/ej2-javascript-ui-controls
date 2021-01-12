@@ -276,7 +276,7 @@ export class Month extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.workDays.length;
         for (let i: number = 0, length: number = (this.renderDates.length / noOfDays); i < length; i++) {
             let dates: Date[] = dateCol.splice(0, noOfDays);
-            let weekNumber: string = util.getWeekNumber(dates.slice(-1)[0]).toString();
+            let weekNumber: string = this.getWeekNumberContent(dates).toString();
             contentWrapTable.querySelector('tbody').appendChild(this.createWeekNumberElement(weekNumber));
         }
         return td;

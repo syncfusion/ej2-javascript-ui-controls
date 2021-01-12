@@ -10,6 +10,7 @@ import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
+import { getScrollBarWidth } from '../../../src/grid/base/util';
 
 Grid.Inject(Freeze, Aggregate, Edit);
 
@@ -541,6 +542,130 @@ describe('Freeze render module', () => {
        
         afterAll(() => {
             destroy(gridObj);
+        });
+    });
+    describe('EJ2-45062 => Alignment issue when we have visible false column with empty data set', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    frozenColumns: 2,
+                    columns: [
+                        {
+                            field: "FirstName", headerText: 'First Name', textAlign: 'Center',
+                            width: 150, visible: false
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 70 },
+                        {
+                            field: 'HireDate', headerText: 'Hire Date', textAlign: 'Right',
+                            width: 135, format: { skeleton: 'yMd', type: 'date' }
+                        },
+                        { field: 'ReportsTo', headerText: 'Reports To', width: 120, textAlign: 'Right' }
+                    ],
+                    height: 359
+                }, done);
+        });
+        it('Ensure empty row cell colSpan', () => {
+            expect(gridObj.getFrozenLeftContentTbody().querySelector('td').colSpan).toBe(1);
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+        });
+    });
+    describe('EJ2-45062 => column level freeze left empty row missaligment issue', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        {
+                            field: "FirstName", headerText: 'First Name', textAlign: 'Center',
+                            width: 150, visible: false, freeze: 'Left'
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 70, freeze: 'Right' },
+                        {
+                            field: 'HireDate', headerText: 'Hire Date', textAlign: 'Right',
+                            width: 135, format: { skeleton: 'yMd', type: 'date' }
+                        },
+                        { field: 'ReportsTo', headerText: 'Reports To', width: 120, textAlign: 'Right', freeze: 'Left' }
+                    ],
+                    height: 359
+                }, done);
+        });
+        it('Ensure empty row cell colSpan', () => {
+            expect(gridObj.getFrozenLeftContentTbody().querySelector('td').colSpan).toBe(1);
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+        });
+    });
+    describe('EJ2-45062 => column level freeze right empty row missaligment issue', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    columns: [
+                        {
+                            field: "FirstName", headerText: 'First Name', textAlign: 'Center',
+                            width: 150, visible: false, freeze: 'Right'
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 70, freeze: 'Right' },
+                        {
+                            field: 'HireDate', headerText: 'Hire Date', textAlign: 'Right',
+                            width: 135, format: { skeleton: 'yMd', type: 'date' }
+                        },
+                        { field: 'ReportsTo', headerText: 'Reports To', width: 120, textAlign: 'Right' }
+                    ],
+                    height: 359
+                }, done);
+        });
+        it('Ensure empty row cell colSpan', () => {
+            expect(gridObj.getFrozenRightContentTbody().querySelector('td').colSpan).toBe(1);
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-45329 => Horizontal scroll bar is not displayed while using Frozen columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    frozenColumns: 2,
+                    height: '100%',
+                    columns: [
+                        {
+                            field: "FirstName", headerText: 'First Name', textAlign: 'Center',
+                            width: 150, visible: false
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 70 },
+                        {
+                            field: 'HireDate', headerText: 'Hire Date', textAlign: 'Right',
+                            width: 135, format: { skeleton: 'yMd', type: 'date' }
+                        },
+                        { field: 'ReportsTo', headerText: 'Reports To', width: 120, textAlign: 'Right' }
+                    ],
+                }, done);
+        });
+        it('Ensure e-content element height', () => {
+            expect((gridObj.getContent().firstElementChild as HTMLElement).style.height).toBe('calc(100% - ' + getScrollBarWidth() + 'px)');
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

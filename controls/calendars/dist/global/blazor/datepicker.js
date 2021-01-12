@@ -75,6 +75,7 @@ var DatePicker = /** @class */ (function (_super) {
         _this.checkPreviousValue = null;
         _this.isAngular = false;
         _this.preventChange = false;
+        _this.isIconClicked = false;
         _this.datepickerOptions = options;
         return _this;
     }
@@ -490,6 +491,7 @@ var DatePicker = /** @class */ (function (_super) {
         sf.inputs.Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     };
     DatePicker.prototype.dateIconHandler = function (e) {
+        this.isIconClicked = true;
         if (sf.base.Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
             this.inputElement.blur();
@@ -514,6 +516,7 @@ var DatePicker = /** @class */ (function (_super) {
                 }
             }
         }
+        this.isIconClicked = false;
     };
     DatePicker.prototype.updateHtmlAttributeToWrapper = function () {
         if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
@@ -606,7 +609,7 @@ var DatePicker = /** @class */ (function (_super) {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
-        if (this.openOnFocus) {
+        if (this.openOnFocus && !this.isIconClicked) {
             this.show();
         }
     };

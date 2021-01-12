@@ -6268,6 +6268,324 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
     }, 100);
   });
 
+  it('EJ2-44443 - Image getting removed', (done) => {
+    let localElem: string = `<p id="MSWord-Content">
+<ol level="1" style="margin-bottom:0in;"><li><p><span lang="ES-CO">especificaciones.</span><span lang="ES-CO" style=""> </span></p></li></ol>
+<p class="MsoNormal" style="text-align:justify;margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span lang="ES-CO"><img width="500" height="500" src="" /><span style="">&nbsp;</span></span></p>
+<p class="MsoNormal" style="text-align:justify;margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span lang="ES-CO">&nbsp;</span></p>
+<span lang="ES-CO" style="font-size:11.0pt;line-height:107%;font-family:&quot;Calibri&quot;,sans-serif;">En el Edi</span>
+</p>`;
+    rteObj.value = '<p>25</p>';
+    rteObj.dataBind();
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
+      let expected: boolean = true;
+      let expectedElem: string = `<p id="MSWord-Content"></p><ol level="1" style="margin-bottom:0in;"><li><p><span lang="ES-CO">especificaciones.</span><span lang="ES-CO"></span></p></li></ol><p style="text-align:justify;margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span lang="ES-CO"><img width="500" height="500" src="undefined" id="msWordImg-" class="e-rte-image e-imginline"><br></span></p><p><br><span lang="ES-CO" style="font-size:11.0pt;line-height:107%;font-family:&quot;Calibri&quot;,sans-serif;">En el Edi</span></p><p>25</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it(' EJ2-44442 - Bullet list styles not applied issue ', (done) => {
+    let localElem: string = `<p id="MSWord-Content">
+    <style>
+    <!--
+     /* Font Definitions */
+     @font-face
+      {font-family:"Cambria Math";
+      panose-1:2 4 5 3 5 4 6 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:roman;
+      mso-font-pitch:variable;
+      mso-font-signature:-536869121 1107305727 33554432 0 415 0;}
+    @font-face
+      {font-family:Calibri;
+      panose-1:2 15 5 2 2 2 4 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:swiss;
+      mso-font-pitch:variable;
+      mso-font-signature:-469750017 -1073732485 9 0 511 0;}
+    @font-face
+      {font-family:"Arial Black";
+      panose-1:2 11 10 4 2 1 2 2 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:swiss;
+      mso-font-pitch:variable;
+      mso-font-signature:-1610612049 1073772795 0 0 159 0;}
+    @font-face
+      {font-family:Algerian;
+      panose-1:4 2 7 5 4 10 2 6 7 2;
+      mso-font-charset:0;
+      mso-generic-font-family:decorative;
+      mso-font-pitch:variable;
+      mso-font-signature:3 0 0 0 1 0;}
+     /* Style Definitions */
+     p.MsoNormal, li.MsoNormal, div.MsoNormal
+      {mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-parent:"";
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:8.0pt;
+      margin-left:0in;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:8.0pt;
+      margin-left:.5in;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:0in;
+      margin-left:.5in;
+      margin-bottom:.0001pt;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:0in;
+      margin-left:.5in;
+      margin-bottom:.0001pt;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:8.0pt;
+      margin-left:.5in;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    .MsoChpDefault
+      {mso-style-type:export-only;
+      mso-default-props:yes;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    .MsoPapDefault
+      {mso-style-type:export-only;
+      margin-bottom:8.0pt;
+      line-height:107%;}
+    @page WordSection1
+      {size:8.5in 11.0in;
+      margin:1.0in 1.0in 1.0in 1.0in;
+      mso-header-margin:.5in;
+      mso-footer-margin:.5in;
+      mso-paper-source:0;}
+    div.WordSection1
+      {page:WordSection1;}
+     /* List Definitions */
+     @list l0
+      {mso-list-id:872838580;
+      mso-list-type:hybrid;
+      mso-list-template-ids:-2046663708 67698703 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+    @list l0:level1
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level2
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level3
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    @list l0:level4
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level5
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level6
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    @list l0:level7
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level8
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level9
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    ol
+      {margin-bottom:0in;}
+    ul
+      {margin-bottom:0in;}
+    -->
+    </style>
+    <!--[if gte mso 10]>
+    <style>
+     /* Style Definitions */
+     table.MsoNormalTable
+      {mso-style-name:"Table Normal";
+      mso-tstyle-rowband-size:0;
+      mso-tstyle-colband-size:0;
+      mso-style-noshow:yes;
+      mso-style-priority:99;
+      mso-style-parent:"";
+      mso-padding-alt:0in 5.4pt 0in 5.4pt;
+      mso-para-margin-top:0in;
+      mso-para-margin-right:0in;
+      mso-para-margin-bottom:8.0pt;
+      mso-para-margin-left:0in;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    </style>
+    <![endif]--><!--StartFragment--><p class="MsoListParagraphCxSpFirst" style="text-indent:-.25in;mso-list:l0 level1 lfo1"><!--[if !supportLists]--><span style="font-family:&quot;Arial Black&quot;,sans-serif;mso-fareast-font-family:&quot;Arial Black&quot;;
+    mso-bidi-font-family:&quot;Arial Black&quot;"><span style="mso-list:Ignore">1.<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp; </span></span></span><!--[endif]--><span style="font-family:&quot;Arial Black&quot;,sans-serif">Sdvsdvsvsdvsvs sdvsdvss sdvdsv<o:p></o:p></span></p><p class="MsoListParagraphCxSpMiddle" style="margin-left:1.0in;mso-add-space:
+    auto;text-indent:-.25in;mso-list:l0 level2 lfo1"><!--[if !supportLists]--><span style="font-family:Algerian;mso-fareast-font-family:Algerian;mso-bidi-font-family:
+    Algerian"><span style="mso-list:Ignore">a.<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]--><span style="font-family:Algerian">Sdvsdvdsvsdvs<o:p></o:p></span></p><p class="MsoListParagraphCxSpMiddle" style="margin-left:1.5in;mso-add-space:
+    auto;text-indent:-1.5in;mso-text-indent-alt:-9.0pt;mso-list:l0 level3 lfo1"><!--[if !supportLists]--><span style="mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span>i.<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->sdvsdvsdvds<o:p></o:p></p><p class="MsoListParagraphCxSpLast" style="text-indent:-.25in;mso-list:l0 level1 lfo1"><!--[if !supportLists]--><span style="mso-bidi-font-family:Calibri;mso-bidi-theme-font:minor-latin"><span style="mso-list:Ignore">2.<span style="font:7.0pt &quot;Times New Roman&quot;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><!--[endif]-->Sdvsdvsd vsvsd sdvsv <o:p></o:p></p><!--EndFragment--></p>`;
+    rteObj.value = '<p>30</p>';
+    rteObj.dataBind();
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let pastedElem: any = (rteObj as any).inputElement.innerHTML;
+      let expected: boolean = true;
+      let expectedElem: string = `<p id="MSWord-Content"></p><ol level="1"><li><p><span style="font-family:&quot;Arial Black&quot;,sans-serif;">Sdvsdvsvsdvsvs sdvsdvss sdvdsv</span></p><ol level="2"><li><p><span style="font-family:Algerian;">Sdvsdvdsvsdvs</span></p><ol level="3"><li><p>sdvsdvsdvds</p></li></ol></li></ol></li><li><p>Sdvsdvsd vsvsd sdvsv </p></li></ol><p>30</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
   afterAll(() => {
     destroy(rteObj);
   });

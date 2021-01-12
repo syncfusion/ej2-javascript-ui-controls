@@ -281,16 +281,16 @@ export abstract class Widget implements IWidget {
             } else {
                 widget = undefined;
             }
-        } else if (widget instanceof FootNoteWidget ) {
+        } else if (widget instanceof FootNoteWidget) {
             let page: Page = widget.page;
-            while (page.allowNextPageRendering  && page.nextPage) {
+            while (page.allowNextPageRendering && page.nextPage) {
                 page = page.nextPage;
                 widget = page.footnoteWidget;
                 if (!isNullOrUndefined(widget)) {
                     break;
                 }
             }
-        }  else {
+        } else {
             if (index < widget.containerWidget.childWidgets.length - 1) {
                 widget = widget.containerWidget.childWidgets[index + 1] as Widget;
             } else {
@@ -2899,15 +2899,21 @@ export class TableCellWidget extends BlockWidget {
      */
     public getMinimumPreferredWidth(): number {
         let defaultWidth: number = 0;
-        if (this.cellFormat.preferredWidth > 0) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.cellFormat.preferredWidth > 0 && !this.ownerTable.tableFormat.allowAutoFit) || (this.cellFormat.preferredWidth > 0 &&
+            this.cellFormat.preferredWidthType !== 'Auto' && this.nextWidget && (this.nextWidget as TableCellWidget).cellFormat.preferredWidth === 0
+            && (this.nextWidget as TableCellWidget).cellFormat.cellWidth === 0)) {
             return this.cellFormat.preferredWidth;
             //if table has preferred width value and cell preferred width is auto, considered cell width.
         } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
             && this.cellFormat.cellWidth !== 0) {
             return this.cellFormat.cellWidth;
+        } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
+            && this.cellFormat.cellWidth === 0 && this.previousWidget &&
+            (this.previousWidget as TableCellWidget).cellFormat.preferredWidth > 0) {
+            return (this.previousWidget as TableCellWidget).cellFormat.preferredWidth;
         }
         defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
-
         return defaultWidth;
     }
     /**
@@ -3853,8 +3859,8 @@ export class LineWidget implements IWidget {
                         inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                         indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
                         return { 'element': inlineElement, 'index': indexInInline };
-                    }else if (offset === inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox ) {
-                        return  { 'element': this.children[i + 1], 'index': indexInInline };
+                    } else if (offset === inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
+                        return { 'element': this.children[i + 1], 'index': indexInInline };
                     } else {
                         indexInInline = (offset - count);
                     }
@@ -8020,7 +8026,7 @@ export class WTableHolder {
                 //let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 //if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
                 this.fitColumns(containerWidth, preferredTableWidth, isAuto);
-                return;
+                //return;
                 //}
                 // tslint:disable-next-line:max-line-length
                 //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;

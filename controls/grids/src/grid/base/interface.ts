@@ -718,6 +718,7 @@ export interface IRenderer {
     getFrozenRightContent?(): Element;
     getFrozenRightHeader?(): Element;
     destroyTemplate?(templateName: string[]): void;
+    emptyVcRows?(): void ;
 }
 
 /**

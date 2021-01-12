@@ -259,7 +259,7 @@
           font-size: 14px;
           padding: 5px;
 
-          @if ($schedule-skin == 'highcontrast') {
+          @if ($schedule-skin != 'bootstrap4') {
             color: $schedule-tree-content-color;
           }
 

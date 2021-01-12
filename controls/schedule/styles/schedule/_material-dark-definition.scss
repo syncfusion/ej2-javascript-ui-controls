@@ -142,7 +142,7 @@ $schedule-event-popup-fields-padding: 12px !default;
 $schedule-popup-title-color: rgba($color: $schedule-appointment-bg-color, $alpha: .3) !default;
 $schedule-popup-btn-border: none !default;
 $schedule-btn-txt-bgr-padding: 5px 12px !default;
-$schedule-icon-color: rgba($grey-black, .54) !default;
+$schedule-icon-color: $grey-white !default;
 
 $schedule-event-box-shadow-1: 0 6px 10px 0 rgba($grey-black, .14) !default;
 $schedule-event-box-shadow-2: 0 1px 18px 0 rgba($grey-black, .12) !default;
@@ -166,7 +166,7 @@ $schedule-timeline-appointment-height: 38px !default;
 $schedule-timeline-year-work-cells-height: 70px !default;
 $schedule-timeline-year-work-cells-width: 60px !default;
 
-$schedule-tree-bg-color: $content-bg-color !default;
+$schedule-tree-bg-color: $grey-dark !default;
 $schedule-popup-overlay-bg-color: #383838 !default;
 
 $schedule-val-error-color: #f44336 !default;
@@ -187,3 +187,5 @@ $schedule-bigger-resource-color-size: 16px !default;
 @mixin tbar-btn-animation-after {
   content: '';
 }
+
+$schedule-tree-content-color: #fff !default;

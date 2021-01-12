@@ -2957,6 +2957,7 @@ let DatePicker = class DatePicker extends Calendar {
         this.checkPreviousValue = null;
         this.isAngular = false;
         this.preventChange = false;
+        this.isIconClicked = false;
         this.datepickerOptions = options;
     }
     /**
@@ -3371,6 +3372,7 @@ let DatePicker = class DatePicker extends Calendar {
         Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     }
     dateIconHandler(e) {
+        this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
             this.inputElement.blur();
@@ -3395,6 +3397,7 @@ let DatePicker = class DatePicker extends Calendar {
                 }
             }
         }
+        this.isIconClicked = false;
     }
     updateHtmlAttributeToWrapper() {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -3485,7 +3488,7 @@ let DatePicker = class DatePicker extends Calendar {
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
         this.updateIconState();
-        if (this.openOnFocus) {
+        if (this.openOnFocus && !this.isIconClicked) {
             this.show();
         }
     }
@@ -11866,6 +11869,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     timeHandler(e) {
+        this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -11885,6 +11889,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 addClass([this.inputWrapper.container], [INPUTFOCUS$2]);
             }
         }
+        this.isIconClicked = false;
     }
     dateHandler(e) {
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
@@ -12038,9 +12043,6 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 this.isPreventBlur = ((document.activeElement === this.inputElement) && (Browser.isIE || Browser.info.name === 'edge')
                     && target === this.popupObject.element);
             }
-        }
-        if (this.openOnFocus) {
-            this.show();
         }
     }
     isTimePopupOpen() {

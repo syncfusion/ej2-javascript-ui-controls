@@ -644,6 +644,7 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
      */
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs): void {
         appendContent(this.virtualRenderer, this.widthService, target, newChild, e);
+        this.refreshScrollOffset();
     }
 
     /**

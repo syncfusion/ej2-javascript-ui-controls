@@ -2,6 +2,7 @@ import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
+import { createSpinner, showSpinner, hideSpinner } from '../index';
 
 /**
  * TextSearch module
@@ -132,6 +133,13 @@ export class TextSearch {
             let checkBox: CheckBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), change: this.checkBoxOnChange.bind(this) });
             checkBox.appendTo(matchCaseInput);
         }
+        let waitingPopup: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_textSearchLoadingIndicator' });
+        searchInputContainer.appendChild(waitingPopup);
+        waitingPopup.style.position = 'absolute';
+        waitingPopup.style.top = '15px';
+        waitingPopup.style.left = searchInputContainer.clientWidth - 46 + 'px';
+        createSpinner({ target: waitingPopup, cssClass: 'e-spin-center' });
+        this.setLoaderProperties(waitingPopup);
         this.showSearchBox(false);
         if (this.pdfViewer.enableRtl) {
             this.searchBox.classList.add('e-rtl');
@@ -150,6 +158,26 @@ export class TextSearch {
         this.searchBtn.addEventListener('click', this.searchClickHandler.bind(this));
         this.nextSearchBtn.addEventListener('click', this.nextButtonOnClick.bind(this));
         this.prevSearchBtn.addEventListener('click', this.prevButtonOnClick.bind(this));
+    }
+
+    private setLoaderProperties(element: HTMLElement): void {
+        let spinnerElement: HTMLElement = (element.firstChild.firstChild.firstChild as HTMLElement);
+        if (spinnerElement) {
+            spinnerElement.style.height = '18px';
+            spinnerElement.style.width = '18px';
+            spinnerElement.style.transformOrigin = '9px 9px 9px';
+        }
+    }
+
+    private showLoadingIndicator(isShow: boolean): void {
+        let waitingPopup: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textSearchLoadingIndicator');
+        if (waitingPopup) {
+            if (isShow) {
+                showSpinner(waitingPopup);
+            } else {
+                hideSpinner(waitingPopup);
+            }
+        }
     }
 
     /**
@@ -239,6 +267,7 @@ export class TextSearch {
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
             this.searchCount = 0;
             this.isTextSearchEventTriggered = false;
+            this.showLoadingIndicator(true);
             this.pdfViewer.fireTextSearchStart(inputString, this.isMatchCase);
             if (this.pdfViewer.isExtractText) {
                 if (this.isTextRetrieved) {
@@ -269,10 +298,12 @@ export class TextSearch {
                     this.searchIndex = 0;
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
                     this.initSearch(this.searchPageIndex, false);
+                    this.showLoadingIndicator(true);
                 } else {
                     this.highlightSearchedTexts(this.searchPageIndex, false);
+                    this.showLoadingIndicator(false);
                 }
-                this.highlightOthers();
+                this.highlightOthers(true);
             } else {
                 this.initiateTextSearch(this.searchInput);
             }
@@ -290,10 +321,12 @@ export class TextSearch {
             if (this.searchIndex < 0) {
                 this.searchPageIndex = ((this.searchPageIndex - 1) < 0) ? (this.pdfViewerBase.pageCount - 1) : this.searchPageIndex - 1;
                 this.initSearch(this.searchPageIndex, false);
+                this.showLoadingIndicator(true);
             } else {
                 this.highlightSearchedTexts(this.searchPageIndex, false);
+                this.showLoadingIndicator(false);
             }
-            this.highlightOthers();
+            this.highlightOthers(true);
         } else {
             this.searchIndex = this.searchIndex - 1;
             this.searchPageIndex = ((this.searchPageIndex - 1) < 0) ? (this.pdfViewerBase.pageCount - 1) : this.searchPageIndex - 1;
@@ -415,6 +448,7 @@ export class TextSearch {
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
                 }
                 if (this.searchedPages.indexOf(this.searchPageIndex) === -1 && this.searchedPages.length !== this.pdfViewerBase.pageCount) {
+                    this.showLoadingIndicator(true);
                     this.initSearch(this.searchPageIndex, false);
                 } else {
                     let searchPageIndex: number = this.getSearchPage(pageIndex);
@@ -582,6 +616,9 @@ export class TextSearch {
             count = this.addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount);
             divCount++;
         }
+        if (className === 'e-pv-search-text-highlight') {
+            this.showLoadingIndicator(false);
+        }
     }
 
     // tslint:disable-next-line
@@ -748,12 +785,15 @@ export class TextSearch {
         this.initSearch(pageNumber, true);
     }
 
-    private highlightOthers(): void {
+    private highlightOthers(isSearched?: boolean): void {
         let indexes: { [key: string]: object } = this.getIndexes();
         let lowerPageValue: number = parseFloat(indexes.lowerPageValue.toString());
         let higherPageValue: number = parseFloat(indexes.higherPageValue.toString());
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
             this.highlightOtherOccurrences(i);
+        }
+        if (isSearched) {
+            this.showLoadingIndicator(false);
         }
     }
 
@@ -1079,6 +1119,7 @@ export class TextSearch {
         if (element.classList.contains('e-pv-search-icon')) {
             this.initiateTextSearch(inputElement);
         } else if (element.classList.contains('e-pv-search-close')) {
+            this.showLoadingIndicator(false);
             (inputElement as HTMLInputElement).value = '';
             this.resetTextSearch();
             inputElement.focus();
@@ -1111,6 +1152,7 @@ export class TextSearch {
     }
 
     private onMessageBoxOpen(): void {
+        this.showLoadingIndicator(false);
         this.pdfViewerBase.getElement('_search_input').blur();
         this.isMessagePopupOpened = true;
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {

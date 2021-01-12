@@ -532,6 +532,7 @@ export class Selection implements IAction {
             if (this.isRowSelected) {
                 this.onActionComplete(args, events.rowSelected);
             }
+            this.isInteracted = false;
         });
     }
 
@@ -578,8 +579,15 @@ export class Selection implements IAction {
                     selectedMovableRow.removeAttribute('aria-selected');
                     this.addRemoveClassesForRow(selectedMovableRow, false, null, 'e-selectionbackground', 'e-active');
                 }
+                if (selectedFrozenRightRow) {
+                    this.selectedRecords.splice(this.selectedRecords.indexOf(selectedFrozenRightRow), 1);
+                    selectedFrozenRightRow.removeAttribute('aria-selected');
+                    this.addRemoveClassesForRow(selectedFrozenRightRow, false, null, 'e-selectionbackground', 'e-active');
+                }
                 this.rowDeselect(
-                    events.rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
+                    events.rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow],
+                    undefined, [selectedFrozenRightRow]
+                );
                 this.isInteracted = false;
                 this.isMultiSelection = false;
                 this.isAddRowsToSelection = false;
