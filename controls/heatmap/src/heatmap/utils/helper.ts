@@ -75,6 +75,7 @@ export function titlePositionX(width: number, leftPadding: number, rightPadding:
 
 /**
  * Internal class size for height and width
+ * @private
  */
 export class Size {
     /**
@@ -165,6 +166,7 @@ export class CurrentRect {
 
 /**
  * Class to define the details of selected cell.
+ * @private
  */
 export class SelectedCellDetails {
     public value: number | BubbleTooltipData[];
@@ -522,7 +524,12 @@ export class DrawSvgCanvas {
             delete properties.labelRotation;
             delete properties.baseline;
             delete properties.text;
-            parentElement.appendChild(this.heatMap.renderer.createText(properties, <string>text));
+            let element: HTMLElement = <HTMLElement>this.heatMap.renderer.createText(properties, <string>text);
+            element.style.fontFamily = properties['font-family'];
+            element.style.fontSize = properties['font-size'];
+            element.style.fontStyle = properties['font-style'];
+            element.style.fontWeight = properties['font-weight'];
+            parentElement.appendChild(element);
             properties.text = text;
         } else {
             this.canvasDrawText(properties, <string>text);

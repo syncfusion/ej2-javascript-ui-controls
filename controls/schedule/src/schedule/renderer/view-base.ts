@@ -246,6 +246,8 @@ export class ViewBase {
                 start = util.addDays(start, 1);
             }
         } else {
+            let dayCount: number = this.parent.currentView === 'Agenda' ? this.parent.agendaDaysCount :
+                this.parent.activeViewOptions.interval;
             let start: Date = util.resetTime(this.parent.selectedDate);
             do {
                 if (this.parent.activeViewOptions.showWeekend) {
@@ -256,7 +258,7 @@ export class ViewBase {
                     }
                 }
                 start = util.addDays(start, 1);
-            } while (this.parent.activeViewOptions.interval !== renderDates.length);
+            } while (dayCount !== renderDates.length);
         }
         if (!workDays) {
             this.renderDates = renderDates;

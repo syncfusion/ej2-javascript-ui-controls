@@ -1595,7 +1595,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public destroy(): void {
         if (this.isDestroyed || !this.isRendered) { return; }
         if (this.element.offsetParent === null) {
-            this.toolbarModule.destroy();
+            if (!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
             return;
         }
         this.notify(events.destroy, {});

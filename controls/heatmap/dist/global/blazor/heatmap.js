@@ -894,6 +894,7 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
 }
 /**
  * Internal class size for height and width
+ * @private
  */
 var Size = /** @class */ (function () {
     function Size(width, height) {
@@ -950,6 +951,7 @@ var CurrentRect = /** @class */ (function () {
 }());
 /**
  * Class to define the details of selected cell.
+ * @private
  */
 var SelectedCellDetails = /** @class */ (function () {
     function SelectedCellDetails(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {
@@ -1218,7 +1220,12 @@ var DrawSvgCanvas = /** @class */ (function () {
             delete properties.labelRotation;
             delete properties.baseline;
             delete properties.text;
-            parentElement.appendChild(this.heatMap.renderer.createText(properties, text));
+            var element = this.heatMap.renderer.createText(properties, text);
+            element.style.fontFamily = properties['font-family'];
+            element.style.fontSize = properties['font-size'];
+            element.style.fontStyle = properties['font-style'];
+            element.style.fontWeight = properties['font-weight'];
+            parentElement.appendChild(element);
             properties.text = text;
         }
         else {
@@ -3917,6 +3924,7 @@ var Tooltip$1 = /** @class */ (function () {
      */
     Tooltip$$1.prototype.createTooltip = function (currentRect, x, y, tempTooltipText) {
         var offset = null;
+        var element = sf.base.select('#' + this.heatMap.element.id + 'Celltooltipcontainer');
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
             offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
@@ -3954,7 +3962,7 @@ var Tooltip$1 = /** @class */ (function () {
                 height: this.heatMap.initialClipRect.height + this.heatMap.initialClipRect.y,
                 width: this.heatMap.initialClipRect.width, x: this.heatMap.initialClipRect.x
             },
-        }, '#' + this.heatMap.element.id + 'Celltooltipcontainer');
+        }, element);
     };
     /**
      * To create div container for tooltip.

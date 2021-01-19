@@ -1760,7 +1760,11 @@ export class StickyNotesAnnotation {
                 }
             }
             if (!isLocked) {
-                event.currentTarget.ej2_instances[0].enableEditMode = true;
+                if (this.pdfViewer.selectedItems.annotations[0].isReadonly) {
+                    event.currentTarget.ej2_instances[0].enableEditMode = false;
+                } else {
+                    event.currentTarget.ej2_instances[0].enableEditMode = true;
+                }
             }
         } else {
             event.currentTarget.ej2_instances[0].enableEditMode = true;

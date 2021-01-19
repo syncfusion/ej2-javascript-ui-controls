@@ -174,59 +174,63 @@ export class RangeSlider {
      * @param end 
      */
     public setSlider(start: number, end: number, trigger: boolean, showTooltip: boolean): void {
-        let range: RangeNavigator = this.control;
-        let padding: number = range.bounds.x;
-        let axisRange: VisibleRangeModel = range.chartSeries.xAxis.actualRange;
-        let isLeightWeight: boolean = range.series.length === 0;
-        if (!(end >= start)) {
-            start = [end, end = start][0];
-        }
-        start = end >= start ? start : [end, end = start][0];
-        start = Math.max(start, axisRange.min);
-        end = Math.min(end, axisRange.max);
-        this.startX = padding + getXLocation(start, axisRange, range.bounds.width, range.enableRtl);
-        this.endX = padding + getXLocation(end, axisRange, range.bounds.width, range.enableRtl);
-        let selectedX: number = range.enableRtl ? this.endX : this.startX;
-        let rightPadding: number = range.enableRtl ? this.startX : this.endX;
-        this.sliderWidth = Math.abs(this.endX - this.startX);
-        this.selectedElement.setAttribute('x', (selectedX) + '');
-        this.selectedElement.setAttribute('width', this.sliderWidth + '');
-        this.leftUnSelectedElement.setAttribute('width', (selectedX - padding) + '');
-        this.rightUnSelectedElement.setAttribute('x', rightPadding + '');
-        this.rightUnSelectedElement.setAttribute('width', (range.bounds.width - (rightPadding - padding)) + '');
-        this.leftSlider.setAttribute('transform', 'translate(' + (this.startX - this.thumpPadding) + ', 0)');
-        this.rightSlider.setAttribute('transform', 'translate(' + (this.endX - this.thumpPadding) + ', 0)');
-        let left: number = this.control.svgObject.getBoundingClientRect().left -
-            this.control.element.getBoundingClientRect().left;
-        let leftX: number = this.control.enableRtl ? this.endX : this.startX;
-        let rightX: number = this.control.enableRtl ? this.startX : this.endX;
-        this.leftRect = {
-            x: isLeightWeight ? left + padding : padding,
-            y: isLeightWeight ? 0 : range.bounds.y,
-            width: isLeightWeight ? leftX - padding : leftX,
-            height: isLeightWeight ? this.thumpY : range.bounds.height
-        };
-        this.rightRect = {
-            x: isLeightWeight ? left + rightX : rightX,
-            y: isLeightWeight ? 0 : range.bounds.y,
-            width: (range.bounds.width - (rightPadding - padding)),
-            height: isLeightWeight ? this.thumpY : range.bounds.height
-        };
-        this.midRect = {
-            x: isLeightWeight ? leftX + left : 0,
-            y: isLeightWeight ? 0 : range.bounds.y,
-            width: isLeightWeight ? Math.abs(this.endX - this.startX) : rightX,
-            height: isLeightWeight ? this.thumpY : range.bounds.height
-        };
-        this.currentStart = start;
-        this.currentEnd = end;
-        if (showTooltip) {
-            this.control.rangeTooltipModule.renderLeftTooltip(this);
-            this.control.rangeTooltipModule.renderRightTooltip(this);
-        }
-        if (trigger) {
-            this.triggerEvent(axisRange);
-        }
+            let range: RangeNavigator = this.control;
+            let padding: number = range.bounds.x;
+            let axisRange: VisibleRangeModel = range.chartSeries.xAxis.actualRange;
+            let isLeightWeight: boolean = range.series.length === 0;
+            if (isNaN(start) && isNaN(end)) {
+                start = 0;
+                end = range.bounds.width;
+            }
+            if (!(end >= start)) {
+                start = [end, end = start][0];
+            }
+            start = end >= start ? start : [end, end = start][0];
+            start = Math.max(start, axisRange.min);
+            end = Math.min(end, axisRange.max);
+            this.startX = padding + getXLocation(start, axisRange, range.bounds.width, range.enableRtl);
+            this.endX = padding + getXLocation(end, axisRange, range.bounds.width, range.enableRtl);
+            let selectedX: number = range.enableRtl ? this.endX : this.startX;
+            let rightPadding: number = range.enableRtl ? this.startX : this.endX;
+            this.sliderWidth = Math.abs(this.endX - this.startX);
+            this.selectedElement.setAttribute('x', (selectedX) + '');
+            this.selectedElement.setAttribute('width', this.sliderWidth + '');
+            this.leftUnSelectedElement.setAttribute('width', (selectedX - padding) + '');
+            this.rightUnSelectedElement.setAttribute('x', rightPadding + '');
+            this.rightUnSelectedElement.setAttribute('width', (range.bounds.width - (rightPadding - padding)) + '');
+            this.leftSlider.setAttribute('transform', 'translate(' + (this.startX - this.thumpPadding) + ', 0)');
+            this.rightSlider.setAttribute('transform', 'translate(' + (this.endX - this.thumpPadding) + ', 0)');
+            let left: number = this.control.svgObject.getBoundingClientRect().left -
+                this.control.element.getBoundingClientRect().left;
+            let leftX: number = this.control.enableRtl ? this.endX : this.startX;
+            let rightX: number = this.control.enableRtl ? this.startX : this.endX;
+            this.leftRect = {
+                x: isLeightWeight ? left + padding : padding,
+                y: isLeightWeight ? 0 : range.bounds.y,
+                width: isLeightWeight ? leftX - padding : leftX,
+                height: isLeightWeight ? this.thumpY : range.bounds.height
+            };
+            this.rightRect = {
+                x: isLeightWeight ? left + rightX : rightX,
+                y: isLeightWeight ? 0 : range.bounds.y,
+                width: (range.bounds.width - (rightPadding - padding)),
+                height: isLeightWeight ? this.thumpY : range.bounds.height
+            };
+            this.midRect = {
+                x: isLeightWeight ? leftX + left : 0,
+                y: isLeightWeight ? 0 : range.bounds.y,
+                width: isLeightWeight ? Math.abs(this.endX - this.startX) : rightX,
+                height: isLeightWeight ? this.thumpY : range.bounds.height
+            };
+            this.currentStart = start;
+            this.currentEnd = end;
+            if (showTooltip) {
+                this.control.rangeTooltipModule.renderLeftTooltip(this);
+                this.control.rangeTooltipModule.renderRightTooltip(this);
+            }
+            if (trigger) {
+                this.triggerEvent(axisRange);
+            }
     }
     /**
      * Trigger changed event

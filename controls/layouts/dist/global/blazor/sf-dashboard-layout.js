@@ -65,7 +65,7 @@ var SfDashboardLayout = /** @class */ (function () {
             this.getProperty(property);
         }
         this.isMediaQuery = this.checkMediaQuery();
-        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, false);
+        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, false, this.contentHeight());
         this.calculateCellSizeValue();
     };
     SfDashboardLayout.prototype.initialize = function (property) {
@@ -1323,7 +1323,7 @@ var SfDashboardLayout = /** @class */ (function () {
             this.element.classList.add('e-responsive');
             this.calculateCellSizeValue();
         }
-        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, true);
+        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, true, this.contentHeight());
         this.resizeEvents();
         this.checkDragging(this.dragCollection);
     };
@@ -1784,6 +1784,21 @@ var SfDashboardLayout = /** @class */ (function () {
         this.shadowEle.style.width = ((sizeX * cellSizeZero) + ((sizeX - 1) * this.cellSpacing[0])) + 'px';
     };
     
+    SfDashboardLayout.prototype.contentHeight = function () {
+        var contentId = [];
+        for (var i = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
+            var cellElement = this.element.querySelectorAll('.e-panel')[i];
+            if (cellElement.querySelector('.e-panel-header')) {
+                var headerHeight = window.getComputedStyle(cellElement.querySelector('.e-panel-header')).height;
+                var currentPanel = {
+                    id: cellElement.id,
+                    height: headerHeight ? headerHeight : '0px'
+                };
+                contentId.push(currentPanel);
+            }
+        }
+        return contentId;
+    };
     return SfDashboardLayout;
 }());
 // tslint:disable-next-line

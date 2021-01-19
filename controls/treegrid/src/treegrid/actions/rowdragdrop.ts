@@ -832,7 +832,7 @@ export class RowDD {
         if (!droppedRecord.hasChildRecords) {
             droppedRecord.hasChildRecords = true;
             droppedRecord.hasFilteredChildRecords = true;
-            if (isNullOrUndefined(droppedRecord.childRecords)) {
+            if (isNullOrUndefined(droppedRecord.childRecords) || droppedRecord.childRecords.length === 0) {
                 droppedRecord.childRecords = [];
                 if (!tObj.parentIdMapping && isNullOrUndefined(droppedRecord.taskData[childItem])) {
                     droppedRecord.taskData[childItem] = [];
@@ -856,9 +856,6 @@ export class RowDD {
                 this.updateChildRecordLevel(draggedRecord, level);
             }
             droppedRecord.expanded = true;
-            // if (tObj.isLocalData) {
-            //     tObj.parentData.push(droppedRecord);
-            // }
         }
     }
 

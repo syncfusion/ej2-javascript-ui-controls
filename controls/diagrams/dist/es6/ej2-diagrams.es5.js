@@ -15089,6 +15089,14 @@ function deserialize(model, diagram) {
     if (dataObj.nodes) {
         for (var i = 0; i < dataObj.nodes.length; i++) {
             if (dataObj.nodes[i].shape && dataObj.nodes[i].shape.type === 'SwimLane') {
+                if (dataObj.nodes[i].wrapper == null) {
+                    {
+                        dataObj.nodes[i].wrapper = {
+                            actualSize: { width: dataObj.nodes[i].width, height: dataObj.nodes[i].height },
+                            offsetX: dataObj.nodes[i].offsetX, offsetY: dataObj.nodes[i].offsetY
+                        };
+                    }
+                }
                 pasteSwimLane(dataObj.nodes[i], undefined, undefined, undefined, undefined, true);
             }
         }

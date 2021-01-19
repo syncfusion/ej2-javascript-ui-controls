@@ -479,6 +479,11 @@ export interface PdfAnnotationBaseModel {
      */
     isPrint?: boolean;
 
+    /**
+     * Allows to edit the free text annotation
+     */
+    isReadonly?: boolean;
+
 }
 
 /**

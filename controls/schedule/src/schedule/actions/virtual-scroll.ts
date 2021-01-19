@@ -157,12 +157,11 @@ export class VirtualScroll {
             this.parent.showSpinner();
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-            this.parent.notify(events.dataReady, {});
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
             window.clearTimeout(this.timeValue);
-            this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); }, 250);
+            this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); this.parent.notify(events.dataReady, {}); }, 250);
         }
     }
 

@@ -330,7 +330,7 @@ export class HtmlExport {
             case 'Heading 5':
                 return 'h5';
             default:
-                return 'p';
+                return 'div';
         }
     }
     //Serialize Image

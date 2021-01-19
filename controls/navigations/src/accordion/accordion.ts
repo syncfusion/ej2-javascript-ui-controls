@@ -1382,6 +1382,22 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       this.addItem(itemObj, index);
     }
   }
+  private setTemplate(template: string | HTMLElement, toElement: HTMLElement, index: number): void {
+    toElement.innerHTML = '';
+    this.templateCompile(toElement, template, index);
+    // tslint:disable-next-line:no-any
+    if ((this as any).isReact) { this.renderReactTemplates(); }
+  }
+  // tslint:disable-next-line
+  private templateCompile(ele: HTMLElement, cnt: any, index: number): void {
+    let tempEle: HTMLElement = this.createElement('div');
+    this.fetchElement(tempEle, cnt, index, false);
+    if (tempEle.childNodes.length !== 0) {
+      [].slice.call(tempEle.childNodes).forEach((childEle: HTMLElement): void => {
+        ele.appendChild(childEle);
+      });
+    }
+  }
   protected getPersistData(): string {
     let keyEntity: string[] = ['expandedIndices'];
     return this.addOnPersist(keyEntity);
@@ -1426,8 +1442,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 this.enableItem(index, !newVal);
               }
               if (property === 'content' && !isNOU(item) && item.children.length === 2) {
-                if (item.classList.contains(CLS_SLCTED)) { this.expandItem(false, index); }
-                detach(item.querySelector('.' + CLS_CONTENT));
+                if (typeof newVal === 'function') {
+                  let activeContent: HTEle = item.querySelector('.' + CLS_CTENT);
+                  activeContent.innerHTML = '';
+                  this.setTemplate(newVal, activeContent, index);
+                } else {
+                  if (item.classList.contains(CLS_SLCTED)) { this.expandItem(false, index); }
+                  detach(item.querySelector('.' + CLS_CONTENT));
+                }
               }
             }
           } else {

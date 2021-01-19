@@ -1618,17 +1618,14 @@ var Selection = /** @class */ (function () {
             }
             this.getSelectedCellsPos();
             var cellPos = JSON.stringify(this.savedSelectedCellsPos);
-            if (this.parent.gridSettings.selectionSettings.mode === 'Both' ? !targetElement.classList.contains(ROW_CELL_CLASS) : this.parent.gridSettings.selectionSettings.mode !== 'Row') {
-                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
+            if (this.parent.gridSettings.selectionSettings.mode === 'Both' ? !targetElement.classList.contains(ROW_CELL_CLASS) : this.parent.gridSettings.selectionSettings.mode === 'Cell' ?
+                targetElement.classList.contains(COLUMNSHEADER) : this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e, JSON.stringify(window.sfBlazor.getDomObject('cellElement', targetElement)));
                 this.parent.dotNetRef.invokeMethodAsync('SelectHandler', colIndex, rowIndex, cellPos);
                 this.savedSelectedCellsPos = [];
             }
-            if (this.parent.gridSettings.selectionSettings.mode === 'Cell' ? !targetElement.classList.contains(ROW_CELL_CLASS) : this.parent.gridSettings.selectionSettings.mode !== 'Row') {
-                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
-                this.parent.dotNetRef.invokeMethodAsync('SelectHandler', colIndex, rowIndex, cellPos);
-            }
             if (!this.parent.gridSettings.allowSelection && !(target.classList.contains(EXPAND_ICON) || target.classList.contains(COLLAPSE_ICON))) {
-                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
+                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e, JSON.stringify(window.sfBlazor.getDomObject('cellElement', targetElement)));
             }
         }
     };
@@ -2232,12 +2229,12 @@ var SfPivotView = /** @class */ (function () {
         }
     };
     /* tslint:disable */
-    SfPivotView.prototype.selectedCell = function (colIndex, rowIndex, isHeader, headerCount) {
+    SfPivotView.prototype.selectedCell = function (colIndex, rowIndex, isHeader) {
         if (isHeader) {
-            return this.getSelectedCellDom(colIndex === 0 ? document.querySelector('.' + FROZENHEADER_DIV).querySelectorAll('.' + COLUMN_HEADER)[rowIndex].cells[0] : document.querySelector('.' + MOVABLEHEADER_DIV).querySelectorAll('.' + COLUMN_HEADER)[rowIndex].cells[colIndex - 1]);
+            return this.getSelectedCellDom(this.element.querySelector('.' + (colIndex === 0 ? FROZENHEADER_DIV : MOVABLEHEADER_DIV) + ' th[index=' + '\"' + rowIndex + '\"' + '][aria-colindex=' + '\"' + colIndex + '\"' + ']'));
         }
         else {
-            return this.getSelectedCellDom(colIndex === 0 ? document.querySelector('.' + FROZENCONTENT_DIV).querySelectorAll('.' + ROW)[rowIndex].cells[0] : document.querySelector('.' + MOVABLECONTENT_DIV).querySelectorAll('.' + ROW)[rowIndex - (headerCount + 1)].cells[colIndex - 1]);
+            return this.getSelectedCellDom(this.element.querySelector('.' + (colIndex === 0 ? FROZENCONTENT_DIV : MOVABLECONTENT_DIV) + ' td[index=' + '\"' + rowIndex + '\"' + '][aria-colindex=' + '\"' + colIndex + '\"' + ']'));
         }
     };
     SfPivotView.prototype.hyperlinkCellclick = function (hyperargs, xpath) {
@@ -2344,7 +2341,7 @@ var SfPivotView = /** @class */ (function () {
                 var colIndex = Number(element.getAttribute('aria-colindex'));
                 var rowIndex = Number(element.getAttribute('index'));
                 if (!(target.classList.contains('e-expand') || target.classList.contains('e-collapse')))
-                    this.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
+                    this.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e, JSON.stringify(window.sfBlazor.getDomObject('cellElement', element)));
             }
         }
     };
@@ -2865,9 +2862,9 @@ var PivotView = {
             element.blazor__instance.commonActionModule.validateInputs(filterInfo);
         }
     },
-    selectedCell: function (element, colIndex, rowIndex, isHeader, headerCount) {
+    selectedCell: function (element, colIndex, rowIndex, isHeader) {
         if (element && element.blazor__instance) {
-            return element.blazor__instance.selectedCell(colIndex, rowIndex, isHeader, headerCount);
+            return element.blazor__instance.selectedCell(colIndex, rowIndex, isHeader);
         }
         return undefined;
     },

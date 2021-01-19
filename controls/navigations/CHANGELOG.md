@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#307712` - The issue in getting the invalid `isChecked` attribute value in the `getTreeData` method for the dynamically added nodes has been resolved.
+
 ## 18.4.34 (2021-01-12)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#309133` - Accordion item is automatically closed when the onChange is raised in input element has been fixed.
 
 ### Tab
 

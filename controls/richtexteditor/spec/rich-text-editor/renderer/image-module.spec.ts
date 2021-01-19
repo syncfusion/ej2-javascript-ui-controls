@@ -3219,4 +3219,58 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.element.getElementsByTagName('img').length).toBe(0);
         });
     });
+    describe('BLAZ-9502 - Image outline style is not removed properly, while focus other content or image', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image'],
+                },
+                value: '<p>Sample Text</p> <img alt="Logo" src="https://blazor.syncfusion.com/demos/images/rich-text-editor/rte-image-feather.png" style="width: 300px" /> <img alt="Logo" src="https://blazor.syncfusion.com/demos/images/toast/map.png" style="width: 300px" />'
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('first image click with focus testing', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+                done();
+            }, 500);
+        });
+        it('second image click with focus testing', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
+                expect((rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+                done();
+            }, 500);
+        });
+        it('first image click after p click with focus testing', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+                dispatchEvent(rteObj.element.querySelector('.e-content p') as HTMLElement, 'mousedown');
+                setTimeout(() => {
+                    expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('second image click after p click with focus testing', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+                dispatchEvent(rteObj.element.querySelector('.e-content p') as HTMLElement, 'mousedown');
+                setTimeout(() => {
+                    expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
+                    expect((rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
+                    done();
+                }, 500);
+            }, 500);
+        });
+    });
 });

@@ -1378,8 +1378,32 @@ export class Renderer {
         lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth()); //Renders the cell left border.
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
-        // tslint:disable-next-line:max-line-length
-        this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+        // tslint:disable-next-line:max-line-length 
+        if (tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
+            this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
+        } else {
+            for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {
+                // tslint:disable-next-line:max-line-length 
+                let cell: TableCellWidget = (tableCell.ownerTable.childWidgets[i] as TableRowWidget).childWidgets[tableCell.columnIndex - 1] as TableCellWidget;
+                if (cell && cell.columnIndex === tableCell.columnIndex - 1) {
+                    let borderColor: string = cell.cellFormat.borders.right.color;
+                    if (cell.y + cell.height < tableCell.y) {
+                        continue;
+                    } else if (cell.y < tableCell.y && cell.y + cell.height > tableCell.y) {
+                        // tslint:disable-next-line:max-line-length 
+                        this.renderSingleBorder(borderColor, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
+                    } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + cell.height)) {
+                        // tslint:disable-next-line:max-line-length 
+                        this.renderSingleBorder(borderColor, tableCell.x - tableCell.margin.left - lineWidth, cell.y - cell.margin.top, tableCell.x - tableCell.margin.left - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
+                    } else if (cell. y < tableCell.y + cell.height && cell.y + cell.height < tableCell.y + tableCell.height) {
+                        // tslint:disable-next-line:max-line-length 
+                        this.renderSingleBorder(borderColor, cell.x - cell.margin.left - lineWidth, cell.y - cell.margin.top, cell.x - cell.margin.left - lineWidth, cell.y + cellWidget.height + cellBottomMargin, lineWidth);
+                    } else if (cell.y > tableCell.x + tableCell.height) {
+                        break;
+                    }
+                }
+            }
+        }
         // }
         if (tableCell.updatedTopBorders && tableCell.updatedTopBorders.length > 1) {
             let cellX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;

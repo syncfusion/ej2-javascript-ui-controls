@@ -4,7 +4,7 @@ import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
 import * as events from '../base/constant';
 import { freezeTable } from '../base/enum';
-import { getScrollBarWidth, parentsUntil, gridActionHandler } from '../base/util';
+import { getScrollBarWidth, parentsUntil, gridActionHandler, Global } from '../base/util';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -316,12 +316,12 @@ export class Resize implements IAction {
     }
 
     private wireEvents(): void {
-        EventHandler.add(this.parent.getHeaderContent(), Browser.touchStartEvent, this.resizeStart, this);
+        EventHandler.add(this.parent.getHeaderContent(), Browser.touchStartEvent, this.touchResizeStart, this);
         EventHandler.add(this.parent.getHeaderContent(), events.dblclick, this.callAutoFit, this);
     }
 
     private unwireEvents(): void {
-        EventHandler.remove(this.parent.getHeaderContent(), Browser.touchStartEvent, this.resizeStart);
+        EventHandler.remove(this.parent.getHeaderContent(), Browser.touchStartEvent, this.touchResizeStart);
         EventHandler.remove(this.parent.getHeaderContent(), events.dblclick, this.callAutoFit);
     }
 
@@ -347,6 +347,21 @@ export class Resize implements IAction {
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
             let header: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
             header.classList.add('e-resized');
+        }
+    }
+
+    private touchResizeStart(e: PointerEvent | TouchEvent): void {
+        if (!Global.timer) {
+            Global.timer = (setTimeout(
+                () => {
+                    Global.timer = null;
+                },
+                300) as Object);
+            return this.resizeStart(e);
+        } else {
+            clearTimeout(Global.timer as number);
+            Global.timer = null;
+            this.callAutoFit(e);
         }
     }
 

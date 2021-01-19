@@ -4,8 +4,8 @@ import { Spreadsheet } from '../base/index';
 import { remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth } from '../../workbook/base/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation } from '../../workbook/common/index';
-import { dataRefresh, RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound } from '../common/index';
-import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit } from '../common/index';
+import { dataRefresh, RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, isReact } from '../common/index';
+import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit, renderReactTemplates } from '../common/index';
 
 /**
  * Render module is used to render the spreadsheet
@@ -138,6 +138,9 @@ export class Render {
                     sheetModule.updateColContent({
                         cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst });
                     break;
+            }
+            if (this.parent[isReact]) {
+                this.parent[renderReactTemplates]();
             }
         });
         this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh });

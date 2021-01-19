@@ -8,7 +8,7 @@ import { hideShow, performUndoRedo, overlay, DialogBeforeOpenEventArgs, createIm
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
-import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';
+import { defaultLocale, locale, setAriaOptions, setResize, initiateFilterUI, clearFilter, clearTemplate, isReact } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
@@ -1472,6 +1472,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns void
      */
     public refresh(isNew?: boolean): void {
+        if (this[isReact]) {
+            this[clearTemplate]();
+        }
         (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
     }
 
@@ -1814,6 +1817,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
      */
     public destroy(): void {
+        if (this[isReact]) {
+            this[clearTemplate]();
+        }
         this.unwireEvents();
         this.notify(spreadsheetDestroyed, null);
         super.destroy();

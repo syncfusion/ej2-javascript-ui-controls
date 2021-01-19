@@ -6545,6 +6545,24 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             this.addItem(itemObj, index);
         }
     };
+    Accordion.prototype.setTemplate = function (template, toElement, index) {
+        toElement.innerHTML = '';
+        this.templateCompile(toElement, template, index);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    };
+    // tslint:disable-next-line
+    Accordion.prototype.templateCompile = function (ele, cnt, index) {
+        var tempEle = this.createElement('div');
+        this.fetchElement(tempEle, cnt, index, false);
+        if (tempEle.childNodes.length !== 0) {
+            [].slice.call(tempEle.childNodes).forEach(function (childEle) {
+                ele.appendChild(childEle);
+            });
+        }
+    };
     Accordion.prototype.getPersistData = function () {
         var keyEntity = ['expandedIndices'];
         return this.addOnPersist(keyEntity);
@@ -6590,10 +6608,17 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                                 this.enableItem(index, !newVal);
                             }
                             if (property === 'content' && !isNullOrUndefined(item) && item.children.length === 2) {
-                                if (item.classList.contains(CLS_SLCTED)) {
-                                    this.expandItem(false, index);
+                                if (typeof newVal === 'function') {
+                                    var activeContent = item.querySelector('.' + CLS_CTENT);
+                                    activeContent.innerHTML = '';
+                                    this.setTemplate(newVal, activeContent, index);
                                 }
-                                detach(item.querySelector('.' + CLS_CONTENT));
+                                else {
+                                    if (item.classList.contains(CLS_SLCTED)) {
+                                        this.expandItem(false, index);
+                                    }
+                                    detach(item.querySelector('.' + CLS_CONTENT));
+                                }
                             }
                         }
                     }
@@ -13700,6 +13725,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
+        this.updateCheckedStateFromDS();
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
         }

@@ -3027,4 +3027,45 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
         });
         
     });
+
+    describe('EJ2-45232 - Delete issue with grouping', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['EmployeeID'] },
+                    pageSettings: { pageSize: 2 },
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'EmployeeID' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string', editType: 'dropdownedit' }
+                    ]
+                }, done);
+        });
+
+        it('Delete With Grouping', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    expect(gridObj.pageSettings.currentPage).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            gridObj.editModule.deleteRecord();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+
+    });
 });

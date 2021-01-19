@@ -1027,11 +1027,26 @@ class HeaderRenderer {
             depth: calendarView,
             start: calendarView,
             calendarMode: this.parent.calendarMode,
-            change: this.calendarChange.bind(this)
+            change: this.calendarChange.bind(this),
+            navigated: this.updateTodayDate.bind(this)
         });
         this.headerCalendar.isStringTemplate = true;
         this.headerCalendar.appendTo(headerCalendarEle);
+        this.updateTodayDate();
         this.headerPopup.hide();
+    }
+    updateTodayDate() {
+        if (this.parent.element.querySelector('.e-cell.e-today')
+            // tslint:disable-next-line:no-any
+            && (this.headerCalendar.todayDate.getDate() !== this.parent.activeCellsData.startTime.getDate())) {
+            let selectAppointments = [].slice.call(this.parent.element.querySelectorAll('.e-cell'));
+            selectAppointments = selectAppointments.filter((element) => {
+                return (!element.classList.contains('e-other-month'));
+            });
+            let todayEle = this.parent.element.querySelector('.e-cell.e-today');
+            todayEle.classList.remove('e-today');
+            addClass([selectAppointments[this.parent.activeCellsData.startTime.getDate() - 1]], 'e-today');
+        }
     }
     calendarChange(args) {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
@@ -1155,7 +1170,8 @@ class HeaderRenderer {
         }
     }
     previousNextIconHandler() {
-        let dates = this.parent.getCurrentViewDates();
+        let dates = (this.parent.currentView === 'Agenda' ?
+            [this.parent.getCurrentViewDates()[0]] : this.parent.getCurrentViewDates());
         let prevNavEle = this.toolbarObj.element.querySelector('.' + PREVIOUS_DATE_CLASS);
         let nextNavEle = this.toolbarObj.element.querySelector('.' + NEXT_DATE_CLASS);
         let firstDate = new Date(dates[0].getTime());
@@ -1438,6 +1454,7 @@ class ScheduleTouch {
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
                 }
+                this.parent.renderTemplates();
                 this.parent.renderModule.refreshDataManager();
             }
         });
@@ -5995,6 +6012,13 @@ class MonthEvent extends EventBase {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
+        if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight) {
+            let totalCells = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
+            let height = this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
+            totalCells.forEach((cell) => {
+                setStyleAttribute(cell, { 'height': height + 'px' });
+            });
+        }
         let cellDetail = this.workCells.slice(-1)[0].getBoundingClientRect();
         this.cellWidth = cellDetail.width;
         this.cellHeight = cellDetail.height;
@@ -6586,7 +6610,7 @@ class TimelineEvent extends MonthEvent {
         let overlapCount = this.getIndex(startTime);
         event.Index = overlapCount;
         let elem = this.element.querySelector('.' + APPOINTMENT_CLASS);
-        let eleHeight = (elem) ? elem.offsetHeight : 0;
+        let eleHeight = (elem) ? elem.getBoundingClientRect().height : 0;
         let appHeight = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
         let diffInDays = eventData.count;
         let eventObj = extend({}, event, null, true);
@@ -6628,7 +6652,7 @@ class TimelineEvent extends MonthEvent {
                     this.updateCellHeight(firstChild, height);
                 }
                 if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
-                    && appointmentElement.offsetWidth < this.cellWidth) {
+                    && appWidth < this.cellWidth) {
                     let resizeHandlers = [].slice.call(appointmentElement.querySelectorAll('.' + EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach((resizeHandler) => {
                         resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';
@@ -11012,6 +11036,9 @@ class EventWindow {
         if (!isNullOrUndefined(eventId)) {
             let eveId = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData = this.parent.eventsData.filter((data) => data[this.fields.id] === eveId)[0];
+            if (isNullOrUndefined(editedData)) {
+                editedData = this.parent.blockData.filter((data) => data[this.fields.id] === eveId)[0];
+            }
             eventObj = extend({}, editedData, eventObj);
             if (eventObj[this.fields.isReadonly]) {
                 return false;
@@ -11688,12 +11715,11 @@ class VirtualScroll {
             this.parent.showSpinner();
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-            this.parent.notify(dataReady, {});
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
             window.clearTimeout(this.timeValue);
-            this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); }, 250);
+            this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); this.parent.notify(dataReady, {}); }, 250);
         }
     }
     upScroll(conWrap, firstTDIndex) {
@@ -16970,6 +16996,9 @@ class YearEvent extends TimelineEvent {
             let monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
             let dayIndex = monthStart.getDay();
             let isSpannedCollection = [];
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                this.renderedEvents = [];
+            }
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue;
                 let rightValue;
@@ -16999,7 +17028,7 @@ class YearEvent extends TimelineEvent {
                 for (let index = 0, count = dayEvents.length; index < count; index++) {
                     let eventData = extend({}, dayEvents[index], null, true);
                     this.updateSpannedEvents(eventData, dayStart, dayEnd);
-                    let overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+                    let overlapIndex = this.getIndex(dayStart);
                     eventData.Index = overlapIndex;
                     let availedHeight = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -17161,6 +17190,11 @@ class YearEvent extends TimelineEvent {
                     this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
                 else if (!eventObj.isSpanned.isRight) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
+                else if ((eventObj.isSpanned.isRight
+                    || eventObj.isSpanned.isLeft)
+                    && this.parent.activeViewOptions.orientation === 'Horizontal') {
                     this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
             }
@@ -18468,6 +18502,8 @@ class ViewBase {
             }
         }
         else {
+            let dayCount = this.parent.currentView === 'Agenda' ? this.parent.agendaDaysCount :
+                this.parent.activeViewOptions.interval;
             let start = resetTime(this.parent.selectedDate);
             do {
                 if (this.parent.activeViewOptions.showWeekend) {
@@ -18479,7 +18515,7 @@ class ViewBase {
                     }
                 }
                 start = addDays(start, 1);
-            } while (this.parent.activeViewOptions.interval !== renderDates.length);
+            } while (dayCount !== renderDates.length);
         }
         if (!workDays) {
             this.renderDates = renderDates;

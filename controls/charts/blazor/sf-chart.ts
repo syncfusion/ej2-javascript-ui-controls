@@ -31,10 +31,8 @@ class SfChart {
     public chartMouseWheelRef: any = null;
     public domMouseMoveRef: any = null;
     public domMouseUpRef: any = null;
-    public resizeBound: any = [];
     public longPressBound: any = null;
     public touchObject: any = null;
-    public resizeTo: object = {};
     // tslint:disable-next-line:max-line-length
     constructor(id: string, element: BlazorChartElement, dotnetRef: BlazorDotnetObject, isZooming: boolean = false, isScrollbar: boolean = false) {
         this.id = id;
@@ -79,7 +77,7 @@ class SfChart {
             window.removeEventListener('mouseup', this.domMouseUpRef, false);
         }
         let resize: string = Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.remove(window as any, resize, this.resizeBound[id]);
+        EventHandler.remove(window as any, resize, Chart.resizeBound);
         if (this.touchObject) {
             this.touchObject.destroy();
             this.touchObject = null;
@@ -129,9 +127,9 @@ class SfChart {
               }, this.eventInterval));
             window.addEventListener('mouseup', this.domMouseUpRef, false);
         }
-        this.resizeBound[id] = this.chartResize.bind(this, dotnetref, id);
+        Chart.resizeBound = Chart.chartResize.bind(this,Chart.dotnetrefCollection);
         let resize: string = Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.add(window as any, resize, this.resizeBound[id]);
+        EventHandler.add(window as any, resize, Chart.resizeBound);
 
         this.longPressBound = this.longPress.bind(this, dotnetref, id);
         this.touchObject = new Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
@@ -255,21 +253,6 @@ class SfChart {
         dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e, id));
         return false;
     }
-    private chartResize(dotnetref: BlazorDotnetObject, id: string, e: Event): boolean {
-        if (this.resizeTo[id]) {
-            clearTimeout(this.resizeTo[id]);
-        }
-        this.resizeTo[id] = setTimeout(() => {
-            let count: number = Chart.dotnetrefCollection.length;
-            let tempDotnetref: BlazorDotnetObject;
-            for (let i: number = 0; i < count; i++) {
-                tempDotnetref = Chart.dotnetrefCollection[i].dotnetref;
-                tempDotnetref.invokeMethodAsync('RemoveElements');
-            }
-            dotnetref.invokeMethodAsync('OnChartResize', e);
-        }, 500);
-        return false;
-    }
     private longPress(dotnetref: BlazorDotnetObject, id: string, e: TapEventArgs): boolean {
         this.dotnetref = dotnetref;
         let clientX: number = e && e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0].clientX : 0;
@@ -366,6 +349,9 @@ interface IChartOptions {
     scrollMouseMove: Function;
     scrollMouseUp: Function;
     scrollMouseWheel: Function;
+    chartResize: Function;
+    resizeBound: any;
+    resize: any;
 }
 let Chart: IChartOptions = {
     initialize(element: BlazorChartElement, dotnetRef: BlazorDotnetObject, isZooming: boolean, isScrollbar: boolean): void {
@@ -1112,6 +1098,27 @@ let Chart: IChartOptions = {
             };
         }
         return null;
+    },
+    resizeBound : {},
+    resize: {},
+    chartResize(dotnetrefCollection: {id: string, dotnetref: BlazorDotnetObject}[], e: Event): boolean {
+        if (this.resize) {
+            clearTimeout(this.resize);
+        }
+        this.resize = setTimeout(() => {
+            let count: number = dotnetrefCollection.length;
+            let tempDotnetref: BlazorDotnetObject;
+            for (let i: number = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('RemoveElements');
+            }
+            for (let i: number = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('OnChartResize', e);
+            }
+            clearTimeout(this.resize);
+        }, 500);
+        return false;
     }
 };
 export default Chart;

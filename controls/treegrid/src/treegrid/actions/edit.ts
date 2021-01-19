@@ -171,7 +171,7 @@ export class Edit {
       }
       let column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
       if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-        column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+        this.parent.editSettings.allowEditing && column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
           target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
         this.isOnBatch = true;
         this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
@@ -656,8 +656,6 @@ export class Edit {
           let key: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
           let position: string = null;
           value.taskData = isNullOrUndefined(value.taskData) ? extend({}, args.data) : value.taskData;
-          // let currentData: ITreeData[] = this.batchRecords.length ? this.batchRecords :
-          //            <ITreeData[]>this.parent.grid.getCurrentViewRecords();
           let currentData: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
           let index: number =  this.addRowIndex;
           value.uniqueID = getUid(this.parent.element.id + '_data_');
@@ -695,7 +693,10 @@ export class Edit {
                     delete value.parentItem.childRecords; delete value.parentItem[this.parent.childMapping];
                   }
                   let childRecordCount1: number = findChildrenRecords(currentData[this.addRowIndex]).length;
-                  let currentDataIndex1: number = currentData[this.addRowIndex].index; value.level = level + 1;
+                  let currentDataIndex1: number = currentData[this.addRowIndex].index;
+                  if (this.parent.grid.selectedRowIndex >= 0) {
+                    value.level = level + 1;
+                  }
                   index = (childRecordCount1 > 0) ? ( currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                   if (this.isSelfReference) {
                       value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = idMapping;
@@ -729,7 +730,6 @@ export class Edit {
           if (isNullOrUndefined(value.level)) {
             value.level = level;
           }
-          // this.addedIndex = args.index;
           value.hasChildRecords = false; value.childRecords = []; value.index = 0;
       }
       if (args.action === 'add') {

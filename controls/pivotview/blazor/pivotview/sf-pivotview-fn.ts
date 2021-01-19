@@ -182,11 +182,11 @@ export class SfPivotView {
     }
 
     /* tslint:disable */
-    public selectedCell(colIndex: number, rowIndex: number, isHeader: boolean, headerCount: number): string {
+    public selectedCell(colIndex: number, rowIndex: number, isHeader: boolean): string {
         if (isHeader) {
-            return this.getSelectedCellDom(colIndex === 0 ? (document.querySelector('.' + cls.FROZENHEADER_DIV).querySelectorAll('.' + cls.COLUMN_HEADER)[rowIndex] as HTMLTableRowElement).cells[0] : (document.querySelector('.' + cls.MOVABLEHEADER_DIV).querySelectorAll('.' + cls.COLUMN_HEADER)[rowIndex] as HTMLTableRowElement).cells[colIndex - 1]);
+            return this.getSelectedCellDom(this.element.querySelector('.' + (colIndex === 0 ? cls.FROZENHEADER_DIV : cls.MOVABLEHEADER_DIV) + ' th[index=' + '\"' + rowIndex + '\"' + '][aria-colindex=' + '\"' + colIndex + '\"' + ']'));
         } else {
-            return this.getSelectedCellDom(colIndex === 0 ? (document.querySelector('.' + cls.FROZENCONTENT_DIV).querySelectorAll('.' + cls.ROW)[rowIndex] as HTMLTableRowElement).cells[0] : (document.querySelector('.' + cls.MOVABLECONTENT_DIV).querySelectorAll('.' + cls.ROW)[rowIndex - (headerCount + 1)] as HTMLTableRowElement).cells[colIndex - 1]);
+            return this.getSelectedCellDom(this.element.querySelector('.' + (colIndex === 0 ? cls.FROZENCONTENT_DIV : cls.MOVABLECONTENT_DIV) + ' td[index=' + '\"' + rowIndex + '\"' + '][aria-colindex=' + '\"' + colIndex + '\"' + ']'));
         }
     }
 
@@ -300,7 +300,7 @@ export class SfPivotView {
                 let colIndex: number = Number(element.getAttribute('aria-colindex'));
                 let rowIndex: number = Number(element.getAttribute('index'));
                 if (!(target.classList.contains('e-expand') || target.classList.contains('e-collapse')))
-                    this.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
+                    this.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e, JSON.stringify((window as any).sfBlazor.getDomObject('cellElement', element)));
             }
         }
     }

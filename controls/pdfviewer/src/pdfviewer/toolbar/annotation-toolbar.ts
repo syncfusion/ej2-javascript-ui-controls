@@ -183,7 +183,7 @@ export class AnnotationToolbar {
         this.createSignContainer();
         this.applyAnnotationToolbarSettings();
         this.updateToolbarItems();
-        this.showAnnotationToolbar(null);
+        this.showAnnotationToolbar(null, true);
     }
     public createMobileAnnotationToolbar(isEnable: boolean, isPath?: boolean): void {
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
@@ -2134,7 +2134,7 @@ export class AnnotationToolbar {
     /**
      * @private
      */
-    public showAnnotationToolbar(element?: HTMLElement): void {
+    public showAnnotationToolbar(element?: HTMLElement, isInitialLoading?: boolean): void {
         if (!this.isToolbarHidden) {
             // tslint:disable-next-line
             let annotationModule: any = this.pdfViewer.annotationModule;
@@ -2153,6 +2153,9 @@ export class AnnotationToolbar {
                 this.deselectAllItems();
             }
             this.toolbarElement.style.display = 'none';
+            if (!isInitialLoading) {
+                this.pdfViewer.isAnnotationToolbarVisible = false;
+            }
             if (this.pdfViewerBase.isPanMode) {
                 this.primaryToolbar.updateInteractionTools(false);
             } else {
@@ -2161,6 +2164,9 @@ export class AnnotationToolbar {
         } else {
             let toolBarInitialStatus: string = this.toolbarElement.style.display;
             this.toolbarElement.style.display = 'block';
+            if (!isInitialLoading) {
+                this.pdfViewer.isAnnotationToolbarVisible = true;
+            }
             if (element) {
                 this.primaryToolbar.selectItem(element);
             } else {
@@ -2990,14 +2996,17 @@ export class AnnotationToolbar {
     public resetToolbar(): void {
         this.adjustViewer(false);
         this.updateToolbarItems();
-        if (this.pdfViewer.isAnnotationToolbarOpen && this.pdfViewer.enableAnnotationToolbar) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.pdfViewer.isAnnotationToolbarOpen || this.pdfViewer.isAnnotationToolbarVisible) && this.pdfViewer.enableAnnotationToolbar) {
             this.toolbarElement.style.display = '';
             this.isToolbarHidden = false;
             this.adjustViewer(true);
             this.enableAnnotationAddTools(false);
+            this.pdfViewer.isAnnotationToolbarVisible = true;
         } else {
             this.toolbarElement.style.display = 'none';
             this.isToolbarHidden = true;
+            this.pdfViewer.isAnnotationToolbarVisible = false;
         }
     }
 

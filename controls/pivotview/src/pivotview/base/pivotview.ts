@@ -1106,6 +1106,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * * `Min`: Allows to display the pivot table with minimum value.
      * * `Max`: Allows to display the pivot table with maximum value.
      * * `Avg`: Allows to display the pivot table values with average.
+     * * `Median`: Allows to display the pivot table values with median.
      * * `Index`: Allows to display the pivot table values with index.
      * * `PopulationStDev`: Allows to display the pivot table values with population standard deviation.
      * * `SampleStDev`: Allows to display the pivot table values with sample standard deviation.
@@ -1122,13 +1123,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * * `PercentageOfParentRowTotal`: Allows to display the pivot table values with percentage of its parent total in each row.
      * 
      * > It is applicable ony for Relational data.
-     * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index', 'PopulationVar', 'SampleVar',
+     * @default ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar',
      * 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal',
      * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
      * 'PercentageOfParentTotal']
      */
     /* tslint:disable-next-line:max-line-length */
-    @Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
+    @Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
     public aggregateTypes: AggregateTypes[];
 
     /** 
@@ -1780,6 +1781,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             DistinctCount: 'Distinct Count',
             Product: 'Product',
             Avg: 'Avg',
+            Median: 'Median',
             Min: 'Min',
             SampleVar: 'Sample Var',
             PopulationVar: 'Population Var',
@@ -2057,7 +2059,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public getAllSummaryType(): AggregateTypes[] {
-        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index',
+        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index',
             'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal',
             'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal',
             'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
@@ -3102,7 +3104,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     /* tslint:disable-next-line:no-any */
                     delete (pivot as any).bulkChanges.pivotValues;
                     pivot.allowServerDataBinding = true;
-                    pivot.enginePopulatedEventMethod('updateDataSource');
+                    if (pivot.dataSourceSettings.mode !== 'Server') {
+                        pivot.enginePopulatedEventMethod('updateDataSource');
+                    }
                 }
             } else {
                 if (pivot.dataType === 'olap') {

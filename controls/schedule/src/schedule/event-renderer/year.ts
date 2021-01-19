@@ -88,6 +88,9 @@ export class YearEvent extends TimelineEvent {
             let monthEnd: Date = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
             let dayIndex: number = monthStart.getDay();
             let isSpannedCollection: Object[] = [];
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                this.renderedEvents = [];
+            }
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue: number;
                 let rightValue: number;
@@ -116,7 +119,7 @@ export class YearEvent extends TimelineEvent {
                 for (let index: number = 0, count: number = dayEvents.length; index < count; index++) {
                     let eventData: { [key: string]: Object } = extend({}, dayEvents[index], null, true) as { [key: string]: Object };
                     this.updateSpannedEvents(eventData, dayStart, dayEnd);
-                    let overlapIndex: number = this.getIndex(eventData[this.fields.startTime] as Date);
+                    let overlapIndex: number = this.getIndex(dayStart as Date);
                     eventData.Index = overlapIndex;
                     let availedHeight: number = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP + this.moreIndicatorHeight;
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -275,6 +278,10 @@ export class YearEvent extends TimelineEvent {
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     this.renderedEvents.push(extend({}, eventObj, null, true));
                 } else if (!(eventObj.isSpanned as { [key: string]: Object }).isRight) {
+                    this.renderedEvents.push(extend({}, eventObj, null, true));
+                } else if (((eventObj.isSpanned as { [key: string]: Object }).isRight
+                    || (eventObj.isSpanned as { [key: string]: Object }).isLeft)
+                    && this.parent.activeViewOptions.orientation === 'Horizontal') {
                     this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
             }

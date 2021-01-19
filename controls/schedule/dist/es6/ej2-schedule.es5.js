@@ -1029,11 +1029,26 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             depth: calendarView,
             start: calendarView,
             calendarMode: this.parent.calendarMode,
-            change: this.calendarChange.bind(this)
+            change: this.calendarChange.bind(this),
+            navigated: this.updateTodayDate.bind(this)
         });
         this.headerCalendar.isStringTemplate = true;
         this.headerCalendar.appendTo(headerCalendarEle);
+        this.updateTodayDate();
         this.headerPopup.hide();
+    };
+    HeaderRenderer.prototype.updateTodayDate = function () {
+        if (this.parent.element.querySelector('.e-cell.e-today')
+            // tslint:disable-next-line:no-any
+            && (this.headerCalendar.todayDate.getDate() !== this.parent.activeCellsData.startTime.getDate())) {
+            var selectAppointments = [].slice.call(this.parent.element.querySelectorAll('.e-cell'));
+            selectAppointments = selectAppointments.filter(function (element) {
+                return (!element.classList.contains('e-other-month'));
+            });
+            var todayEle = this.parent.element.querySelector('.e-cell.e-today');
+            todayEle.classList.remove('e-today');
+            addClass([selectAppointments[this.parent.activeCellsData.startTime.getDate() - 1]], 'e-today');
+        }
     };
     HeaderRenderer.prototype.calendarChange = function (args) {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
@@ -1157,7 +1172,8 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
         }
     };
     HeaderRenderer.prototype.previousNextIconHandler = function () {
-        var dates = this.parent.getCurrentViewDates();
+        var dates = (this.parent.currentView === 'Agenda' ?
+            [this.parent.getCurrentViewDates()[0]] : this.parent.getCurrentViewDates());
         var prevNavEle = this.toolbarObj.element.querySelector('.' + PREVIOUS_DATE_CLASS);
         var nextNavEle = this.toolbarObj.element.querySelector('.' + NEXT_DATE_CLASS);
         var firstDate = new Date(dates[0].getTime());
@@ -1443,6 +1459,7 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
                 if (_this.parent.headerModule) {
                     _this.parent.headerModule.updateDateRange(_this.parent.activeView.getDateRangeText());
                 }
+                _this.parent.renderTemplates();
                 _this.parent.renderModule.refreshDataManager();
             }
         });
@@ -6147,6 +6164,13 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
+        if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight) {
+            var totalCells = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
+            var height_1 = this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
+            totalCells.forEach(function (cell) {
+                setStyleAttribute(cell, { 'height': height_1 + 'px' });
+            });
+        }
         var cellDetail = this.workCells.slice(-1)[0].getBoundingClientRect();
         this.cellWidth = cellDetail.width;
         this.cellHeight = cellDetail.height;
@@ -6769,7 +6793,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         var overlapCount = this.getIndex(startTime);
         event.Index = overlapCount;
         var elem = this.element.querySelector('.' + APPOINTMENT_CLASS);
-        var eleHeight = (elem) ? elem.offsetHeight : 0;
+        var eleHeight = (elem) ? elem.getBoundingClientRect().height : 0;
         var appHeight = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
         var diffInDays = eventData.count;
         var eventObj = extend({}, event, null, true);
@@ -6811,7 +6835,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
                     this.updateCellHeight(firstChild, height);
                 }
                 if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
-                    && appointmentElement_1.offsetWidth < this.cellWidth) {
+                    && appWidth < this.cellWidth) {
                     var resizeHandlers = [].slice.call(appointmentElement_1.querySelectorAll('.' + EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach(function (resizeHandler) {
                         resizeHandler.style.width = Math.ceil(appointmentElement_1.offsetWidth / resizeHandler.offsetWidth) + 'px';
@@ -11277,6 +11301,11 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             var editedData = this.parent.eventsData.filter(function (data) {
                 return data[_this.fields.id] === eveId_1;
             })[0];
+            if (isNullOrUndefined(editedData)) {
+                editedData = this.parent.blockData.filter(function (data) {
+                    return data[_this.fields.id] === eveId_1;
+                })[0];
+            }
             eventObj = extend({}, editedData, eventObj);
             if (eventObj[this.fields.isReadonly]) {
                 return false;
@@ -11972,12 +12001,11 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
             this.parent.showSpinner();
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
             this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
-            this.parent.notify(dataReady, {});
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
             window.clearTimeout(this.timeValue);
-            this.timeValue = window.setTimeout(function () { _this.parent.hideSpinner(); }, 250);
+            this.timeValue = window.setTimeout(function () { _this.parent.hideSpinner(); _this.parent.notify(dataReady, {}); }, 250);
         }
     };
     VirtualScroll.prototype.upScroll = function (conWrap, firstTDIndex) {
@@ -17617,6 +17645,9 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
             var monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
             var dayIndex = monthStart.getDay();
             var isSpannedCollection = [];
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                this.renderedEvents = [];
+            }
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 var leftValue = void 0;
                 var rightValue = void 0;
@@ -17646,7 +17677,7 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
                 var _loop_1 = function (index, count) {
                     var eventData = extend({}, dayEvents[index], null, true);
                     this_1.updateSpannedEvents(eventData, dayStart, dayEnd);
-                    var overlapIndex = this_1.getIndex(eventData[this_1.fields.startTime]);
+                    var overlapIndex = this_1.getIndex(dayStart);
                     eventData.Index = overlapIndex;
                     var availedHeight = this_1.cellHeader + (this_1.eventHeight * (index + 1)) + EVENT_GAP$2 + this_1.moreIndicatorHeight;
                     if (this_1.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -17819,6 +17850,11 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
                     _this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
                 else if (!eventObj.isSpanned.isRight) {
+                    _this.renderedEvents.push(extend({}, eventObj, null, true));
+                }
+                else if ((eventObj.isSpanned.isRight
+                    || eventObj.isSpanned.isLeft)
+                    && _this.parent.activeViewOptions.orientation === 'Horizontal') {
                     _this.renderedEvents.push(extend({}, eventObj, null, true));
                 }
             }
@@ -19156,6 +19192,8 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             }
         }
         else {
+            var dayCount = this.parent.currentView === 'Agenda' ? this.parent.agendaDaysCount :
+                this.parent.activeViewOptions.interval;
             var start = resetTime(this.parent.selectedDate);
             do {
                 if (this.parent.activeViewOptions.showWeekend) {
@@ -19167,7 +19205,7 @@ var ViewBase = /** @__PURE__ @class */ (function () {
                     }
                 }
                 start = addDays(start, 1);
-            } while (this.parent.activeViewOptions.interval !== renderDates.length);
+            } while (dayCount !== renderDates.length);
         }
         if (!workDays) {
             this.renderDates = renderDates;

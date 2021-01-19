@@ -101,6 +101,7 @@ var SfUploader = /** @class */ (function () {
     };
     SfUploader.prototype.propertyChanges = function (uploadObj, newProp) {
         this.updateProperty(uploadObj);
+        this.isBlazorSaveUrl = (this.asyncSettings.saveUrl === '' || sf.base.isNullOrUndefined(this.asyncSettings.saveUrl));
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {

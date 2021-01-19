@@ -199,3 +199,125 @@ describe('Tab width calculation validation', () => {
         expect(Math.round((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as TabElementBox).width)).toBe(10);
     });
 });
+let sectionbreak: any = {
+    "sections": [
+      {
+        "blocks": [
+          {
+            "paragraphFormat": {
+              "styleName": "Normal",
+              "listFormat": {}
+            },
+            "characterFormat": {
+              "fontColor": "empty"
+            },
+            "inlines": [
+              {
+                "characterFormat": {
+                  "fontColor": "empty"
+                },
+                "text": "Page break"
+              }
+            ]
+          },
+          {
+            "paragraphFormat": {
+              "styleName": "Normal",
+              "listFormat": {}
+            },
+            "characterFormat": {
+              "fontColor": "empty"
+            },
+            "inlines": [
+              {
+                "characterFormat": {
+                  "fontColor": "empty"
+                },
+                "text": "\f"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };  
+describe('Page break and section break validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Page break and section break validation', () => {
+        editor.open(JSON.stringify(sectionbreak));
+        //if section break come before page break only one page shoul be added and one should be skipped
+        expect(editor.documentHelper.pages.length).toBe(2);
+    });
+});
+describe('Table with merged cell spilts into page validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Table with merged cell spilts into page validation', () => {
+        editor.editor.insertTable(10, 4);
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.editor.mergeCells();
+        editor.editor.onEnter();
+        editor.selection.handleShiftRightKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.selection.handleShiftDownKey();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        expect(() => { editor.editor.onEnter(); }).not.toThrowError();
+    });
+});

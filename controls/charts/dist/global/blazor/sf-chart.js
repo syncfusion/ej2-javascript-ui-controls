@@ -23,10 +23,8 @@ var SfChart = /** @class */ (function () {
         this.chartMouseWheelRef = null;
         this.domMouseMoveRef = null;
         this.domMouseUpRef = null;
-        this.resizeBound = [];
         this.longPressBound = null;
         this.touchObject = null;
-        this.resizeTo = {};
         // tslint:disable-next-line:max-line-length
         this.pinchStyle = 'opacity: 0; position: absolute; display: block; width: 100px; height: 100px; background: transparent; border: 2px solid blue;';
         this.pinchtarget = null;
@@ -72,7 +70,7 @@ var SfChart = /** @class */ (function () {
             window.removeEventListener('mouseup', this.domMouseUpRef, false);
         }
         var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        sf.base.EventHandler.remove(window, resize, this.resizeBound[id]);
+        sf.base.EventHandler.remove(window, resize, Chart.resizeBound);
         if (this.touchObject) {
             this.touchObject.destroy();
             this.touchObject = null;
@@ -122,9 +120,9 @@ var SfChart = /** @class */ (function () {
             }, this.eventInterval));
             window.addEventListener('mouseup', this.domMouseUpRef, false);
         }
-        this.resizeBound[id] = this.chartResize.bind(this, dotnetref, id);
+        Chart.resizeBound = Chart.chartResize.bind(this, Chart.dotnetrefCollection);
         var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        sf.base.EventHandler.add(window, resize, this.resizeBound[id]);
+        sf.base.EventHandler.add(window, resize, Chart.resizeBound);
         this.longPressBound = this.longPress.bind(this, dotnetref, id);
         this.touchObject = new sf.base.Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
         /*! Apply the style for chart */
@@ -243,21 +241,6 @@ var SfChart = /** @class */ (function () {
     SfChart.prototype.mouseLeave = function (dotnetref, id, e) {
         this.dotnetref = dotnetref;
         dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e, id));
-        return false;
-    };
-    SfChart.prototype.chartResize = function (dotnetref, id, e) {
-        if (this.resizeTo[id]) {
-            clearTimeout(this.resizeTo[id]);
-        }
-        this.resizeTo[id] = setTimeout(function () {
-            var count = Chart.dotnetrefCollection.length;
-            var tempDotnetref;
-            for (var i = 0; i < count; i++) {
-                tempDotnetref = Chart.dotnetrefCollection[i].dotnetref;
-                tempDotnetref.invokeMethodAsync('RemoveElements');
-            }
-            dotnetref.invokeMethodAsync('OnChartResize', e);
-        }, 500);
         return false;
     };
     SfChart.prototype.longPress = function (dotnetref, id, e) {
@@ -1047,6 +1030,28 @@ var Chart = {
             };
         }
         return null;
+    },
+    resizeBound: {},
+    resize: {},
+    chartResize: function (dotnetrefCollection, e) {
+        var _this = this;
+        if (this.resize) {
+            clearTimeout(this.resize);
+        }
+        this.resize = setTimeout(function () {
+            var count = dotnetrefCollection.length;
+            var tempDotnetref;
+            for (var i = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('RemoveElements');
+            }
+            for (var i = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('OnChartResize', e);
+            }
+            clearTimeout(_this.resize);
+        }, 500);
+        return false;
     }
 };
 

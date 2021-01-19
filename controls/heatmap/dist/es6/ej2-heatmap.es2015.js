@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, select } from '@syncfusion/ej2-base';
 import { CanvasRenderer, SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
@@ -784,6 +784,7 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
 }
 /**
  * Internal class size for height and width
+ * @private
  */
 class Size {
     constructor(width, height) {
@@ -834,6 +835,7 @@ class CurrentRect {
 }
 /**
  * Class to define the details of selected cell.
+ * @private
  */
 class SelectedCellDetails {
     constructor(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {
@@ -1081,7 +1083,12 @@ class DrawSvgCanvas {
             delete properties.labelRotation;
             delete properties.baseline;
             delete properties.text;
-            parentElement.appendChild(this.heatMap.renderer.createText(properties, text));
+            let element = this.heatMap.renderer.createText(properties, text);
+            element.style.fontFamily = properties['font-family'];
+            element.style.fontSize = properties['font-size'];
+            element.style.fontStyle = properties['font-style'];
+            element.style.fontWeight = properties['font-weight'];
+            parentElement.appendChild(element);
             properties.text = text;
         }
         else {
@@ -3712,6 +3719,7 @@ class Tooltip$1 {
      */
     createTooltip(currentRect, x, y, tempTooltipText) {
         let offset = null;
+        let element = select('#' + this.heatMap.element.id + 'Celltooltipcontainer');
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
             offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
@@ -3749,7 +3757,7 @@ class Tooltip$1 {
                 height: this.heatMap.initialClipRect.height + this.heatMap.initialClipRect.y,
                 width: this.heatMap.initialClipRect.width, x: this.heatMap.initialClipRect.x
             },
-        }, '#' + this.heatMap.element.id + 'Celltooltipcontainer');
+        }, element);
     }
     /**
      * To create div container for tooltip.

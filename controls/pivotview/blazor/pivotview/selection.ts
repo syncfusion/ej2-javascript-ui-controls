@@ -99,17 +99,14 @@ export class Selection {
             }
             this.getSelectedCellsPos();
             let cellPos: string = JSON.stringify(this.savedSelectedCellsPos);
-            if (this.parent.gridSettings.selectionSettings.mode === 'Both' ? !targetElement.classList.contains(cls.ROW_CELL_CLASS) : this.parent.gridSettings.selectionSettings.mode !== 'Row') {
-                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
+            if (this.parent.gridSettings.selectionSettings.mode === 'Both' ? !targetElement.classList.contains(cls.ROW_CELL_CLASS) : this.parent.gridSettings.selectionSettings.mode === 'Cell' ? 
+            targetElement.classList.contains(cls.COLUMNSHEADER) : this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e, JSON.stringify((window as any).sfBlazor.getDomObject('cellElement', targetElement)));
                 this.parent.dotNetRef.invokeMethodAsync('SelectHandler', colIndex, rowIndex, cellPos);
                 this.savedSelectedCellsPos = [];
             }
-            if(this.parent.gridSettings.selectionSettings.mode === 'Cell'? !targetElement.classList.contains(cls.ROW_CELL_CLASS) : this.parent.gridSettings.selectionSettings.mode !== 'Row') {
-                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
-                this.parent.dotNetRef.invokeMethodAsync('SelectHandler', colIndex, rowIndex, cellPos);
-            }
             if (!this.parent.gridSettings.allowSelection && !(target.classList.contains(cls.EXPAND_ICON) || target.classList.contains(cls.COLLAPSE_ICON) )) {
-                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e);
+                this.parent.dotNetRef.invokeMethodAsync('CellClickedHandler', rowIndex, colIndex, e, JSON.stringify((window as any).sfBlazor.getDomObject('cellElement', targetElement)));
             }
         }
     }

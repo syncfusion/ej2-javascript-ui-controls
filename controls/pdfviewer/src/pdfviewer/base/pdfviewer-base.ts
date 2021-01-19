@@ -5291,6 +5291,9 @@ public mouseDownHandler(event: MouseEvent): void {
     // tslint:disable-next-line
     public getStoredData(pageIndex: number): any {
         let zoomFactor: number = this.retrieveCurrentZoomFactor();
+        if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
+            zoomFactor = 1;
+        }
         // tslint:disable-next-line
         let storedData: any = this.getWindowSessionStorage(pageIndex, zoomFactor) ? this.getWindowSessionStorage(pageIndex, zoomFactor) : this.getPinchZoomPage(pageIndex);
         // tslint:disable-next-line

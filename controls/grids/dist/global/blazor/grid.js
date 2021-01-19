@@ -5467,7 +5467,8 @@ var Render = /** @class */ (function () {
             if (args.requestType === 'delete' && gObj.allowPaging) {
                 var dataLength = args.data.length;
                 var count = gObj.pageSettings.totalRecordsCount - dataLength;
-                if (!(gObj.currentViewData.length - dataLength) && count) {
+                var currentViewData = gObj.getCurrentViewRecords().length;
+                if (!(currentViewData - dataLength) && count && currentViewData !== dataLength) {
                     gObj.prevPageMoving = true;
                     gObj.setProperties({
                         pageSettings: {
@@ -8616,10 +8617,10 @@ var Selection = /** @class */ (function () {
                 }
             }
             if (this.selectionSettings.persistSelection && this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
-                this.isInteracted = this.checkSelectAllClicked ? true : false;
+                this.isRowClicked = this.checkSelectAllClicked ? true : false;
             }
             this.rowDeselect(rowDeselecting, rowIndex_1, data_1, row_1, foreignKeyData_1, target_1, mRow_1, function () {
-                if (_this.isCancelDeSelect && (_this.isInteracted || _this.checkSelectAllClicked)) {
+                if (_this.isCancelDeSelect && (_this.isRowClicked || _this.checkSelectAllClicked)) {
                     if (_this.parent.isPersistSelection) {
                         if (_this.getCheckAllStatus(_this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
                             for (var i = 0; i < _this.selectedRecords.length; i++) {
@@ -8702,7 +8703,8 @@ var Selection = /** @class */ (function () {
     };
     Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow, rowDeselectCallBack, frozenRightRow) {
         var _this = this;
-        if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
+        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked)) ||
+            !this.selectionSettings.persistSelection) {
             var cancl_1 = 'cancel';
             var rowDeselectObj = {
                 rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck'
@@ -8745,7 +8747,7 @@ var Selection = /** @class */ (function () {
             }
             this.parent.trigger(type, (!sf.base.isBlazor() || this.parent.isJsComponent) && this.parent.isFrozenGrid() ? __assign({}, rowDeselectObj, { mRow: mRow, frozenRightRow: frozenRightRow }) : rowDeselectObj, function (args) {
                 _this.isCancelDeSelect = args[cancl_1];
-                if (!_this.isCancelDeSelect || (!_this.isInteracted && !_this.checkSelectAllClicked)) {
+                if (!_this.isCancelDeSelect || (!_this.isRowClicked && !_this.checkSelectAllClicked)) {
                     _this.updatePersistCollection(row[0], false);
                     _this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
                 }
@@ -10687,7 +10689,8 @@ var Selection = /** @class */ (function () {
         this.preventFocus = true;
         var checkBox;
         var checkWrap = parentsUntil(target, 'e-checkbox-wrapper');
-        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ? true : false;
+        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ||
+            (this.selectionSettings.persistSelection && parentsUntil(target, 'e-row')) ? true : false;
         if (checkWrap && checkWrap.querySelectorAll('.e-checkselect,.e-checkselectall').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             chkSelect = true;
@@ -24432,9 +24435,9 @@ var Filter = /** @class */ (function () {
     // To skip the second time request to server while applying initial filtering - EJ2-44361
     Filter.prototype.skipUid = function (col) {
         var flag = true;
-        var colLen = Object.keys((col)).length;
-        for (var i = 0; i < colLen; i++) {
-            var key = Object.keys(col[i]);
+        var colLen = Object.keys((col));
+        for (var i = 0; i < colLen.length; i++) {
+            var key = Object.keys(col[colLen[i]]);
             if (key.length === 1 && key[0] === 'uid') {
                 flag = false;
             }
@@ -24466,7 +24469,7 @@ var Filter = /** @class */ (function () {
                             }
                             return;
                         }
-                        this.addFilteredClass(this.fieldName);
+                        this.addFilteredClass(args.currentFilteringColumn);
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();
@@ -25459,11 +25462,11 @@ var Resize = /** @class */ (function () {
         this.setHandlerHeight();
     };
     Resize.prototype.wireEvents = function () {
-        sf.base.EventHandler.add(this.parent.getHeaderContent(), sf.base.Browser.touchStartEvent, this.resizeStart, this);
+        sf.base.EventHandler.add(this.parent.getHeaderContent(), sf.base.Browser.touchStartEvent, this.touchResizeStart, this);
         sf.base.EventHandler.add(this.parent.getHeaderContent(), dblclick, this.callAutoFit, this);
     };
     Resize.prototype.unwireEvents = function () {
-        sf.base.EventHandler.remove(this.parent.getHeaderContent(), sf.base.Browser.touchStartEvent, this.resizeStart);
+        sf.base.EventHandler.remove(this.parent.getHeaderContent(), sf.base.Browser.touchStartEvent, this.touchResizeStart);
         sf.base.EventHandler.remove(this.parent.getHeaderContent(), dblclick, this.callAutoFit);
     };
     Resize.prototype.getResizeHandlers = function () {
@@ -25486,6 +25489,19 @@ var Resize = /** @class */ (function () {
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
             var header = sf.base.closest(e.target, resizeClassList.header);
             header.classList.add('e-resized');
+        }
+    };
+    Resize.prototype.touchResizeStart = function (e) {
+        if (!exports.Global.timer) {
+            exports.Global.timer = setTimeout(function () {
+                exports.Global.timer = null;
+            }, 300);
+            return this.resizeStart(e);
+        }
+        else {
+            clearTimeout(exports.Global.timer);
+            exports.Global.timer = null;
+            this.callAutoFit(e);
         }
     };
     Resize.prototype.resizeStart = function (e) {

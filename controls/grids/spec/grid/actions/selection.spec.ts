@@ -4827,3 +4827,43 @@ describe('EJ2-44995 - isInteracted property in rowDeselecting and rowDeselected 
         gridObj = rowDeselecting = null;
     });
 });
+
+describe('EJ2-45406 - rowDeselect events with persistSelection', () => {
+    let gridObj: Grid;
+    let rowDeselecting: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [{type:'checkbox'},{ field: 'OrderID', isPrimaryKey: true }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+                selectionSettings: { persistSelection: true },
+            }, done);
+    });
+
+    it('rowDeselecting event testing - Click', (done: Function) => {
+        rowDeselecting = (args: any) => {
+            done();
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        (<HTMLElement>gridObj.element.querySelector('.e-row .e-checkselect')).click();
+        gridObj.clearSelection();
+    });
+
+    it('isInteracted property testing - clearSelection method', (done: Function) => {
+        rowDeselecting = (args: any) => {
+            done();
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-rowcell')[1]).click();
+        gridObj.clearSelection();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = rowDeselecting = null;
+    });
+});

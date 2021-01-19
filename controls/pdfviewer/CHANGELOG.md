@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#309238` - Now, the render page requests are not being sent on zooming when the restrictZoomRequest property is enabled.
+
 ## 18.4.34 (2021-01-12)
 
 ### PDF Viewer

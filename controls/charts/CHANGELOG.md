@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#306698` - Visible property in series is not working properly for stock chart issue fixed.
+
 ## 18.4.34 (2021-01-12)
 
 ### Chart

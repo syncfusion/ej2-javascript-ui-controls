@@ -3700,26 +3700,29 @@ var RangeSeries = /** @class */ (function (_super) {
         this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
         var colors = getSeriesColor(control.theme);
         control.series.map(function (series, index) {
-            series.xAxis = _this.xAxis;
-            series.yAxis = _this.yAxis;
-            series.chart = control;
-            series.index = index;
-            series.xAxis.isInversed = control.enableRtl;
-            series.interior = series.fill || colors[index % colors.length];
-            _this.createSeriesElement(control, series, index);
-            if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                control[firstToLowerCase(series.type) + 'SeriesModule'].render(series, _this.xAxis, _this.yAxis, false);
-            }
-            else {
-                control['line' + 'SeriesModule'].render(series, _this.xAxis, _this.yAxis, false);
-            }
-            _this.chartGroup.appendChild(series.seriesElement);
-            if (series.animation.enable && control.animateSeries) {
+            var isSeriesVisible = control.stockChart ? control.stockChart.series[index].visible : true;
+            if (isSeriesVisible) {
+                series.xAxis = _this.xAxis;
+                series.yAxis = _this.yAxis;
+                series.chart = control;
+                series.index = index;
+                series.xAxis.isInversed = control.enableRtl;
+                series.interior = series.fill || colors[index % colors.length];
+                _this.createSeriesElement(control, series, index);
                 if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                    control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                    control[firstToLowerCase(series.type) + 'SeriesModule'].render(series, _this.xAxis, _this.yAxis, false);
                 }
                 else {
-                    //control['line' + 'SeriesModule'].doAnimation(series);
+                    control['line' + 'SeriesModule'].render(series, _this.xAxis, _this.yAxis, false);
+                }
+                _this.chartGroup.appendChild(series.seriesElement);
+                if (series.animation.enable && control.animateSeries) {
+                    if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
+                        control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                    }
+                    else {
+                        //control['line' + 'SeriesModule'].doAnimation(series);
+                    }
                 }
             }
         });
@@ -4993,6 +4996,10 @@ var RangeSlider = /** @class */ (function () {
         var padding = range.bounds.x;
         var axisRange = range.chartSeries.xAxis.actualRange;
         var isLeightWeight = range.series.length === 0;
+        if (isNaN(start) && isNaN(end)) {
+            start = 0;
+            end = range.bounds.width;
+        }
         if (!(end >= start)) {
             start = [end, end = start][0];
         }

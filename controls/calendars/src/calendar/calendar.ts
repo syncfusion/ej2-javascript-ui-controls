@@ -19,6 +19,11 @@ export type CalendarType = 'Islamic' | 'Gregorian';
 
 export type DayHeaderFormats = 'Short' | 'Narrow' | 'Abbreviated' | 'Wide';
 
+/**
+ * Specifies the rule for defining the first week of the year.
+ */
+export type WeekRule = 'FirstDay' | 'FirstFullWeek' | 'FirstFourDayWeek';
+
 //class constant defination.
 const OTHERMONTH: string = 'e-other-month';
 const OTHERDECADE: string = 'e-other-year';
@@ -206,6 +211,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(false)
     public weekNumber: boolean;
+    /**
+     * Specifies the rule for defining the first week of the year.
+     * 
+     * @default FirstDay
+     */
+    @Property('FirstDay')
+    public weekRule: WeekRule;
     /** 
      * Specifies whether the today button is to be displayed or not.
      * @default true
@@ -964,8 +976,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let weekEle: HTMLElement = this.createElement('td', { className: CELL });
             let weekAnchor: HTMLElement = this.createElement('span');
             if (day % 7 === 0 && this.weekNumber) {
-                let lastDate : Date = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + 6));
-                weekAnchor.textContent = '' + this.getWeek(lastDate);
+                let numberOfDays : number;
+                // 6 days are added to get Last day of the week and 3 days are added to get middle day of the week.
+                numberOfDays = this.weekRule === 'FirstDay' ? 6 : (this.weekRule === 'FirstFourDayWeek' ? 3 : 0);
+                let finalDate : Date = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + numberOfDays));
+                weekAnchor.textContent = '' + this.getWeek(finalDate);
                 weekEle.appendChild(weekAnchor);
                 addClass([weekEle], '' + WEEKNUMBER);
                 tdEles.push(weekEle);
@@ -1477,6 +1492,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 case 'depth':
                 case 'weekNumber':
                 case 'firstDayOfWeek':
+                case 'weekRule':
                     this.checkView();
                     this.createContentHeader();
                     this.createContentBody();

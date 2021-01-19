@@ -316,6 +316,10 @@ export class PivotChart {
         let columnHeader: string = ((this.parent as PivotView).chartSettings.columnHeader && (this.parent as PivotView).chartSettings.columnHeader !== '') ?
             (this.parent as PivotView).chartSettings.columnHeader.split(delimiter).join(' - ') : '';
         let chartType: ChartSeriesType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
+        let fieldWithCaption: { [key: string]: string } = {};
+        for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+            fieldWithCaption[this.parent.dataSourceSettings.values[i].name] = !isNullOrUndefined(this.parent.dataSourceSettings.values[i].caption) ? this.parent.dataSourceSettings.values[i].caption : undefined;
+        }
         if (this.accumulationType.indexOf(chartType) > -1 && columnKeys.length > 0) {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             let currentSeries: AccumulationSeriesModel = {};
@@ -362,7 +366,13 @@ export class PivotChart {
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';
-                currentSeries.name = this.chartSettings.enableMultiAxis ? key : key.split(' | ')[0];
+                let multiAxisKey: string;
+                if (this.chartSettings.enableMultiAxis) {
+                    let fieldCaptionName: string = key.split(' | ')[1];
+                    fieldCaptionName = !isNullOrUndefined(fieldWithCaption[fieldCaptionName]) ? fieldWithCaption[fieldCaptionName] : fieldCaptionName;
+                    multiAxisKey = key.split(' | ')[0] + ' | ' + fieldCaptionName;
+                }
+                currentSeries.name = this.chartSettings.enableMultiAxis ? multiAxisKey : key.split(' | ')[0];
                 if (['Radar', 'Polar'].indexOf(chartType) < 0) {
                     let measure: string = key.split(' | ')[1];
                     (currentSeries as SeriesModel).yAxisName = this.measuresNames[measure] ? this.measuresNames[measure] : measure;

@@ -127,6 +127,9 @@ export class Layout {
         let page: Page;
         for (let i: number = 0; i < sections.length; i++) {
             let section: BodyWidget = sections[i] as BodyWidget;
+            if (i > 0 && ((sections[i - 1] as BodyWidget).lastChild as ParagraphWidget).isEndsWithPageBreak) {
+                continue;
+            }
             page = this.viewer.createNewPage(section);
             this.addBodyWidget(this.viewer.clientActiveArea, section);
             if (this.documentHelper.pages.length > 1) {
@@ -3920,10 +3923,12 @@ export class Layout {
                         cellWidget.cellFormat.rowSpan;
                     if (rowSpan > 1) {
                         let emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
-                        currentRow.childWidgets.splice(index, 0, emptyCellWidget);
-                        emptyCellWidget.containerWidget = currentRow;
-                        this.updateChildLocationForRow(currentRow.y, currentRow);
-                        return;
+                        if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
+                            currentRow.childWidgets.splice(index, 0, emptyCellWidget);
+                            emptyCellWidget.containerWidget = currentRow;
+                            this.updateChildLocationForRow(currentRow.y, currentRow);
+                            return;
+                        }
                     }
                 }
                 previousLeft += cellWidget.margin.left + cellWidget.width + cellWidget.margin.right;

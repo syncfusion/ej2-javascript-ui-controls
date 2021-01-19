@@ -4581,6 +4581,7 @@ var TreeView = /** @class */ (function (_super) {
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
+        this.updateCheckedStateFromDS();
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
         }

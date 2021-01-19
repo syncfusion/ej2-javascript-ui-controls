@@ -12,39 +12,16 @@ export function checkIsFormula(text: string): boolean {
  * @param {string} value - Specify the value to check. 
  */
 export function isCellReference(value: string): boolean {
-    let text: string = value;
-    let startNum: number = 0;
-    let endNum: number = 0;
-    let j: number = 0;
-    let numArr: number[] = [89, 71, 69];
-    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
-    let cellText: string = '';
-    let textLength: number = text.length;
-    for (let i: number = 0; i < textLength; i++) {
-        if (isChar(text[i])) {
-            endNum++;
+    let range: string = value;
+    range = range.split('$').join('');
+    if (range.indexOf(':') > -1) {
+        let rangeSplit: string[] = range.split(':');
+        if (isValidCellReference(rangeSplit[0]) && isValidCellReference(rangeSplit[1])) {
+           return true;
         }
-    }
-    cellText = text.substring(startNum, endNum);
-    let cellTextLength: number = cellText.length;
-    if (cellTextLength !== textLength) {
-        if (cellTextLength < 4) {
-            if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
-                while (j < cellTextLength) {
-                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
-                        j++;
-                        continue;
-                    } else if (!(cellText[j]) && j > 0) {
-                        break;
-                    } else {
-                        return false;
-                    }
-                }
-                let cellNumber: number = parseFloat(text.substring(endNum, textLength));
-                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
-                    return true;
-                }
-            }
+    } else if (range.indexOf(':') < 0) {
+        if (isValidCellReference(range)) {
+            return true;
         }
     }
     return false;
@@ -80,6 +57,50 @@ export function isLocked(cell: CellModel, column: ColumnModel): boolean {
         return true;
     } else if (!cell.isLocked && (column && column.isLocked !== false)) {
         return true;
+    }
+    return false;
+}
+
+/**
+ * Check whether the value is cell reference or not.
+ * @param {string} value - Specify the value to check. 
+ * @hidden
+ */
+export function isValidCellReference(value: string): boolean {
+    let text: string = value;
+    let startNum: number = 0;
+    let endNum: number = 0;
+    let j: number = 0;
+    let numArr: number[] = [89, 71, 69];
+    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
+    let cellText: string = '';
+    let textLength: number = text.length;
+    for (let i: number = 0; i < textLength; i++) {
+        if (isChar(text[i])) {
+            endNum++;
+        }
+    }
+    cellText = text.substring(startNum, endNum);
+    let cellTextLength: number = cellText.length;
+    if (cellTextLength !== textLength) {
+        if (cellTextLength < 4) {
+            if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
+                while (j < cellTextLength) {
+                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
+                        j++;
+                        continue;
+                    } else if (!(cellText[j]) && j > 0) {
+                        break;
+                    } else {
+                        return false;
+                    }
+                }
+                let cellNumber: number = parseFloat(text.substring(endNum, textLength));
+                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
+                    return true;
+                }
+            }
+        }
     }
     return false;
 }

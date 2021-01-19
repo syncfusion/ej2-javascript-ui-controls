@@ -169,6 +169,7 @@ class SfUploader {
 
     public propertyChanges(uploadObj: { [key: string]: Object }, newProp: { [key: string]: Object }): void {
         this.updateProperty(uploadObj);
+        this.isBlazorSaveUrl = (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl));
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'AllowedExtensions':

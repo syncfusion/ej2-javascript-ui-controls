@@ -1049,7 +1049,7 @@ export class PivotEngine {
                         'PopulationStDev' : aggregateValue[0] === 'SampleStDev' ? 'SampleStDev' : aggregateValue[0] === 'PopulationVar' ?
                             'PopulationVar' : aggregateValue[0] === 'SampleVar' ? 'SampleVar' : aggregateValue[0]);
                 if (['Sum', 'Count', 'Min', 'Max', 'Avg', 'Product', 'DistinctCount',
-                    'PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar'].indexOf(selectedString) !== -1) {
+                    'PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar', 'Median'].indexOf(selectedString) !== -1) {
                     let index: number = keys.indexOf(aggregateValue[1]);
                     if (!this.calculatedFormulas[field.name]) {
                         this.calculatedFormulas[field.name] = [{
@@ -4069,163 +4069,200 @@ export class PivotEngine {
         let avgCnt: number = 0;
         let isInit: boolean = true;
         let isValueExist: boolean = false;
-        if (type && type.toLowerCase() === 'count') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    cellValue += (isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value]) ?
-                        0 : (this.allowDataCompression ? this.valueMatrix[rowIndex[ri]][value] : 1));
-                }
-                ri++;
-            }
-        } else if (type && type.toLowerCase() === 'distinctcount') {
-            let duplicateValues: string[] = [];
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    isValueExist = true;
-                    let val: string | number | Date = ((this.data as any)[rowIndex[ri]][this.fieldKeys[this.fields[value]] as any]);
-                    let currentVal: string;
-                    // let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (!isNullOrUndefined(val)) {
-                        currentVal = val.toString();
-                        if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
-                            cellValue += (this.allowDataCompression && typeof val === 'number') ? val : 1;
-                            duplicateValues.push(currentVal);
+        switch (type.toLowerCase()) {
+            case 'median':
+                let values: number[] = [];
+                let position: number = 0;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (!isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
+                            values.push(this.valueMatrix[rowIndex[ri]][value]);
                         }
                     }
+                    ri++;
                 }
-                ri++;
-            }
-        } else if (type && type.toLowerCase() === 'product') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    isValueExist = true;
-                    let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (!isNullOrUndefined(currentVal)) {
-                        cellValue = ((isInit || isNullOrUndefined(cellValue)) ? 1 : cellValue);
-                        cellValue *= currentVal;
-                    } else if (isInit) {
-                        cellValue = currentVal;
-                    }
-                    isInit = false;
-                }
-                ri++;
-            }
-        } else if (type && (['populationstdev', 'samplestdev', 'populationvar', 'samplevar']).indexOf(type.toLowerCase()) !== -1) {
-            let i: number = 0;
-            let val: number = 0;
-            let indexVal: number[] = [];
-            let avgVal: number = 0;
-            let cVal: number = 0;
-            let avgDifferenceVal: number = 0;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (!isNullOrUndefined(currentVal)) {
-                        val += currentVal;
-                        indexVal.push(currentVal);
-                        i++;
+                let len: number = values.length;
+                if (len > 0) {
+                    values.sort((a, b) => a - b);
+                    if (len % 2 === 0) {
+                        position = (len / 2) <= 1 ? 0 : ((len / 2) - 1);
+                        cellValue = (values[position] + values[position + 1]) / 2;
+                    } else {
+                        position = (len + 1) / 2 <= 1 ? 0 : (((len + 1) / 2) - 1);
+                        cellValue = values[position];
                     }
                 }
-                ri++;
-            }
-            if (i > 0) {
-                avgVal = val / i;
-                for (let index of indexVal) {
-                    avgDifferenceVal += Math.pow((index - avgVal), 2);
+                break;
+            case 'count':
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        cellValue += (isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value]) ?
+                            0 : (this.allowDataCompression ? this.valueMatrix[rowIndex[ri]][value] : 1));
+                    }
+                    ri++;
                 }
-                if ((['populationstdev', 'samplestdev']).indexOf(type.toLowerCase()) !== -1) {
-                    cVal = Math.sqrt(avgDifferenceVal / (type.toLowerCase() === 'populationstdev' ? i : (i - 1)));
+                break;
+            case 'distinctcount':
+                let duplicateValues: string[] = [];
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        isValueExist = true;
+                        let val: string | number | Date = ((this.data as any)[rowIndex[ri]][this.fieldKeys[this.fields[value]] as any]);
+                        let currentVal: string;
+                        // let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                        if (!isNullOrUndefined(val)) {
+                            currentVal = val.toString();
+                            if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
+                                cellValue += (this.allowDataCompression && typeof val === 'number') ? val : 1;
+                                duplicateValues.push(currentVal);
+                            }
+                        }
+                    }
+                    ri++;
+                }
+                break;
+            case 'product':
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        isValueExist = true;
+                        let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                        if (!isNullOrUndefined(currentVal)) {
+                            cellValue = ((isInit || isNullOrUndefined(cellValue)) ? 1 : cellValue);
+                            cellValue *= currentVal;
+                        } else if (isInit) {
+                            cellValue = currentVal;
+                        }
+                        isInit = false;
+                    }
+                    ri++;
+                }
+                break;
+            case 'populationstdev':
+            case 'samplestdev':
+            case 'populationvar':
+            case 'samplevar':
+                let i: number = 0;
+                let val: number = 0;
+                let indexVal: number[] = [];
+                let avgVal: number = 0;
+                let cVal: number = 0;
+                let avgDifferenceVal: number = 0;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                        if (!isNullOrUndefined(currentVal)) {
+                            val += currentVal;
+                            indexVal.push(currentVal);
+                            i++;
+                        }
+                    }
+                    ri++;
+                }
+                if (i > 0) {
+                    avgVal = val / i;
+                    for (let index of indexVal) {
+                        avgDifferenceVal += Math.pow((index - avgVal), 2);
+                    }
+                    if ((['populationstdev', 'samplestdev']).indexOf(type.toLowerCase()) !== -1) {
+                        cVal = Math.sqrt(avgDifferenceVal / (type.toLowerCase() === 'populationstdev' ? i : (i - 1)));
+                    } else {
+                        cVal = avgDifferenceVal / (type.toLowerCase() === 'populationvar' ? i : (i - 1));
+                    }
+                    cellValue = (cVal === 0 ? NaN : cVal);
                 } else {
-                    cVal = avgDifferenceVal / (type.toLowerCase() === 'populationvar' ? i : (i - 1));
+                    cellValue = val;
                 }
-                cellValue = (cVal === 0 ? NaN : cVal);
-            } else {
-                cellValue = val;
-            }
-        } else if (type && type.toLowerCase() === 'min') {
-            let isFirst: boolean = true;
-            cellValue = undefined;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    if (isNullOrUndefined(cellValue) && isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value];
-                    } else {
-                        if (isFirst) {
+                break;
+            case 'min':
+                let isFirst: boolean = true;
+                cellValue = undefined;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (isNullOrUndefined(cellValue) && isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
                             cellValue = this.valueMatrix[rowIndex[ri]][value];
-                            isFirst = false;
                         } else {
-                            cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                            if (isFirst) {
+                                cellValue = this.valueMatrix[rowIndex[ri]][value];
+                                isFirst = false;
+                            } else {
+                                cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                            }
                         }
                     }
+                    ri++;
                 }
-                ri++;
-            }
-        } else if (type && type.toLowerCase() === 'max') {
-            let isMaxFirst: boolean = true;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    if (isMaxFirst) {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value];
-                        isMaxFirst = false;
-                    } else {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value] > cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
-                    }
-                }
-                ri++;
-            }
-        } else if (type && type.toLowerCase() === 'calculatedfield') {
-            isValueExist = true;
-            this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-            let calcField: ICalculatedFields = this.calculatedFields[this.fields[value]];
-            let actualFormula: string = calcField.formula;
-            let aggregateField: { [key: string]: Object } = {};
-            if (this.calculatedFormulas[calcField.name]) {
-                let calculatedFormulas: Object[] = <Object[]>this.calculatedFormulas[calcField.name];
-                for (let len: number = 0, lmt: number = calculatedFormulas.length; len < lmt; len++) {
-                    let aggregatedValue: { [key: string]: Object } = <{ [key: string]: Object }>calculatedFormulas[len];
-                    let value: number = <number>aggregateField[<string>aggregatedValue.formula];
-                    if (value === undefined) {
-                        let type: string = <string>aggregatedValue.type;
-                        value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type);
-                        aggregateField[<string>aggregatedValue.formula] = value;
-                    }
-                    actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
-                }
-            }
-            cellValue = this.evaluate(actualFormula);
-            cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
-        } else {
-            cellValue = undefined;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
-                    let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {
-                        cellValue = currentVal;
-                    } else {
-                        if (isNullOrUndefined(cellValue)) {
-                            cellValue = 0;
+                break;
+            case 'max':
+                let isMaxFirst: boolean = true;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (isMaxFirst) {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value];
+                            isMaxFirst = false;
+                        } else {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value] > cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
                         }
-                        cellValue += (isNullOrUndefined(currentVal) ? 0 : currentVal);
                     }
-                    if (!isNullOrUndefined(currentVal)) {
-                        avgCnt++;
+                    ri++;
+                }
+                break;
+            case 'calculatedfield':
+                isValueExist = true;
+                this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                let calcField: ICalculatedFields = this.calculatedFields[this.fields[value]];
+                let actualFormula: string = calcField.formula;
+                let aggregateField: { [key: string]: Object } = {};
+                if (this.calculatedFormulas[calcField.name]) {
+                    let calculatedFormulas: Object[] = <Object[]>this.calculatedFormulas[calcField.name];
+                    for (let len: number = 0, lmt: number = calculatedFormulas.length; len < lmt; len++) {
+                        let aggregatedValue: { [key: string]: Object } = <{ [key: string]: Object }>calculatedFormulas[len];
+                        let value: number = <number>aggregateField[<string>aggregatedValue.formula];
+                        if (value === undefined) {
+                            let type: string = <string>aggregatedValue.type;
+                            value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type);
+                            aggregateField[<string>aggregatedValue.formula] = value;
+                        }
+                        actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
                     }
                 }
-                ri++;
-            }
+                cellValue = this.evaluate(actualFormula);
+                cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                break;
+            default:
+                cellValue = undefined;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
+                        let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                        if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {
+                            cellValue = currentVal;
+                        } else {
+                            if (isNullOrUndefined(cellValue)) {
+                                cellValue = 0;
+                            }
+                            cellValue += (isNullOrUndefined(currentVal) ? 0 : currentVal);
+                        }
+                        if (!isNullOrUndefined(currentVal)) {
+                            avgCnt++;
+                        }
+                    }
+                    ri++;
+                }
+                break;
         }
         /* if (rlt > clt) {
              this.makeMirrorObject(rowIndex, mirror);
@@ -4913,6 +4950,7 @@ export interface IFieldOptions {
      * * `Min`: Allows to display the pivot table with minimum value.
      * * `Max`: Allows to display the pivot table with maximum value.
      * * `Avg`: Allows to display the pivot table values with average.
+     * * `Median`: Allows to display the pivot table values with median.
      * * `Index`: Allows to display the pivot table values with index.
      * * `PopulationStDev`: Allows to display the pivot table values with population standard deviation.
      * * `SampleStDev`: Allows to display the pivot table values with sample standard deviation.

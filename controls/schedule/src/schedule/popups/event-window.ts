@@ -1285,6 +1285,10 @@ export class EventWindow {
             let eveId: number | string = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData: { [key: string]: Object } = this.parent.eventsData.filter((data: { [key: string]: Object }) =>
                 data[this.fields.id] === eveId)[0] as { [key: string]: Object };
+            if (isNullOrUndefined(editedData)) {
+                editedData = this.parent.blockData.filter((data: { [key: string]: Object }) =>
+                    data[this.fields.id] === eveId)[0] as { [key: string]: Object };
+            }
             eventObj = extend({}, editedData, eventObj) as { [key: string]: Object };
             if (eventObj[this.fields.isReadonly]) {
                 return false;

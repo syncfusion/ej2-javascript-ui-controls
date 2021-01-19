@@ -149,6 +149,8 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
                     value = extend({}, details.value);
                 }
                 value = getPlainData(value);
+                let internalProperty: string = 'internalProperties';
+                (control.editModule[internalProperty] as ITreeData).taskData = value;
             }
             if (selectedIndex === -1) {
                 treeData.unshift(value);

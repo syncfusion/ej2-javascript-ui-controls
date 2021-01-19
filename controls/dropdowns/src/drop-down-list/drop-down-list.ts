@@ -443,6 +443,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected renderList(isEmptyData?: boolean): void {
         if (!this.isServerBlazor) {
             super.render(isEmptyData);
+            this.unWireListEvents();
             this.wireListEvents();
         } else {
             // tslint:disable-next-line

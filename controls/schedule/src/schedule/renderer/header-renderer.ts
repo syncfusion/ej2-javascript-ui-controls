@@ -314,11 +314,26 @@ export class HeaderRenderer {
             depth: calendarView,
             start: calendarView,
             calendarMode: this.parent.calendarMode,
-            change: this.calendarChange.bind(this)
+            change: this.calendarChange.bind(this),
+            navigated: this.updateTodayDate.bind(this)
         });
         this.headerCalendar.isStringTemplate = true;
         this.headerCalendar.appendTo(headerCalendarEle);
+        this.updateTodayDate();
         this.headerPopup.hide();
+    }
+    private updateTodayDate(): void {
+        if (this.parent.element.querySelector('.e-cell.e-today')
+            // tslint:disable-next-line:no-any
+            && ((this.headerCalendar as any).todayDate.getDate() !== this.parent.activeCellsData.startTime.getDate())) {
+            let selectAppointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-cell')) as Element[];
+            selectAppointments = selectAppointments.filter((element: HTMLElement) => {
+                return (!element.classList.contains('e-other-month'));
+            });
+            let todayEle: HTMLElement = this.parent.element.querySelector('.e-cell.e-today');
+            todayEle.classList.remove('e-today');
+            addClass([selectAppointments[this.parent.activeCellsData.startTime.getDate() - 1]], 'e-today');
+        }
     }
     private calendarChange(args: ChangedEventArgs & NavigatedEventArgs): void {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
@@ -440,7 +455,8 @@ export class HeaderRenderer {
         }
     }
     public previousNextIconHandler(): void {
-        let dates: Date[] = this.parent.getCurrentViewDates() as Date[];
+        let dates: Date[] = (this.parent.currentView === 'Agenda' ?
+            [this.parent.getCurrentViewDates()[0]] : this.parent.getCurrentViewDates()) as Date[];
         let prevNavEle: HTMLElement = this.toolbarObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
         let nextNavEle: HTMLElement = this.toolbarObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
         let firstDate: Date = new Date(dates[0].getTime());

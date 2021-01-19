@@ -438,6 +438,20 @@ describe('default stock chart', () => {
         chart.annotations = [{ content: '<div>StockChart</div>'}];
         chart.refresh();
     });
+    it('Checked series by changing series visible as false', (done: Function) => {
+        chart.loaded = (args: IStockChartEventArgs) => {
+            let element: Element = document.getElementById('stock_stockChart_chartSeriesCollection');
+            expect(element.childElementCount).toBe(1);
+            let rangeElement: Element = document.getElementById('stock_stockChart_rangeSelector_chart');
+            expect(rangeElement.childElementCount).toBe(0);
+            done();
+        };
+        chart.series =  [{
+            xName: 'x', high: 'high', low: 'low', open: 'open', close: 'close',
+            dataSource: chartData, type: 'Candle', yName: 'close', visible: false
+        }];
+        chart.refresh();
+    });
 });
 it('memory leak', () => {
     profile.sample();

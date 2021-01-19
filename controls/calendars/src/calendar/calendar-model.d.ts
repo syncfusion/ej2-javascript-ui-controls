@@ -1,5 +1,5 @@
 import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';import { createElement, removeClass, detach, closest, addClass, attributes } from '@syncfusion/ej2-base';import { getValue, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';import { Property, Event, EmitType, isNullOrUndefined, throwError } from '@syncfusion/ej2-base';import { Islamic, IslamicDateArgs } from './index';
-import {CalendarType,CalendarView,DayHeaderFormats,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
+import {CalendarType,CalendarView,WeekRule,DayHeaderFormats,NavigatedEventArgs,RenderDayCellEventArgs,ChangedEventArgs} from "./calendar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -110,6 +110,13 @@ export interface CalendarBaseModel extends ComponentModel{
      * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      */
     weekNumber?: boolean;
+
+    /**
+     * Specifies the rule for defining the first week of the year.
+     * 
+     * @default FirstDay
+     */
+    weekRule?: WeekRule;
 
     /**
      * Specifies whether the today button is to be displayed or not.

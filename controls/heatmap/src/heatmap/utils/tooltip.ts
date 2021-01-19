@@ -2,7 +2,7 @@
  * HeatMap tool tip file
  */
 
-import { createElement, Property, Complex, ChildProperty, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Property, Complex, ChildProperty, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { HeatMap } from '../heatmap';
 import { CurrentRect } from '../utils/helper';
 import { Tooltip as tool } from '@syncfusion/ej2-svg-base';
@@ -110,6 +110,7 @@ export class Tooltip {
      */
     private createTooltip(currentRect : CurrentRect, x: number, y: number, tempTooltipText?: string[]): void {
         let offset: number = null;
+        let element: HTMLElement = select('#' + this.heatMap.element.id + 'Celltooltipcontainer');
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
             offset = parseInt(this.heatMap.cellSettings.textStyle.size, 10) / 2;
@@ -152,7 +153,7 @@ export class Tooltip {
 
 
             },
-            '#' + this.heatMap.element.id + 'Celltooltipcontainer');
+            element);
     }
 
     /**

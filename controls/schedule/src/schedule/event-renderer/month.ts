@@ -135,6 +135,13 @@ export class MonthEvent extends EventBase {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
+        if (this.parent.currentView === 'Month' && this.parent.rowAutoHeight) {
+            let totalCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-wrap table tr td:first-child'));
+            let height: number = this.parent.element.querySelector('.e-schedule-table').clientHeight / totalCells.length;
+            totalCells.forEach((cell: HTMLElement) => {
+                setStyleAttribute(cell, { 'height': height + 'px' });
+            });
+        }
         let cellDetail: object = this.workCells.slice(-1)[0].getBoundingClientRect();
         this.cellWidth = (<{ [key: string]: Object }>cellDetail).width as number;
         this.cellHeight = (<{ [key: string]: Object }>cellDetail).height as number;

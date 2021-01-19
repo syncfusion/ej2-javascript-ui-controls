@@ -692,8 +692,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var weekEle = this.createElement('td', { className: CELL });
             var weekAnchor = this.createElement('span');
             if (day % 7 === 0 && this.weekNumber) {
-                var lastDate = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + 6));
-                weekAnchor.textContent = '' + this.getWeek(lastDate);
+                var numberOfDays = void 0;
+                // 6 days are added to get Last day of the week and 3 days are added to get middle day of the week.
+                numberOfDays = this.weekRule === 'FirstDay' ? 6 : (this.weekRule === 'FirstFourDayWeek' ? 3 : 0);
+                var finalDate = new Date(localDate.getFullYear(), localDate.getMonth(), (localDate.getDate() + numberOfDays));
+                weekAnchor.textContent = '' + this.getWeek(finalDate);
                 weekEle.appendChild(weekAnchor);
                 addClass([weekEle], '' + WEEKNUMBER);
                 tdEles.push(weekEle);
@@ -1219,6 +1222,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 case 'depth':
                 case 'weekNumber':
                 case 'firstDayOfWeek':
+                case 'weekRule':
                     this.checkView();
                     this.createContentHeader();
                     this.createContentBody();
@@ -1904,6 +1908,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], CalendarBase.prototype, "weekNumber", void 0);
+    __decorate([
+        Property('FirstDay')
+    ], CalendarBase.prototype, "weekRule", void 0);
     __decorate([
         Property(true)
     ], CalendarBase.prototype, "showTodayButton", void 0);

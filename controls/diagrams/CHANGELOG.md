@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#305708` - This issue "Console error occur while save and load the diagram with swimlane nodes" has been fixed.
+
 ## 18.4.34 (2021-01-12)
 
 ### Diagram

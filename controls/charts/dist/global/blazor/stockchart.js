@@ -8187,6 +8187,9 @@ var StockChart = /** @class */ (function (_super) {
             this.tempSeriesType.push(series.type);
             series.localData = undefined;
         }
+        if (this.series.length === 0) {
+            this.series.push({});
+        }
         this.initialRender = true;
         this.rangeFound = false;
         this.resizeTo = null;
@@ -8372,8 +8375,10 @@ var StockChart = /** @class */ (function (_super) {
         this.seriesXMax = -Infinity;
         for (var _i = 0, _a = this.chart.series; _i < _a.length; _i++) {
             var value = _a[_i];
-            this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
-            this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
+            if (value.visible) {
+                this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
+                this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
+            }
         }
         this.endValue = this.currentEnd = this.seriesXMax;
         if (this.enablePeriodSelector) {

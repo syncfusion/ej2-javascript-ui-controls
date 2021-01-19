@@ -1944,7 +1944,7 @@ var PivotEngine = /** @class */ (function () {
                     'PopulationStDev' : aggregateValue[0] === 'SampleStDev' ? 'SampleStDev' : aggregateValue[0] === 'PopulationVar' ?
                     'PopulationVar' : aggregateValue[0] === 'SampleVar' ? 'SampleVar' : aggregateValue[0]);
                 if (['Sum', 'Count', 'Min', 'Max', 'Avg', 'Product', 'DistinctCount',
-                    'PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar'].indexOf(selectedString) !== -1) {
+                    'PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar', 'Median'].indexOf(selectedString) !== -1) {
                     var index = keys.indexOf(aggregateValue[1]);
                     if (!this_2.calculatedFormulas[field.name]) {
                         this_2.calculatedFormulas[field.name] = [{
@@ -5118,178 +5118,209 @@ var PivotEngine = /** @class */ (function () {
         var avgCnt = 0;
         var isInit = true;
         var isValueExist = false;
-        if (type && type.toLowerCase() === 'count') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    cellValue += (sf.base.isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value]) ?
-                        0 : (this.allowDataCompression ? this.valueMatrix[rowIndex[ri]][value] : 1));
-                }
-                ri++;
-            }
-        }
-        else if (type && type.toLowerCase() === 'distinctcount') {
-            var duplicateValues = [];
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    isValueExist = true;
-                    var val = (this.data[rowIndex[ri]][this.fieldKeys[this.fields[value]]]);
-                    var currentVal = void 0;
-                    // let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (!sf.base.isNullOrUndefined(val)) {
-                        currentVal = val.toString();
-                        if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
-                            cellValue += (this.allowDataCompression && typeof val === 'number') ? val : 1;
-                            duplicateValues.push(currentVal);
+        switch (type.toLowerCase()) {
+            case 'median':
+                var values = [];
+                var position = 0;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (!sf.base.isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
+                            values.push(this.valueMatrix[rowIndex[ri]][value]);
                         }
                     }
+                    ri++;
                 }
-                ri++;
-            }
-        }
-        else if (type && type.toLowerCase() === 'product') {
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    isValueExist = true;
-                    var currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (!sf.base.isNullOrUndefined(currentVal)) {
-                        cellValue = ((isInit || sf.base.isNullOrUndefined(cellValue)) ? 1 : cellValue);
-                        cellValue *= currentVal;
+                var len = values.length;
+                if (len > 0) {
+                    values.sort(function (a, b) { return a - b; });
+                    if (len % 2 === 0) {
+                        position = (len / 2) <= 1 ? 0 : ((len / 2) - 1);
+                        cellValue = (values[position] + values[position + 1]) / 2;
                     }
-                    else if (isInit) {
-                        cellValue = currentVal;
-                    }
-                    isInit = false;
-                }
-                ri++;
-            }
-        }
-        else if (type && (['populationstdev', 'samplestdev', 'populationvar', 'samplevar']).indexOf(type.toLowerCase()) !== -1) {
-            var i = 0;
-            var val = 0;
-            var indexVal = [];
-            var avgVal = 0;
-            var cVal = 0;
-            var avgDifferenceVal = 0;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    var currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (!sf.base.isNullOrUndefined(currentVal)) {
-                        val += currentVal;
-                        indexVal.push(currentVal);
-                        i++;
+                    else {
+                        position = (len + 1) / 2 <= 1 ? 0 : (((len + 1) / 2) - 1);
+                        cellValue = values[position];
                     }
                 }
-                ri++;
-            }
-            if (i > 0) {
-                avgVal = val / i;
-                for (var _i = 0, indexVal_1 = indexVal; _i < indexVal_1.length; _i++) {
-                    var index = indexVal_1[_i];
-                    avgDifferenceVal += Math.pow((index - avgVal), 2);
+                break;
+            case 'count':
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        cellValue += (sf.base.isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value]) ?
+                            0 : (this.allowDataCompression ? this.valueMatrix[rowIndex[ri]][value] : 1));
+                    }
+                    ri++;
                 }
-                if ((['populationstdev', 'samplestdev']).indexOf(type.toLowerCase()) !== -1) {
-                    cVal = Math.sqrt(avgDifferenceVal / (type.toLowerCase() === 'populationstdev' ? i : (i - 1)));
+                break;
+            case 'distinctcount':
+                var duplicateValues = [];
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        isValueExist = true;
+                        var val_3 = (this.data[rowIndex[ri]][this.fieldKeys[this.fields[value]]]);
+                        var currentVal = void 0;
+                        // let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                        if (!sf.base.isNullOrUndefined(val_3)) {
+                            currentVal = val_3.toString();
+                            if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
+                                cellValue += (this.allowDataCompression && typeof val_3 === 'number') ? val_3 : 1;
+                                duplicateValues.push(currentVal);
+                            }
+                        }
+                    }
+                    ri++;
+                }
+                break;
+            case 'product':
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        isValueExist = true;
+                        var currentVal = this.valueMatrix[rowIndex[ri]][value];
+                        if (!sf.base.isNullOrUndefined(currentVal)) {
+                            cellValue = ((isInit || sf.base.isNullOrUndefined(cellValue)) ? 1 : cellValue);
+                            cellValue *= currentVal;
+                        }
+                        else if (isInit) {
+                            cellValue = currentVal;
+                        }
+                        isInit = false;
+                    }
+                    ri++;
+                }
+                break;
+            case 'populationstdev':
+            case 'samplestdev':
+            case 'populationvar':
+            case 'samplevar':
+                var i = 0;
+                var val = 0;
+                var indexVal = [];
+                var avgVal = 0;
+                var cVal = 0;
+                var avgDifferenceVal = 0;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        var currentVal = this.valueMatrix[rowIndex[ri]][value];
+                        if (!sf.base.isNullOrUndefined(currentVal)) {
+                            val += currentVal;
+                            indexVal.push(currentVal);
+                            i++;
+                        }
+                    }
+                    ri++;
+                }
+                if (i > 0) {
+                    avgVal = val / i;
+                    for (var _i = 0, indexVal_1 = indexVal; _i < indexVal_1.length; _i++) {
+                        var index = indexVal_1[_i];
+                        avgDifferenceVal += Math.pow((index - avgVal), 2);
+                    }
+                    if ((['populationstdev', 'samplestdev']).indexOf(type.toLowerCase()) !== -1) {
+                        cVal = Math.sqrt(avgDifferenceVal / (type.toLowerCase() === 'populationstdev' ? i : (i - 1)));
+                    }
+                    else {
+                        cVal = avgDifferenceVal / (type.toLowerCase() === 'populationvar' ? i : (i - 1));
+                    }
+                    cellValue = (cVal === 0 ? NaN : cVal);
                 }
                 else {
-                    cVal = avgDifferenceVal / (type.toLowerCase() === 'populationvar' ? i : (i - 1));
+                    cellValue = val;
                 }
-                cellValue = (cVal === 0 ? NaN : cVal);
-            }
-            else {
-                cellValue = val;
-            }
-        }
-        else if (type && type.toLowerCase() === 'min') {
-            var isFirst = true;
-            cellValue = undefined;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    if (sf.base.isNullOrUndefined(cellValue) && sf.base.isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value];
-                    }
-                    else {
-                        if (isFirst) {
+                break;
+            case 'min':
+                var isFirst = true;
+                cellValue = undefined;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (sf.base.isNullOrUndefined(cellValue) && sf.base.isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
                             cellValue = this.valueMatrix[rowIndex[ri]][value];
-                            isFirst = false;
                         }
                         else {
-                            cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                            if (isFirst) {
+                                cellValue = this.valueMatrix[rowIndex[ri]][value];
+                                isFirst = false;
+                            }
+                            else {
+                                cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                            }
                         }
                     }
+                    ri++;
                 }
-                ri++;
-            }
-        }
-        else if (type && type.toLowerCase() === 'max') {
-            var isMaxFirst = true;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    if (isMaxFirst) {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value];
-                        isMaxFirst = false;
-                    }
-                    else {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value] > cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
-                    }
-                }
-                ri++;
-            }
-        }
-        else if (type && type.toLowerCase() === 'calculatedfield') {
-            isValueExist = true;
-            this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-            var calcField = this.calculatedFields[this.fields[value]];
-            var actualFormula = calcField.formula;
-            var aggregateField = {};
-            if (this.calculatedFormulas[calcField.name]) {
-                var calculatedFormulas = this.calculatedFormulas[calcField.name];
-                for (var len = 0, lmt = calculatedFormulas.length; len < lmt; len++) {
-                    var aggregatedValue = calculatedFormulas[len];
-                    var value_1 = aggregateField[aggregatedValue.formula];
-                    if (value_1 === undefined) {
-                        var type_1 = aggregatedValue.type;
-                        value_1 = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type_1);
-                        aggregateField[aggregatedValue.formula] = value_1;
-                    }
-                    actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value_1));
-                }
-            }
-            cellValue = this.evaluate(actualFormula);
-            cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
-        }
-        else {
-            cellValue = undefined;
-            while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
-                    this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
-                    var currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (sf.base.isNullOrUndefined(cellValue) && sf.base.isNullOrUndefined(currentVal)) {
-                        cellValue = currentVal;
-                    }
-                    else {
-                        if (sf.base.isNullOrUndefined(cellValue)) {
-                            cellValue = 0;
+                break;
+            case 'max':
+                var isMaxFirst = true;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        if (isMaxFirst) {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value];
+                            isMaxFirst = false;
                         }
-                        cellValue += (sf.base.isNullOrUndefined(currentVal) ? 0 : currentVal);
+                        else {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value] > cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                        }
                     }
-                    if (!sf.base.isNullOrUndefined(currentVal)) {
-                        avgCnt++;
+                    ri++;
+                }
+                break;
+            case 'calculatedfield':
+                isValueExist = true;
+                this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                var calcField = this.calculatedFields[this.fields[value]];
+                var actualFormula = calcField.formula;
+                var aggregateField = {};
+                if (this.calculatedFormulas[calcField.name]) {
+                    var calculatedFormulas = this.calculatedFormulas[calcField.name];
+                    for (var len_8 = 0, lmt = calculatedFormulas.length; len_8 < lmt; len_8++) {
+                        var aggregatedValue = calculatedFormulas[len_8];
+                        var value_1 = aggregateField[aggregatedValue.formula];
+                        if (value_1 === undefined) {
+                            var type_1 = aggregatedValue.type;
+                            value_1 = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type_1);
+                            aggregateField[aggregatedValue.formula] = value_1;
+                        }
+                        actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value_1));
                     }
                 }
-                ri++;
-            }
+                cellValue = this.evaluate(actualFormula);
+                cellValue = (cellValue === Infinity || cellValue === -Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
+                break;
+            default:
+                cellValue = undefined;
+                while (rowIndex[ri] !== undefined) {
+                    if (columnIndex[rowIndex[ri]] !== undefined) {
+                        isValueExist = true;
+                        this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                        //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
+                        var currentVal = this.valueMatrix[rowIndex[ri]][value];
+                        if (sf.base.isNullOrUndefined(cellValue) && sf.base.isNullOrUndefined(currentVal)) {
+                            cellValue = currentVal;
+                        }
+                        else {
+                            if (sf.base.isNullOrUndefined(cellValue)) {
+                                cellValue = 0;
+                            }
+                            cellValue += (sf.base.isNullOrUndefined(currentVal) ? 0 : currentVal);
+                        }
+                        if (!sf.base.isNullOrUndefined(currentVal)) {
+                            avgCnt++;
+                        }
+                    }
+                    ri++;
+                }
+                break;
         }
         /* if (rlt > clt) {
              this.makeMirrorObject(rowIndex, mirror);
@@ -6643,7 +6674,9 @@ var AggregateMenu = /** @class */ (function () {
         this.updateDataSource(true);
     };
     AggregateMenu.prototype.removeDialog = function () {
-        sf.base.select('#' + this.buttonElement.id, this.parentElement).focus();
+        if (sf.base.select('#' + this.buttonElement.id, this.parentElement)) {
+            sf.base.select('#' + this.buttonElement.id, this.parentElement).focus();
+        }
         if (this.valueDialog && !this.valueDialog.isDestroyed) {
             this.valueDialog.destroy();
         }
@@ -14333,6 +14366,10 @@ var PivotChart = /** @class */ (function () {
         var columnHeader = (this.parent.chartSettings.columnHeader && this.parent.chartSettings.columnHeader !== '') ?
             this.parent.chartSettings.columnHeader.split(delimiter).join(' - ') : '';
         var chartType = this.chartSettings.chartSeries ? this.chartSettings.chartSeries.type : undefined;
+        var fieldWithCaption = {};
+        for (var i = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+            fieldWithCaption[this.parent.dataSourceSettings.values[i].name] = !sf.base.isNullOrUndefined(this.parent.dataSourceSettings.values[i].caption) ? this.parent.dataSourceSettings.values[i].caption : undefined;
+        }
         if (this.accumulationType.indexOf(chartType) > -1 && columnKeys.length > 0) {
             this.currentColumn = (columnKeys.indexOf(columnHeader + ' | ' + this.currentMeasure) > -1 && columnHeader !== undefined) ? columnHeader + ' | ' + this.currentMeasure : columnKeys[0];
             var currentSeries = {};
@@ -14384,7 +14421,13 @@ var PivotChart = /** @class */ (function () {
                 currentSeries.dataSource = this.columnGroupObject[key];
                 currentSeries.xName = 'x';
                 currentSeries.yName = 'y';
-                currentSeries.name = this.chartSettings.enableMultiAxis ? key : key.split(' | ')[0];
+                var multiAxisKey = void 0;
+                if (this.chartSettings.enableMultiAxis) {
+                    var fieldCaptionName = key.split(' | ')[1];
+                    fieldCaptionName = !sf.base.isNullOrUndefined(fieldWithCaption[fieldCaptionName]) ? fieldWithCaption[fieldCaptionName] : fieldCaptionName;
+                    multiAxisKey = key.split(' | ')[0] + ' | ' + fieldCaptionName;
+                }
+                currentSeries.name = this.chartSettings.enableMultiAxis ? multiAxisKey : key.split(' | ')[0];
                 if (['Radar', 'Polar'].indexOf(chartType) < 0) {
                     var measure = key.split(' | ')[1];
                     currentSeries.yAxisName = this.measuresNames[measure] ? this.measuresNames[measure] : measure;
@@ -22139,6 +22182,7 @@ var PivotView = /** @class */ (function (_super) {
             DistinctCount: 'Distinct Count',
             Product: 'Product',
             Avg: 'Avg',
+            Median: 'Median',
             Min: 'Min',
             SampleVar: 'Sample Var',
             PopulationVar: 'Population Var',
@@ -22417,7 +22461,7 @@ var PivotView = /** @class */ (function (_super) {
      * @hidden
      */
     PivotView.prototype.getAllSummaryType = function () {
-        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index',
+        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index',
             'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal',
             'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal',
             'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
@@ -23468,7 +23512,9 @@ var PivotView = /** @class */ (function (_super) {
                     /* tslint:disable-next-line:no-any */
                     delete pivot.bulkChanges.pivotValues;
                     pivot.allowServerDataBinding = true;
-                    pivot.enginePopulatedEventMethod('updateDataSource');
+                    if (pivot.dataSourceSettings.mode !== 'Server') {
+                        pivot.enginePopulatedEventMethod('updateDataSource');
+                    }
                 }
             }
             else {
@@ -25783,7 +25829,7 @@ var PivotView = /** @class */ (function (_super) {
         sf.base.Property(true)
     ], PivotView.prototype, "exportAllPages", void 0);
     __decorate([
-        sf.base.Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
+        sf.base.Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
     ], PivotView.prototype, "aggregateTypes", void 0);
     __decorate([
         sf.base.Property(['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Polar', 'StackingColumn', 'StackingArea', 'StackingBar', 'StepLine', 'StepArea', 'SplineArea', 'Spline', 'StackingColumn100', 'StackingBar100', 'StackingArea100', 'Bubble', 'Pareto', 'Radar', 'Pie', 'Doughnut', 'Funnel', 'Pyramid'])
@@ -29202,7 +29248,7 @@ var PivotFieldList = /** @class */ (function (_super) {
      * @hidden
      */
     PivotFieldList.prototype.getAllSummaryType = function () {
-        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index',
+        return ['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index',
             'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal',
             'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal',
             'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
@@ -29311,6 +29357,7 @@ var PivotFieldList = /** @class */ (function (_super) {
             DistinctCount: 'Distinct Count',
             Product: 'Product',
             Avg: 'Avg',
+            Median: 'Median',
             Min: 'Min',
             Max: 'Max',
             Index: 'Index',
@@ -30358,7 +30405,7 @@ var PivotFieldList = /** @class */ (function (_super) {
         sf.base.Property()
     ], PivotFieldList.prototype, "spinnerTemplate", void 0);
     __decorate$4([
-        sf.base.Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
+        sf.base.Property(['Sum', 'Count', 'DistinctCount', 'Product', 'Min', 'Max', 'Avg', 'Median', 'Index', 'PopulationVar', 'SampleVar', 'PopulationStDev', 'SampleStDev', 'RunningTotals', 'PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'])
     ], PivotFieldList.prototype, "aggregateTypes", void 0);
     __decorate$4([
         sf.base.Event()
@@ -30431,6 +30478,7 @@ var PivotFieldList = /** @class */ (function (_super) {
  */
 var COUNT = 'Count';
 var AVG = 'Avg';
+var MEDIAN = 'Median';
 var MIN = 'Min';
 var MAX = 'Max';
 var SUM = 'Sum';
@@ -32096,7 +32144,7 @@ var CalculatedField = /** @class */ (function () {
         return type;
     };
     CalculatedField.prototype.getValidSummaryType = function () {
-        return [COUNT, DISTINCTCOUNT, SUM, AVG,
+        return [COUNT, DISTINCTCOUNT, SUM, AVG, MEDIAN,
             MIN, MAX, PRODUCT, STDEV, STDEVP,
             VAR, VARP];
     };
@@ -32235,7 +32283,7 @@ var CalculatedField = /** @class */ (function () {
             for (var index = 0, i = keys.length; index < i; index++) {
                 var key = keys[index];
                 var type = this.parent.engineModule.fieldList[key].type !== 'number' ? [COUNT, DISTINCTCOUNT] :
-                    [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+                    [SUM, COUNT, AVG, MEDIAN, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                 var radiobutton = void 0;
                 if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
                     for (var i_1 = 0; i_1 < type.length; i_1++) {

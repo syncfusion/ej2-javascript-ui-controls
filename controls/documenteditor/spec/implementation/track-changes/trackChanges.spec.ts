@@ -595,7 +595,7 @@ console.log('Comment tab removed in review pane when track change is enabled');
         container.documentHelper.showRevisions(true);
         let hide: any = container.commentReviewPane.reviewTab;
         let commentTab: string = hide.tbItem[0].classList[2];
-        expect(commentTab).toBe(undefined);
+        expect(commentTab).toBe('e-hidden');
     });
     it('Reject for movefrom and move to', function () {
 console.log('Reject for movefrom and move to');

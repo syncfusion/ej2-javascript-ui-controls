@@ -1918,6 +1918,12 @@ var clearChartBorder = 'clearChartBorder';
 var insertChart = 'insertChart';
 /** @hidden */
 var chartRangeSelection = 'chartRangeSelection';
+/** @hidden */
+var isReact = 'isReact';
+/** @hidden */
+var renderReactTemplates = 'renderReactTemplates';
+/** @hidden */
+var clearTemplate = 'clearTemplate';
 
 /**
  * Open properties.
@@ -14359,41 +14365,17 @@ function checkIsFormula(text) {
  * @param {string} value - Specify the value to check.
  */
 function isCellReference(value) {
-    var text = value;
-    var startNum = 0;
-    var endNum = 0;
-    var j = 0;
-    var numArr = [89, 71, 69];
-    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
-    var cellText = '';
-    var textLength = text.length;
-    for (var i = 0; i < textLength; i++) {
-        if (isChar(text[i])) {
-            endNum++;
+    var range = value;
+    range = range.split('$').join('');
+    if (range.indexOf(':') > -1) {
+        var rangeSplit = range.split(':');
+        if (isValidCellReference(rangeSplit[0]) && isValidCellReference(rangeSplit[1])) {
+            return true;
         }
     }
-    cellText = text.substring(startNum, endNum);
-    var cellTextLength = cellText.length;
-    if (cellTextLength !== textLength) {
-        if (cellTextLength < 4) {
-            if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
-                while (j < cellTextLength) {
-                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
-                        j++;
-                        continue;
-                    }
-                    else if (!(cellText[j]) && j > 0) {
-                        break;
-                    }
-                    else {
-                        return false;
-                    }
-                }
-                var cellNumber = parseFloat(text.substring(endNum, textLength));
-                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
-                    return true;
-                }
-            }
+    else if (range.indexOf(':') < 0) {
+        if (isValidCellReference(range)) {
+            return true;
         }
     }
     return false;
@@ -14430,6 +14412,51 @@ function isLocked(cell, column) {
     }
     else if (!cell.isLocked && (column && column.isLocked !== false)) {
         return true;
+    }
+    return false;
+}
+/**
+ * Check whether the value is cell reference or not.
+ * @param {string} value - Specify the value to check.
+ * @hidden
+ */
+function isValidCellReference(value) {
+    var text = value;
+    var startNum = 0;
+    var endNum = 0;
+    var j = 0;
+    var numArr = [89, 71, 69];
+    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
+    var cellText = '';
+    var textLength = text.length;
+    for (var i = 0; i < textLength; i++) {
+        if (isChar(text[i])) {
+            endNum++;
+        }
+    }
+    cellText = text.substring(startNum, endNum);
+    var cellTextLength = cellText.length;
+    if (cellTextLength !== textLength) {
+        if (cellTextLength < 4) {
+            if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
+                while (j < cellTextLength) {
+                    if ((cellText[j]) && cellText[j].charCodeAt(0) < numArr[j]) {
+                        j++;
+                        continue;
+                    }
+                    else if (!(cellText[j]) && j > 0) {
+                        break;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                var cellNumber = parseFloat(text.substring(endNum, textLength));
+                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
+                    return true;
+                }
+            }
+        }
     }
     return false;
 }
@@ -35895,6 +35922,9 @@ var SheetRender = /** @class */ (function () {
                 }
             }
         });
+        if (this.parent[isReact]) {
+            this.parent[renderReactTemplates]();
+        }
         this.getContentTable().insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf(function () {
             var content = _this.parent.getMainContent();
@@ -36770,7 +36800,7 @@ var CellRenderer = /** @class */ (function () {
         }
         else {
             compiledStr = sf.base.compile(template);
-            return compiledStr({}, null, null, '')[0];
+            return compiledStr({}, this.parent, 'ranges', '')[0];
         }
     };
     CellRenderer.prototype.updateRowHeight = function (args) {
@@ -37023,6 +37053,9 @@ var Render = /** @class */ (function () {
                         cells: values, indexes: indexes, direction: args.direction, skipUpdateOnFirst: args.skipUpdateOnFirst
                     });
                     break;
+            }
+            if (_this.parent[isReact]) {
+                _this.parent[renderReactTemplates]();
             }
         });
         this.parent.notify(beforeVirtualContentLoaded, { refresh: args.refresh });
@@ -38327,6 +38360,9 @@ var Spreadsheet = /** @class */ (function (_super) {
      * @returns void
      */
     Spreadsheet.prototype.refresh = function (isNew) {
+        if (this[isReact]) {
+            this[clearTemplate]();
+        }
         (isNew) ? this.notify(blankWorkbook, {}) : _super.prototype.refresh.call(this);
     };
     /**
@@ -38661,6 +38697,9 @@ var Spreadsheet = /** @class */ (function (_super) {
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
      */
     Spreadsheet.prototype.destroy = function () {
+        if (this[isReact]) {
+            this[clearTemplate]();
+        }
         this.unwireEvents();
         this.notify(spreadsheetDestroyed, null);
         _super.prototype.destroy.call(this);
@@ -39303,6 +39342,7 @@ exports.isCellReference = isCellReference;
 exports.isChar = isChar;
 exports.inRange = inRange;
 exports.isLocked = isLocked;
+exports.isValidCellReference = isValidCellReference;
 exports.toFraction = toFraction;
 exports.getGcd = getGcd;
 exports.intToDate = intToDate;
@@ -39476,6 +39516,9 @@ exports.focusBorder = focusBorder;
 exports.clearChartBorder = clearChartBorder;
 exports.insertChart = insertChart;
 exports.chartRangeSelection = chartRangeSelection;
+exports.isReact = isReact;
+exports.renderReactTemplates = renderReactTemplates;
+exports.clearTemplate = clearTemplate;
 exports.getUpdateUsingRaf = getUpdateUsingRaf;
 exports.removeAllChildren = removeAllChildren;
 exports.getColGroupWidth = getColGroupWidth;

@@ -1703,6 +1703,7 @@ export class TableWidget extends BlockWidget {
         } else {
             containerWidth = this.getOwnerWidth(true);
         }
+        containerWidth = (this.tableFormat.preferredWidth > containerWidth) ? this.tableFormat.preferredWidth : containerWidth;
         let isZeroWidth: boolean = (isAutoWidth && this.tableFormat.preferredWidth === 0 && !isAutoFit);
         tableWidth = this.getTableClientWidth(containerWidth);
         if (isZeroWidth && !this.isDefaultFormatUpdated) {

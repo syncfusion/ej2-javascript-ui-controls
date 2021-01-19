@@ -45,6 +45,7 @@ export interface IFreeTextAnnotation {
     annotationSettings?: any;
     allowedInteractions?: AllowedInteraction;
     isCommentLock: boolean;
+    isReadonly: boolean;
 }
 
 /**
@@ -230,8 +231,11 @@ export class FreeTextAnnotation {
         this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily ? this.pdfViewer.freeTextSettings.fontFamily : 'Helvetica';
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
         this.defaultText = this.pdfViewer.freeTextSettings.defaultText ? this.pdfViewer.freeTextSettings.defaultText : 'Type here';
+        this.isReadonly = false;
         // tslint:disable-next-line:max-line-length
-        this.isReadonly = this.pdfViewer.freeTextSettings.isLock ? this.pdfViewer.freeTextSettings.isLock : this.pdfViewer.annotationSettings.isLock ? this.pdfViewer.annotationSettings.isLock : false;
+        if (this.pdfViewer.freeTextSettings.isLock || this.pdfViewer.annotationSettings.isLock || this.pdfViewer.freeTextSettings.isReadonly) {
+            this.isReadonly = true;
+        }
         if (this.pdfViewer.freeTextSettings.fontStyle === 1) {
             this.isBold = true;
         } else if (this.pdfViewer.freeTextSettings.fontStyle === 2) {
@@ -332,7 +336,7 @@ export class FreeTextAnnotation {
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
                             // tslint:disable-next-line
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
-                            isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
+                            isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -626,7 +630,7 @@ export class FreeTextAnnotation {
                     // tslint:disable-next-line:max-line-length
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
                     customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: this.pdfViewer.freeTextSettings.isPrint,
-                    allowedInteractions: allowedInteractions
+                    allowedInteractions: allowedInteractions, isReadonly: this.isReadonly
                 };
                 if (this.pdfViewer.enableRtl) {
                     annot.textAlign = 'Right';
@@ -790,7 +794,11 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.boxSizing = 'border-box';
         this.inputBoxElement.style.left = ((currentPosition.x)) + 'px';
         this.inputBoxElement.style.top = ((currentPosition.y)) + 'px';
-        this.applyFreetextStyles(zoomFactor);
+        if (annotation) {
+            this.applyFreetextStyles(zoomFactor, annotation.isReadonly);
+        } else {
+            this.applyFreetextStyles(zoomFactor);
+        }
         if (this.isBold) {
             this.inputBoxElement.style.fontWeight = 'bold';
         } else {
@@ -878,12 +886,12 @@ export class FreeTextAnnotation {
             this.inputBoxElement.select();
         }
     }
-    private applyFreetextStyles(zoomFactor: number): void {
+    private applyFreetextStyles(zoomFactor: number, isReadonly?: boolean): void {
         this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';
         this.inputBoxElement.style.width = (this.defautWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
-        this.inputBoxElement.readOnly = this.isReadonly;
+        this.inputBoxElement.readOnly = isNullOrUndefined(isReadonly) ? this.isReadonly : isReadonly;
     }
     /**
      * @private
@@ -991,7 +999,7 @@ export class FreeTextAnnotation {
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                 annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
                 // tslint:disable-next-line:max-line-length
-                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
+                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
         }

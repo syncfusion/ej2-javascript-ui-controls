@@ -375,7 +375,7 @@ export class SfdtExport {
             return undefined;
         }
         if (widget instanceof ParagraphWidget) {
-            if (widget.hasOwnProperty('contentControlProperties')) {
+            if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.blockContentControl(widget);
                 if (!isNullOrUndefined(block) && this.isBlockClosed) {
                     blocks.push(block);
@@ -389,7 +389,8 @@ export class SfdtExport {
             }
         } else {
             let tableWidget: TableWidget = widget as TableWidget;
-            if (tableWidget.hasOwnProperty('contentControlProperties')) {
+            // tslint:disable-next-line:max-line-length
+            if (tableWidget.hasOwnProperty('contentControlProperties') && tableWidget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.tableContentControl(tableWidget);
                 if (this.isBlockClosed) {
                     blocks.push(block);

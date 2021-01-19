@@ -113,7 +113,7 @@ export class TimelineEvent extends MonthEvent {
         let overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
         let elem: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_CLASS);
-        let eleHeight: number = (elem) ? elem.offsetHeight : 0;
+        let eleHeight: number = (elem) ? elem.getBoundingClientRect().height : 0;
         let appHeight: number = (elem && eleHeight > 0) ? eleHeight : this.eventHeight;
         let diffInDays: number = eventData.count as number;
         let eventObj: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
@@ -154,7 +154,7 @@ export class TimelineEvent extends MonthEvent {
                     this.updateCellHeight(firstChild, height);
                 }
                 if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
-                    && appointmentElement.offsetWidth < this.cellWidth) {
+                    && appWidth < this.cellWidth) {
                     let resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach((resizeHandler: HTMLElement) => {
                         resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';

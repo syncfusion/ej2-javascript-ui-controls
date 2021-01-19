@@ -1688,6 +1688,11 @@ export interface FreeTextSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * Allows to edit the free text annotation
+     */
+    isReadonly?: boolean;
+
 }
 
 /**
@@ -2157,9 +2162,17 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
      */
     isAnnotationToolbarOpen?: boolean;
+
+    /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially 
+     * and get the annotation Toolbar Visible status.
+     * @default false
+     */
+    isAnnotationToolbarVisible?: boolean;
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.

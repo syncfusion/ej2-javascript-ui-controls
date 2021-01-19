@@ -284,3 +284,9 @@ export const clearChartBorder: string = 'clearChartBorder';
 export const insertChart: string = 'insertChart';
 /** @hidden */
 export const chartRangeSelection: string = 'chartRangeSelection';
+/** @hidden */
+export const isReact: string = 'isReact';
+/** @hidden */
+export const renderReactTemplates: string = 'renderReactTemplates';
+/** @hidden */
+export const clearTemplate: string = 'clearTemplate';

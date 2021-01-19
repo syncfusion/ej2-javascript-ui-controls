@@ -30729,26 +30729,29 @@ class RangeSeries extends NiceInterval {
         this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
         let colors = getSeriesColor(control.theme);
         control.series.map((series, index) => {
-            series.xAxis = this.xAxis;
-            series.yAxis = this.yAxis;
-            series.chart = control;
-            series.index = index;
-            series.xAxis.isInversed = control.enableRtl;
-            series.interior = series.fill || colors[index % colors.length];
-            this.createSeriesElement(control, series, index);
-            if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                control[firstToLowerCase(series.type) + 'SeriesModule'].render(series, this.xAxis, this.yAxis, false);
-            }
-            else {
-                control['line' + 'SeriesModule'].render(series, this.xAxis, this.yAxis, false);
-            }
-            this.chartGroup.appendChild(series.seriesElement);
-            if (series.animation.enable && control.animateSeries) {
+            let isSeriesVisible = control.stockChart ? control.stockChart.series[index].visible : true;
+            if (isSeriesVisible) {
+                series.xAxis = this.xAxis;
+                series.yAxis = this.yAxis;
+                series.chart = control;
+                series.index = index;
+                series.xAxis.isInversed = control.enableRtl;
+                series.interior = series.fill || colors[index % colors.length];
+                this.createSeriesElement(control, series, index);
                 if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                    control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                    control[firstToLowerCase(series.type) + 'SeriesModule'].render(series, this.xAxis, this.yAxis, false);
                 }
                 else {
-                    //control['line' + 'SeriesModule'].doAnimation(series);
+                    control['line' + 'SeriesModule'].render(series, this.xAxis, this.yAxis, false);
+                }
+                this.chartGroup.appendChild(series.seriesElement);
+                if (series.animation.enable && control.animateSeries) {
+                    if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
+                        control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                    }
+                    else {
+                        //control['line' + 'SeriesModule'].doAnimation(series);
+                    }
                 }
             }
         });
@@ -31570,6 +31573,10 @@ class RangeSlider {
         let padding = range.bounds.x;
         let axisRange = range.chartSeries.xAxis.actualRange;
         let isLeightWeight = range.series.length === 0;
+        if (isNaN(start) && isNaN(end)) {
+            start = 0;
+            end = range.bounds.width;
+        }
         if (!(end >= start)) {
             start = [end, end = start][0];
         }
@@ -34714,6 +34721,9 @@ class StockChart extends Component {
             this.tempSeriesType.push(series.type);
             series.localData = undefined;
         }
+        if (this.series.length === 0) {
+            this.series.push({});
+        }
         this.initialRender = true;
         this.rangeFound = false;
         this.resizeTo = null;
@@ -34894,8 +34904,10 @@ class StockChart extends Component {
         this.seriesXMin = Infinity;
         this.seriesXMax = -Infinity;
         for (let value of this.chart.series) {
-            this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
-            this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
+            if (value.visible) {
+                this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
+                this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
+            }
         }
         this.endValue = this.currentEnd = this.seriesXMax;
         if (this.enablePeriodSelector) {

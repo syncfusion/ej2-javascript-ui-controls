@@ -559,6 +559,11 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     @Property(true)
     public isPrint: boolean;
 
+    /**
+     * Allows to edit the free text annotation
+     */
+    @Property(false)
+    public isReadonly: boolean;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

@@ -327,6 +327,7 @@ class SfTreeView {
                     this.dragStartEventArgs = e;
                     let left: number = this.getXYValue(e.event, 'X');
                     let top: number = this.getXYValue(e.event, 'Y');
+                    virtualEle.style.display = NONE;
                     this.dotNetRef.invokeMethodAsync('TriggerDragStartEvent', this.updateObjectValues(eventArgs), left, top);
                 }
             },
@@ -398,6 +399,7 @@ class SfTreeView {
             this.dragObj.intDestroy(this.dragStartEventArgs.event);
             this.dragCancelAction(this.virtualEle);
         } else {
+            this.virtualEle.style.display = BLOCK;
             this.dragStartAction = true;
             this.dragStartEventArgs.bindEvents(getElement(this.dragStartEventArgs.dragElement));
         }

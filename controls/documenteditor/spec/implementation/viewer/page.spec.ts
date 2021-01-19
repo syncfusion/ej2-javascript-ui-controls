@@ -790,3 +790,33 @@ describe('Auto fit table with prefered width and cell wiidth zero validation', (
     expect(Math.round(cell.width)).toBeGreaterThan(300);
   });
 });
+describe('Table width greater than container width validation', () => {
+  let editor: DocumentEditor = undefined;
+  beforeAll(() => {
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+    DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.appendTo('#container');
+  });
+  afterAll((done) => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    setTimeout(function () {
+      done();
+    }, 1000);
+  });
+  it('Table width greater than container width validation', () => {
+    editor.editor.insertTable(1,1);
+    let table: TableWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget;
+    table.tableFormat.preferredWidth = 800;
+    editor.selection.selectAll();
+    editor.editor.reLayout(editor.selection);
+    expect(Math.round(editor.viewer.clientActiveArea.width)).toBeLessThan(table.tableFormat.preferredWidth);
+  });
+});

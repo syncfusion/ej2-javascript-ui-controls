@@ -696,6 +696,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.tempSeriesType.push(series.type);
             series.localData = undefined;
         }
+        if (this.series.length === 0) {
+            this.series.push({});
+        }
         this.initialRender = true;
         this.rangeFound = false;
         this.resizeTo = null;
@@ -889,8 +892,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     private findRange(): void {
         this.seriesXMin = Infinity; this.seriesXMax = -Infinity;
         for (let value of this.chart.series as Series[]) {
-            this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
-            this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
+            if (value.visible) {
+                this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
+                this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
+            }
         }
         this.endValue = this.currentEnd = this.seriesXMax;
         if (this.enablePeriodSelector) {

@@ -765,6 +765,8 @@ function getPlainData(value) {
     delete value.index;
     delete value.parentItem;
     delete value.level;
+    delete value.taskData;
+    delete value.uniqueID;
     return value;
 }
 function getParentData(parent, value, requireFilter) {
@@ -2683,6 +2685,8 @@ function addAction(details, treeData, control, isSelfReference, addRowIndex, sel
                     value = extend({}, details.value);
                 }
                 value = getPlainData(value);
+                var internalProperty = 'internalProperties';
+                control.editModule[internalProperty].taskData = value;
             }
             if (selectedIndex === -1) {
                 treeData.unshift(value);
@@ -7079,7 +7083,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         if (!droppedRecord.hasChildRecords) {
             droppedRecord.hasChildRecords = true;
             droppedRecord.hasFilteredChildRecords = true;
-            if (isNullOrUndefined(droppedRecord.childRecords)) {
+            if (isNullOrUndefined(droppedRecord.childRecords) || droppedRecord.childRecords.length === 0) {
                 droppedRecord.childRecords = [];
                 if (!tObj.parentIdMapping && isNullOrUndefined(droppedRecord.taskData[childItem])) {
                     droppedRecord.taskData[childItem] = [];
@@ -7104,9 +7108,6 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 this.updateChildRecordLevel(draggedRecord, level);
             }
             droppedRecord.expanded = true;
-            // if (tObj.isLocalData) {
-            //     tObj.parentData.push(droppedRecord);
-            // }
         }
     };
     RowDD$$1.prototype.deleteDragRow = function () {
@@ -9457,7 +9458,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         }
         var column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-            column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+            this.parent.editSettings.allowEditing && column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
             target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
@@ -9946,8 +9947,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             var key = this.parent.grid.getPrimaryKeyFieldNames()[0];
             var position = null;
             value.taskData = isNullOrUndefined(value.taskData) ? extend({}, args.data) : value.taskData;
-            // let currentData: ITreeData[] = this.batchRecords.length ? this.batchRecords :
-            //            <ITreeData[]>this.parent.grid.getCurrentViewRecords();
             var currentData = this.parent.grid.getCurrentViewRecords();
             var index = this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
@@ -9994,7 +9993,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     }
                     var childRecordCount1 = findChildrenRecords(currentData[this.addRowIndex]).length;
                     var currentDataIndex1 = currentData[this.addRowIndex].index;
-                    value.level = level + 1;
+                    if (this.parent.grid.selectedRowIndex >= 0) {
+                        value.level = level + 1;
+                    }
                     index = (childRecordCount1 > 0) ? (currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     if (this.isSelfReference) {
                         value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = idMapping;
@@ -10030,7 +10031,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             if (isNullOrUndefined(value.level)) {
                 value.level = level;
             }
-            // this.addedIndex = args.index;
             value.hasChildRecords = false;
             value.childRecords = [];
             value.index = 0;

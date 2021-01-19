@@ -5409,7 +5409,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
-        if (this.showCheckBox && dropLi) {
+        this.updateCheckedStateFromDS();
+        if (this.showCheckBox && dropLi ) {
             this.ensureParentCheckState(dropLi);
         }
         if ((this.fields.dataSource instanceof DataManager === false) || (this.fields.dataSource instanceof DataManager) && ((this.fields.dataSource as any).adaptorName === 'BlazorAdaptor')) {

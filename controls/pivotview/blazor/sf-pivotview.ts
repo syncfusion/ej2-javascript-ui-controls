@@ -119,9 +119,9 @@ let PivotView: object = {
             element.blazor__instance.commonActionModule.validateInputs(filterInfo);
         }
     },
-    selectedCell(element: BlazorPivotElement, colIndex: number, rowIndex: number, isHeader: boolean, headerCount: number): string {
+    selectedCell(element: BlazorPivotElement, colIndex: number, rowIndex: number, isHeader: boolean): string {
         if (element && element.blazor__instance) {
-            return (element.blazor__instance as SfPivotView).selectedCell(colIndex, rowIndex, isHeader, headerCount);
+            return (element.blazor__instance as SfPivotView).selectedCell(colIndex, rowIndex, isHeader);
         }
         return undefined
     },

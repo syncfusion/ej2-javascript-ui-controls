@@ -1479,6 +1479,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     renderList(isEmptyData) {
         if (!this.isServerBlazor) {
             super.render(isEmptyData);
+            this.unWireListEvents();
             this.wireListEvents();
         }
         else {

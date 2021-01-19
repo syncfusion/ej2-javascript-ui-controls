@@ -591,7 +591,8 @@ export class RowDD {
             currentRecord = record.childRecords[i];
             let parentData: IGanttData;
             if (record.parentItem) {
-                parentData = this.parent.getParentTask(record.parentItem);
+                let id: string = 'uniqueIDCollection';
+                parentData = this.parent.treeGrid[id][record.parentItem.uniqueID];
             }
             currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
             if (currentRecord.hasChildRecords) {

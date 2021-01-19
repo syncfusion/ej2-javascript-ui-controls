@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I308657` - Hyperlink issue with the colon specified address is fixed.
+
 ## 18.4.34 (2021-01-12)
 
 ### Spreadsheet

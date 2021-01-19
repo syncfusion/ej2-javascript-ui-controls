@@ -516,4 +516,47 @@ describe('Treegrid Row Drop as Child', () => {
   afterAll(() => {
     destroy(gridObj);
   });
+
+  describe('childMapping property to newly added row', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          allowRowDragAndDrop: true,
+          childMapping: 'subtasks',
+          height: '400',
+          allowSelection: true,
+          treeColumnIndex: 1,
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            mode: 'Cell',
+            newRowPosition: 'Child'
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+            { field: 'taskName', headerText: 'Task Name', width: 250 },
+            { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+          ]
+        },
+        done
+      );
+    });
+    it('Adding new record', () => {
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_add' } });
+      TreeGridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = '99';
+      TreeGridObj.grid.editModule.formObj.element.getElementsByTagName('input')[1].value = 'Planned';
+      TreeGridObj.grid.editModule.formObj.element.getElementsByTagName('input')[2].value = '10';
+      (<any>TreeGridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: TreeGridObj.grid.element.id + '_update' } });
+      TreeGridObj.rowDragAndDropModule.reorderRows([3], 0, 'child');
+      expect((TreeGridObj.grid.dataSource[0].level)).toBe(0);
+      expect(TreeGridObj.dataSource[0].hasOwnProperty('subtasks')).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

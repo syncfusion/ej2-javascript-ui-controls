@@ -1973,6 +1973,13 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+
+    /**
+     * Allows to edit the free text annotation
+     */
+    @Property(false)
+    public isReadonly: boolean;
+
 }
 
 /**
@@ -2518,10 +2525,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
      */
     @Property(false)
     public isAnnotationToolbarOpen: boolean;
+
+    /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially 
+     * and get the annotation Toolbar Visible status.
+     * @default false
+     */
+    @Property(false)
+    public isAnnotationToolbarVisible: boolean;
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
@@ -3007,7 +3023,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of free text annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**

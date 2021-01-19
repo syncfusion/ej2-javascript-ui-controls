@@ -12985,6 +12985,16 @@ var Gantt = /** @class */ (function (_super) {
         }
     };
     /**
+     * Get parent task by clone parent item.
+     * @hidden
+     */
+    Gantt.prototype.getRootParent = function (ganttRecord, level) {
+        if (ganttRecord.level === level) {
+            return ganttRecord;
+        }
+        return this.getRootParent(this.getParentTask(ganttRecord.parentItem), level);
+    };
+    /**
      * Filters TreeGrid row by column name with the given options.
      * @param  {string} fieldName - Defines the field name of the column.
      * @param  {string} filterOperator - Defines the operator to filter records.
@@ -22500,6 +22510,14 @@ var Edit$2 = /** @class */ (function () {
         currentViewData.splice(currentViewDataIndex, 1);
         ids.splice(idsIndex, 1);
     };
+    Edit$$1.prototype.getPrevRecordIndex = function () {
+        var prevIndex;
+        var prevRecord = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        var selectedRecord = this.parent.selectionModule.getSelectedRecords()[0];
+        var parent = this.parent.getRootParent(prevRecord, selectedRecord.level);
+        prevIndex = this.parent.updatedRecords.indexOf(parent);
+        return prevIndex;
+    };
     /**
      * indent a selected record
      */
@@ -22509,21 +22527,17 @@ var Edit$2 = /** @class */ (function () {
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         var dropIndex;
         var prevRecord = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        var selectedRecord = this.parent.selectionModule.getSelectedRecords()[0];
         if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
             this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
             return;
         }
         else {
-            if (prevRecord.level > this.parent.selectionModule.getSelectedRecords()[0].level) {
-                var thisParent = this.parent.getTaskByUniqueID(prevRecord.parentItem.uniqueID);
-                for (var i = 0; i < this.parent.currentViewData.length; i++) {
-                    if ((this.parent.currentViewData[i]).taskData === thisParent.taskData) {
-                        dropIndex = i;
-                    }
-                }
+            if (prevRecord.level - selectedRecord.level === 0) {
+                dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
             }
             else {
-                dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
+                dropIndex = this.getPrevRecordIndex();
             }
             this.indentOutdentRow([this.parent.selectionModule.getSelectedRowIndexes()[0]], dropIndex, 'child');
         }
@@ -22837,7 +22851,8 @@ var Edit$2 = /** @class */ (function () {
             currentRec = record.childRecords[j];
             var parentData = void 0;
             if (record.parentItem) {
-                parentData = this.parent.getParentTask(record.parentItem);
+                var id = 'uniqueIDCollection';
+                parentData = this.parent.treeGrid[id][record.parentItem.uniqueID];
             }
             currentRec.level = record.parentItem ? parentData.level + levl : record.level + 1;
             if (currentRec.hasChildRecords) {
@@ -26042,7 +26057,8 @@ var RowDD$1 = /** @class */ (function () {
             currentRecord = record.childRecords[i];
             var parentData = void 0;
             if (record.parentItem) {
-                parentData = this.parent.getParentTask(record.parentItem);
+                var id = 'uniqueIDCollection';
+                parentData = this.parent.treeGrid[id][record.parentItem.uniqueID];
             }
             currentRecord.level = record.parentItem ? parentData.level + level : record.level + 1;
             if (currentRecord.hasChildRecords) {

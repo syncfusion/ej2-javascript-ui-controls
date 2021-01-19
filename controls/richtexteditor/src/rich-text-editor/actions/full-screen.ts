@@ -1,4 +1,4 @@
-import { Browser, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -9,7 +9,6 @@ import { IRichTextEditor, NotifyArgs } from '../base/interface';
  * `FullScreen` module is used to maximize and minimize screen
  */
 export class FullScreen {
-    private overflowData: string[];
     protected parent: IRichTextEditor;
     private scrollableParent: HTMLElement[];
 
@@ -24,7 +23,8 @@ export class FullScreen {
      * @deprecated
      */
     public showFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
+            && !isNOU(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         this.scrollableParent = getScrollableParent(this.parent.element);
@@ -59,7 +59,8 @@ export class FullScreen {
      * @deprecated
      */
     public hideFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
+            && !isNOU(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
@@ -86,7 +87,7 @@ export class FullScreen {
     }
 
     private toggleParentOverflow(isAdd: boolean): void {
-        if (isNullOrUndefined(this.scrollableParent)) { return; }
+        if (isNOU(this.scrollableParent)) { return; }
         for (let i: number = 0; i < this.scrollableParent.length; i++) {
             if (this.scrollableParent[i].nodeName === '#document') {
                 let elem: HTMLElement = document.querySelector('body');

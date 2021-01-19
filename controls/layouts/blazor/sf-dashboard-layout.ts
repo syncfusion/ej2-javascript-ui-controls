@@ -141,7 +141,7 @@ class SfDashboardLayout {
             this.getProperty(property);
         }
         this.isMediaQuery = this.checkMediaQuery();
-        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, false);
+        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, false, this.contentHeight());
         this.calculateCellSizeValue();
     }
 
@@ -1397,7 +1397,7 @@ class SfDashboardLayout {
             this.element.classList.add('e-responsive');
             this.calculateCellSizeValue();
         }
-        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, true);
+        this.dotnetRef.invokeMethodAsync('CalculateSize', this.calculateCellSize(), this.isMediaQuery, true, this.contentHeight());
         this.resizeEvents();
         this.checkDragging(this.dragCollection);
     }
@@ -1861,6 +1861,22 @@ class SfDashboardLayout {
         this.shadowEle.style.height = ((sizeY * cellSizeOne) + ((sizeY - 1) * this.cellSpacing[1])) + 'px';
         this.shadowEle.style.width = ((sizeX * cellSizeZero) + ((sizeX - 1) * this.cellSpacing[0])) + 'px';
     };
+
+    private contentHeight(): ContentId[] {
+        let contentId: ContentId[] = [];
+        for (let i: number = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
+            let cellElement: HTMLElement = (<HTMLElement>this.element.querySelectorAll('.e-panel')[i]);
+            if (cellElement.querySelector('.e-panel-header')) {
+                let headerHeight: string = window.getComputedStyle(cellElement.querySelector('.e-panel-header')).height;
+                let currentPanel: ContentId = {
+                    id : cellElement.id,
+                    height : headerHeight ? headerHeight : '0px'
+                };
+                contentId.push(currentPanel);
+            }
+        }
+        return contentId;
+    }
 }
 // tslint:disable-next-line
 let DashboardLayout: object = {
@@ -1942,6 +1958,11 @@ interface DragStopArgs {
 
     event: MouseEvent | TouchEvent;
     element: HTMLElement;
+}
+
+interface ContentId {
+    id: string;
+    height: string;
 }
 
 interface BlazorDashboardElement extends HTMLElement {

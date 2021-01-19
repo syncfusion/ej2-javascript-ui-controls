@@ -20,6 +20,7 @@ export class FormFields {
     // tslint:disable-next-line
     private maintanMinTabindex: any = {};
     private isSignatureField: boolean = false;
+    private isKeyDownCheck: boolean = false;
     /**
      * @private
      */
@@ -85,6 +86,15 @@ export class FormFields {
                             this.applyPosition(divElement, bounds, font, pageIndex, currentData['Rotation']);
                             // tslint:disable-next-line
                             this.applyPosition(inputField, bounds, font, pageIndex, currentData['Rotation']);
+                            inputField.InsertSpaces = currentData.InsertSpaces;
+                            if (inputField.InsertSpaces) {
+                                // tslint:disable-next-line
+                                let font: number = ((parseInt(inputField.style.width) / inputField.maxLength) - (parseInt(inputField.style.fontSize) / 2)) - 0.5;
+                                // tslint:disable-next-line
+                                inputField.style.letterSpacing = '' + font + 'px';
+                                inputField.style.fontFamily = 'monospace';
+                                divElement.style.background = 'transparent';
+                            }
                             // tslint:disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
                             this.applyCommonProperties(inputField, pageIndex, i, currentData);
@@ -464,6 +474,12 @@ export class FormFields {
     private blurFormFields(event: MouseEvent): void {
         // tslint:disable-next-line
         let currentTarget: any = event.target;
+        if (currentTarget.InsertSpaces && this.isKeyDownCheck) {
+            // tslint:disable-next-line
+            let font: number = parseInt(currentTarget.style.width) - (parseInt(currentTarget.style.height) / 2);
+            currentTarget.style.width = '' + font + 'px';
+            this.isKeyDownCheck = false;
+        }
         if (currentTarget.type === 'checkbox') {
             this.pdfViewer.fireFocusOutFormField(currentTarget.name, currentTarget.checked);
         } else {
@@ -590,6 +606,12 @@ export class FormFields {
     private updateFormFieldsValue(event: MouseEvent): void {
         // tslint:disable-next-line
         let currentTarget: any = event.target;
+        if (currentTarget.InsertSpaces && !this.isKeyDownCheck) {
+            // tslint:disable-next-line
+            let font: number = parseInt(currentTarget.style.width) + (parseInt(currentTarget.style.height) / 2);
+            currentTarget.style.width = '' + font + 'px';
+            this.isKeyDownCheck = true;
+        }
         if (event.which === 9 && currentTarget && currentTarget.className === 'e-pdfviewer-formFields') {
             // tslint:disable-next-line
             let id: any = currentTarget.id.split('input_')[1].split('_')[0];

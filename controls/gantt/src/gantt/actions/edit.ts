@@ -2692,6 +2692,14 @@ export class Edit {
         currentViewData.splice(currentViewDataIndex, 1);
         ids.splice(idsIndex, 1);
     }
+    private getPrevRecordIndex(): number {
+        let prevIndex: number;
+        let prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        let selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
+        let parent: IGanttData = this.parent.getRootParent(prevRecord, selectedRecord.level);
+        prevIndex = this.parent.updatedRecords.indexOf(parent);
+        return prevIndex;
+    }
     /**
      * indent a selected record
      */
@@ -2701,19 +2709,15 @@ export class Edit {
             this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         let dropIndex: number;
         let prevRecord: IGanttData = this.parent.updatedRecords[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        let selectedRecord: IGanttData = this.parent.selectionModule.getSelectedRecords()[0];
         if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
             this.parent.viewType === 'ResourceView' || this.parent.updatedRecords[index].level - prevRecord.level === 1) {
             return;
         } else {
-            if (prevRecord.level > (this.parent.selectionModule.getSelectedRecords()[0] as IGanttData).level) {
-                let thisParent: IGanttData = this.parent.getTaskByUniqueID(prevRecord.parentItem.uniqueID);
-                for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                    if ((this.parent.currentViewData[i]).taskData === thisParent.taskData) {
-                        dropIndex = i;
-                    }
-                }
-            } else {
+            if (prevRecord.level - selectedRecord.level === 0) {
                 dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
+            } else {
+                dropIndex = this.getPrevRecordIndex();
             }
             this.indentOutdentRow([this.parent.selectionModule.getSelectedRowIndexes()[0]], dropIndex, 'child');
         }
@@ -3011,7 +3015,8 @@ export class Edit {
             currentRec = record.childRecords[j];
             let parentData: IGanttData;
             if (record.parentItem) {
-                parentData = this.parent.getParentTask(record.parentItem);
+                let id: string = 'uniqueIDCollection';
+                parentData = this.parent.treeGrid[id][record.parentItem.uniqueID];
             }
             currentRec.level = record.parentItem ? parentData.level + levl : record.level + 1;
             if (currentRec.hasChildRecords) {

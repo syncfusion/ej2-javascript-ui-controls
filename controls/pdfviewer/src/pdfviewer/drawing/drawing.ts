@@ -1976,6 +1976,9 @@ export class Drawing {
             this.updateConnector(actualObject, actualObject.vertexPoints);
 
         }
+        if (node.isReadonly !== undefined && actualObject.shapeAnnotationType === "FreeText") {
+            actualObject.isReadonly = node.isReadonly;
+        }
         if (node.taregetDecoraterShapes !== undefined) {
             actualObject.taregetDecoraterShapes = node.taregetDecoraterShapes; update = true;
             this.updateConnector(actualObject, actualObject.vertexPoints);

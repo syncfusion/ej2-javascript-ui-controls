@@ -939,6 +939,7 @@ export declare type LabelPosition =
  * * Min - Allows to display the pivot table with minimum value.
  * * Max - Allows to display the pivot table with maximum value.
  * * Avg - Allows to display the pivot table values with average.
+ * * Median - Allows to display the pivot table values with median.
  * * Index - Allows to display the pivot table values with index.
  * * PopulationStDev - Allows to display the pivot table values with population standard deviation.
  * * SampleStDev - Allows to display the pivot table values with sample standard deviation.
@@ -965,6 +966,8 @@ export type AggregateTypes =
     'Count' |
     /** Allows to display the pivot table values with distinct count. */
     'DistinctCount' |
+    /** Allows to display the pivot table with median value. */
+    'Median' |
     /** Allows to display the pivot table with minimum value. */
     'Min' |
     /** To display with maximum value. */

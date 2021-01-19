@@ -143,7 +143,8 @@ export class Render {
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
                 let dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;
                 let count: number = gObj.pageSettings.totalRecordsCount - dataLength;
-                if (!(gObj.currentViewData.length - dataLength) && count) {
+                let currentViewData: number = gObj.getCurrentViewRecords().length;
+                if (!(currentViewData - dataLength) && count && currentViewData !== dataLength) {
                     gObj.prevPageMoving = true;
                     gObj.setProperties({
                         pageSettings: {

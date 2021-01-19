@@ -15978,7 +15978,8 @@ var FullScreen = /** @__PURE__ @class */ (function () {
      * @deprecated
      */
     FullScreen.prototype.showFullScreen = function (event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
+            && !isNullOrUndefined(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         this.scrollableParent = getScrollableParent(this.parent.element);
@@ -16014,7 +16015,8 @@ var FullScreen = /** @__PURE__ @class */ (function () {
      * @deprecated
      */
     FullScreen.prototype.hideFullScreen = function (event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
+            && !isNullOrUndefined(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
@@ -16807,6 +16809,7 @@ var Image = /** @__PURE__ @class */ (function () {
             return;
         }
         var target = ele ? ele : e.target;
+        this.prevSelectedImgEle = this.imgEle;
         if (target.tagName === 'IMG') {
             this.parent.preventDefaultResize(e);
             var img = target;
@@ -17880,9 +17883,13 @@ var Image = /** @__PURE__ @class */ (function () {
             this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
         }
-        if (target.tagName !== 'IMG' && this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
-            this.removeResizeEle();
-            this.contentModule.getEditPanel().querySelector('img').style.outline = '';
+        if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+            if (target.tagName !== 'IMG') {
+                this.removeResizeEle();
+            }
+            if (!isNullOrUndefined(this.prevSelectedImgEle)) {
+                this.prevSelectedImgEle.style.outline = '';
+            }
         }
     };
     Image.prototype.removeResizeEle = function () {
@@ -18611,6 +18618,7 @@ var Image = /** @__PURE__ @class */ (function () {
      * @deprecated
      */
     Image.prototype.destroy = function () {
+        this.prevSelectedImgEle = undefined;
         this.removeEventListener();
     };
     /**
@@ -21375,7 +21383,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (this.element.offsetParent === null) {
-            this.toolbarModule.destroy();
+            if (!isNullOrUndefined(this.toolbarModule)) {
+                this.toolbarModule.destroy();
+            }
             return;
         }
         this.notify(destroy, {});

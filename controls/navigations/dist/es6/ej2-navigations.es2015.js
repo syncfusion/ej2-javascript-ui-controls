@@ -6349,6 +6349,24 @@ let Accordion = class Accordion extends Component {
             this.addItem(itemObj, index);
         }
     }
+    setTemplate(template, toElement, index) {
+        toElement.innerHTML = '';
+        this.templateCompile(toElement, template, index);
+        // tslint:disable-next-line:no-any
+        if (this.isReact) {
+            this.renderReactTemplates();
+        }
+    }
+    // tslint:disable-next-line
+    templateCompile(ele, cnt, index) {
+        let tempEle = this.createElement('div');
+        this.fetchElement(tempEle, cnt, index, false);
+        if (tempEle.childNodes.length !== 0) {
+            [].slice.call(tempEle.childNodes).forEach((childEle) => {
+                ele.appendChild(childEle);
+            });
+        }
+    }
     getPersistData() {
         let keyEntity = ['expandedIndices'];
         return this.addOnPersist(keyEntity);
@@ -6393,10 +6411,17 @@ let Accordion = class Accordion extends Component {
                                 this.enableItem(index, !newVal);
                             }
                             if (property === 'content' && !isNullOrUndefined(item) && item.children.length === 2) {
-                                if (item.classList.contains(CLS_SLCTED)) {
-                                    this.expandItem(false, index);
+                                if (typeof newVal === 'function') {
+                                    let activeContent = item.querySelector('.' + CLS_CTENT);
+                                    activeContent.innerHTML = '';
+                                    this.setTemplate(newVal, activeContent, index);
                                 }
-                                detach(item.querySelector('.' + CLS_CONTENT));
+                                else {
+                                    if (item.classList.contains(CLS_SLCTED)) {
+                                        this.expandItem(false, index);
+                                    }
+                                    detach(item.querySelector('.' + CLS_CONTENT));
+                                }
                             }
                         }
                     }
@@ -13364,6 +13389,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
+        this.updateCheckedStateFromDS();
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
         }

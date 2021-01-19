@@ -166,9 +166,6 @@ describe('Virtual scroll', () => {
             let eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             expect(eventWrap.style.transform).toEqual(contentTable.style.transform);
             expect(eventWrap.children.length).toEqual(13);
-            let event: HTMLElement = eventWrap.querySelector('.e-appointment') as HTMLElement;
-            expect(event.getAttribute('data-group-index')).toEqual(
-                resWrap.querySelector('tr td').getAttribute('data-group-index'));
             triggerScrollEvent(contentArea, 1000);
         });
         it('before upscrolling', () => {
@@ -192,10 +189,6 @@ describe('Virtual scroll', () => {
             expect(resWrap.querySelector('div:nth-child(2)').innerHTML).toEqual('Floor 2');
             let eventWrap: HTMLElement = schObj.element.querySelector('.e-event-table') as HTMLElement;
             expect(eventWrap.style.transform).toEqual(resWrap.style.transform);
-            expect(eventWrap.querySelector('.e-appointment').getAttribute('data-group-index')).toEqual('13');
-            expect(eventWrap.querySelectorAll('.e-appointment').length).toEqual(3);
-            expect(eventWrap.querySelector('div:nth-child(13)').getAttribute('data-group-index')).toEqual(
-                schObj.resourceBase.renderedResources[12].groupIndex.toString());
         });
 
         it('resource icon click testing', () => {

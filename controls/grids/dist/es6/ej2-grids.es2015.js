@@ -5212,7 +5212,8 @@ class Render {
             if (args.requestType === 'delete' && gObj.allowPaging) {
                 let dataLength = args.data.length;
                 let count = gObj.pageSettings.totalRecordsCount - dataLength;
-                if (!(gObj.currentViewData.length - dataLength) && count) {
+                let currentViewData = gObj.getCurrentViewRecords().length;
+                if (!(currentViewData - dataLength) && count && currentViewData !== dataLength) {
                     gObj.prevPageMoving = true;
                     gObj.setProperties({
                         pageSettings: {
@@ -8231,10 +8232,10 @@ class Selection {
                 }
             }
             if (this.selectionSettings.persistSelection && this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
-                this.isInteracted = this.checkSelectAllClicked ? true : false;
+                this.isRowClicked = this.checkSelectAllClicked ? true : false;
             }
             this.rowDeselect(rowDeselecting, rowIndex, data, row, foreignKeyData$$1, target, mRow, () => {
-                if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
+                if (this.isCancelDeSelect && (this.isRowClicked || this.checkSelectAllClicked)) {
                     if (this.parent.isPersistSelection) {
                         if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
                             for (let i = 0; i < this.selectedRecords.length; i++) {
@@ -8316,7 +8317,8 @@ class Selection {
         }
     }
     rowDeselect(type, rowIndex, data, row, foreignKeyData$$1, target, mRow, rowDeselectCallBack, frozenRightRow) {
-        if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
+        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked)) ||
+            !this.selectionSettings.persistSelection) {
             let cancl = 'cancel';
             let rowDeselectObj = {
                 rowIndex: rowIndex[0], data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck'
@@ -8359,7 +8361,7 @@ class Selection {
             }
             this.parent.trigger(type, (!isBlazor() || this.parent.isJsComponent) && this.parent.isFrozenGrid() ? Object.assign({}, rowDeselectObj, { mRow: mRow, frozenRightRow: frozenRightRow }) : rowDeselectObj, (args) => {
                 this.isCancelDeSelect = args[cancl];
-                if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
+                if (!this.isCancelDeSelect || (!this.isRowClicked && !this.checkSelectAllClicked)) {
                     this.updatePersistCollection(row[0], false);
                     this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
                 }
@@ -10292,7 +10294,8 @@ class Selection {
         this.preventFocus = true;
         let checkBox;
         let checkWrap = parentsUntil(target, 'e-checkbox-wrapper');
-        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ? true : false;
+        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ||
+            (this.selectionSettings.persistSelection && parentsUntil(target, 'e-row')) ? true : false;
         if (checkWrap && checkWrap.querySelectorAll('.e-checkselect,.e-checkselectall').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             chkSelect = true;
@@ -23753,9 +23756,9 @@ class Filter {
     // To skip the second time request to server while applying initial filtering - EJ2-44361
     skipUid(col) {
         let flag = true;
-        let colLen = Object.keys((col)).length;
-        for (let i = 0; i < colLen; i++) {
-            let key = Object.keys(col[i]);
+        let colLen = Object.keys((col));
+        for (let i = 0; i < colLen.length; i++) {
+            let key = Object.keys(col[colLen[i]]);
             if (key.length === 1 && key[0] === 'uid') {
                 flag = false;
             }
@@ -23786,7 +23789,7 @@ class Filter {
                             }
                             return;
                         }
-                        this.addFilteredClass(this.fieldName);
+                        this.addFilteredClass(args.currentFilteringColumn);
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();
@@ -24768,11 +24771,11 @@ class Resize {
         this.setHandlerHeight();
     }
     wireEvents() {
-        EventHandler.add(this.parent.getHeaderContent(), Browser.touchStartEvent, this.resizeStart, this);
+        EventHandler.add(this.parent.getHeaderContent(), Browser.touchStartEvent, this.touchResizeStart, this);
         EventHandler.add(this.parent.getHeaderContent(), dblclick, this.callAutoFit, this);
     }
     unwireEvents() {
-        EventHandler.remove(this.parent.getHeaderContent(), Browser.touchStartEvent, this.resizeStart);
+        EventHandler.remove(this.parent.getHeaderContent(), Browser.touchStartEvent, this.touchResizeStart);
         EventHandler.remove(this.parent.getHeaderContent(), dblclick, this.callAutoFit);
     }
     getResizeHandlers() {
@@ -24795,6 +24798,19 @@ class Resize {
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
             let header = closest(e.target, resizeClassList.header);
             header.classList.add('e-resized');
+        }
+    }
+    touchResizeStart(e) {
+        if (!Global.timer) {
+            Global.timer = setTimeout(() => {
+                Global.timer = null;
+            }, 300);
+            return this.resizeStart(e);
+        }
+        else {
+            clearTimeout(Global.timer);
+            Global.timer = null;
+            this.callAutoFit(e);
         }
     }
     resizeStart(e) {

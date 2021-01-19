@@ -298,6 +298,7 @@ var SfTreeView = /** @class */ (function () {
                     _this_1.dragStartEventArgs = e;
                     var left = _this_1.getXYValue(e.event, 'X');
                     var top_1 = _this_1.getXYValue(e.event, 'Y');
+                    virtualEle.style.display = NONE;
                     _this_1.dotNetRef.invokeMethodAsync('TriggerDragStartEvent', _this_1.updateObjectValues(eventArgs), left, top_1);
                 }
             },
@@ -370,6 +371,7 @@ var SfTreeView = /** @class */ (function () {
             this.dragCancelAction(this.virtualEle);
         }
         else {
+            this.virtualEle.style.display = BLOCK;
             this.dragStartAction = true;
             this.dragStartEventArgs.bindEvents(sf.base.getElement(this.dragStartEventArgs.dragElement));
         }

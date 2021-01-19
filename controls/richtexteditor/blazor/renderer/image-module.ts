@@ -36,6 +36,7 @@ export class Image {
     private uploadUrl: IImageCommandsArgs;
     private selectionObj: IImageNotifyArgs;
     private imgUploadSelectedParent: Node[];
+    private prevSelectedImgEle: HTMLImageElement;
     private resizeBtnStat: { [key: string]: boolean };
     private imgDupPos: { [key: string]: number | string };
 
@@ -1069,9 +1070,9 @@ export class Image {
             this.parent.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
         }
-        if (target.tagName !== 'IMG' && this.parent.getEditPanel().querySelector('.e-img-resize')) {
-            this.removeResizeEle();
-            this.parent.getEditPanel().querySelector('img').style.outline = '';
+        if (this.parent.getEditPanel().querySelector('.e-img-resize')) {
+            if (target.tagName !== 'IMG') { this.removeResizeEle(); }
+            if (!isNOU(this.prevSelectedImgEle)) { this.prevSelectedImgEle.style.outline = ''; }
         }
     }
     private imageClick(e: MouseEvent): void {
@@ -1205,6 +1206,7 @@ export class Image {
             return;
         }
         let target: HTMLElement = ele ? ele as HTMLElement : e.target as HTMLElement;
+        this.prevSelectedImgEle = this.imgEle;
         if ((target as HTMLElement).tagName === 'IMG') {
             this.parent.defaultResize(e as MouseEvent, false);
             let img: HTMLImageElement = target as HTMLImageElement;
@@ -1329,6 +1331,7 @@ export class Image {
     }
     //#endregion
     public destroy(): void {
+        this.prevSelectedImgEle = undefined;
         this.removeEventListener();
     }
 }

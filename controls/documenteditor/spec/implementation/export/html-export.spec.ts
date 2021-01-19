@@ -136,7 +136,7 @@ describe('Heading style validation', () => {
     it('Default style validation', () => {
 console.log('Default style validation');
         expect(HtmlExport.prototype.getStyleName('Heading 1')).toBe('h1');
-        expect(HtmlExport.prototype.getStyleName('Normal')).toBe('p');
+        expect(HtmlExport.prototype.getStyleName('Normal')).toBe('div');
     });
 });
 

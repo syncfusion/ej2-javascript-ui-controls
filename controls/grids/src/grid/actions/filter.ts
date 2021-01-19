@@ -444,9 +444,9 @@ export class Filter implements IAction {
     // To skip the second time request to server while applying initial filtering - EJ2-44361
     private skipUid(col: object[]): boolean {
         let flag: boolean = true;
-        let colLen: number = Object.keys((col)).length;
-        for (let i: number = 0; i < colLen ; i++) {
-            let key: Object[] = Object.keys(col[i]);
+        let colLen: string[] = Object.keys((col));
+        for (let i: number = 0; i < colLen.length ; i++) {
+            let key: Object[] = Object.keys(col[colLen[i]]);
             if (key.length === 1 && key[0] === 'uid') {
                 flag = false; } }
         return flag;
@@ -475,7 +475,7 @@ export class Filter implements IAction {
                             }
                             return;
                         }
-                        this.addFilteredClass(this.fieldName);
+                        this.addFilteredClass((<{currentFilteringColumn?: string}>args).currentFilteringColumn);
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();

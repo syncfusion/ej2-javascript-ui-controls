@@ -13732,6 +13732,75 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 }, 450);
         });
     });
+    describe('isChecked attribute testing with getTreeData method', () => {
+        let treeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            treeObj = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (treeObj)
+                treeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Hierarchical data testing', (done: Function) => {
+            treeObj = new TreeView({
+                fields: { dataSource: hierarchicalData7, id: 'code', text: 'name', child: 'countries', isChecked: 'isChecked' }, showCheckBox: true
+            }, '#tree1');
+
+            let obj = {
+                code: "AFF",
+                name: "AfricaF",
+                isChecked: true,
+                countries: [
+                    {
+                        code: "NGAF",
+                        name: "NigFeria",
+                        isChecked: true,
+                        countries: [{ code: "EFGY", name: "EgypFt", isChecked: true, }]
+                    }
+                ]
+            };
+            treeObj.addNodes([obj]);
+            setTimeout(function() {
+            expect(treeObj.getTreeData().length).toBe(4);
+            expect(treeObj.getTreeData()[3]["isChecked"]).toBe(true);
+            expect(treeObj.getTreeData()[3].countries[0]["isChecked"]).toBe(true);
+            expect(treeObj.getTreeData()[3].countries[0].countries[0]["isChecked"]).toBe(true);
+            done();
+            }, 450);
+        });
+        it('List data testing', (done: Function) => {
+            treeObj = new TreeView({
+                fields: { dataSource: localData8, id: 'id', text: 'name', parentID: 'pid', isChecked: 'isChecked', hasChildren: 'hasChild' },
+                showCheckBox: true
+            }, '#tree1');
+            var obj = [{ id: 222, name: 'newnode', hasChild: true, isChecked: true }, { id: 223, isChecked: true, pid: 222, name: 'newChild' }];
+            treeObj.addNodes(obj);
+            setTimeout(function() {
+            expect(treeObj.getTreeData().length).toBe(26);
+            expect(treeObj.getTreeData()[25]["isChecked"]).toBe(true);
+            expect(treeObj.getTreeData()[24]["isChecked"]).toBe(true);
+            done();
+            }, 100);
+        });
+    });
     describe('Disable Node on loadondemand enabled', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},

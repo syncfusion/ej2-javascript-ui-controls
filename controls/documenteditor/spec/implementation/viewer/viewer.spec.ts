@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, Page, HelperMethods, DocumentHelper, ParagraphWidget, LineWidget, TextElementBox } from '../../../src/index';
+import { Editor, Page, HelperMethods, DocumentHelper, ParagraphWidget, LineWidget, TextElementBox, WebLayoutViewer } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -693,5 +693,35 @@ console.log('Polish char validation');
         let event1: any = { keyCode: 263, preventDefault: function () { }, ctrlKey: false, shiftKey: false, altKey: false, which: 0 };
         editor.documentHelper.onKeyPressInternal(event1);
         expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('ć');
+    });
+    describe('validation for WebLayout', () => {
+        let editor: DocumentEditor = undefined;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, layoutType: 'Continuous' });
+            DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+            (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+            (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+            (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+            (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+            editor.appendTo('#container');
+        });
+        afterAll((done) => {
+            editor.destroy();
+            document.body.removeChild(document.getElementById('container'));
+            editor = undefined;
+            document.body.innerHTML = '';
+            setTimeout(function () {
+                done();
+            }, 100);
+        });
+        it('Validation for Weblayout Width', () => {
+console.log('WebLayout Width');
+            let containerWidth: number = ((editor.viewer as WebLayoutViewer).getContentWidth());// * editor.documentHelper.zoomFactor) + (editor.viewer as WebLayoutViewer).padding.left + editor.viewer.padding.right;
+            let width: number = editor.viewer.documentHelper.containerCanvas.clientWidth;
+            containerWidth = Math.floor(containerWidth);
+            expect(containerWidth).toBe(width);
+        });
     });
 });

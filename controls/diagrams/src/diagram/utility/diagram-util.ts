@@ -1116,8 +1116,6 @@ export function deserialize(model: string, diagram: Diagram): Object {
     let nodeTemp: Function | string = diagram.setNodeTemplate;
     let getDescription: Function | string = diagram.getDescription;
     let getCustomProperty: Function | string = diagram.getCustomProperty;
-
-
     let commands: {} = {};
     for (let command of diagram.commandManager.commands) {
         commands[command.name] = { execute: command.execute, canExecute: command.canExecute };
@@ -1166,6 +1164,14 @@ export function deserialize(model: string, diagram: Diagram): Object {
     if (dataObj.nodes) {
         for (let i: number = 0; i < dataObj.nodes.length; i++) {
             if (dataObj.nodes[i].shape && dataObj.nodes[i].shape.type === 'SwimLane') {
+                if (dataObj.nodes[i].wrapper == null) {
+                    {
+                        dataObj.nodes[i].wrapper = {
+                            actualSize: { width: dataObj.nodes[i].width, height: dataObj.nodes[i].height },
+                            offsetX: dataObj.nodes[i].offsetX, offsetY: dataObj.nodes[i].offsetY
+                        } as Container;
+                    }
+                }
                 pasteSwimLane(dataObj.nodes[i] as NodeModel, undefined, undefined, undefined, undefined, true);
             }
         }
@@ -1180,9 +1186,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
     diagram.diagramActions = 0;
     diagram.isLoading = true;
     diagram.protectPropertyChange(false);
-    let key: string = 'refresh';
-
-    let component: View | Diagram;
+    let key: string = 'refresh'; let component: View | Diagram;
     for (let i: number = 0; i < diagram.views.length; i++) {
         component = diagram.views[diagram.views[i]] as Diagram;
         diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);

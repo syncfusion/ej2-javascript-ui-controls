@@ -15875,7 +15875,8 @@ class FullScreen {
      * @deprecated
      */
     showFullScreen(event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
+            && !isNullOrUndefined(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         this.scrollableParent = getScrollableParent(this.parent.element);
@@ -15911,7 +15912,8 @@ class FullScreen {
      * @deprecated
      */
     hideFullScreen(event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
+            && !isNullOrUndefined(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
         if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
@@ -16697,6 +16699,7 @@ class Image {
             return;
         }
         let target = ele ? ele : e.target;
+        this.prevSelectedImgEle = this.imgEle;
         if (target.tagName === 'IMG') {
             this.parent.preventDefaultResize(e);
             let img = target;
@@ -17764,9 +17767,13 @@ class Image {
             this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
         }
-        if (target.tagName !== 'IMG' && this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
-            this.removeResizeEle();
-            this.contentModule.getEditPanel().querySelector('img').style.outline = '';
+        if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
+            if (target.tagName !== 'IMG') {
+                this.removeResizeEle();
+            }
+            if (!isNullOrUndefined(this.prevSelectedImgEle)) {
+                this.prevSelectedImgEle.style.outline = '';
+            }
         }
     }
     removeResizeEle() {
@@ -18487,6 +18494,7 @@ class Image {
      * @deprecated
      */
     destroy() {
+        this.prevSelectedImgEle = undefined;
         this.removeEventListener();
     }
     /**
@@ -21106,7 +21114,9 @@ let RichTextEditor = class RichTextEditor extends Component {
             return;
         }
         if (this.element.offsetParent === null) {
-            this.toolbarModule.destroy();
+            if (!isNullOrUndefined(this.toolbarModule)) {
+                this.toolbarModule.destroy();
+            }
             return;
         }
         this.notify(destroy, {});

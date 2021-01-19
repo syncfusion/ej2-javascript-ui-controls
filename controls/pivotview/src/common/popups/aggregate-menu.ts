@@ -416,7 +416,9 @@ export class AggregateMenu {
         this.updateDataSource(true);
     }
     private removeDialog(): void {
-        (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
+        if (select('#' + this.buttonElement.id, this.parentElement)) {
+            (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
+        }
         if (this.valueDialog && !this.valueDialog.isDestroyed) { this.valueDialog.destroy(); }
         if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
             remove(document.getElementById(this.parentElement.id + '_ValueDialog'));

@@ -27,6 +27,7 @@ import { AggregateTypes } from '../base/enum';
 
 const COUNT: string = 'Count';
 const AVG: string = 'Avg';
+const MEDIAN: string = 'Median';
 const MIN: string = 'Min';
 const MAX: string = 'Max';
 const SUM: string = 'Sum';
@@ -1689,7 +1690,7 @@ export class CalculatedField implements IAction {
         return type;
     }
     private getValidSummaryType(): AggregateTypes[] {
-        return [COUNT as AggregateTypes, DISTINCTCOUNT as AggregateTypes, SUM as AggregateTypes, AVG as AggregateTypes,
+        return [COUNT as AggregateTypes, DISTINCTCOUNT as AggregateTypes, SUM as AggregateTypes, AVG as AggregateTypes, MEDIAN as AggregateTypes,
         MIN as AggregateTypes, MAX as AggregateTypes, PRODUCT as AggregateTypes, STDEV as AggregateTypes, STDEVP as AggregateTypes,
         VAR as AggregateTypes, VARP as AggregateTypes];
     }
@@ -1826,7 +1827,7 @@ export class CalculatedField implements IAction {
             for (let index: number = 0, i: number = keys.length; index < i; index++) {
                 let key: string = keys[index];
                 let type: string[] = this.parent.engineModule.fieldList[key].type !== 'number' ? [COUNT, DISTINCTCOUNT] :
-                    [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+                    [SUM, COUNT, AVG, MEDIAN, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                 let radiobutton: RadioButton;
                 if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
                     for (let i: number = 0; i < type.length; i++) {

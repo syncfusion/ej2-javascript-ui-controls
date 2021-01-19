@@ -1523,6 +1523,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.renderList = function (isEmptyData) {
         if (!this.isServerBlazor) {
             _super.prototype.render.call(this, isEmptyData);
+            this.unWireListEvents();
             this.wireListEvents();
         }
         else {

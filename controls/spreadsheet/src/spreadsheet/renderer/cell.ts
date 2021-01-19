@@ -250,7 +250,7 @@ export class CellRenderer implements ICellRenderer {
             return (compiledStr({}, null, null, '', true)[0] as HTMLElement).outerHTML;
         } else {
             compiledStr = compile(template);
-            return compiledStr({}, null, null, '')[0];
+            return compiledStr({}, this.parent, 'ranges', '')[0];
         }
     }
 

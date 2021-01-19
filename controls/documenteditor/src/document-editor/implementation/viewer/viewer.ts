@@ -952,6 +952,7 @@ export class DocumentHelper {
      * @private
      */
     public showRevisions(show: boolean): void {
+        let isCommentTabVisible: boolean = false;
         if (this.owner && show) {
             let eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
@@ -964,7 +965,10 @@ export class DocumentHelper {
             this.owner.showRevisions = false;
         } else {
             this.owner.commentReviewPane.showHidePane(show, 'Changes');
-            this.owner.commentReviewPane.reviewTab.hideTab(0, false);
+            if (!this.owner.enableComment) {
+                isCommentTabVisible = true;
+            }
+            this.owner.commentReviewPane.reviewTab.hideTab(0, isCommentTabVisible);
             this.showRevision = false;
         }
     }
@@ -4343,7 +4347,7 @@ export class WebLayoutViewer extends LayoutViewer {
     public updateScrollBars(): void {
         let updatePositionObj: PageInfo;
         updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
-        let containerWidth: number = this.getContentWidth();
+        let containerWidth: number = this.getContentWidth() * this.documentHelper.zoomFactor + this.padding.left + this.padding.right;
         /* tslint:disable-next-line:max-line-length */
         let containerHeight: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
         let updateObj: CanvasInfo;

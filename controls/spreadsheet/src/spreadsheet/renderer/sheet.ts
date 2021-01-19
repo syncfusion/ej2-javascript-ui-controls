@@ -4,8 +4,8 @@ import { getRangeIndexes } from './../../workbook/common/address';
 import { getColumnWidth, isHiddenCol } from '../../workbook/base/column';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
-import { CellRenderArgs, beforeHeaderLoaded, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx } from '../common/index';
-import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection } from '../common/index';
+import { CellRenderArgs, beforeHeaderLoaded, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx, isReact } from '../common/index';
+import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, renderReactTemplates } from '../common/index';
 import { CellModel, SheetModel, ExtendedRange, getCell, isHiddenRow } from '../../workbook/index';
 
 /**
@@ -167,6 +167,9 @@ export class SheetRender implements IRenderer {
                 if (sheet.showHeaders) { cHdrRow.appendChild(this.cellRenderer.renderColHeader(indexes[1])); }
             }
         });
+        if (this.parent[isReact]) {
+            this.parent[renderReactTemplates]();
+        }
         this.getContentTable().insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf((): void => {
             let content: Element = this.parent.getMainContent();

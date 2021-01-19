@@ -2668,6 +2668,16 @@ export class Gantt extends Component<HTMLElement>
         }
     }
 
+    /**
+     * Get parent task by clone parent item.
+     * @hidden
+     */
+    public getRootParent(ganttRecord: IGanttData, level: number): IGanttData {
+        if (ganttRecord.level === level) {
+            return ganttRecord;
+        }
+        return this.getRootParent(this.getParentTask(ganttRecord.parentItem), level);
+    }
     /** 
      * Filters TreeGrid row by column name with the given options. 
      * @param  {string} fieldName - Defines the field name of the column.

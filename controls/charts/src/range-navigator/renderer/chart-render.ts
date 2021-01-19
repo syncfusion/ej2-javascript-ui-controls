@@ -182,28 +182,31 @@ export class RangeSeries extends NiceInterval {
         this.chartGroup = control.renderer.createGroup({ id: control.element.id + '_chart' });
         let colors: string[] = getSeriesColor(control.theme);
         control.series.map((series: RangeNavigatorSeries, index: number) => {
-            series.xAxis = this.xAxis;
-            series.yAxis = this.yAxis;
-            series.chart = control;
-            series.index = index;
-            series.xAxis.isInversed = control.enableRtl;
-            series.interior = series.fill || colors[index % colors.length];
-            this.createSeriesElement(control, series, index);
-            if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                control[firstToLowerCase(series.type) + 'SeriesModule'].render(
-                    series, this.xAxis, this.yAxis, false
-                );
-            } else {
-                control['line' + 'SeriesModule'].render(
-                    series, this.xAxis, this.yAxis, false
-                );
-            }
-            this.chartGroup.appendChild(series.seriesElement);
-            if (series.animation.enable && control.animateSeries) {
+            let isSeriesVisible: boolean = control.stockChart ? control.stockChart.series[index].visible : true;
+            if (isSeriesVisible) {
+                series.xAxis = this.xAxis;
+                series.yAxis = this.yAxis;
+                series.chart = control;
+                series.index = index;
+                series.xAxis.isInversed = control.enableRtl;
+                series.interior = series.fill || colors[index % colors.length];
+                this.createSeriesElement(control, series, index);
                 if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
-                control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                    control[firstToLowerCase(series.type) + 'SeriesModule'].render(
+                        series, this.xAxis, this.yAxis, false
+                    );
                 } else {
-                    //control['line' + 'SeriesModule'].doAnimation(series);
+                    control['line' + 'SeriesModule'].render(
+                        series, this.xAxis, this.yAxis, false
+                    );
+                }
+                this.chartGroup.appendChild(series.seriesElement);
+                if (series.animation.enable && control.animateSeries) {
+                    if (control[firstToLowerCase(series.type) + 'SeriesModule']) {
+                    control[firstToLowerCase(series.type) + 'SeriesModule'].doAnimation(series);
+                    } else {
+                        //control['line' + 'SeriesModule'].doAnimation(series);
+                    }
                 }
             }
         });
