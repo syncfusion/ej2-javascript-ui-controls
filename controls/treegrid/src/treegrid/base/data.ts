@@ -5,7 +5,7 @@ import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { getObject, BeforeDataBoundArgs, VirtualContentRenderer, getUid, Row, Column } from '@syncfusion/ej2-grids';
 import { ColumnModel as GridColumnModel, NotifyArgs, SaveEventArgs, Action, VirtualInfo } from '@syncfusion/ej2-grids';
-import { isRemoteData, isOffline, isCountRequired, findChildrenRecords } from '../utils';
+import { isRemoteData, isOffline, isCountRequired, getExpandStatus } from '../utils';
 import * as events from './constant';
 
 /**
@@ -542,12 +542,13 @@ public isRemote(): boolean {
       results = <ITreeData[]>this.dataResults.result;
       count = this.dataResults.count;
     }
-    if (isPrinting === true && this.parent.printMode === 'AllPages') {
+    let isPdfExport: string = 'isPdfExport';
+    if ((isPrinting === true || args[isPdfExport]) && this.parent.printMode === 'AllPages') {
       let actualResults: ITreeData[] = [];
       for (let i: number = 0; i < results.length; i++) {
-        actualResults.push(results[i]);
-        if (results[i].expanded === false) {
-          i += findChildrenRecords(results[i]).length;
+        let expandStatus: boolean = getExpandStatus(this.parent, results[i], this.parent.parentData);
+        if (expandStatus) {
+          actualResults.push(results[i]);
         }
       }
       results = actualResults;

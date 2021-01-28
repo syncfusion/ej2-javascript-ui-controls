@@ -190,6 +190,14 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public mouseLeft: number = 0;
+    /**
+     * @private
+     */
+    public mouseTop: number = 0;
+    /**
+     * @private
+     */
     public hashId: string;
     private documentLiveCount: number;
     /**
@@ -2206,6 +2214,9 @@ export class PdfViewerBase {
                 proxy.signatureModule.updateCanvasSize();
             }
         }
+        if (proxy.navigationPane.sideBarToolbar) {
+            proxy.navigationPane.sideBarToolbar.style.height = proxy.viewerContainer.style.height;
+        }
     }
     /**
      * @private
@@ -2216,6 +2227,8 @@ export class PdfViewerBase {
                 this.pdfViewer.magnificationModule.fitToAuto();
             } else if (this.pdfViewer.zoomMode !== 'FitToWidth' && this.pdfViewer.magnificationModule.fitType === 'fitToWidth') {
                 this.pdfViewer.magnificationModule.fitToWidth();
+            } else if (this.pdfViewer.magnificationModule.fitType === 'fitToPage') {
+                this.pdfViewer.magnificationModule.fitToPage();
             }
         }
         for (let i: number = 0; i < this.pageCount; i++) {
@@ -2264,6 +2277,8 @@ export class PdfViewerBase {
             this.scrollPosition = this.viewerContainer.scrollTop / this.getZoomFactor();
             this.mouseX = event.clientX;
             this.mouseY = event.clientY;
+            this.mouseLeft = event.clientX;
+            this.mouseTop = event.clientY;
             // tslint:disable-next-line
             let isIE: boolean = !!(document as any).documentMode;
             if (this.pdfViewer.textSelectionModule && !this.isClickedOnScrollBar(event, true) && !this.isTextSelectionDisabled) {
@@ -2478,7 +2493,6 @@ public mouseDownHandler(event: MouseEvent): void {
                 } else if (this.pdfViewer.selectedItems.annotations.length === 1) {
                     let pageIndex: number = this.pdfViewer.selectedItems.annotations[0].pageIndex;
                     this.pdfViewer.cut();
-                    this.pdfViewer.clearSelection(pageIndex);
                     this.contextMenuModule.previousAction = 'Cut';
                 }
                 break;
@@ -2769,6 +2783,7 @@ public mouseDownHandler(event: MouseEvent): void {
                     }
                     if (this.pdfViewer.selectedItems.annotations.length) {
                         this.pdfViewer.copy();
+                        this.contextMenuModule.previousAction = 'Copy';
                     }
                     break;
                 case 70: // f key
@@ -2791,7 +2806,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 case 88: //x key
                     if (this.pdfViewer.selectedItems.annotations.length) {
                         this.pdfViewer.cut();
-                        this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
+                        this.contextMenuModule.previousAction = 'Cut';
                     }
                     break;
                 case 89: //y key
@@ -2802,6 +2817,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 case 86: //v key
                     if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied) {
                         this.pdfViewer.paste();
+                        this.contextMenuModule.previousAction = 'Paste';
                     }
                     break;
                 default:
@@ -2902,7 +2918,12 @@ public mouseDownHandler(event: MouseEvent): void {
                     let canvas1: Rect = diagram.getBoundingClientRect() as Rect;
                     let left: number = canvas1.x ? canvas1.x : canvas1.left;
                     let top: number = canvas1.y ? canvas1.y : canvas1.top;
-                    canvas = new Rect(left + 10, top + 10, canvas1.width - 10, canvas1.height - 10);
+                    // tslint:disable-next-line:max-line-length
+                    if (this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation && this.pdfViewer.annotationModule.stampAnnotationModule.currentStampAnnotation.shapeAnnotationType === 'Image') {
+                        canvas = new Rect(left, top, canvas1.width - 10, canvas1.height - 10);
+                    } else {
+                        canvas = new Rect(left + 10, top + 10, canvas1.width - 10, canvas1.height - 10);
+                    }
                 }
             }
             let stampModule: StampAnnotation = this.pdfViewer.annotationModule.stampAnnotationModule;
@@ -6235,8 +6256,13 @@ public mouseDownHandler(event: MouseEvent): void {
                         let pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
                         this.pdfViewer.fireAnnotationMouseLeave(pageIndex);
                         this.isMousedOver = false;
+                        eventTarget.style.cursor = 'default';
                     }
-                    eventTarget.style.cursor = 'default';
+                    if (obj && this.pdfViewer.selectedItems.annotations.length === 1 && event.type === 'mousemove') {
+                        eventTarget.style.cursor = 'pointer';
+                    } else {
+                        eventTarget.style.cursor = 'default';
+                    }
                 }
             }
         }
@@ -6629,9 +6655,9 @@ public mouseDownHandler(event: MouseEvent): void {
      * @private
      */
     // tslint:disable-next-line
-    public importAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
+    public importAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat, isXfdf?: boolean): void {
         if (this.pdfViewer.annotationModule) {
-            this.createRequestForImportAnnotations(importData, annotationDataFormat);
+            this.createRequestForImportAnnotations(importData, annotationDataFormat, isXfdf);
         }
     }
 
@@ -6647,8 +6673,11 @@ public mouseDownHandler(event: MouseEvent): void {
         }
     }
 
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private createRequestForExportAnnotations(isObject?: boolean, annotationDataFormat?: AnnotationDataFormat): any {
+    public createRequestForExportAnnotations(isObject?: boolean, annotationDataFormat?: AnnotationDataFormat, isBase64String?: boolean): any {
         let proxy: PdfViewerBase = this;
         let promise: Promise<Blob> = new Promise((resolve: Function, reject: Function) => {
             // tslint:disable-next-line
@@ -6688,14 +6717,23 @@ public mouseDownHandler(event: MouseEvent): void {
                             if (data.split('base64,')[1]) {
                                 // tslint:disable-next-line
                                 let annotationJson: any = atob(data.split(',')[1]);
-                                let exportObject: object = JSON.parse(annotationJson);
+                                let exportObject: object;
+                                if (jsonObject.annotationDataFormat === 'Json') {
+                                    exportObject = JSON.parse(annotationJson);
+                                } else {
+                                    exportObject = annotationJson;
+                                }
                                 if (proxy.pdfViewer.exportAnnotationFileName !== null) {
                                     proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.exportAnnotationFileName);
                                 } else {
                                     proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.fileName);
                                 }
                                 proxy.updateDocumentAnnotationCollections();
-                                resolve(annotationJson);
+                                if (isBase64String) {
+                                    resolve(data);
+                                } else {
+                                    resolve(annotationJson);
+                                }
                             } else {
                                 // tslint:disable-next-line:max-line-length
                                 proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
@@ -6777,7 +6815,7 @@ public mouseDownHandler(event: MouseEvent): void {
     }
 
     // tslint:disable-next-line
-    private createRequestForImportAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
+    private createRequestForImportAnnotations(importData: any, annotationDataFormat?: AnnotationDataFormat, isXfdf?: boolean): void {
         let jsonObject: object;
         let proxy: PdfViewerBase = this;
         if (typeof importData === 'object') {
@@ -6791,6 +6829,9 @@ public mouseDownHandler(event: MouseEvent): void {
                 // tslint:disable-next-line:max-line-length
                 jsonObject = { fileName: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id };
             } else {
+                if (!isXfdf) {
+                    importData = btoa(importData);
+                }
                 // tslint:disable-next-line:max-line-length
                 jsonObject = { importedData: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id,  hashId: this.hashId, uniqueId: this.documentId };
             }
@@ -7791,7 +7832,10 @@ public mouseDownHandler(event: MouseEvent): void {
         return excistingImportAnnotation;
     }
 
-    private updateExportItem(): boolean {
+    /**
+     * @private
+     */
+    public updateExportItem(): boolean {
         // tslint:disable-next-line
         let shapeObject: any = window.sessionStorage.getItem(this.documentId + '_annotations_shape');
         // tslint:disable-next-line

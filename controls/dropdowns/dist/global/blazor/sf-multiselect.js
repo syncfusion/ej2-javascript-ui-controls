@@ -53,7 +53,7 @@ var SfMultiSelect = /** @class */ (function () {
         return (parseInt(listHeight, 10) - (height + searchBoxHeight)).toString() + 'px';
     };
     // tslint:disable
-    SfMultiSelect.prototype.renderPopup = function (popupElement, popupHolderEle, openEventArgs, options, dataItem) {
+    SfMultiSelect.prototype.renderPopup = function (popupElement, popupHolderEle, openEventArgs, isModifiedPopup, options, dataItem) {
         this.options = options;
         this.popupHolder = popupHolderEle;
         this.list = popupHolderEle.querySelector('.' + POPUP_CONTENT) || sf.base.select('.' + POPUP_CONTENT);
@@ -111,6 +111,45 @@ var SfMultiSelect = /** @class */ (function () {
         sf.base.attributes(this.element, {
             'aria-expanded': 'true'
         });
+        if (openEventArgs !== null && openEventArgs.popup !== null && isModifiedPopup) {
+            for (var _i = 0, _a = Object.keys(openEventArgs.popup); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'collision':
+                        if (openEventArgs.popup.collision && (this.popupObj.collision.X !== openEventArgs.popup.collision.X.toLowerCase() || this.popupObj.collision.Y !== openEventArgs.popup.collision.Y.toLowerCase())) {
+                            this.popupObj.collision = { X: openEventArgs.popup.collision.X.toLowerCase(), Y: openEventArgs.popup.collision.Y.toLowerCase() };
+                        }
+                        break;
+                    case 'position':
+                        if (this.popupObj.position && (this.popupObj.position.X !== openEventArgs.popup.position.X || this.popupObj.position.Y !== openEventArgs.popup.position.Y)) {
+                            this.popupObj.position = { X: openEventArgs.popup.position.X, Y: openEventArgs.popup.position.Y };
+                        }
+                        break;
+                    case 'relateTo':
+                        if (this.popupObj.relateTo !== openEventArgs.popup.relateTo) {
+                            this.popupObj.relateTo = openEventArgs.popup.relateTo;
+                        }
+                        break;
+                    case 'targetType':
+                        if (this.popupObj.targetType !== openEventArgs.popup.targetType.toLowerCase()) {
+                            this.popupObj.targetType = openEventArgs.popup.targetType;
+                        }
+                        break;
+                    case 'offsetX':
+                        if (this.popupObj.offsetX !== openEventArgs.popup.offsetX) {
+                            this.popupObj.offsetX = openEventArgs.popup.offsetX;
+                        }
+                        break;
+                    case 'offsetY':
+                        if (this.popupObj.offsetY !== openEventArgs.popup.offsetY) {
+                            this.popupObj.offsetY = openEventArgs.popup.offsetY;
+                        }
+                        break;
+                }
+            }
+            this.popupObj.dataBind();
+            this.popupObj.refreshPosition(this.popupObj.relateTo, true);
+        }
         if (this.options.enableVirtualization) {
             sf.base.EventHandler.add(this.list, 'scroll', this.virtualScroll, this);
         }
@@ -472,9 +511,9 @@ var MultiSelect = {
             }
         }
     },
-    renderPopup: function (element, popupElement, popupHolderEle, openEventArgs, options, dataItem) {
+    renderPopup: function (element, popupElement, popupHolderEle, openEventArgs, isModifiedPopup, options, dataItem) {
         if (element && element.blazor__instance && popupElement && popupHolderEle) {
-            element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, options, dataItem);
+            element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, isModifiedPopup, options, dataItem);
         }
     },
     closePopup: function (element, closeEventArgs, options) {

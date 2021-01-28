@@ -411,7 +411,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     };
-    CalendarBase.prototype.todayButtonClick = function (e, value) {
+    CalendarBase.prototype.todayButtonClick = function (e, value, isCustomDate) {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -420,10 +420,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 this.effect = 'e-zoomin';
             }
             if (this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                this.navigateTo(this.depth, new Date(this.checkValue(value)));
+                this.navigateTo(this.depth, new Date(this.checkValue(value)), isCustomDate);
             }
             else {
-                this.navigateTo('Month', new Date(this.checkValue(value)));
+                this.navigateTo('Month', new Date(this.checkValue(value)), isCustomDate);
             }
         }
     };
@@ -656,11 +656,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
         return localDate;
     };
-    CalendarBase.prototype.renderMonths = function (e, value) {
+    CalendarBase.prototype.renderMonths = function (e, value, isCustomDate) {
         var numCells = this.weekNumber ? 8 : 7;
         var tdEles;
         if (this.calendarMode === 'Gregorian') {
-            tdEles = this.renderDays(this.currentDate, e, value);
+            tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate);
         }
         else {
             tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
@@ -674,9 +674,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     // tslint:disable-next-line:max-func-body-length
-    CalendarBase.prototype.renderDays = function (currentDate, e, value, multiSelection, values) {
+    CalendarBase.prototype.renderDays = function (currentDate, value, multiSelection, values, isTodayDate) {
         var tdEles = [];
         var cellsCount = 42;
+        var todayDate = isTodayDate ? new Date(+currentDate) : new Date();
         var localDate = new Date(this.checkValue(currentDate));
         var minMaxDate;
         var numCells = this.weekNumber ? 8 : 7;
@@ -791,10 +792,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
             }
-            if (date.getMonth() === new Date().getMonth() && date.getDate() === new Date().getDate()) {
-                if (date.getFullYear() === new Date().getFullYear()) {
-                    addClass([tdEle], TODAY);
-                }
+            if (date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
+                && date.getDate() === todayDate.getDate()) {
+                addClass([tdEle], TODAY);
             }
             tdEles.push(this.renderDayCellArgs.element);
             localDate = new Date(+minMaxDate);
@@ -1114,11 +1114,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 }
         }
     };
-    CalendarBase.prototype.switchView = function (view, e, multiSelection) {
+    CalendarBase.prototype.switchView = function (view, e, multiSelection, isCustomDate) {
         switch (view) {
             case 0:
                 detach(this.tableBodyElement);
-                this.renderMonths(e);
+                this.renderMonths(e, null, isCustomDate);
                 if (multiSelection && !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
                     this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
                 }
@@ -1489,7 +1489,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
      */
-    CalendarBase.prototype.navigateTo = function (view, date) {
+    CalendarBase.prototype.navigateTo = function (view, date, isCustomDate) {
         if (+date >= +this.min && +date <= +this.max) {
             this.currentDate = date;
         }
@@ -1505,7 +1505,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 view = this.depth;
             }
         }
-        this.switchView(this.getViewNumber(view));
+        this.switchView(this.getViewNumber(view), null, null, isCustomDate);
     };
     /**
      * Gets the current view of the Calendar.
@@ -1806,7 +1806,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         if ((!isNullOrUndefined(value) && value.getMonth()) === (!isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
             var tdEles = void 0;
             if (this.calendarMode === 'Gregorian') {
-                tdEles = this.renderDays(value, null);
+                tdEles = this.renderDays(value);
             }
             else {
                 tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
@@ -2124,11 +2124,11 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
     Calendar.prototype.minMaxDate = function (localDate) {
         return _super.prototype.minMaxDate.call(this, localDate);
     };
-    Calendar.prototype.renderMonths = function (e) {
-        _super.prototype.renderMonths.call(this, e, this.value);
+    Calendar.prototype.renderMonths = function (e, value, isCustomDate) {
+        _super.prototype.renderMonths.call(this, e, this.value, isCustomDate);
     };
-    Calendar.prototype.renderDays = function (currentDate, e) {
-        var tempDays = _super.prototype.renderDays.call(this, currentDate, e, this.value, this.isMultiSelection, this.values);
+    Calendar.prototype.renderDays = function (currentDate, value, isMultiSelect, values, isCustomDate) {
+        var tempDays = _super.prototype.renderDays.call(this, currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
         if (this.isMultiSelection) {
             _super.prototype.validateValues.call(this, this.isMultiSelection, this.values);
         }
@@ -2181,8 +2181,8 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
         }
     };
-    Calendar.prototype.switchView = function (view, e) {
-        _super.prototype.switchView.call(this, view, e, this.isMultiSelection);
+    Calendar.prototype.switchView = function (view, e, isMultiSelection, isCustomDate) {
+        _super.prototype.switchView.call(this, view, e, this.isMultiSelection, isCustomDate);
     };
     /**
      * To get component name
@@ -2279,9 +2279,9 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      * @deprecated
      */
-    Calendar.prototype.navigateTo = function (view, date) {
+    Calendar.prototype.navigateTo = function (view, date, isCustomDate) {
         this.minMaxUpdate();
-        _super.prototype.navigateTo.call(this, view, date);
+        _super.prototype.navigateTo.call(this, view, date, isCustomDate);
     };
     /**
      * Gets the current view of the Calendar.
@@ -2367,6 +2367,15 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             this.changedArgs = { value: this.value, values: this.values };
             this.changeHandler();
         }
+    };
+    /**
+     * To set custom today date in calendar
+     * @private
+     */
+    Calendar.prototype.setTodayDate = function (date) {
+        var todayDate = new Date(+date);
+        this.setProperties({ value: todayDate }, true);
+        _super.prototype.todayButtonClick.call(this, null, todayDate, true);
     };
     Calendar.prototype.update = function () {
         this.validateDate();
@@ -3316,31 +3325,17 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DatePicker.prototype.bindEvents = function () {
-        if (this.enabled) {
-            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
-            EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            this.bindInputEvent();
-            // To prevent the twice triggering.
-            EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
-            }
-            if (this.formElement) {
-                EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
-            }
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
+        EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        this.bindInputEvent();
+        // To prevent the twice triggering.
+        EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
         }
-        else {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
-            EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
-            }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
         }
         this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
         this.keyboardModules = new KeyboardEvents(this.inputElement, {
@@ -3349,7 +3344,22 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             keyConfigs: this.defaultKeyConfigs
         });
     };
+    DatePicker.prototype.unBindEvents = function () {
+        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
+        EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
+        }
+    };
     DatePicker.prototype.resetFormHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.inputElement.disabled) {
             var value = this.inputElement.getAttribute('value');
             if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
@@ -3376,6 +3386,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             });
     };
     DatePicker.prototype.inputChangeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
     };
     DatePicker.prototype.bindClearEvent = function () {
@@ -3384,6 +3397,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DatePicker.prototype.resetHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.preventDefault();
         this.clear(e);
     };
@@ -3418,6 +3434,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     };
     DatePicker.prototype.dateIconHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -3530,6 +3549,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DatePicker.prototype.inputFocusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         var focusArguments = {
             model: isBlazor() && this.isServerRendered ? null : this
         };
@@ -3544,6 +3566,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.isPopupClicked = false;
     };
     DatePicker.prototype.inputBlurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.isBlazorServer) {
             this.strictModeUpdate();
             if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
@@ -4228,6 +4253,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DatePicker.prototype.destroy = function () {
+        this.unBindEvents();
         if (!this.isBlazorServer) {
             _super.prototype.destroy.call(this);
             this.keyboardModules.destroy();
@@ -4659,7 +4685,6 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.inputElement);
                     this.setAriaDisabled();
-                    this.bindEvents();
                     break;
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
@@ -5282,45 +5307,48 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.bindEvents = function () {
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
+        EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
+        }
+        if (!this.isMobile) {
+            this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
+            this.inputKeyboardModule = new KeyboardEvents(this.inputElement, {
+                eventName: 'keydown',
+                keyAction: this.inputHandler.bind(this),
+                keyConfigs: this.keyInputConfigs
+            });
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.enabled) {
-            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
-            EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
-            }
-            if (!this.isMobile) {
-                this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
-                this.inputKeyboardModule = new KeyboardEvents(this.inputElement, {
-                    eventName: 'keydown',
-                    keyAction: this.inputHandler.bind(this),
-                    keyConfigs: this.keyInputConfigs
-                });
-            }
-            if (this.formElement) {
-                EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
-            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
         }
         else {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
-            EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (!this.isMobile) {
-                if (!isNullOrUndefined(this.inputKeyboardModule)) {
-                    this.inputKeyboardModule.destroy();
-                }
-            }
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-            }
             this.inputElement.tabIndex = -1;
         }
+    };
+    DateRangePicker.prototype.unBindEvents = function () {
+        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
+        EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (!this.isMobile) {
+            if (!isNullOrUndefined(this.inputKeyboardModule)) {
+                this.inputKeyboardModule.destroy();
+            }
+        }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
+        this.inputElement.tabIndex = -1;
     };
     DateRangePicker.prototype.updateHiddenInput = function () {
         if (this.firstHiddenChild && this.secondHiddenChild) {
@@ -5340,6 +5368,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.inputChangeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
         this.updateHiddenInput();
     };
@@ -5349,6 +5380,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.resetHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
@@ -5373,6 +5407,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setModelValue();
     };
     DateRangePicker.prototype.formResetHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (this.formElement && (e.target === this.formElement) && !this.inputElement.disabled) {
             var val = this.inputElement.getAttribute('value');
             if (!isNullOrUndefined(this.startCopy)) {
@@ -5425,6 +5462,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.removeSelection();
     };
     DateRangePicker.prototype.rangeIconHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (this.isMobile) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -5706,6 +5746,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.inputFocusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         this.preventBlur = false;
         var focusArguments = {
             model: (isBlazor() && this.isServerRendered) ? null : this
@@ -5721,6 +5764,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.inputBlurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.preventBlur) {
             var value = this.inputElement.value;
             if (!isNullOrUndefined(this.presetsItem)) {
@@ -8423,6 +8469,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DateRangePicker.prototype.destroy = function () {
+        this.unBindEvents();
         this.hide(null);
         var ariaAttrs = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
@@ -8796,7 +8843,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     Input.setEnabled(this.enabled, this.inputElement);
-                    this.bindEvents();
+                    if (this.enabled) {
+                        this.inputElement.setAttribute('tabindex', this.tabIndex);
+                    }
+                    else {
+                        this.inputElement.tabIndex = -1;
+                    }
                     break;
                 case 'allowEdit':
                     this.setRangeAllowEdit();
@@ -9945,6 +9997,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.blazorTimeCollections = listData;
     };
     TimePicker.prototype.popupHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -9960,6 +10015,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimePicker.prototype.mouseDownHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.readonly) {
             var curPos = this.getCursorSelection();
             this.inputElement.setSelectionRange(0, 0);
@@ -10335,6 +10393,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimePicker.prototype.formResetHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.inputElement.disabled) {
             var timeValue = this.inputElement.getAttribute('value');
             var val = this.isBlazorServer ? this.inputEleValue : this.checkDateValue(this.inputEleValue);
@@ -10359,6 +10420,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimePicker.prototype.inputChangeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
     };
     TimePicker.prototype.unBindEvents = function () {
@@ -10391,6 +10455,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.trigger('cleared', clearedArgs);
     };
     TimePicker.prototype.clearHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.preventDefault();
         if (!isNullOrUndefined(this.value)) {
             this.clear(e);
@@ -11142,6 +11209,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.checkValueChange(null, false);
     };
     TimePicker.prototype.inputBlurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isPreventBlur && this.isPopupOpen()) {
             this.inputElement.focus();
@@ -11190,6 +11260,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     TimePicker.prototype.inputFocusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         var focusArguments = {
             model: this.isBlazorServer ? null : this
         };
@@ -11706,6 +11779,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     DateTimePicker.prototype.focusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         addClass([this.inputWrapper.container], INPUTFOCUS$2);
     };
     /**
@@ -11726,6 +11802,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.blurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isTimePopupOpen() && this.isPreventBlur) {
             this.inputElement.focus();
@@ -12006,6 +12085,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.timeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -12029,6 +12111,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         this.isIconClicked = false;
     };
     DateTimePicker.prototype.dateHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
             e.preventDefault();
         }
@@ -12970,7 +13055,6 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     if (!this.enabled) {
                         this.inputElement.tabIndex = -1;
                     }
-                    this.bindEvents();
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;

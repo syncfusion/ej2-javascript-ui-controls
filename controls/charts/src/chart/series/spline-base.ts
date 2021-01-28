@@ -56,10 +56,10 @@ export class SplineBase extends LineBase {
                     if (point.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
                         series.yMin = Math.min(series.yMin, point.yValue, value.controlPoint1.y, value.controlPoint2.y);
                         series.yMax = Math.ceil(Math.max(series.yMax, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
+                        series.yMin = series.yAxis.valueType !== 'Logarithmic' ? Math.floor(series.yMin) : series.yMin;
                     }
                 }
             }
-            series.yMin = series.yAxis.valueType !== 'Logarithmic' ? Math.floor(series.yMin) : series.yMin;
             if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
                 value = this.getControlPoints(
                     { xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue } as Points,

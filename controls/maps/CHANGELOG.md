@@ -8,6 +8,18 @@
 
 ## [Unreleased]
 
+## 18.4.39 (2021-01-28)
+
+### Maps
+
+#### New Features
+
+- `#306094` - `borderWidthValuePath` and `borderColorValuePath` properties are exposed to set border width and color to individual shapes using data source values.
+
+#### Bug Fixes
+
+- `#307853` - The property in the JSON for the maps shape data can now be displayed in the tooltip template.
+
 ## 18.4.30 (2020-12-17)
 
 ### Maps

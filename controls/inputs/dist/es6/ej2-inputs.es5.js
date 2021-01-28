@@ -90,7 +90,7 @@ var Input;
     Input.bindInitialEvent = bindInitialEvent;
     function checkInputValue(floatLabelType, inputElement) {
         var inputValue = inputElement.value;
-        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+        if (inputValue !== '' && !isNullOrUndefined(inputValue) && inputElement.parentElement) {
             inputElement.parentElement.classList.add('e-valid-input');
         }
         else if (floatLabelType !== 'Always' && inputElement.parentElement) {
@@ -13230,6 +13230,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 this.element.removeAttribute('name');
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
+                this.textarea.setAttribute('id', getUniqueID('textarea'));
                 var attribute = ['required', 'minlength', 'maxlength'];
                 for (var i = 0; i < attribute.length; i++) {
                     if (this.element.hasAttribute(attribute[i])) {

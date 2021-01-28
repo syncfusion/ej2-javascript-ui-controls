@@ -55,7 +55,7 @@ export class WorkbookSort {
         }
 
         let containsHeader: boolean = sortOptions.containsHeader;
-        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
+        if (range[0] === range[2]) { //if selected range is a single cell 
             range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
             isSingleCell = true;
             containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
@@ -122,6 +122,69 @@ export class WorkbookSort {
         });
     }
 
+    private getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
+        let range: number[] = [rowIdx, colIdx, rowIdx, colIdx];
+        let j: number; let rIdx: number = rowIdx; let cIdx: number = colIdx;
+        let loopLength: number = 0;
+        let length: number = sheet.usedRange.rowIndex + sheet.usedRange.colIndex;
+        for (let i: number = 1; i < length + 1; i++) {
+            for (j = -loopLength; j < loopLength + 1; j++) { // start from right
+                if (getCell(rIdx + j, cIdx + i, sheet)) {
+                     range[2] =  range[2] > rIdx + j ?  range[2] : rIdx + j;
+                     range[3] =  range[3] > cIdx + i ?  range[3] : cIdx + i;
+                }
+            }
+            if (getCell(rIdx + i, cIdx + i, sheet)) {
+                 range[2] =  range[2] > rIdx + i ?  range[2] : rIdx + i;
+                 range[3] =  range[3] > cIdx + i ?  range[3] : cIdx + i;
+            }
+            for (j = -loopLength; j < loopLength + 1; j++) {
+                if (getCell(rIdx + i, cIdx + j, sheet)) {
+                     range[2] =  range[2] > rIdx + i ?  range[2] : rIdx + i;
+                     range[3] =  range[3] > cIdx + j ?  range[3] : cIdx + j;
+                }
+            }
+            if (!getCell(rIdx, cIdx, sheet)) {
+                if (range[3] === colIdx && range[2] === rowIdx && range[0] === rowIdx && range[1] === colIdx) {
+                    if (loopLength === 0) {
+                        break;
+                    }
+                }
+            }
+            if (getCell(rIdx + i, cIdx - i, sheet)) {
+                 range[2] =  range[2] > rIdx + i ?  range[2] : rIdx + i;
+                 range[1] =  range[1] < cIdx - i ?  range[1] : cIdx - i;
+            }
+            for (j = -loopLength; j < loopLength + 1; j++) {
+                if (getCell(rIdx + j, cIdx - i, sheet)) {
+                     range[0] =  range[0] < rIdx + j ?  range[0] : rIdx + j;
+                     range[1] =  range[1] < cIdx - i ?  range[1] : cIdx - i;
+                     range[2] =  range[2] > rIdx + j ?  range[2] : rIdx + j;
+                }
+            }
+            if (getCell(rIdx - i, cIdx - i, sheet)) {
+                 range[0] =  range[0] < rIdx - i ?  range[0] : rIdx - i;
+                 range[1] =  range[1] < cIdx - i ?  range[1] : cIdx - i;
+            }
+            for (j = -loopLength; j < loopLength + 1; j++) {
+                if (getCell(rIdx - i, cIdx + j, sheet)) {
+                     range[0] =  range[0] < rIdx - i ?  range[0] : rIdx - i;
+                     range[1] =  range[1] < cIdx + j ?  range[1] : cIdx + j;
+                     range[3] =  range[3] > cIdx + j ?  range[3] : cIdx + j;
+                }
+            }
+            if (getCell(rIdx - i, cIdx + i, sheet)) {
+                 range[0] =  range[0] < rIdx - i ?  range[0] : rIdx - i;
+                 range[3] =  range[3] > cIdx + i ?  range[3] : cIdx + i;
+            }
+            if (range[3] === colIdx &&  range[2] === rowIdx &&  range[0] === rowIdx &&  range[1] === colIdx) {
+                break;
+            }
+            loopLength++;
+        }
+        return range;
+    }
+
     /**
      * Compares the two cells for sorting.
      * @param sortDescriptor - protocol for sorting.
@@ -133,7 +196,7 @@ export class WorkbookSort {
         let direction: string = sortDescriptor.order || '';
         let comparer: Function = DataUtil.fnSort(direction);
         let caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
-        if (x && y && typeof x.value === 'string') {
+        if (x && y && (typeof x.value === 'string' || typeof y.value === 'string')) {
             let collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
             if (!direction || direction.toLowerCase() === 'ascending') {
                 return collator.compare(x.value as string, y.value as string);

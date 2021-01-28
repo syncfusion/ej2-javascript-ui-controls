@@ -409,7 +409,7 @@ var CalendarBase = /** @class */ (function (_super) {
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     };
-    CalendarBase.prototype.todayButtonClick = function (e, value) {
+    CalendarBase.prototype.todayButtonClick = function (e, value, isCustomDate) {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -418,10 +418,10 @@ var CalendarBase = /** @class */ (function (_super) {
                 this.effect = 'e-zoomin';
             }
             if (this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                this.navigateTo(this.depth, new Date(this.checkValue(value)));
+                this.navigateTo(this.depth, new Date(this.checkValue(value)), isCustomDate);
             }
             else {
-                this.navigateTo('Month', new Date(this.checkValue(value)));
+                this.navigateTo('Month', new Date(this.checkValue(value)), isCustomDate);
             }
         }
     };
@@ -654,11 +654,11 @@ var CalendarBase = /** @class */ (function (_super) {
         }
         return localDate;
     };
-    CalendarBase.prototype.renderMonths = function (e, value) {
+    CalendarBase.prototype.renderMonths = function (e, value, isCustomDate) {
         var numCells = this.weekNumber ? 8 : 7;
         var tdEles;
         if (this.calendarMode === 'Gregorian') {
-            tdEles = this.renderDays(this.currentDate, e, value);
+            tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate);
         }
         else {
             tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
@@ -672,9 +672,10 @@ var CalendarBase = /** @class */ (function (_super) {
         }
     };
     // tslint:disable-next-line:max-func-body-length
-    CalendarBase.prototype.renderDays = function (currentDate, e, value, multiSelection, values) {
+    CalendarBase.prototype.renderDays = function (currentDate, value, multiSelection, values, isTodayDate) {
         var tdEles = [];
         var cellsCount = 42;
+        var todayDate = isTodayDate ? new Date(+currentDate) : new Date();
         var localDate = new Date(this.checkValue(currentDate));
         var minMaxDate;
         var numCells = this.weekNumber ? 8 : 7;
@@ -789,10 +790,9 @@ var CalendarBase = /** @class */ (function (_super) {
             else {
                 this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
             }
-            if (date.getMonth() === new Date().getMonth() && date.getDate() === new Date().getDate()) {
-                if (date.getFullYear() === new Date().getFullYear()) {
-                    sf.base.addClass([tdEle], TODAY);
-                }
+            if (date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
+                && date.getDate() === todayDate.getDate()) {
+                sf.base.addClass([tdEle], TODAY);
             }
             tdEles.push(this.renderDayCellArgs.element);
             localDate = new Date(+minMaxDate);
@@ -1112,11 +1112,11 @@ var CalendarBase = /** @class */ (function (_super) {
                 }
         }
     };
-    CalendarBase.prototype.switchView = function (view, e, multiSelection) {
+    CalendarBase.prototype.switchView = function (view, e, multiSelection, isCustomDate) {
         switch (view) {
             case 0:
                 sf.base.detach(this.tableBodyElement);
-                this.renderMonths(e);
+                this.renderMonths(e, null, isCustomDate);
                 if (multiSelection && !sf.base.isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
                     this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
                 }
@@ -1487,7 +1487,7 @@ var CalendarBase = /** @class */ (function (_super) {
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
      */
-    CalendarBase.prototype.navigateTo = function (view, date) {
+    CalendarBase.prototype.navigateTo = function (view, date, isCustomDate) {
         if (+date >= +this.min && +date <= +this.max) {
             this.currentDate = date;
         }
@@ -1503,7 +1503,7 @@ var CalendarBase = /** @class */ (function (_super) {
                 view = this.depth;
             }
         }
-        this.switchView(this.getViewNumber(view));
+        this.switchView(this.getViewNumber(view), null, null, isCustomDate);
     };
     /**
      * Gets the current view of the Calendar.
@@ -1804,7 +1804,7 @@ var CalendarBase = /** @class */ (function (_super) {
         if ((!sf.base.isNullOrUndefined(value) && value.getMonth()) === (!sf.base.isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
             var tdEles = void 0;
             if (this.calendarMode === 'Gregorian') {
-                tdEles = this.renderDays(value, null);
+                tdEles = this.renderDays(value);
             }
             else {
                 tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
@@ -2122,11 +2122,11 @@ var Calendar = /** @class */ (function (_super) {
     Calendar.prototype.minMaxDate = function (localDate) {
         return _super.prototype.minMaxDate.call(this, localDate);
     };
-    Calendar.prototype.renderMonths = function (e) {
-        _super.prototype.renderMonths.call(this, e, this.value);
+    Calendar.prototype.renderMonths = function (e, value, isCustomDate) {
+        _super.prototype.renderMonths.call(this, e, this.value, isCustomDate);
     };
-    Calendar.prototype.renderDays = function (currentDate, e) {
-        var tempDays = _super.prototype.renderDays.call(this, currentDate, e, this.value, this.isMultiSelection, this.values);
+    Calendar.prototype.renderDays = function (currentDate, value, isMultiSelect, values, isCustomDate) {
+        var tempDays = _super.prototype.renderDays.call(this, currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
         if (this.isMultiSelection) {
             _super.prototype.validateValues.call(this, this.isMultiSelection, this.values);
         }
@@ -2179,8 +2179,8 @@ var Calendar = /** @class */ (function (_super) {
             this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
         }
     };
-    Calendar.prototype.switchView = function (view, e) {
-        _super.prototype.switchView.call(this, view, e, this.isMultiSelection);
+    Calendar.prototype.switchView = function (view, e, isMultiSelection, isCustomDate) {
+        _super.prototype.switchView.call(this, view, e, this.isMultiSelection, isCustomDate);
     };
     /**
      * To get component name
@@ -2277,9 +2277,9 @@ var Calendar = /** @class */ (function (_super) {
      * @returns void
      * @deprecated
      */
-    Calendar.prototype.navigateTo = function (view, date) {
+    Calendar.prototype.navigateTo = function (view, date, isCustomDate) {
         this.minMaxUpdate();
-        _super.prototype.navigateTo.call(this, view, date);
+        _super.prototype.navigateTo.call(this, view, date, isCustomDate);
     };
     /**
      * Gets the current view of the Calendar.
@@ -2365,6 +2365,15 @@ var Calendar = /** @class */ (function (_super) {
             this.changedArgs = { value: this.value, values: this.values };
             this.changeHandler();
         }
+    };
+    /**
+     * To set custom today date in calendar
+     * @private
+     */
+    Calendar.prototype.setTodayDate = function (date) {
+        var todayDate = new Date(+date);
+        this.setProperties({ value: todayDate }, true);
+        _super.prototype.todayButtonClick.call(this, null, todayDate, true);
     };
     Calendar.prototype.update = function () {
         this.validateDate();

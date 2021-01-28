@@ -26,6 +26,7 @@ export class ContextMenu {
     private rowData: IGanttData;
     public segmentIndex: number = -1;
     private clickedPosition: number;
+    private targetElement: Element;
     /**
      * @private
      */
@@ -91,6 +92,8 @@ export class ContextMenu {
 
     private contextMenuItemClick(args: CMenuClickEventArgs): void {
         this.item = this.getKeyFromId(args.item.id);
+        let position: RowPosition;
+        let data: Object; let taskfields: TaskFieldsModel;
         let parentItem: ContextMenuItemModel = getValue('parentObj', args.item);
         let index: number = -1;
         if (parentItem && !isNullOrUndefined(parentItem.id) && this.getKeyFromId(parentItem.id) === 'DeleteDependency') {
@@ -112,9 +115,9 @@ export class ContextMenu {
             case 'Above':
             case 'Below':
             case 'Child':
-                let position: RowPosition = this.item;
-                let data: Object = extend({}, {}, this.rowData.taskData, true);
-                let taskfields: TaskFieldsModel = this.parent.taskFields;
+                position = this.item;
+                data = extend({}, {}, this.rowData.taskData, true);
+                taskfields = this.parent.taskFields;
                 if (!isNullOrUndefined(taskfields.dependency)) {
                     data[taskfields.dependency] = null;
                 }
@@ -196,7 +199,8 @@ export class ContextMenu {
             rowData: this.rowData as IGanttData,
             requestType: 'splitTaskbar',
             splitDate: currentClickedDate,
-            cancel: false
+            cancel: false,
+            target: this.targetElement
         };
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
             this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
@@ -214,7 +218,8 @@ export class ContextMenu {
             rowData: this.rowData as IGanttData,
             mergeSegmentIndexes: segmentIndexes,
             requestType: 'mergeSegment',
-            cancel: false
+            cancel: false,
+            target: this.targetElement
         };
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
             this.parent.chartRowsModule.mergeTask(this.rowData[taskSettings.id], segmentIndexes);
@@ -246,6 +251,10 @@ export class ContextMenu {
                 this.parent.ganttChartModule.targetElement;
         if (!isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {
             this.clickedPosition = getValue('event', args).clientX;
+        }
+        let targetElement: Element = closest(target, '.e-gantt-child-taskbar');
+        if (targetElement) {
+            this.targetElement = args.target = targetElement;
         }
         args.gridRow = closest(target, '.e-row');
         args.chartRow = closest(target, '.e-chart-row');

@@ -31,7 +31,6 @@ var SfLinearGauge = /** @class */ (function () {
     SfLinearGauge.prototype.gaugeOnResize = function () {
         var elementBounds = document.getElementById(this.element.id);
         if (elementBounds != null) {
-            elementBounds = elementBounds.parentElement;
             var width = elementBounds.clientWidth || elementBounds.offsetWidth;
             var height = elementBounds.clientHeight || elementBounds.offsetHeight;
             this.dotNetRef.invokeMethodAsync('TriggerResizeEvent', width, height);

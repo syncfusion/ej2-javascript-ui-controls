@@ -93,6 +93,9 @@ export class SheetTabs {
             },
             selected: (args: SelectEventArgs): void => {
                 if (args.selectedIndex === args.previousIndex) { return; }
+                if (this.parent.isEdit) {
+                    this.parent.endEdit();
+                }
                 if (this.isSelectCancel) {
                     this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
                     this.parent.element.focus();
@@ -192,16 +195,20 @@ export class SheetTabs {
         this.parent.element.focus();
     }
 
-    private insertSheetTab(args: { startIdx: number, endIdx: number }): void {
-        this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
+    private insertSheetTab(args: { startIdx: number, endIdx: number, preventUpdate?: boolean }): void {
+        if (!args.preventUpdate || args.startIdx === this.tabInstance.selectedItem) {
+            this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
+        }
         for (let i: number = args.startIdx; i <= args.endIdx; i++) {
             let sheetName: string = this.parent.sheets[i].name;
             this.dropDownInstance.items.splice(i, 0, <ItemModel>{ text: sheetName });
             this.tabInstance.addTab(<TabItemModel[]>[{ header: { text: sheetName }, content: '' }], i);
         }
-        this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
+        if (!args.preventUpdate || args.startIdx === this.tabInstance.selectedItem) {
+            this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
+        }
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        this.updateSheetTab({ idx: args.startIdx });
+        if (!args.preventUpdate) { this.updateSheetTab({ idx: args.startIdx }); }
     }
 
     private updateSheetTab(args: { idx: number, name?: string }): void {

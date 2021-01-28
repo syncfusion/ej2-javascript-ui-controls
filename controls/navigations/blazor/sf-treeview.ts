@@ -416,10 +416,22 @@ class SfTreeView {
             return null;
         }
     }
+    // tslint:disable
+    private getOffsetValue(e: any, direction: string): number {
+        let value: number;
+        let classList: DOMTokenList = e.target.classList;
+        if (Browser.info.name === 'mozilla' && !isNOU(classList)) {
+            let rect: ClientRect = e.target.getBoundingClientRect();
+            value =  Math.ceil((direction === 'Y') ? (e.event.clientY - rect.top) : (e.event.clientX - rect.left));
+        } else {
+            value = (direction === 'Y') ? e.event.offsetY : e.event.offsetX;
+        }
+        return value;
+    }
 
     // tslint:disable
     private dropAction(e: any, isBlazorDrop?: boolean): void {
-        let offsetY: number = e.event.offsetY;
+        let offsetY: number = this.getOffsetValue(e, 'Y');
         let dropTarget: Element = <Element>e.target;
         let dragObj: SfTreeView;
         let level: number;
@@ -504,8 +516,9 @@ class SfTreeView {
         let checkContainer: HTMLElement = closest(dropTarget, '.' + CHECKBOXWRAP) as HTMLElement;
         let collapse: Element = closest(e.target, '.' + COLLAPSIBLE);
         let expand: Element = closest(e.target, '.' + EXPANDABLE);
-        if (!dragLi.classList.contains(DISABLE) && !checkContainer && ((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)
-            || (expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) || (!expand && !collapse))) {
+        let offsetX: number = this.getOffsetValue (e, "X");
+        if (!dragLi.classList.contains(DISABLE) && !checkContainer && ((expand && offsetY < 5) || (collapse && offsetX < 3)
+            || (expand && offsetY > 19) || (collapse && offsetX > 19) || (!expand && !collapse))) {
             if (dropTarget.nodeName === 'LI') {
                 this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
             } else if (dropTarget.firstElementChild && dropTarget.classList.contains(ROOT)) {
@@ -529,14 +542,16 @@ class SfTreeView {
         let dropParentLi: Element = closest(dropUl, '.' + LISTITEM);
         let dropParentLiId: string = null, dragParentLiId: string = null;
         let pre: boolean;
-        if (e.target.offsetHeight > 0 && e.event.offsetY > e.target.offsetHeight - 2) {
+        let offsetX = this.getOffsetValue(e, "X");
+        let offsetY = this.getOffsetValue(e, "Y");
+        if (e.target.offsetHeight > 0 && offsetY > e.target.offsetHeight - 2) {
             pre = false;
-        } else if (e.event.offsetY < 2) {
+        } else if (offsetY < 2) {
             pre = true;
         } else if (e.target.classList.contains(EXPANDABLE) || (e.target.classList.contains(COLLAPSIBLE))) {
-            if ((e.event.offsetY < 5) || (e.event.offsetX < 3)) {
+            if ((offsetY < 5) || (offsetX < 3)) {
                 pre = true;
-            } else if ((e.event.offsetY > 15) || (e.event.offsetX > 17)) {
+            } else if ((offsetY > 15) || (offsetX > 17)) {
                 pre = false;
             }
         }
@@ -610,6 +625,8 @@ class SfTreeView {
         let dropRoot: Element = closest(e.target, '.' + DROPPABLE);
         let dropWrap: Element = closest(e.target, '.' + TEXTWRAP);
         let icon: Element = select('div.' + ICON, virtualEle);
+        let offsetX: number = this.getOffsetValue(e,"X");
+        let offsetY: number = this.getOffsetValue(e, "Y");
         removeClass([icon], [DROPIN, DROPNEXT, DROPOUT, NODROP]);
         this.removeVirtualEle();
         document.body.style.cursor = EMPTY;
@@ -624,15 +641,15 @@ class SfTreeView {
             let expand: Element = closest(e.target, '.' + EXPANDABLE);
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                if ((dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkContainer) ||
-                    (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)))) {
+                if ((dropLi && e && (!expand && !collapse) && (offsetY < 7) && !checkContainer) ||
+                    (((expand && offsetY < 5) || (collapse && offsetX < 3)))) {
                     addClass([icon], DROPNEXT);
                     let element: Element = createElement('div', { className: SIBLING });
                     let index: number = this.options.fullRowSelect ? (1) : (0);
                     dropLi.insertBefore(element, dropLi.children[index]);
-                } else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && e.event.offsetY >
-                    (e.target.offsetHeight - 10)) && !checkContainer) || (((expand && e.event.offsetY > 19) ||
-                    (collapse && e.event.offsetX > 19)))) {
+                } else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && offsetY >
+                    (e.target.offsetHeight - 10)) && !checkContainer) || (((expand && offsetY > 19) ||
+                    (collapse && offsetX > 19)))) {
                     addClass([icon], DROPNEXT);
                     let element: Element = createElement('div', { className: SIBLING });
                     let index: number = this.options.fullRowSelect ? (2) : (1);
@@ -675,10 +692,11 @@ class SfTreeView {
     }
 
     private renderVirtualEle(e: DragEventArgs): void {
+        let offsetY = this.getOffsetValue(e, "Y");
         let previous: boolean;
-        if (e.event.offsetY > e.target.offsetHeight - 2) {
+        if (offsetY > e.target.offsetHeight - 2) {
             previous = false;
-        } else if (e.event.offsetY < 2) {
+        } else if (offsetY < 2) {
             previous = true;
         }
         let element: Element = createElement('div', { className: SIBLING });
@@ -1154,13 +1172,13 @@ class SfTreeView {
     }
 
     private unselectNode(li: Element, e: MouseEvent | KeyboardEventArgs, multiSelect: boolean): void {
-        let eventArgs: NodeSelectEventArgs = this.getSelectEvent(li, 'un-select', e);
-        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs, multiSelect, e.ctrlKey, e.shiftKey, []);
+        let eventArgs: NodeSelectEventArgs = this.getSelectEvent(li, 'un-select', e, multiSelect, []);
+        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs);
     }
 
-    private getSelectEvent(currLi: Element, action: string, e: MouseEvent | KeyboardEventArgs): NodeSelectEventArgs {
+    private getSelectEvent(currLi: Element, action: string, e: MouseEvent | KeyboardEventArgs, multiSelect: boolean, nodes: string[]): NodeSelectEventArgs {
         let detail: { [key: string]: Object } = this.getNodeData(currLi);
-        return { action: action, isInteracted: !isNOU(e), nodeData: detail };
+        return { action: action, isInteracted: !isNOU(e), nodeData: detail, isMultiSelect: multiSelect, isCtrKey: e.ctrlKey, isShiftKey: e.shiftKey, nodes: nodes };
     }
 
     private selectNode(li: Element, e: MouseEvent | KeyboardEventArgs, multiSelect?: boolean): void {
@@ -1169,7 +1187,6 @@ class SfTreeView {
             this.focussedElement = li;
             return;
         }
-        let eventArgs: NodeSelectEventArgs = this.getSelectEvent(li, 'select', e);
         let array: string[] = [];
         if (this.options.allowMultiSelection && e && e.shiftKey) {
             if (!this.startNode) {
@@ -1190,7 +1207,9 @@ class SfTreeView {
                 }
             }
         }
-        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs, multiSelect, e.ctrlKey, e.shiftKey, array);
+        let eventArgs: NodeSelectEventArgs = this.getSelectEvent(li, 'select', e, multiSelect, array);
+        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs);
+        this.startNode = li;
     }
 
     private setFocusElement(li: Element): void {
@@ -1220,10 +1239,6 @@ class SfTreeView {
             select('.' + LISTITEM + '.' + FOCUS, this.element);
         if (isNOU(fNode)) { selectedItem = select('.' + LISTITEM, this.element); }
         return isNOU(fNode) ? (isNOU(selectedItem) ? this.element.firstElementChild : selectedItem) : fNode;
-    }
-
-    public selectedNode(nodeId: string): void {
-        this.startNode = this.element.querySelector('[data-uid="' + nodeId + '"]');
     }
 
     public setFullRow(isEnabled: boolean): void {
@@ -1619,6 +1634,10 @@ export interface NodeSelectEventArgs {
     action: string;
     isInteracted: boolean;
     nodeData: { [key: string]: Object };
+    isMultiSelect?: boolean;
+    isCtrKey?: boolean;
+    isShiftKey?: boolean;
+    nodes?: string[];
 }
 
 export interface NodeExpandEventArgs {
@@ -1728,11 +1747,6 @@ let TreeView: object = {
     collapsedNode(element: BlazorTreeViewElement, args: NodeExpandEventArgs): void {
         if (this.valid(element)) {
             element.blazor__instance.collapsedNode(args);
-        }
-    },
-    selectedNode(element: BlazorTreeViewElement, args: string): void {
-        if (this.valid(element)) {
-            element.blazor__instance.selectedNode(args);
         }
     },
     KeyActionHandler(element: BlazorTreeViewElement, args: KeyboardEventArgs, nodeId: string): void {

@@ -393,6 +393,14 @@ export interface IResizeEventArgs  {
     chart: Chart | AccumulationChart | StockChart;
     /** Defines the name of event */
 }
+
+export interface IBeforeResizeEventArgs {
+    /** Defines the name of the Event */
+    name: string;
+    /** It is  used to cancel the resized event */
+    cancelResizedEvent: boolean;
+}
+
 /**
  * Interface for point drag and drop
  */

@@ -1471,6 +1471,8 @@ var tooltipRender = 'tooltipRender';
 /** @private */
 var resized = 'resized';
 /** @private */
+
+/** @private */
 var beforePrint = 'beforePrint';
 /** @private */
 

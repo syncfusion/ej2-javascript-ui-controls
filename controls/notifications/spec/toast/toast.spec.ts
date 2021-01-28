@@ -1894,3 +1894,33 @@ describe("EJ2-33526 XSS attack prevent with enableHtmlSanitizer as true", () => 
         expect(toastEle.firstElementChild.querySelectorAll('script').length).toBe(0);
     });
 });
+    describe("EJ2-44891 Toast progress bar left to right direction", () => {
+        let toast: Toast;
+        beforeEach((): void => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "toast";
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toast) {
+                toast.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Toast Title & Content property default value testing", (done) => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({
+                title: '<script>alert("title")</script>',
+                content: '<script>alert("content")</script>',
+                timeOut: 5000,
+                progressDirection: 'Ltr',
+                showProgressBar : true
+            }, ele);
+            toast.show();
+            setTimeout(() => {
+                (toast.element.querySelector('.e-toast-progress') as HTMLElement).style.width = "2.02%"
+                done();
+            }, 100);
+        });
+    });
+

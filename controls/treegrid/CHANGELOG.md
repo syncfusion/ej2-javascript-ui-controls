@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.39 (2021-01-28)
+
+### TreeGrid
+
+#### New Features
+
+- `#280065` - Provided support to maintain Tree Grid state(expand/collapse) while on Exporting.
+
 ## 18.4.35 (2021-01-19)
 
 ### TreeGrid

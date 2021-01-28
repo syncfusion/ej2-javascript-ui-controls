@@ -441,7 +441,7 @@ export class NavigationPane {
                             let annotationData: any =  atob(importFile);
                             if (annotationData) {
                                 // tslint:disable-next-line:max-line-length
-                                this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Xfdf);
+                                this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Xfdf, true);
                             }
                         }
                     };

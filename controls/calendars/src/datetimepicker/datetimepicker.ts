@@ -509,6 +509,7 @@ export class DateTimePicker extends DatePicker {
     }
 
     private focusHandler(): void {
+        if (!this.enabled) { return; }
         addClass([this.inputWrapper.container], INPUTFOCUS);
     }
 
@@ -532,6 +533,7 @@ export class DateTimePicker extends DatePicker {
     }
 
     protected blurHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         // IE popup closing issue when click over the scrollbar
         if (this.isTimePopupOpen() && this.isPreventBlur) {
             this.inputElement.focus();
@@ -797,6 +799,7 @@ export class DateTimePicker extends DatePicker {
 
     }
     private timeHandler(e?: MouseEvent): void {
+        if (!this.enabled) { return; }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -820,6 +823,7 @@ export class DateTimePicker extends DatePicker {
     }
 
     private dateHandler(e?: MouseEvent): void {
+        if (!this.enabled) { return; }
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
             e.preventDefault();
         }
@@ -1713,7 +1717,6 @@ export class DateTimePicker extends DatePicker {
                     if (!this.enabled) {
                         this.inputElement.tabIndex = -1;
                     }
-                    this.bindEvents();
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;

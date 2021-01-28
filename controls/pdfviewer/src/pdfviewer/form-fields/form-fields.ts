@@ -74,16 +74,12 @@ export class FormFields {
                         let inputField: any = this.createFormFields(currentData, pageIndex, i);
                         if (inputField) {
                             // tslint:disable-next-line
+                            let divElement: any = this.createParentElement(currentData, pageIndex);
+                            // tslint:disable-next-line
                             let bounds: any = currentData['LineBounds'];
                             // tslint:disable-next-line
                             let font: any = currentData['Font'];
                             // tslint:disable-next-line
-                            let divElement: any = document.createElement('div');
-                            if (currentData.Name === 'Textbox') {
-                                divElement.style.background = 'white';
-                            }
-                            // tslint:disable-next-line
-                            this.applyPosition(divElement, bounds, font, pageIndex, currentData['Rotation']);
                             // tslint:disable-next-line
                             this.applyPosition(inputField, bounds, font, pageIndex, currentData['Rotation']);
                             inputField.InsertSpaces = currentData.InsertSpaces;
@@ -93,7 +89,6 @@ export class FormFields {
                                 // tslint:disable-next-line
                                 inputField.style.letterSpacing = '' + font + 'px';
                                 inputField.style.fontFamily = 'monospace';
-                                divElement.style.background = 'transparent';
                             }
                             // tslint:disable-next-line
                             currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
@@ -105,10 +100,19 @@ export class FormFields {
                             // tslint:disable-next-line
                             if (currentData['Rotation'] === 0) {
                                 let rotationAngle: number = this.getAngle(pageIndex);
-                                divElement.style.transform = 'rotate(' + rotationAngle + 'deg)';
+                                if (divElement) {
+                                    divElement.style.transform = 'rotate(' + rotationAngle + 'deg)';
+                                } else {
+                                    inputField.style.transform = 'rotate(' + rotationAngle + 'deg)';
+                                }
                             }
-                            divElement.appendChild(inputField);
-                            textLayer.appendChild(divElement);
+                            if (divElement) {
+                                divElement.appendChild(inputField);
+                                textLayer.appendChild(divElement);
+                            } else {
+                                inputField.style.position = 'absolute';
+                                textLayer.appendChild(inputField);
+                            }
                             inputField.addEventListener('focus', this.focusFormFields.bind(this));
                             inputField.addEventListener('blur', this.blurFormFields.bind(this));
                             inputField.addEventListener('click', this.updateFormFields.bind(this));
@@ -122,6 +126,28 @@ export class FormFields {
                 window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(this.formFieldsData));
             }
         }
+    }
+    // tslint:disable-next-line
+    private createParentElement(data: any, pageIndex: number): any {
+        // tslint:disable-next-line
+        let divElement: any;
+        // tslint:disable-next-line
+        if (data['Name'] === 'Textbox' || data['Name'] === 'Password') {
+            divElement = document.createElement('div');
+            divElement.style.background = 'white';
+            if (data.InsertSpaces) {
+                divElement.style.background = 'transparent';
+            }
+            // tslint:disable-next-line
+            let bounds: any = data['LineBounds'];
+            // tslint:disable-next-line
+            let font: any = data['Font'];
+            // tslint:disable-next-line
+            divElement.style.position = 'absolute';
+            // tslint:disable-next-line
+            this.applyPosition(divElement, bounds, font, pageIndex, data['Rotation']);
+        }
+        return divElement;
     }
     private getAngle(pageIndex: number): number {
         // tslint:disable-next-line
@@ -506,9 +532,13 @@ export class FormFields {
             this.updateDataInSession(currentTarget);
         } else if (currentTarget.className === 'e-pdfviewer-signatureformFields') {
             this.currentTarget = currentTarget;
-            this.pdfViewerBase.signatureModule.showSignatureDialog(true);
         } else if (currentTarget.className === 'e-pv-buttonItem' || currentTarget.type === 'button') {
             this.pdfViewer.fireButtonFieldClickEvent(currentTarget.value, currentTarget.name, currentTarget.id);
+        }
+        for (let m: number = 0; m < this.pdfViewer.formFieldCollections.length; m++) {
+            if (currentTarget.id === this.pdfViewer.formFieldCollections[m].id) {
+                this.pdfViewer.fireFormFieldClickEvent('formFieldClicked', this.pdfViewer.formFieldCollections[m]);
+            }
         }
     }
     /**
@@ -554,21 +584,37 @@ export class FormFields {
             };
             signString = annot.data;
         } else {
-            // tslint:disable-next-line
-            if (this.pdfViewer.signatureFitMode === 'Default') {
-                // tslint:disable-next-line
-                let signatureBounds: any = this.updateSignatureAspectRatio(currentValue, false, currentField);
-                bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
-            } else {
+            if ((currentValue.indexOf('base64')) !== -1) {
                 bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+                annot = {
+                    // tslint:disable-next-line:max-line-length
+                    id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                };
+                signString = annot.data;
+            } else {
+                // tslint:disable-next-line
+                if (this.pdfViewer.signatureFitMode === 'Default') {
+                    // tslint:disable-next-line
+                    let signatureBounds: any = this.updateSignatureAspectRatio(currentValue, false, currentField);
+                    bounds = { x: currentLeft + signatureBounds.left, y: currentTop + signatureBounds.top, width: signatureBounds.width, height: signatureBounds.height };
+                } else {
+                    bounds = { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight };
+                }
+                annot = {
+                    // tslint:disable-next-line:max-line-length
+                    id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
+                    shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                };
             }
-            annot = {
-                // tslint:disable-next-line:max-line-length
-                id: currentField.id, bounds: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height }, pageIndex: currentPage, data: currentValue, modifiedDate: '',
-                shapeAnnotationType: 'Path', opacity: 1, rotateAngle: this.getAngle(currentPage), annotName: '', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
-            };
         }
         this.pdfViewer.add(annot as PdfAnnotationBase);
+        if (annot && annot.shapeAnnotationType === 'Path' && currentValue !== '') {
+            // tslint:disable-next-line
+            let position: any = { currentHeight: currentHeight, currentWidth: currentWidth, currentLeft: currentLeft, currentTop: currentTop };
+            this.pdfViewerBase.signatureModule.addSignatureCollection(bounds, position);
+            signString = this.pdfViewerBase.signatureModule.saveImageString;
+        }
         // tslint:disable-next-line
         let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
         // tslint:disable-next-line
@@ -1130,7 +1176,10 @@ export class FormFields {
             let bounds: any = data['LineBounds'];
             // tslint:disable-next-line
             let font: any = data['Font'];
-            this.applyPosition(inputFields, bounds, font);
+            inputFields.style.position = 'absolute';
+            inputFields.style.border = '0px';
+            // tslint:disable-next-line
+            this.applyPosition(inputFields, bounds, font, pageIndex, data['Rotation']);
             inputFields.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
             inputFields.className = 'e-pdfviewer-formFields';
             if (data.selectedIndex === -1) {
@@ -1350,12 +1399,10 @@ export class FormFields {
      */
     // tslint:disable-next-line:max-line-length
     public setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, fontHeight: number, width: number, height: number, isPrint: boolean): void {
-        if (textDiv && (textDiv.tagName.toLowerCase() === 'div')) {
-            textDiv.style.position = 'absolute';
-        }
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         if (isPrint) {
             zoomvalue = 1;
+            textDiv.style.position = 'absolute';
         }
         textDiv.style.left = left * zoomvalue + 'px';
         textDiv.style.top = top * zoomvalue + 'px';
@@ -1418,7 +1465,7 @@ export class FormFields {
     }
 
     public resetFormFields(): void {
-         let formFieldData: FormFieldModel[] = this.pdfViewer.formFieldCollections;
+        let formFieldData: FormFieldModel[] = this.pdfViewer.formFieldCollections;
          for (let i: number = 0; i < formFieldData.length; i++) {
              let currentData: FormFieldModel = formFieldData[i];
              this.currentTarget = document.getElementById(currentData.id);
@@ -1452,15 +1499,25 @@ export class FormFields {
             }
     }
 
-    public clearFormFields(): void {
+    // tslint:disable-next-line
+    public clearFormFields(formField?: any): void {
          // tslint:disable-next-line
          let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
          // tslint:disable-next-line
-         let formFieldsData: any = JSON.parse(data);
+         let formFieldsData: any;
+         if (formField) {
+            formFieldsData = [formField];
+         } else {
+           formFieldsData = JSON.parse(data);
+         }
          let isFirstRadio: boolean = true;
          for (let m: number = 0; m < formFieldsData.length; m++) {
             // tslint:disable-next-line
             let currentData: any = formFieldsData[m];
+            if (formField) {
+                currentData.uniqueID = formField.id;
+                currentData.Name = formField.type;
+            }
             // tslint:disable-next-line
             this.currentTarget = document.getElementById(currentData.uniqueID);
             if (currentData.Name === 'Textbox') {
@@ -1482,7 +1539,13 @@ export class FormFields {
                     if (this.currentTarget && this.currentTarget.className === 'e-pdfviewer-signatureformFields signature') {
                         this.currentTarget.className = 'e-pdfviewer-signatureformFields';
                         this.currentTarget.style.pointerEvents = '';
+                        this.currentTarget.parentElement.style.pointerEvents = '';
                         this.updateDataInSession(this.currentTarget, '');
+                        if (formField) {
+                            formField.value = '';
+                            formField.signatureType = [formField.signatureType];
+                            formField.signatureType[0] = '';
+                        }
                     }
                     this.pdfViewer.remove(annotation);
                     this.pdfViewer.renderDrawing();

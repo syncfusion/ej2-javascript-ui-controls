@@ -13614,7 +13614,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let ul = select('.' + PARENTITEM, liEle);
         let childItems = getValue(this.fields.child.toString(), newNodeData);
         if ((isRefreshChild && ul) || (isRefreshChild && !isNullOrUndefined(childItems))) {
-            liEle.innerHTML = newliEle[0].innerHTML;
+            let parentEle = liEle.parentElement;
+            let index = Array.prototype.indexOf.call(parentEle.childNodes, liEle);
+            remove(liEle);
+            parentEle.insertBefore(newliEle[0], parentEle.childNodes[index]);
             this.updatePosition(id, newNodeData, isRefreshChild, newData);
             if (isRefreshChild && ul) {
                 this.expandAll([id]);
@@ -13638,9 +13641,12 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     addClass([newIcon], 'interaction');
                 }
             }
-            txtEle.innerHTML = newTextEle.innerHTML;
+            remove(txtEle);
+            let fullEle = select('.' + FULLROW, liEle);
+            fullEle.parentNode.insertBefore(newTextEle, fullEle.nextSibling);
             this.updatePosition(id, newNodeData, isRefreshChild, newData);
         }
+        liEle = this.getElement(target);
         if (newNodeData[this.fields.tooltip]) {
             liEle.setAttribute("title", newNodeData[this.fields.tooltip]);
         }
@@ -13654,6 +13660,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             else {
                 attributes(liEle, attr);
             }
+        }
+        if (this.selectedNodes.indexOf(id) !== -1) {
+            liEle.setAttribute('aria-selected', 'true');
+            addClass([liEle], ACTIVE);
         }
         this.isRefreshed = false;
         this.triggerEvent();

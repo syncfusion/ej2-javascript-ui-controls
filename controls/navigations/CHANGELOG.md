@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.4.39 (2021-01-28)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#302025` - The issue with "The TreeView template node content disappears while calling the `refreshNode` method" has been resolved.
+- `#300093` - Now, the TreeView template node custom events will be triggered after using the `refreshNode` method.
+
 ## 18.4.35 (2021-01-19)
 
 ### TreeView

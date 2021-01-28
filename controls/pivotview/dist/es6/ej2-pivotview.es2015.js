@@ -3734,15 +3734,23 @@ class PivotEngine {
                 }
                 parentMember = (level || hierarchy[iln].formattedText);
                 if (!this.showHeaderWhenEmpty && rlen - 1 > keyInd && hierarchy[iln].index &&
-                    hierarchy[iln].index.length > 0 && !showNoDataItems) {
-                    let headerValue = data[hierarchy[iln].index[0]][this.fieldKeys[keys[keyInd + 1].name]];
-                    let hasChild = (isNullOrUndefined(headerValue) || (this.localeObj &&
-                        headerValue === this.localeObj.getConstant('undefined'))) && hierarchy[iln].index.length === 1 ? false : true;
-                    hierarchy[iln].hasChild = hasChild;
-                }
-                else if (!this.showHeaderWhenEmpty && showNoDataItems && keys[keyInd + 1] && keys[keyInd + 1].name &&
-                    Object.keys(this.fieldList[keys[keyInd + 1].name].members).length) {
-                    hierarchy[iln].hasChild = true;
+                    hierarchy[iln].index.length > 0) {
+                    if (showNoDataItems && keys[keyInd + 1] && keys[keyInd + 1].name &&
+                        Object.keys(this.fieldList[keys[keyInd + 1].name].members).length > 0) {
+                        hierarchy[iln].hasChild = true;
+                    }
+                    else {
+                        let hIndLen = hierarchy[iln].index.length;
+                        let count = 0;
+                        for (let len = 0; len < hIndLen; len++) {
+                            let headerValue = data[hierarchy[iln].index[len]][this.fieldKeys[keys[keyInd + 1].name]];
+                            if ((isNullOrUndefined(headerValue) || (this.localeObj &&
+                                headerValue === this.localeObj.getConstant('undefined')))) {
+                                count++;
+                            }
+                        }
+                        hierarchy[iln].hasChild = count !== hIndLen;
+                    }
                 }
                 if (rlen - 1 > keyInd && hierarchy[iln].isDrilled) {
                     this.columnCount -= (!(this.showSubTotals && this.showColumnSubTotals && field.showSubTotals) && axis === 'column') ?
@@ -14008,7 +14016,7 @@ class PivotChart {
                         let measureAllow = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
                         let actualText = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
-                        if (!cell.isGrandSum && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                        if (!(this.parent.dataType === 'olap' && cell.isGrandSum) && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                             actualText !== '' && ((chartSettings.enableMultiAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ? true : actualText === this.currentMeasure)) {
                             if (isNullOrUndefined(firstRowCell.members)) {
                                 firstRowCell.members = [];
@@ -14421,7 +14429,7 @@ class PivotChart {
     }
     pointClick(args) {
         let dataSource = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
-        if ((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) {
+        if (((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) && this.parent.dataSourceSettings.rows.length > 1) {
             this.pivotIndex = {
                 rIndex: dataSource ? dataSource[args.pointIndex].rIndex : undefined,
                 cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined,

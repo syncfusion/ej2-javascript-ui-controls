@@ -380,6 +380,8 @@ const workbookOpen = 'workbookOpen';
 /** @hidden */
 const beginSave = 'beginSave';
 /** @hidden */
+const getFilteredCollection = 'getFilteredCollection';
+/** @hidden */
 const saveCompleted = 'saveCompleted';
 /** @hidden */
 const applyNumberFormatting = 'applyNumber';
@@ -806,7 +808,7 @@ class WorkbookNumberFormat {
     }
     accountingFormat(args, intl) {
         args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
-        args.format = args.format.split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
+        args.format = args.format.split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
         let currencySymbol = getNumberDependable(this.parent.locale, 'USD');
         let formatArr = args.format.split(';');
         if (Number(args.value) >= 0) {
@@ -1082,6 +1084,7 @@ function getTypeFromFormat(format) {
         case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
         case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
         case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
+        case '_ $ * #,##0.00_ ;_ $ * -#,##0.00_ ;_ $ * "-"??_ ;_ @_ ':
             code = 'Accounting';
             break;
         case 'mm-dd-yyyy':
@@ -4677,7 +4680,7 @@ class Parser {
             this.tokenGreater, this.tokenEqual, this.tokenLessEq, this.tokenGreaterEq, this.tokenNotEqual, this.tokenAnd, this.tokenOr
         ];
         this.charNOTop = String.fromCharCode(167);
-        this.specialSym = ['~', '@', '#', '?', '%'];
+        this.specialSym = ['~', '@', '#', '?'];
         this.isFailureTriggered = false;
         this.parent = parent;
     }
@@ -4899,7 +4902,7 @@ class Parser {
                     if (this.parent.isDigit(formula[i])) {
                         form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i] : form + formula[i];
                     }
-                    if (formula[i] === '-') {
+                    if (formula[i] === '-' || formula[i] === '+') {
                         form = form + formula[i];
                         form = form.split('++').join('+').split('+-').join('-').split('-+').join('-');
                     }
@@ -6673,7 +6676,7 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let rangevalue = argArr[0];
-        let criteria = argCount > 2 ? argArr[2].trim() : argArr[1].trim();
+        let criteria = argArr[1].trim();
         criteria = criteria.split(this.tic).join(this.emptyString);
         if (criteria.length > 255) {
             return this.getErrorStrings()[CommonErrors.value];
@@ -6704,8 +6707,8 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             criteria = criteria.substring(1);
         }
         let checkCriteria = this.parseFloat(criteria);
-        let criteriaRangeArray = argCount === 2 ? rangevalue : argArr[1];
-        let sumRange = this.getCellCollection(argArr[0]);
+        let criteriaRangeArray = argArr[0];
+        let sumRange = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
         let criteriaRange = this.getCellCollection(criteriaRangeArray);
         let result = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt);
         return [result[0], result[1]];
@@ -6893,6 +6896,12 @@ let Calculate = Calculate_1 = class Calculate extends Base {
                             let value1 = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
                             let val1 = this.parseFloat(value1);
                             sum = sum + val1;
+                            count = count + 1;
+                        }
+                        else if (value === criteria) {
+                            let sumRangeVal = sumRange[i];
+                            sumRangeVal = this.getValueFromArg(sumRangeVal);
+                            sum = this.parseFloat(sumRangeVal.toString());
                             count = count + 1;
                         }
                     }
@@ -7343,7 +7352,7 @@ let Calculate = Calculate_1 = class Calculate extends Base {
             }
         }
         let num2 = stack.pop();
-        num2 = num2 === this.emptyString ? '0' : num2;
+        num2 = num2 === this.emptyString ? (stack.length ? stack.pop() : '0') : num2;
         num = Number(num2);
         if (isNaN(num)) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
@@ -7559,6 +7568,15 @@ let Calculate = Calculate_1 = class Calculate extends Base {
         }
         cellRanges = cellRanges.toString().split(',,').join(',');
         cellRanges = cellRanges.split(this.getParseArgumentSeparator());
+        let len = [];
+        for (let i = 0; i < cellRanges.length; i++) {
+            len.push(this.getCellCollection(cellRanges[i]).length);
+        }
+        for (let j = 0; j < len.length; j++) {
+            if (len[j] && len[j + 1] && len[j] !== len[j + 1]) {
+                return this.getErrorStrings()[CommonErrors.value];
+            }
+        }
         let cellvalue;
         let isCriteria;
         if (isCountIfs === this.falseValue) {
@@ -9526,7 +9544,7 @@ class WorkbookSort {
             return;
         }
         let containsHeader = sortOptions.containsHeader;
-        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //if selected range is a single cell 
+        if (range[0] === range[2]) { //if selected range is a single cell 
             range[0] = 0;
             range[1] = 0;
             range[2] = sheet.usedRange.rowIndex;
@@ -9603,6 +9621,70 @@ class WorkbookSort {
             });
         });
     }
+    getDataRange(rowIdx, colIdx, sheet) {
+        let range = [rowIdx, colIdx, rowIdx, colIdx];
+        let j;
+        let rIdx = rowIdx;
+        let cIdx = colIdx;
+        let loopLength = 0;
+        let length = sheet.usedRange.rowIndex + sheet.usedRange.colIndex;
+        for (let i = 1; i < length + 1; i++) {
+            for (j = -loopLength; j < loopLength + 1; j++) { // start from right
+                if (getCell(rIdx + j, cIdx + i, sheet)) {
+                    range[2] = range[2] > rIdx + j ? range[2] : rIdx + j;
+                    range[3] = range[3] > cIdx + i ? range[3] : cIdx + i;
+                }
+            }
+            if (getCell(rIdx + i, cIdx + i, sheet)) {
+                range[2] = range[2] > rIdx + i ? range[2] : rIdx + i;
+                range[3] = range[3] > cIdx + i ? range[3] : cIdx + i;
+            }
+            for (j = -loopLength; j < loopLength + 1; j++) {
+                if (getCell(rIdx + i, cIdx + j, sheet)) {
+                    range[2] = range[2] > rIdx + i ? range[2] : rIdx + i;
+                    range[3] = range[3] > cIdx + j ? range[3] : cIdx + j;
+                }
+            }
+            if (!getCell(rIdx, cIdx, sheet)) {
+                if (range[3] === colIdx && range[2] === rowIdx && range[0] === rowIdx && range[1] === colIdx) {
+                    if (loopLength === 0) {
+                        break;
+                    }
+                }
+            }
+            if (getCell(rIdx + i, cIdx - i, sheet)) {
+                range[2] = range[2] > rIdx + i ? range[2] : rIdx + i;
+                range[1] = range[1] < cIdx - i ? range[1] : cIdx - i;
+            }
+            for (j = -loopLength; j < loopLength + 1; j++) {
+                if (getCell(rIdx + j, cIdx - i, sheet)) {
+                    range[0] = range[0] < rIdx + j ? range[0] : rIdx + j;
+                    range[1] = range[1] < cIdx - i ? range[1] : cIdx - i;
+                    range[2] = range[2] > rIdx + j ? range[2] : rIdx + j;
+                }
+            }
+            if (getCell(rIdx - i, cIdx - i, sheet)) {
+                range[0] = range[0] < rIdx - i ? range[0] : rIdx - i;
+                range[1] = range[1] < cIdx - i ? range[1] : cIdx - i;
+            }
+            for (j = -loopLength; j < loopLength + 1; j++) {
+                if (getCell(rIdx - i, cIdx + j, sheet)) {
+                    range[0] = range[0] < rIdx - i ? range[0] : rIdx - i;
+                    range[1] = range[1] < cIdx + j ? range[1] : cIdx + j;
+                    range[3] = range[3] > cIdx + j ? range[3] : cIdx + j;
+                }
+            }
+            if (getCell(rIdx - i, cIdx + i, sheet)) {
+                range[0] = range[0] < rIdx - i ? range[0] : rIdx - i;
+                range[3] = range[3] > cIdx + i ? range[3] : cIdx + i;
+            }
+            if (range[3] === colIdx && range[2] === rowIdx && range[0] === rowIdx && range[1] === colIdx) {
+                break;
+            }
+            loopLength++;
+        }
+        return range;
+    }
     /**
      * Compares the two cells for sorting.
      * @param sortDescriptor - protocol for sorting.
@@ -9614,7 +9696,7 @@ class WorkbookSort {
         let direction = sortDescriptor.order || '';
         let comparer = DataUtil.fnSort(direction);
         let caseOptions = { sensitivity: caseSensitive ? 'case' : 'base' };
-        if (x && y && typeof x.value === 'string') {
+        if (x && y && (typeof x.value === 'string' || typeof y.value === 'string')) {
             let collator = new Intl.Collator(this.parent.locale, caseOptions);
             if (!direction || direction.toLowerCase() === 'ascending') {
                 return collator.compare(x.value, y.value);
@@ -10485,7 +10567,7 @@ class WorkbookEdit {
             let isFormula = checkIsFormula(value);
             if (!isFormula) {
                 cell.formula = '';
-                cell.value = value;
+                cell.value = this.parseIntValue(value);
             }
             let eventArgs = {
                 action: 'refreshCalculate',
@@ -10524,6 +10606,9 @@ class WorkbookEdit {
         if (this.parent.allowChart) {
             this.parent.notify(refreshChart, { cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
+    }
+    parseIntValue(value) {
+        return /^\d*\.?\d*$/.test(value) ? parseFloat(value) : value;
     }
 }
 
@@ -10727,6 +10812,7 @@ class WorkbookInsert {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) {
                 return;
             }
+            delete model[0].index;
             this.parent.createSheet(index, model);
             let id;
             if (args.activeSheetIndex) {
@@ -13839,6 +13925,32 @@ __decorate$3([
     Property('')
 ], CellStyle.prototype, "borderRight", void 0);
 /**
+ * Represents the Filter Collection.
+ */
+class FilterCollection extends ChildProperty {
+}
+__decorate$3([
+    Property()
+], FilterCollection.prototype, "sheetIdx", void 0);
+__decorate$3([
+    Property()
+], FilterCollection.prototype, "filterRange", void 0);
+__decorate$3([
+    Property(false)
+], FilterCollection.prototype, "hasFilter", void 0);
+__decorate$3([
+    Property()
+], FilterCollection.prototype, "column", void 0);
+__decorate$3([
+    Property()
+], FilterCollection.prototype, "criteria", void 0);
+__decorate$3([
+    Property()
+], FilterCollection.prototype, "value", void 0);
+__decorate$3([
+    Property()
+], FilterCollection.prototype, "dataType", void 0);
+/**
  * Represents the DefineName.
  */
 class DefineName extends ChildProperty {
@@ -14737,7 +14849,7 @@ function initSheet(context, sheet) {
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
         sheet.topLeftCell = sheet.topLeftCell || 'A1';
         sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = sheet.selectedRange || 'A1:A1';
+        sheet.selectedRange = getMaxSelectionRange(sheet.selectedRange || 'A1:A1', sheet);
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
@@ -14753,6 +14865,16 @@ function initSheet(context, sheet) {
         initRow(sheet.rows);
     });
     processIdx(sheets, true, context);
+}
+function getMaxSelectionRange(range, sheet) {
+    let selectedIndex = getRangeIndexes(range);
+    if (selectedIndex[2] > sheet.rowCount) {
+        selectedIndex[2] = sheet.rowCount - 1;
+    }
+    if (selectedIndex[3] > sheet.colCount) {
+        selectedIndex[3] = sheet.colCount - 1;
+    }
+    return getRangeAddress(selectedIndex);
 }
 function initRow(rows) {
     rows.forEach((row) => {
@@ -14885,6 +15007,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * Applies the style (font family, font weight, background color, etc...) to the specified range of cells.
      * @param {CellStyleModel} style - Specifies the cell style.
      * @param {string} range? - Specifies the address for the range of cells.
+     * {% codeBlock src='spreadsheet/cellFormat/index.md' %}{% endcodeBlock %}
      */
     cellFormat(style, range) {
         let sheet = this.getActiveSheet();
@@ -14895,6 +15018,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * Applies cell lock to the specified range of cells.
      * @param {string} range? - Specifies the address for the range of cells.
      * @param {boolean} isLocked -Specifies the cell is locked or not.
+     * {% codeBlock src='spreadsheet/lockCells/index.md' %}{% endcodeBlock %}
      */
     lockCells(range, isLocked) {
         let sheet = this.getActiveSheet();
@@ -14917,6 +15041,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * Applies the number format (number, currency, percentage, short date, etc...) to the specified range of cells.
      * @param {string} format - Specifies the number format code.
      * @param {string} range? - Specifies the address for the range of cells.
+     * {% codeBlock src='spreadsheet/numberFormat/index.md' %}{% endcodeBlock %}
      */
     numberFormat(format, range) {
         this.notify(applyNumberFormatting, { format: format, range: range });
@@ -15005,6 +15130,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * @param {string} range? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @param {BorderType} type? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @returns void
+     * {% codeBlock src='spreadsheet/setBorder/index.md' %}{% endcodeBlock %}
      */
     setBorder(style, range, type) {
         this.notify(setCellFormat, {
@@ -15016,6 +15142,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
      * @param {number} endRow? - Specifies the end row index.
      * @returns void
+     * {% codeBlock src='spreadsheet/insertRow/index.md' %}{% endcodeBlock %}
      */
     insertRow(startRow, endRow) {
         this.notify(insertModel, { model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
@@ -15025,6 +15152,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
      * @param {number} endColumn? - Specifies the end column index.
      * @returns void
+     * {% codeBlock src='spreadsheet/insertColumn/index.md' %}{% endcodeBlock %}
      */
     insertColumn(startColumn, endColumn) {
         this.notify(insertModel, {
@@ -15034,9 +15162,10 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     }
     /**
      * Used to insert sheets in to the spreadsheet.
-     * @param {number | SheetModel[]} startSheet? - Specifies the start column index / column model which needs to be inserted.
-     * @param {number} endSheet? - Specifies the end column index.
+     * @param {number | SheetModel[]} startSheet? - Specifies the start sheet index / sheet model which needs to be inserted.
+     * @param {number} endSheet? - Specifies the end sheet index.
      * @returns void
+     * {% codeBlock src='spreadsheet/insertSheet/index.md' %}{% endcodeBlock %}
      */
     insertSheet(startSheet, endSheet) {
         this.notify(insertModel, { model: this, start: startSheet, end: endSheet, modelType: 'Sheet' });
@@ -15050,6 +15179,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * - Column: To delete columns.
      * - Sheet: To delete sheets.
      * @returns void
+     * {% codeBlock src='spreadsheet/delete/index.md' %}{% endcodeBlock %}
      */
     delete(startIndex, endIndex, model) {
         this.notify(deleteModel, {
@@ -15064,6 +15194,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * - Horizontally: Merge the cells row-wise.
      * - Vertically: Merge the cells column-wise.
      * @returns void
+     * {% codeBlock src='spreadsheet/merge/index.md' %}{% endcodeBlock %}
      */
     merge(range, type) {
         let sheetIdx = this.getAddressInfo(range).sheetIndex;
@@ -15074,6 +15205,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     /** Used to compute the specified expression/formula.
      * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
      * @returns string | number
+     * {% codeBlock src='spreadsheet/computeExpression/index.md' %}{% endcodeBlock %}
      */
     computeExpression(formula) {
         let args = {
@@ -15112,6 +15244,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     /**
      * Gets the range of data as JSON from the specified address.
      * @param {string} address - Specifies the address for range of cells.
+     * {% codeBlock src='spreadsheet/getData/index.md' %}{% endcodeBlock %}
      */
     getData(address) {
         return getData(this, address);
@@ -15164,6 +15297,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * which is saved from spreadsheet using saveAsJson method.
      *
      * @param options - Options for opening the JSON object.
+     * {% codeBlock src='spreadsheet/openFromJson/index.md' %}{% endcodeBlock %}
      */
     openFromJson(options) {
         this.isOpen = true;
@@ -15179,6 +15313,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * * saveType: Specifies the file type need to be saved.
      *
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
+     * {% codeBlock src='spreadsheet/save/index.md' %}{% endcodeBlock %}
      */
     save(saveOptions = {}) {
         if (this.allowSave) {
@@ -15200,6 +15335,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     }
     /**
      * Saves the Spreadsheet data as JSON object.
+     * {% codeBlock src='spreadsheet/saveAsJson/index.md' %}{% endcodeBlock %}
      */
     saveAsJson() {
         return new Promise((resolve) => {
@@ -15219,6 +15355,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     /**
      * To find the specified cell value.
      * @param args - options for find.
+     * {% codeBlock src='spreadsheet/findHandler/index.md' %}{% endcodeBlock %}
      */
     findHandler(args) {
         if (args.findOpt === 'next') {
@@ -15231,6 +15368,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     /**
      * To replace the specified cell or entire match value.
      * @param args - options for replace.
+     * {% codeBlock src='spreadsheet/replaceHandler/index.md' %}{% endcodeBlock %}
      */
     replaceHandler(args) {
         if (args.replaceBy === 'replace') {
@@ -15315,6 +15453,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * To update a cell properties.
      * @param {CellModel} cell - Cell properties.
      * @param {string} address - Address to update.
+     * {% codeBlock src='spreadsheet/updateCell/index.md' %}{% endcodeBlock %}
      */
     updateCell(cell, address) {
         let sheetIdx;
@@ -15341,6 +15480,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * @param address - Address of the cell to be wrapped.
      * @param wrap - Set `false` if the text content of the cell to be unwrapped.
      * @returns void
+     * {% codeBlock src='spreadsheet/wrap/index.md' %}{% endcodeBlock %}
      */
     wrap(address, wrap$$1 = true) {
         wrap(address, wrap$$1, this);
@@ -15349,6 +15489,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * Adds the defined name to the Spreadsheet.
      * @param {DefineNameModel} definedName - Specifies the name.
      * @return {boolean} - Return the added status of the defined name.
+     * {% codeBlock src='spreadsheet/addDefinedName/index.md' %}{% endcodeBlock %}
      */
     addDefinedName(definedName) {
         let eventArgs = {
@@ -15364,6 +15505,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * @param {string} definedName - Specifies the name.
      * @param {string} scope - Specifies the scope of the defined name.
      * @return {boolean} - Return the removed status of the defined name.
+     * {% codeBlock src='spreadsheet/removeDefinedName/index.md' %}{% endcodeBlock %}
      */
     removeDefinedName(definedName, scope = '') {
         let eventArgs = {
@@ -15423,6 +15565,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     }
     /**
      * Clears the filter changes of the sheet.
+     * {% codeBlock src='spreadsheet/clearFilter/index.md' %}{% endcodeBlock %}
      */
     clearFilter() {
         this.notify(clearAllFilter, null);
@@ -15431,6 +15574,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      * To add custom library function.
      * @param {string} functionHandler - Custom function handler name
      * @param {string} functionName - Custom function name
+     * {% codeBlock src='spreadsheet/addCustomFunction/index.md' %}{% endcodeBlock %}
      */
     addCustomFunction(functionHandler, functionName) {
         functionName = functionName ? functionName : typeof functionHandler === 'string' ? functionHandler :
@@ -15451,6 +15595,7 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     }
     /**
      * Gets the formatted text of the cell.
+     * {% codeBlock src='spreadsheet/getDisplayText/index.md' %}{% endcodeBlock %}
      */
     getDisplayText(cell) {
         if (!cell) {
@@ -15497,6 +15642,9 @@ __decorate([
 __decorate([
     Property(true)
 ], Workbook.prototype, "allowFindAndReplace", void 0);
+__decorate([
+    Property()
+], Workbook.prototype, "filterCollection", void 0);
 __decorate([
     Property('100%')
 ], Workbook.prototype, "width", void 0);
@@ -16096,7 +16244,9 @@ function locateElem(ele, range, sheet, isRtl, offset) {
         'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + 'px'
     };
     attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
-    setStyleAttribute$1([{ element: ele, attrs: attrs }]);
+    if (ele) {
+        setStyleAttribute$1([{ element: ele, attrs: attrs }]);
+    }
 }
 /**
  * To update element styles using request animation frame
@@ -16692,6 +16842,9 @@ function updateAction(options, spreadsheet, isRedo) {
         case 'replace':
             spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
             break;
+        case 'filter':
+            spreadsheet.notify(initiateFilterUI, { predicates: null, range: eventArgs.range, sIdx: eventArgs.index, isCut: true });
+            break;
         case 'insert':
             if (isRedo === false) {
                 spreadsheet.delete(options.eventArgs.index, options.eventArgs.index + (options.eventArgs.model.length - 1), options.eventArgs.modelType);
@@ -16885,8 +17038,10 @@ function setRowEleHeight(parent, sheet, height, rowIdx, row, hRow, notifyRowHgtC
         }
         height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
     }
-    (row || parent.getRow(rowIdx)).style.height = `${height}px`;
-    if (sheet.showHeaders) {
+    if (row || parent.getRow(rowIdx)) {
+        (row || parent.getRow(rowIdx)).style.height = `${height}px`;
+    }
+    if (sheet.showHeaders && hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())) {
         (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
     }
     setRowHeight(sheet, rowIdx, height);
@@ -17221,9 +17376,18 @@ class Clipboard {
                     return;
                 }
                 let pasteType = beginEventArgs.type ? beginEventArgs.type : args.type;
+                let cRows = [];
+                let inRange = this.isInRange(cIdx, selIdx);
                 for (let i = cIdx[0], l = 0; i <= cIdx[2]; i++, l++) {
+                    if (inRange) {
+                        cRows[selIdx[0] + l] = { cells: [] };
+                    }
                     for (let j = cIdx[1], k = 0; j <= cIdx[3]; j++, k++) {
-                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
+                        if (inRange) {
+                            cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
+                        }
+                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, (inRange && cRows[i] && cRows[i].cells[j])
+                            ? cRows[i].cells[j] : getCell(i, j, prevSheet));
                         this.copiedCell = [i, j];
                         if (cell && args && args.type || pasteType) {
                             switch (pasteType) {
@@ -17255,7 +17419,9 @@ class Clipboard {
                                         mergeArgs = { range: [x + l, y + k, x + l, y + k] };
                                         let merge$$1 = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
                                         mergeCollection.push(merge$$1);
-                                        this.parent.notify(setMerge, merge$$1);
+                                        if (this.parent.activeSheetIndex === curSheet.index) {
+                                            this.parent.notify(setMerge, merge$$1);
+                                        }
                                     }
                                     let colInd = y + k;
                                     if (this.externalMerge && this.externalMergeRow === x + l) {
@@ -17330,6 +17496,7 @@ class Clipboard {
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
                 if (isCut) {
+                    this.updateFilter(copyInfo);
                     setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
                     let hgt = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
@@ -17339,6 +17506,38 @@ class Clipboard {
         else {
             this.getClipboardEle().select();
         }
+    }
+    updateFilter(copyInfo) {
+        if (!this.isFilterCut) {
+            this.parent.notify(getFilteredCollection, null);
+            for (let i = 0; i < this.parent.sheets.length; i++) {
+                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                    this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
+                    let range = copyInfo.range;
+                    let fRange = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                    let endCol = getColumnHeaderText(range[3]);
+                    let fEndCol = getColumnHeaderText(fRange[3]);
+                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                        this.isFilterCut = true;
+                    }
+                }
+            }
+        }
+        if (this.isFilterCut) {
+            for (let n = 0; n < this.parent.filterCollection.length; n++) {
+                let filterCol = this.parent.filterCollection[n];
+                let sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                    this.parent.activeSheetIndex;
+                if (filterCol.sheetIdx === sheetIndex) {
+                    this.parent.notify(initiateFilterUI, { predicates: null, range: filterCol.filterRange, sIdx: sheetIndex, isCut: true });
+                }
+            }
+            this.parent.notify(initiateFilterUI, { predicates: null, range: null, sIdx: null, isCut: true });
+            this.isFilterCut = false;
+        }
+    }
+    isInRange(cRng, pRng) {
+        return inRange(cRng, pRng[0], pRng[1]) || inRange(cRng, pRng[2], pRng[3]);
     }
     isFormula(selIdx) {
         let cIdxValue;
@@ -17466,13 +17665,27 @@ class Clipboard {
         return -1;
     }
     setCopiedInfo(args, isCut) {
-        if (this.parent.isEdit) {
+        if (this.parent.isEdit || this.isFilterCut) {
             return;
         }
         let deferred = new Deferred();
         args.promise = deferred.promise;
         let sheet = this.parent.getActiveSheet();
         let range = (args && args.range) || getRangeIndexes(sheet.selectedRange);
+        if (isCut) {
+            this.parent.notify(getFilteredCollection, null);
+            for (let i = 0; i < this.parent.sheets.length; i++) {
+                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                    this.parent.filterCollection[i].sheetIdx === this.parent.activeSheetIndex) {
+                    let fRange = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                    let endCol = getColumnHeaderText(range[3]);
+                    let fEndCol = getColumnHeaderText(fRange[3]);
+                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                        this.isFilterCut = true;
+                    }
+                }
+            }
+        }
         let option = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise: new Promise((resolve, reject) => { resolve((() => { })()); })
         };
@@ -18005,6 +18218,7 @@ class Edit {
                             }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
+                            this.isLockCellDelete(e);
                             this.editingHandler('delete');
                         }
                     }
@@ -18026,6 +18240,23 @@ class Edit {
                     }
                 }
             }
+        }
+    }
+    isLockCellDelete(e) {
+        let sheet = this.parent.getActiveSheet();
+        let count$$1 = 0;
+        let address = getRangeIndexes(sheet.selectedRange);
+        for (let row = address[2]; row <= address[0]; row++) {
+            for (let col = address[3]; col <= address[1]; col++) {
+                let cell = getCell(row, col, sheet);
+                if (isLocked(cell, getColumn(sheet, col))) {
+                    e.preventDefault();
+                    count$$1++;
+                }
+            }
+        }
+        if (count$$1 > 0) {
+            return;
         }
     }
     renderEditor() {
@@ -22991,6 +23222,9 @@ class UndoRedo {
             case 'beforeInsertChart':
                 address = getRangeIndexes(eventArgs.range);
                 break;
+            case 'filter':
+                address = getRangeIndexes(eventArgs.range);
+                break;
         }
         cells = this.getCellDetails(address, sheet);
         this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
@@ -23023,6 +23257,7 @@ class UndoRedo {
                     undoRedoArgs = this.performOperation(undoRedoArgs);
                     break;
                 case 'insert':
+                case 'filter':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
                 case 'delete':
@@ -23077,7 +23312,7 @@ class UndoRedo {
     updateUndoRedoCollection(options) {
         let actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
             'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
-            'chartRefresh'];
+            'chartRefresh', 'filter'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -23089,7 +23324,7 @@ class UndoRedo {
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
             action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
-            action === 'chartRefresh') {
+            action === 'chartRefresh' || action === 'filter') {
             let beforeActionDetails = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -23180,6 +23415,27 @@ class UndoRedo {
                 if (copiedInfo.isCut) {
                     let cells = actionData.cutCellDetails;
                     this.updateCellDetails(cells, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)), copiedInfo.range, isRefresh);
+                    this.parent.notify(getFilteredCollection, null);
+                    for (let i = 0; i < this.parent.sheets.length; i++) {
+                        let sheetIndex = getSheetIndexFromId(this.parent, copiedInfo.sId);
+                        if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                            this.parent.filterCollection[i].sheetIdx === eventArgs.pasteSheetIndex) {
+                            let filterCol = this.parent.filterCollection[i];
+                            let fRange = getRangeIndexes(filterCol.filterRange);
+                            let endCol = getColumnHeaderText(range[3]);
+                            let fEndCol = getColumnHeaderText(fRange[3]);
+                            if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                                this.parent.notify(initiateFilterUI, {
+                                    predicates: null, range: filterCol.filterRange,
+                                    sIdx: eventArgs.pasteSheetIndex, isCut: true
+                                });
+                                this.parent.notify(initiateFilterUI, {
+                                    predicates: null,
+                                    range: getRangeAddress(copiedInfo.range), sIdx: sheetIndex, isCut: true
+                                });
+                            }
+                        }
+                    }
                 }
                 this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
                 setMaxHgt(sheet, range[0], range[1], 20);
@@ -23519,8 +23775,10 @@ class Insert {
         }
         switch (args.modelType) {
             case 'Sheet':
-                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1) });
-                this.parent.renderModule.refreshSheet();
+                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !isAction });
+                if (args.index === this.parent.activeSheetIndex) {
+                    this.parent.renderModule.refreshSheet();
+                }
                 this.parent.element.focus();
                 break;
             case 'Row':
@@ -27050,6 +27308,7 @@ let Ribbon$1 = class Ribbon extends Component {
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
      * @method destroy
      * @return {void}
+     * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
      */
     destroy() {
         let expandCollapseElem = this.element.querySelector('.e-drop-icon');
@@ -31123,6 +31382,9 @@ class SheetTabs {
                 if (args.selectedIndex === args.previousIndex) {
                     return;
                 }
+                if (this.parent.isEdit) {
+                    this.parent.endEdit();
+                }
                 if (this.isSelectCancel) {
                     this.tabInstance.selectedItem = args.previousIndex;
                     this.tabInstance.dataBind();
@@ -31224,15 +31486,21 @@ class SheetTabs {
         this.parent.element.focus();
     }
     insertSheetTab(args) {
-        this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
+        if (!args.preventUpdate || args.startIdx === this.tabInstance.selectedItem) {
+            this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
+        }
         for (let i = args.startIdx; i <= args.endIdx; i++) {
             let sheetName = this.parent.sheets[i].name;
             this.dropDownInstance.items.splice(i, 0, { text: sheetName });
             this.tabInstance.addTab([{ header: { text: sheetName }, content: '' }], i);
         }
-        this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
+        if (!args.preventUpdate || args.startIdx === this.tabInstance.selectedItem) {
+            this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
+        }
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        this.updateSheetTab({ idx: args.startIdx });
+        if (!args.preventUpdate) {
+            this.updateSheetTab({ idx: args.startIdx });
+        }
     }
     updateSheetTab(args) {
         if (args.name === 'activeSheetChanged') {
@@ -32780,7 +33048,7 @@ class Sort {
         let eventArgs = { filterRange: [], hasFilter: false };
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //check for filter range
             this.parent.notify(getFilterRange, eventArgs);
-            if (eventArgs.hasFilter && eventArgs.filterRange) {
+            if (eventArgs.hasFilter && inRange(eventArgs.filterRange, range[0], range[1])) {
                 range[0] = eventArgs.filterRange[0];
                 range[1] = 0;
                 range[2] = sheet.usedRange.rowIndex;
@@ -32802,9 +33070,6 @@ class Sort {
      */
     sortCompleteHandler(args) {
         let range = getIndexesFromAddress(args.range);
-        if (args.sortOptions.containsHeader) {
-            range[0] += 1;
-        }
         this.parent.serviceLocator.getService('cell').refreshRange(range);
         this.parent.hideSpinner();
     }
@@ -32851,6 +33116,7 @@ class Filter {
         this.parent.on(filterCboxValue, this.filterCboxValueHandler, this);
         this.parent.on(getFilterRange, this.getFilterRangeHandler, this);
         this.parent.on(filterCellKeyDown, this.filterCellKeyDownHandler, this);
+        this.parent.on(getFilteredCollection, this.getFilteredCollection, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -32869,6 +33135,7 @@ class Filter {
             this.parent.on(filterCboxValue, this.filterCboxValueHandler);
             this.parent.off(getFilterRange, this.getFilterRangeHandler);
             this.parent.off(filterCellKeyDown, this.filterCellKeyDownHandler);
+            this.parent.off(getFilteredCollection, this.getFilteredCollection);
         }
     }
     /**
@@ -32881,8 +33148,9 @@ class Filter {
     /**
      * Validates the range and returns false when invalid.
      */
-    isInValidFilterRange(sheet) {
-        let selectedRange = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
+    isInValidFilterRange(sheet, range) {
+        let selectedRange = range ? getSwapRange(getIndexesFromAddress(range)) :
+            getSwapRange(getIndexesFromAddress(sheet.selectedRange));
         return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
     }
     /**
@@ -32932,7 +33200,10 @@ class Filter {
      */
     initiateFilterUIHandler(args) {
         let predicates = args ? args.predicates : null;
-        let sheetIdx = this.parent.activeSheetIndex;
+        let sheetIdx = args.sIdx;
+        if (!sheetIdx && sheetIdx !== 0) {
+            sheetIdx = this.parent.activeSheetIndex;
+        }
         if (this.filterRange.size > 0 && this.filterRange.has(sheetIdx)) { //disable filter
             this.removeFilter(sheetIdx);
             if (!predicates) {
@@ -32940,7 +33211,7 @@ class Filter {
             }
         }
         let sheet = getSheet(this.parent, sheetIdx);
-        if (this.isInValidFilterRange(sheet)) {
+        if (this.isInValidFilterRange(sheet, args.range)) {
             let l10n = this.parent.serviceLocator.getService(locale);
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
@@ -32951,13 +33222,17 @@ class Filter {
             range[0] = range[0] + 1; // to skip first row.
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData) => {
-                this.filterSuccessHandler(new DataManager(jsonData), { action: 'filtering', filterCollection: predicates, field: predicates[0].field });
+                this.filterSuccessHandler(new DataManager(jsonData), {
+                    action: 'filtering',
+                    filterCollection: predicates, field: predicates[0].field, sIdx: args.sIdx
+                });
                 predicates.forEach((predicate) => {
-                    if (this.filterClassList.get(sheetIdx)[predicate.field].indexOf(' e-filtered') < 0) {
+                    if (this.filterClassList.get(sheetIdx)[predicate.field] &&
+                        this.filterClassList.get(sheetIdx)[predicate.field].indexOf(' e-filtered') < 0) {
                         this.filterClassList.get(sheetIdx)[predicate.field] += ' e-filtered';
                     }
                 });
-                this.refreshFilterRange();
+                this.refreshFilterRange(null, false, args.sIdx);
             });
         }
     }
@@ -32975,7 +33250,7 @@ class Filter {
         this.filterRange.set(sheetIdx, range);
         this.filterCollection.set(sheetIdx, []);
         this.filterClassList.set(sheetIdx, {});
-        this.refreshFilterRange(range);
+        this.refreshFilterRange(range, false, sheetIdx);
     }
     /**
      * Removes all the filter related collections for the active sheet.
@@ -32988,7 +33263,7 @@ class Filter {
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
         this.filterClassList.delete(sheetIdx);
-        this.refreshFilterRange(range, true);
+        this.refreshFilterRange(range, true, sheetIdx);
     }
     /**
      * Handles filtering cell value based on context menu.
@@ -33023,7 +33298,7 @@ class Filter {
      * Creates filter buttons and renders the filter applied cells.
      */
     renderFilterCellHandler(args) {
-        let sheetIdx = this.parent.activeSheetIndex;
+        let sheetIdx = args.sIdx | this.parent.activeSheetIndex;
         if (this.filterRange.has(sheetIdx) && this.isFilterCell(sheetIdx, args.rowIndex, args.colIndex)) {
             if (!args.td) {
                 return;
@@ -33049,18 +33324,24 @@ class Filter {
     /**
      * Refreshes the filter header range.
      */
-    refreshFilterRange(filterRange, remove$$1) {
-        let range = filterRange || this.filterRange.get(this.parent.activeSheetIndex).slice();
+    refreshFilterRange(filterRange, remove$$1, sIdx) {
+        let sheetIdx = sIdx;
+        if (!sheetIdx && sheetIdx !== 0) {
+            sheetIdx = this.parent.activeSheetIndex;
+        }
+        let range = filterRange || this.filterRange.get(sheetIdx).slice();
         for (let index = range[1]; index <= range[3]; index++) {
             let cell = this.parent.getCell(range[0], index);
             if (remove$$1) {
-                if (cell.hasChildNodes()) {
+                if (cell && cell.hasChildNodes()) {
                     let element = cell.querySelector('.e-filter-btn');
-                    cell.removeChild(element);
+                    if (element) {
+                        cell.removeChild(element);
+                    }
                 }
             }
             else {
-                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index });
+                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index, sIdx: sheetIdx });
             }
         }
     }
@@ -33220,10 +33501,12 @@ class Filter {
             let field = args.column[fieldKey];
             let dataKey = 'dataObj';
             let rowKey = '__rowIndex';
-            let indexes = getCellIndexes(field + args.data[dataKey][rowKey]);
-            let cell = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
-            if (cell && cell.format) {
-                args.value = this.parent.getDisplayText(cell);
+            if (args.value) {
+                let indexes = getCellIndexes(field + args.data[dataKey][rowKey]);
+                let cell = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+                if (cell && cell.format) {
+                    args.value = this.parent.getDisplayText(cell);
+                }
             }
         }
     }
@@ -33258,7 +33541,10 @@ class Filter {
      * Triggers when OK button or clear filter item is selected
      */
     filterSuccessHandler(dataSource, args) {
-        let sheetIdx = this.parent.activeSheetIndex;
+        let sheetIdx = args.sIdx;
+        if (!sheetIdx && sheetIdx !== 0) {
+            sheetIdx = this.parent.activeSheetIndex;
+        }
         let predicates = this.filterCollection.get(sheetIdx);
         let dataManager = new DataManager(predicates);
         let query = new Query();
@@ -33408,7 +33694,7 @@ class Filter {
      * Gets the filter information of the sheet.
      */
     getFilterRangeHandler(args) {
-        let sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
+        let sheetIdx = args.sheetIdx;
         if (this.filterRange && this.filterRange.has(sheetIdx)) {
             args.hasFilter = true;
             args.filterRange = this.filterRange.get(sheetIdx);
@@ -33448,6 +33734,45 @@ class Filter {
             ]
         };
         return customOperators;
+    }
+    /**
+     * To get filtered range and predicates collections
+     */
+    getFilteredCollection() {
+        let sheetLen = this.parent.sheets.length;
+        let col = [];
+        let fil;
+        for (let i = 0; i < sheetLen; i++) {
+            let range;
+            let hasFilter;
+            let args = { sheetIdx: i, filterRange: range, hasFilter: hasFilter };
+            this.getFilterRangeHandler(args);
+            if (args.hasFilter) {
+                let colCollection = [];
+                let condition = [];
+                let value = [];
+                let type = [];
+                let predicate = this.filterCollection.get(args.sheetIdx);
+                for (let i = 0; i < predicate.length; i++) {
+                    if (predicate[i].field && predicate[i].operator) {
+                        let colIdx = getCellIndexes(predicate[i].field + '1')[1];
+                        colCollection.push(colIdx);
+                        condition.push(predicate[i].operator);
+                        value.push(predicate[i].value);
+                        type.push(predicate[i].type);
+                    }
+                }
+                let address = getRangeAddress(args.filterRange);
+                fil = {
+                    sheetIdx: args.sheetIdx, filterRange: address, hasFilter: args.hasFilter, column: colCollection,
+                    criteria: condition, value: value, dataType: type
+                };
+                col.push(fil);
+            }
+        }
+        if (fil) {
+            this.parent.filterCollection = col;
+        }
     }
 }
 
@@ -34333,6 +34658,9 @@ class SpreadsheetChart {
                     selectedTheme = selectedTheme ? selectedTheme : 'Material';
                     args.chart.theme = (selectedTheme.charAt(0).toUpperCase() +
                         selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+                },
+                beforeResize: (args) => {
+                    args.cancelResizedEvent = true; // This is for cancel the resized event.
                 }
             });
             this.chart.appendTo(chartContent);
@@ -36511,7 +36839,8 @@ class ActionEvents {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
             || args.action === 'beforeWrap' || args.action === 'beforeReplace'
-            || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart') {
+            || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart'
+            || args.action === 'filter') {
             this.parent.notify(setActionData, { args: args });
         }
     }
@@ -36914,6 +37243,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * By default, Spreadsheet shows the spinner for all its actions. To manually show spinner you this method at your needed time.
      * @return {void}
+     * {% codeBlock src='spreadsheet/showSpinner/index.md' %}{% endcodeBlock %}
      */
     showSpinner() {
         showSpinner(this.element);
@@ -36921,6 +37251,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * To hide showed spinner manually.
      * @return {void}
+     * {% codeBlock src='spreadsheet/hideSpinner/index.md' %}{% endcodeBlock %}
      */
     hideSpinner() {
         hideSpinner(this.element);
@@ -36931,6 +37262,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
      * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
      * @return {void}
+     * {% codeBlock src='spreadsheet/protectSheet/index.md' %}{% endcodeBlock %}
      */
     protectSheet(sheet, protectSettings) {
         if (typeof (sheet) === 'string') {
@@ -36948,6 +37280,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * To unprotect the particular sheet.
      * @param {number | string} sheet - Specifies the sheet to Unprotect.
      * @return {void}
+     * {% codeBlock src='spreadsheet/unprotectSheet/index.md' %}{% endcodeBlock %}
      */
     unprotectSheet(sheet) {
         if (typeof (sheet) === 'string') {
@@ -36973,6 +37306,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {number} args.sheetIndex - Specifies the current sheet to find.
      * @default { mode: 'Sheet', searchBy: 'By Row', isCSen: 'false', isEMatch:'false' }
      * @return {void}
+     * {% codeBlock src='spreadsheet/find/index.md' %}{% endcodeBlock %}
      */
     find(args) {
         super.findHandler(args);
@@ -36984,6 +37318,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
      * @param {string} args.value - Specifies the value to be replaced
      * @return {void}
+     * {% codeBlock src='spreadsheet/replace/index.md' %}{% endcodeBlock %}
      */
     replace(args) {
         args = {
@@ -37002,6 +37337,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {boolean} isEMatch - Specifies the find match with entire match or not.
      * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      * @return {string[]}
+     * {% codeBlock src='spreadsheet/findAll/index.md' %}{% endcodeBlock %}
      */
     findAll(value, mode, isCSen, isEMatch, sheetIndex) {
         mode = mode ? mode : 'Sheet';
@@ -37023,6 +37359,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * `{sheet name}!{cell address}` - Switch to specified sheet and navigate to specified cell address.
      * `{cell address}` - Navigate to specified cell address with in the active sheet.
      * @return {void}
+     * {% codeBlock src='spreadsheet/goTo/index.md' %}{% endcodeBlock %}
      */
     goTo(address) {
         if (address.includes('!')) {
@@ -37128,6 +37465,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     }
     /**
      * Used to resize the Spreadsheet.
+     * {% codeBlock src='spreadsheet/resize/index.md' %}{% endcodeBlock %}
      */
     resize() {
         this.renderModule.setSheetPanelSize();
@@ -37138,6 +37476,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * To cut the specified cell or cells properties such as value, format, style etc...
      * @param {string} address - Specifies the range address to cut.
+     * {% codeBlock src='spreadsheet/cut/index.md' %}{% endcodeBlock %}
      */
     cut(address) {
         let promise = new Promise((resolve, reject) => { resolve((() => { })()); });
@@ -37151,6 +37490,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * To copy the specified cell or cells properties such as value, format, style etc...
      * @param {string} address - Specifies the range address.
+     * {% codeBlock src='spreadsheet/copy/index.md' %}{% endcodeBlock %}
      */
     copy(address) {
         let activeAddress = this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
@@ -37167,6 +37507,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * This method is used to paste the cut or copied cells in to specified address.
      * @param {string} address - Specifies the cell or range address.
      * @param {PasteSpecialType} type - Specifies the type of paste.
+     * {% codeBlock src='spreadsheet/paste/index.md' %}{% endcodeBlock %}
      */
     paste(address, type) {
         this.notify(paste, {
@@ -37179,6 +37520,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string} options - It describes an action and event args to perform.
      * @param {string} options.action - specifies an action.
      * @param {string} options.eventArgs - specifies an args to perform an action.
+     * {% codeBlock src='spreadsheet/updateAction/index.md' %}{% endcodeBlock %}
      */
     updateAction(options) {
         updateAction(options, this);
@@ -37312,6 +37654,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * Spreadsheet.autoFit('1:4'); // Auto fit from 1 to 4 rows
      *
      * ```
+     * {% codeBlock src='spreadsheet/autoFit/index.md' %}{% endcodeBlock %}
      */
     autoFit(range) {
         let values = this.getIndexes(range);
@@ -37381,6 +37724,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * To add the hyperlink in the cell
      * @param {string | HyperlinkModel} hyperlink
      * @param {string} address
+     * {% codeBlock src='spreadsheet/addHyperlink/index.md' %}{% endcodeBlock %}
      */
     addHyperlink(hyperlink, address) {
         this.insertHyperlink(hyperlink, address, '', true);
@@ -37388,6 +37732,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * To remove the hyperlink in the cell
      * @param {string} range
+     * {% codeBlock src='spreadsheet/removeHyperlink/index.md' %}{% endcodeBlock %}
      */
     removeHyperlink(range) {
         let rangeArr;
@@ -37493,6 +37838,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * This method is used to add data validation.
      * @param {ValidationModel} rules - specifies the validation rules.
      * @param {string} range - range that needs to be add validation.
+     * {% codeBlock src='spreadsheet/addDataValidation/index.md' %}{% endcodeBlock %}
      */
     addDataValidation(rules, range) {
         super.addDataValidation(rules, range);
@@ -37500,6 +37846,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * This method is used for remove validation.
      * @param {string} range - range that needs to be remove validation.
+     * {% codeBlock src='spreadsheet/removeDataValidation/index.md' %}{% endcodeBlock %}
      */
     removeDataValidation(range) {
         super.removeDataValidation(range);
@@ -37507,6 +37854,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * This method is used to highlight the invalid data.
      * @param {string} range - range that needs to be highlight the invalid data.
+     * {% codeBlock src='spreadsheet/addInvalidHighlight/index.md' %}{% endcodeBlock %}
      */
     addInvalidHighlight(range) {
         super.addInvalidHighlight(range);
@@ -37514,6 +37862,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * This method is used for remove highlight from invalid data.
      * @param {string} range - range that needs to be remove invalid highlight.
+     * {% codeBlock src='spreadsheet/removeInvalidHighlight/index.md' %}{% endcodeBlock %}
      */
     removeInvalidHighlight(range) {
         super.removeInvalidHighlight(range);
@@ -37533,6 +37882,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * CFColor - 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT'.
      * @param  {string} value - Pass the value to set the conditional formatting.
      * @param  {string} range - Pass the range to set the conditional formatting.
+     * {% codeBlock src='spreadsheet/conditionalFormat/index.md' %}{% endcodeBlock %}
      */
     conditionalFormat(conditionalFormat) {
         super.conditionalFormat(conditionalFormat);
@@ -37540,6 +37890,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * This method is used for remove conditional formatting.
      * @param {string} range - range that needs to be remove conditional formatting.
+     * {% codeBlock src='spreadsheet/clearConditionalFormat/index.md' %}{% endcodeBlock %}
      */
     clearConditionalFormat(range) {
         range = range || this.getActiveSheet().selectedRange;
@@ -37555,6 +37906,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * Opens the Excel file.
      * @param {OpenOptions} options - Options for opening the excel file.
+     * {% codeBlock src='spreadsheet/open/index.md' %}{% endcodeBlock %}
      */
     open(options) {
         this.isOpen = true;
@@ -37584,6 +37936,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * This method is used to Clear contents, formats and hyperlinks in spreadsheet.
      *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.
+     * {% codeBlock src='spreadsheet/clear/index.md' %}{% endcodeBlock %}
      */
     clear(options) {
         this.notify(clearViewer, { options: options, isPublic: true });
@@ -37592,6 +37945,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * Used to refresh the spreadsheet.
      * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
      * @returns void
+     * {% codeBlock src='spreadsheet/refresh/index.md' %}{% endcodeBlock %}
      */
     refresh(isNew) {
         if (this[isReact]) {
@@ -37704,6 +38058,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * Sorts the range of cells in the active sheet.
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
+     * {% codeBlock src='spreadsheet/sort/index.md' %}{% endcodeBlock %}
      */
     sort(sortOptions, range) {
         if (!this.allowSorting) {
@@ -37852,12 +38207,14 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     }
     /**
      * To perform the undo operation in spreadsheet.
+     * {% codeBlock src='spreadsheet/undo/index.md' %}{% endcodeBlock %}
      */
     undo() {
         this.notify(performUndoRedo, { isUndo: true, isPublic: true });
     }
     /**
      * To perform the redo operation in spreadsheet.
+     * {% codeBlock src='spreadsheet/redo/index.md' %}{% endcodeBlock %}
      */
     redo() {
         this.notify(performUndoRedo, { isUndo: false, isPublic: true });
@@ -37865,6 +38222,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * To update the undo redo collection in spreadsheet.
      * @param {object} args - options for undo redo.
+     * {% codeBlock src='spreadsheet/updateUndoRedoCollection/index.md' %}{% endcodeBlock %}
      */
     updateUndoRedoCollection(args) {
         this.notify(updateUndoRedoCollection, { args: args, isPublic: true });
@@ -37956,6 +38314,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {boolean} insertAfter - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * {% codeBlock src='spreadsheet/addContextMenu/index.md' %}{% endcodeBlock %}
      */
     addContextMenuItems(items, text, insertAfter = true, isUniqueId) {
         this.notify(addContextMenuItems, { items: items, text: text, insertAfter: insertAfter, isUniqueId: isUniqueId });
@@ -37964,6 +38323,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * To remove existing context menu items.
      * @param {string[]} items - Items that needs to be removed.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * {% codeBlock src='spreadsheet/removeContextMenuItems/index.md' %}{% endcodeBlock %}
      */
     removeContextMenuItems(items, isUniqueId) {
         this.notify(removeContextMenuItems, { items: items, isUniqueId: isUniqueId });
@@ -37973,6 +38333,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * {% codeBlock src='spreadsheet/enableContextMenuItems/index.md' %}{% endcodeBlock %}
      */
     enableContextMenuItems(items, enable = true, isUniqueId) {
         this.notify(enableContextMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
@@ -37983,6 +38344,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
+     * {% codeBlock src='spreadsheet/enableFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     enableFileMenuItems(items, enable = true, isUniqueId) {
         this.notify(enableFileMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
@@ -37993,6 +38355,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
+     * {% codeBlock src='spreadsheet/hideFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     hideFileMenuItems(items, hide = true, isUniqueId) {
         this.notify(hideFileMenuItems, { items: items, hide: hide, isUniqueId: isUniqueId });
@@ -38005,6 +38368,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * By default, `items` are added after the `text`.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
+     * {% codeBlock src='spreadsheet/addFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     addFileMenuItems(items, text, insertAfter = true, isUniqueId) {
         this.notify(addFileMenuItems, { items: items, text: text, insertAfter: insertAfter, isUniqueId: isUniqueId });
@@ -38014,6 +38378,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
      * @returns void.
+     * {% codeBlock src='spreadsheet/hideRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     hideRibbonTabs(tabs, hide = true) {
         this.notify(hideRibbonTabs, { tabs: tabs, hide: hide });
@@ -38023,6 +38388,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
      * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
      * @returns void.
+     * {% codeBlock src='spreadsheet/enableRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     enableRibbonTabs(tabs, enable = true) {
         this.notify(enableRibbonTabs, { tabs: tabs, enable: enable });
@@ -38033,6 +38399,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
      * @returns void.
+     * {% codeBlock src='spreadsheet/addRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     addRibbonTabs(items, insertBefore) {
         this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
@@ -38044,6 +38411,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * If it is not specified the entire toolbar items will be enabled / disabled.
      * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
      * @returns void.
+     * {% codeBlock src='spreadsheet/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     enableToolbarItems(tab, items, enable) {
         this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable }]);
@@ -38054,6 +38422,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
      * @returns void.
+     * {% codeBlock src='spreadsheet/hideToolbarItems/index.md' %}{% endcodeBlock %}
      */
     hideToolbarItems(tab, indexes, hide = true) {
         this.notify(hideToolbarItems, { tab: tab, indexes: indexes, hide: hide });
@@ -38065,6 +38434,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      * @returns void.
+     * * {% codeBlock src='spreadsheet/addToolbarItems/index.md' %}{% endcodeBlock %}
      */
     addToolbarItems(tab, items, index) {
         this.notify(addToolbarItems, { tab: tab, items: items, index: index });
@@ -38072,6 +38442,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * Selects the cell / range of cells with specified address.
      * @param {string} address - Specifies the range address.
+     * {% codeBlock src='spreadsheet/selectRange/index.md' %}{% endcodeBlock %}
      */
     selectRange(address) {
         this.notify(selectRange, { indexes: getRangeIndexes(address) });
@@ -38079,6 +38450,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * Start edit the active cell.
      * @return {void}
+     * {% codeBlock src='spreadsheet/startEdit/index.md' %}{% endcodeBlock %}
      */
     startEdit() {
         this.notify(editOperation, { action: 'startEdit', isNewValueEdit: false });
@@ -38086,6 +38458,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * Cancels the edited state, this will not update any value in the cell.
      * @return {void}
+     * {% codeBlock src='spreadsheet/closeEdit/index.md' %}{% endcodeBlock %}
      */
     closeEdit() {
         this.notify(editOperation, { action: 'cancelEdit' });
@@ -38093,6 +38466,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * If Spreadsheet is in editable state, you can save the cell by invoking endEdit.
      * @return {void}
+     * {% codeBlock src='spreadsheet/endEdit/index.md' %}{% endcodeBlock %}
      */
     endEdit() {
         this.notify(editOperation, { action: 'endEdit' });
@@ -38220,6 +38594,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     /**
      * Appends the control within the given HTML Div element.
      * @param {string | HTMLElement} selector - Target element where control needs to be appended.
+     * {% codeBlock src='spreadsheet/appendTo/index.md' %}{% endcodeBlock %}
      */
     appendTo(selector) {
         super.appendTo(selector);
@@ -38247,6 +38622,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
     }
     /**
      * Applies the filter UI in the range of cells in the sheet.
+     * {% codeBlock src='spreadsheet/applyFilter/index.md' %}{% endcodeBlock %}
      */
     applyFilter(predicates, range) {
         this.notify(initiateFilterUI, { predicates: predicates, range: range });
@@ -38391,5 +38767,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, checkIsFormula, isCellReference, isChar, inRange, isLocked, isValidCellReference, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, chartRangeSelection, isReact, renderReactTemplates, clearTemplate, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, FilterCollection, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, getFilteredCollection, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, checkIsFormula, isCellReference, isChar, inRange, isLocked, isValidCellReference, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, chartRangeSelection, isReact, renderReactTemplates, clearTemplate, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

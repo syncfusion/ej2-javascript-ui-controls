@@ -4867,3 +4867,32 @@ describe('EJ2-45406 - rowDeselect events with persistSelection', () => {
         gridObj = rowDeselecting = null;
     });
 });
+
+describe('EJ2-45650 - Persist Checkbox selection not working properly with frozen column', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { persistSelection: true },
+                columns: [
+                    { type: "checkbox",  headerText: 'Check', width: 120 },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 , freeze: 'Left' },
+                    ],
+                height: 700,
+            }, done);
+    });
+    it('checking Deselect row with persistSelection and frozen column', () => {
+        let chkBox: any = gridObj.element.querySelectorAll('.e-checkselect')[0] as HTMLElement;
+        chkBox.click();
+        chkBox.click();
+        expect(chkBox.nextSibling.classList.contains('e-uncheck')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

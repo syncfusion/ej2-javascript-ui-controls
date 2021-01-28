@@ -13,6 +13,8 @@ export class ColumnChooser  {
     private mediaBindInstance: Object = {};
     private mediaColVisibility: { [key: string]: boolean } = {};
     private noOfTimesInvokedByMedia: number = 0;
+    private mediaChange: boolean = true;
+    private mediaColumnList: Column[] =[];
 
     constructor(parent: SfGrid) {
         this.parent = parent;
@@ -69,17 +71,30 @@ export class ColumnChooser  {
 
     private mediaQueryUpdate(columnIndex: number, e: MediaQueryList, invokedManually?: boolean) {
         let col: Column = this.parent.getColumns()[columnIndex];
+        let columnList: Column[] = this.parent.getColumns();
         if (this.mediaCol.some((mediaColumn: Column) => mediaColumn.uid === col.uid)) {
             this.mediaColVisibility[col.uid] = e.matches;
             if (!invokedManually) {
                 this.noOfTimesInvokedByMedia++;
-                if (this.noOfTimesInvokedByMedia == this.mediaCol.length) {
+                this.mediaChange = this.mediaColumnList.length === 0 ? true : false;
+                if (this.mediaChange) {
+                    for (let i: number = 0; i < columnList.length; i++) {
+                        if (columnList[i].hideAtMedia.split(" ").slice(-1).toLocaleString() === e.media.split(" ").slice(-1).toLocaleString()) {
+                            this.mediaColumnList.push(columnList[i]);
+                        }
+                    }
+                }
+                //TODO: This fix might could not work for complex HideMedia queries.
+                // we have to handle this by using Resize EventHandler Debounce.
+                if ((this.mediaColumnList.length > 0 && this.noOfTimesInvokedByMedia === this.mediaColumnList.length) 
+                        || (this.mediaCol.length > 0 && this.mediaColumnList.length === 0)) {
                     this.parent.dotNetRef.invokeMethodAsync('SetMediaColumnVisibility', {
                         mediaColVisibility: this.mediaColVisibility,
                         invokedByMedia: true
                     });
                     this.noOfTimesInvokedByMedia = 0;
                     this.mediaColVisibility = {};
+                    this.mediaColumnList = [];
                 }
             }
         }

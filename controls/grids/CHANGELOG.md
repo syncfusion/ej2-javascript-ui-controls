@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.4.39 (2021-01-28)
+
+### Grid
+
+#### Bug Fixes
+
+- `#310077` - Persist Checkbox selection with frozen columns issue has been fixed.
+- `#309205` - Script error While sorting in excel filter when more than one grid is rendered issue has been resolved.
+
+#### New Features
+
+- `#247931, #251431` - Provided the server side Excel and PDF export support.
+
 ## 18.4.35 (2021-01-19)
 
 ### Grid

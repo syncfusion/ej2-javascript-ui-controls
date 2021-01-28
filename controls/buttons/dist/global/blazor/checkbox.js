@@ -110,7 +110,7 @@ var CheckBox = /** @class */ (function (_super) {
             this.changeState('check');
             this.checked = true;
         }
-        var changeEventArgs = { checked: this.element.checked, event: event };
+        var changeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
     };
     /**
@@ -185,6 +185,9 @@ var CheckBox = /** @class */ (function (_super) {
         }
         if (this.value) {
             this.element.setAttribute('value', this.value);
+            if (this.isVue && typeof this.value === 'boolean' && this.value === true) {
+                this.setProperties({ 'checked': true }, true);
+            }
         }
         if (this.checked) {
             this.changeState('check');
@@ -311,6 +314,9 @@ var CheckBox = /** @class */ (function (_super) {
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (this.isVue && typeof newProp.value === 'object') {
+                        break;
+                    }
                     this.element.setAttribute('value', newProp.value);
                     break;
                 case 'htmlAttributes':
@@ -347,6 +353,7 @@ var CheckBox = /** @class */ (function (_super) {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
+        this.updateVueArrayModel(true);
         this.renderComplete();
         this.wrapper = this.getWrapper();
     };
@@ -411,6 +418,37 @@ var CheckBox = /** @class */ (function (_super) {
         if (this.tagName === 'EJS-CHECKBOX') {
             sf.base.EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
+    };
+    CheckBox.prototype.updateVueArrayModel = function (init) {
+        if (this.isVue && typeof this.value === 'object') {
+            var value = this.element.value;
+            if (value && this.value) {
+                if (init) {
+                    for (var i = 0; i < this.value.length; i++) {
+                        if (value === this.value[i]) {
+                            this.changeState('check');
+                            this.setProperties({ 'checked': true }, true);
+                        }
+                    }
+                }
+                else {
+                    var index = this.value.indexOf(value);
+                    if (this.checked) {
+                        if (index < 0) {
+                            this.value.push(value);
+                        }
+                    }
+                    else {
+                        if (index > -1) {
+                            this.value.splice(index, 1);
+                        }
+                    }
+                    // tslint:disable-next-line:no-any
+                    return this.value;
+                }
+            }
+        }
+        return this.element.checked;
     };
     CheckBox.prototype.updateHtmlAttributeToWrapper = function () {
         if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {

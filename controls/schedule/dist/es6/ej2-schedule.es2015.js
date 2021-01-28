@@ -6655,7 +6655,7 @@ class TimelineEvent extends MonthEvent {
                     && appWidth < this.cellWidth) {
                     let resizeHandlers = [].slice.call(appointmentElement.querySelectorAll('.' + EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach((resizeHandler) => {
-                        resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';
+                        resizeHandler.style.width = Math.ceil(appWidth / resizeHandler.getBoundingClientRect().width) + 'px';
                     });
                 }
             }
@@ -6704,7 +6704,7 @@ class TimelineEvent extends MonthEvent {
         this.parent.renderTemplates();
     }
     updateCellHeight(cell, height) {
-        if ((height > cell.offsetHeight)) {
+        if ((height > cell.getBoundingClientRect().height)) {
             setStyleAttribute(cell, { 'height': height + 'px' });
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 let resourceCell = this.parent.element.querySelector('.' + RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +

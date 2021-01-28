@@ -98,7 +98,7 @@ export namespace Input {
     }
     function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
         let inputValue: string = inputElement.value;
-        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+        if (inputValue !== '' && !isNullOrUndefined(inputValue) && inputElement.parentElement) {
             inputElement.parentElement.classList.add('e-valid-input');
         } else if (floatLabelType !== 'Always' && inputElement.parentElement) {
             inputElement.parentElement.classList.remove('e-valid-input');

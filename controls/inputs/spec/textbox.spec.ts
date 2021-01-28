@@ -2939,4 +2939,105 @@ describe('TextBox ', () => {
             expect(inputObj.textboxWrapper.container.classList.contains('e-hidden')).toBe(true);
         });
     });
+    describe('EJ2-45520', function () {
+        let inputObj: any;
+        let inputObject: any;
+        let textareaElement: HTMLElement = createElement('textarea', {id: 'textarea'});
+        let secondInputElement: HTMLElement = createElement('input', { id: 'secondTextbox' });
+        beforeEach(function () {
+            let firstInputElement: HTMLElement = createElement('input', { id: 'firstTextbox' });
+            document.body.appendChild(firstInputElement);
+
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('render with single input element with multiline as true', () => {
+            inputObj = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+                multiline: true
+            });
+            inputObj.appendTo('#firstTextbox');
+            let childElements = inputObj.textboxWrapper.container.children;
+            expect(inputObj.textarea.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObj.textarea.hasAttribute('id')).toBe(true);
+            expect(childElements[3].id).toBe(inputObj.textarea.getAttribute('aria-labelledby'));
+        });
+        it('render with two input element with multiline as true for both', () => {
+            document.body.appendChild(secondInputElement);
+            inputObj = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+                multiline: true
+            });
+            inputObj.appendTo('#firstTextbox');
+            inputObject = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+                multiline: true
+            });
+            inputObject.appendTo('#secondTextbox');
+            let firstChildElements = inputObj.textboxWrapper.container.children;
+            let secondChildElements = inputObject.textboxWrapper.container.children;
+            expect(inputObj.textarea.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObj.textarea.hasAttribute('id')).toBe(true);
+            expect(firstChildElements[3].id).toBe(inputObj.textarea.getAttribute('aria-labelledby'));
+            expect(inputObject.textarea.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObject.textarea.hasAttribute('id')).toBe(true);
+            expect(secondChildElements[3].id).toBe(inputObject.textarea.getAttribute('aria-labelledby'));
+            inputObject.destroy();
+        });
+        it('render with two input element one with multiline as true', () => {
+            document.body.appendChild(secondInputElement);
+            inputObj = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+                multiline: false
+            });
+            inputObj.appendTo('#firstTextbox');
+            inputObject = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+                multiline: true
+            });
+            inputObject.appendTo('#secondTextbox');
+            let firstChildElements = inputObj.textboxWrapper.container.children;
+            let secondChildElements = inputObject.textboxWrapper.container.children;
+            expect(inputObj.element.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObj.element.hasAttribute('id')).toBe(true);
+            expect(firstChildElements[2].id).toBe(inputObj.element.getAttribute('aria-labelledby'));
+            expect(inputObject.textarea.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObject.textarea.hasAttribute('id')).toBe(true);
+            expect(secondChildElements[3].id).toBe(inputObject.textarea.getAttribute('aria-labelledby'));
+            inputObject.destroy();
+        });
+        it('render with one textarea element and one input element with multiline as true', () => {
+            document.body.appendChild(textareaElement);
+            document.body.appendChild(secondInputElement);
+            inputObj = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+            });
+            inputObj.appendTo('#textarea');
+            inputObject = new TextBox({
+                placeholder: 'Enter your name',
+                floatLabelType: 'Auto',
+                multiline: true
+            });
+            inputObject.appendTo('#secondTextbox');
+            let firstChildElements = inputObj.textboxWrapper.container.children;
+            let secondChildElements = inputObject.textboxWrapper.container.children;
+            expect(inputObj.element.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObj.element.hasAttribute('id')).toBe(true);
+            expect(firstChildElements[2].id).toBe(inputObj.element.getAttribute('aria-labelledby'));
+            expect(inputObject.textarea.hasAttribute('aria-labelledby')).toBe(true);
+            expect(inputObject.textarea.hasAttribute('id')).toBe(true);
+            expect(secondChildElements[3].id).toBe(inputObject.textarea.getAttribute('aria-labelledby'));
+            inputObject.destroy();
+        });
+    });
 })

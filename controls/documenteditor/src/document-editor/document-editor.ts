@@ -1990,6 +1990,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.viewer) {
                 this.documentHelper.updateViewerSize();
             }
+            if (this.trackChangesPane.toolbar) {
+                this.trackChangesPane.toolbar.refreshOverflow();
+            }
         }
     }
     /**

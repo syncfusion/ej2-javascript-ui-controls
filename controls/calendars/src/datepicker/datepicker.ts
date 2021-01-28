@@ -697,50 +697,51 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     protected bindEvents(): void {
-        if (this.enabled) {
-            EventHandler.add(
-                this.inputWrapper.buttons[0],
-                'mousedown touchstart',
-                (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler),
-                this
-            );
-            EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            this.bindInputEvent();
-            // To prevent the twice triggering.
-            EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
-            }
-            if (this.formElement) {
-                EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
-            }
-        } else {
-            EventHandler.remove(
-                this.inputWrapper.buttons[0],
-                'mousedown touchstart',
-                (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler)
-            );
-            EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
-            }
+        EventHandler.add(
+            this.inputWrapper.buttons[0],
+            'mousedown touchstart',
+            (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler),
+            this
+        );
+        EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        this.bindInputEvent();
+        // To prevent the twice triggering.
+        EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
         }
         this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
         this.keyboardModules = new KeyboardEvents(
-            <HTMLElement>this.inputElement,
-            {
-                eventName: 'keydown',
-                keyAction: this.inputKeyActionHandle.bind(this),
-                keyConfigs: this.defaultKeyConfigs
-            });
+        <HTMLElement>this.inputElement,
+        {
+            eventName: 'keydown',
+            keyAction: this.inputKeyActionHandle.bind(this),
+            keyConfigs: this.defaultKeyConfigs
+        });
+    }
+
+    protected unBindEvents() : void {
+        EventHandler.remove(
+            this.inputWrapper.buttons[0],
+            'mousedown touchstart',
+            (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler)
+        );
+        EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
+        }
     }
     protected resetFormHandler(): void {
+        if (!this.enabled) { return; }
         if (!this.inputElement.disabled) {
             let value: string = this.inputElement.getAttribute('value');
             if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
@@ -767,6 +768,7 @@ export class DatePicker extends Calendar implements IInput {
             });
     }
     private inputChangeHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         e.stopPropagation();
     }
     private bindClearEvent(): void {
@@ -775,6 +777,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     protected resetHandler(e?: MouseEvent): void {
+        if (!this.enabled) { return; }
         e.preventDefault();
         this.clear(e);
     }
@@ -812,6 +815,7 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     private dateIconHandler(e?: MouseEvent): void {
+        if (!this.enabled) { return; }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -914,6 +918,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private inputFocusHandler(): void {
+        if (!this.enabled) { return; }
         let focusArguments: BlurEventArgs = {
             model: isBlazor() && this.isServerRendered ? null : this
         };
@@ -928,6 +933,7 @@ export class DatePicker extends Calendar implements IInput {
         this.isPopupClicked = false;
     }
     private inputBlurHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         if (!this.isBlazorServer) {
             this.strictModeUpdate();
             if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
@@ -1585,6 +1591,7 @@ export class DatePicker extends Calendar implements IInput {
      * @returns void
      */
     public destroy(): void {
+        this.unBindEvents();
         if (!this.isBlazorServer) {
             super.destroy();
             this.keyboardModules.destroy();
@@ -1976,7 +1983,6 @@ export class DatePicker extends Calendar implements IInput {
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.inputElement);
                     this.setAriaDisabled();
-                    this.bindEvents();
                     break;
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();

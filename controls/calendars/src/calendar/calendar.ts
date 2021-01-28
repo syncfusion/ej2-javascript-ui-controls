@@ -480,7 +480,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
-    protected setOverlayIndex(popupWrapper: HTMLElement, popupElement: HTMLElement, modal: HTMLElement, isDevice: Boolean, ): void {
+    protected setOverlayIndex(popupWrapper: HTMLElement, popupElement: HTMLElement, modal: HTMLElement, isDevice: Boolean): void {
         if (isDevice && !isNullOrUndefined(popupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
             let index: number = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
             modal.style.zIndex = (index - 1).toString();
@@ -713,7 +713,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     }
-    protected todayButtonClick(e?: MouseEvent | KeyboardEvent, value?: Date): void {
+    protected todayButtonClick(e?: MouseEvent | KeyboardEvent, value?: Date, isCustomDate?: boolean): void {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -721,9 +721,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 this.effect = 'e-zoomin';
             }
             if (this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                this.navigateTo(this.depth, new Date(this.checkValue(value)));
+                this.navigateTo(this.depth, new Date(this.checkValue(value)), isCustomDate);
             } else {
-                this.navigateTo('Month', new Date(this.checkValue(value)));
+                this.navigateTo('Month', new Date(this.checkValue(value)), isCustomDate);
             }
         }
     }
@@ -942,11 +942,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         return localDate;
     }
-    protected renderMonths(e?: Event, value?: Date): void {
+    protected renderMonths(e?: Event, value?: Date, isCustomDate?: boolean): void {
         let numCells: number = this.weekNumber ? 8 : 7;
         let tdEles: HTMLElement[];
         if (this.calendarMode === 'Gregorian') {
-            tdEles = this.renderDays(this.currentDate, e, value);
+            tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate);
         } else {
             tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
         }
@@ -958,9 +958,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     // tslint:disable-next-line:max-func-body-length
-    protected renderDays(currentDate: Date, e?: Event, value?: Date, multiSelection?: boolean, values?: Date[]): HTMLElement[] {
+    protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean): HTMLElement[] {
         let tdEles: HTMLElement[] = [];
         let cellsCount: number = 42;
+        let todayDate: Date = isTodayDate ? new Date(+currentDate) : new Date();
         let localDate: Date = new Date(this.checkValue(currentDate));
         let minMaxDate: Date;
         let numCells: number = this.weekNumber ? 8 : 7;
@@ -1072,10 +1073,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             } else {
                 this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
             }
-            if (date.getMonth() === new Date().getMonth() && date.getDate() === new Date().getDate()) {
-                if (date.getFullYear() === new Date().getFullYear()) {
-                    addClass([tdEle], TODAY);
-                }
+            if (date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
+                && date.getDate() === todayDate.getDate()) {
+                addClass([tdEle], TODAY);
             }
             tdEles.push(this.renderDayCellArgs.element);
             localDate = new Date(+minMaxDate);
@@ -1387,11 +1387,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 }
         }
     }
-    protected switchView(view: number, e?: Event, multiSelection?: boolean): void {
+    protected switchView(view: number, e?: Event, multiSelection?: boolean, isCustomDate?: boolean): void {
         switch (view) {
             case 0:
                 detach(this.tableBodyElement);
-                this.renderMonths(e);
+                this.renderMonths(e, null, isCustomDate);
                 if (multiSelection && !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
                     this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
                 }
@@ -1752,7 +1752,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
      */
-    public navigateTo(view: CalendarView, date: Date): void {
+    public navigateTo(view: CalendarView, date: Date, isCustomDate?: boolean): void {
         if (+date >= +this.min && +date <= +this.max) {
             this.currentDate = date;
         }
@@ -1768,7 +1768,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 view = this.depth;
             }
         }
-        this.switchView(this.getViewNumber(view));
+        this.switchView(this.getViewNumber(view), null, null, isCustomDate);
     }
     /** 
      * Gets the current view of the Calendar.
@@ -2057,7 +2057,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if ((!isNullOrUndefined(value) && value.getMonth()) === (!isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
             let tdEles: Element[];
             if (this.calendarMode === 'Gregorian') {
-                tdEles = this.renderDays(value, null);
+                tdEles = this.renderDays(value);
             } else {
                 tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
             }
@@ -2344,11 +2344,11 @@ export class Calendar extends CalendarBase {
     protected minMaxDate(localDate: Date): Date {
         return super.minMaxDate(localDate);
     }
-    protected renderMonths(e?: Event): void {
-        super.renderMonths(e, this.value);
+    protected renderMonths(e?: Event, value?: Date, isCustomDate?: boolean): void {
+        super.renderMonths(e, this.value, isCustomDate);
     }
-    protected renderDays(currentDate: Date, e?: Event): HTMLElement[] {
-        let tempDays: HTMLElement[] = super.renderDays(currentDate, e, this.value, this.isMultiSelection, this.values);
+    protected renderDays(currentDate: Date, value?: Date, isMultiSelect?: boolean, values?: Date[], isCustomDate?: boolean): HTMLElement[] {
+        let tempDays: HTMLElement[] = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
         if (this.isMultiSelection) {
             super.validateValues(this.isMultiSelection, this.values);
         }
@@ -2399,8 +2399,8 @@ export class Calendar extends CalendarBase {
         }
     }
 
-    protected switchView(view: number, e?: Event): void {
-        super.switchView(view, e, this.isMultiSelection);
+    protected switchView(view: number, e?: Event, isMultiSelection?: boolean, isCustomDate?: boolean): void {
+        super.switchView(view, e, this.isMultiSelection, isCustomDate);
     }
     /**
      * To get component name  
@@ -2495,9 +2495,9 @@ export class Calendar extends CalendarBase {
      * @returns void
      * @deprecated
      */
-    public navigateTo(view: CalendarView, date: Date): void {
+    public navigateTo(view: CalendarView, date: Date, isCustomDate?: boolean): void {
         this.minMaxUpdate();
-        super.navigateTo(view, date);
+        super.navigateTo(view, date, isCustomDate);
     }
     /** 
      * Gets the current view of the Calendar.
@@ -2579,6 +2579,16 @@ export class Calendar extends CalendarBase {
             this.changedArgs = { value: this.value, values: this.values };
             this.changeHandler();
         }
+    }
+
+    /**
+     * To set custom today date in calendar
+     * @private
+     */
+    public setTodayDate(date: Date): void {
+        let todayDate: Date = new Date(+date);
+        this.setProperties({ value: todayDate }, true);
+        super.todayButtonClick(null, todayDate, true);
     }
 
     protected update(): void {

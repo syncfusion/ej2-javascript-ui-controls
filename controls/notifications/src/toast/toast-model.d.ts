@@ -1,5 +1,5 @@
 import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';import { Browser, isNullOrUndefined as isNOU, getUniqueID, formatUnit, EventHandler, KeyboardEventArgs } from '@syncfusion/ej2-base';import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel, L10n } from '@syncfusion/ej2-base';import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined } from '@syncfusion/ej2-base';import { SwipeEventArgs, Touch, isBlazor, SanitizeHtmlHelper, removeClass } from '@syncfusion/ej2-base';import { ButtonModel, Button } from '@syncfusion/ej2-buttons';import { getZindexPartial } from '@syncfusion/ej2-popups';
-import {PositionX,PositionY,BeforeSanitizeHtmlArgs,ToastOpenArgs,ToastBeforeOpenArgs,ToastCloseArgs,ToastClickEventArgs} from "./toast";
+import {PositionX,PositionY,ProgressDirectionType,BeforeSanitizeHtmlArgs,ToastOpenArgs,ToastBeforeOpenArgs,ToastCloseArgs,ToastClickEventArgs} from "./toast";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -193,6 +193,11 @@ export interface ToastModel extends ComponentModel{
    * @default 5000
    */
     timeOut?: number;
+
+    /**
+   * Specifies whether to show the progress bar with left to right direction to denote the Toast message display timeout.
+   */
+    progressDirection?: ProgressDirectionType;
 
     /**
    * Specifies the Toast display time duration after interacting with the Toast. 

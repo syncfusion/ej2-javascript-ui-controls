@@ -1042,6 +1042,8 @@ var chartMouseUp = 'chartMouseUp';
 /** @private */
 var resized = 'resized';
 /** @private */
+
+/** @private */
 var beforePrint = 'beforePrint';
 /** @private */
 var annotationRender = 'annotationRender';

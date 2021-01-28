@@ -834,6 +834,8 @@ var setHeightToFrozenElement = 'set-height-to-frozen-element';
 var preventFrozenScrollRefresh = 'prevent-frozen-scroll-refresh';
 /** @hidden */
 var nextCellIndex = 'next-cell-index';
+/** @hidden */
+var refreshInfiniteCurrentViewData = 'refresh-infinite-current-view-data';
 
 /**
  * Defines types of Cell
@@ -1532,6 +1534,9 @@ var Row = /** @class */ (function () {
      * @return {void}
      */
     Row.prototype.setRowValue = function (data) {
+        if (!this.parent) {
+            return;
+        }
         var key = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
         this.parent.setRowData(key, data);
     };
@@ -1542,6 +1547,9 @@ var Row = /** @class */ (function () {
      * @return {void}
      */
     Row.prototype.setCellValue = function (field, value) {
+        if (!this.parent) {
+            return;
+        }
         var isValDiff = !(this.data[field].toString() === value.toString());
         if (isValDiff) {
             var pKeyField = this.parent.getPrimaryKeyFieldNames()[0];
@@ -1554,6 +1562,9 @@ var Row = /** @class */ (function () {
         }
     };
     Row.prototype.makechanges = function (key, data) {
+        if (!this.parent) {
+            return;
+        }
         var gObj = this.parent;
         var dataManager = gObj.getDataModule().dataManager;
         dataManager.update(key, data);
@@ -1964,7 +1975,8 @@ var RowModelGenerator = /** @class */ (function () {
         }
         this.refreshForeignKeyRow(options);
         var cells = this.ensureColumns();
-        var row = new Row(options, this.parent);
+        var row = sf.base.isBlazor() ? new Row(options) :
+            new Row(options, this.parent);
         row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
             : cells.concat(this.generateCells(options));
         return row;
@@ -5788,6 +5800,7 @@ var Render = /** @class */ (function () {
             _this.parent.notify(tooltipDestroy, {});
             _this.contentRenderer.prevCurrentView = _this.parent.currentViewData.slice();
             gObj.currentViewData = dataArgs.result;
+            gObj.notify(refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
             if (sf.base.isBlazor() && gObj.filterSettings.type === 'FilterBar'
                 && (sf.base.isNullOrUndefined(gObj.currentViewData) ||
                     (!sf.base.isNullOrUndefined(gObj.currentViewData) && !gObj.currentViewData.length))) {
@@ -8750,6 +8763,12 @@ var Selection = /** @class */ (function () {
                 if (!_this.isCancelDeSelect || (!_this.isRowClicked && !_this.checkSelectAllClicked)) {
                     _this.updatePersistCollection(row[0], false);
                     _this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+                    if (mRow) {
+                        _this.updateCheckBoxes(mRow[0], undefined, rowIndex[0]);
+                    }
+                    if (frozenRightRow) {
+                        _this.updateCheckBoxes(frozenRightRow[0], undefined, rowIndex[0]);
+                    }
                 }
                 if (rowDeselectCallBack !== undefined) {
                     rowDeselectCallBack();
@@ -10324,6 +10343,18 @@ var Selection = /** @class */ (function () {
     };
     Selection.prototype.refreshPersistSelection = function () {
         var rows = this.parent.getRows();
+        if (this.parent.isCheckBoxSelection && this.parent.isFrozenGrid()) {
+            var mtbody = this.parent.getMovableContentTbody();
+            if (mtbody.querySelector('.e-checkselect')) {
+                rows = this.parent.getMovableRows();
+            }
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                var frtbody = this.parent.getFrozenRightContentTbody();
+                if (frtbody.querySelector('.e-checkselect')) {
+                    rows = this.parent.getFrozenRightRows();
+                }
+            }
+        }
         this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             var indexes = [];
@@ -13365,6 +13396,7 @@ var Grid = /** @class */ (function (_super) {
         _this.frozenRightColumns = [];
         _this.movableColumns = [];
         _this.media = {};
+        _this.isFreezeRefresh = false;
         /** @hidden */
         _this.tableIndex = 0;
         _this.componentRefresh = sf.base.Component.prototype.refresh;
@@ -13937,6 +13969,10 @@ var Grid = /** @class */ (function (_super) {
             this.element.style.display = 'none';
         }
         sf.base.classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
+        if (this.isAngular && !this.isFreezeRefresh) {
+            this.element = null;
+        }
+        this.isFreezeRefresh = false;
     };
     Grid.prototype.destroyDependentModules = function () {
         var gridElement = this.element;
@@ -16220,6 +16256,7 @@ var Grid = /** @class */ (function (_super) {
     };
     /** @hidden */
     Grid.prototype.freezeRefresh = function () {
+        this.isFreezeRefresh = true;
         if (this.enableVirtualization) {
             this.pageSettings.currentPage = 1;
         }
@@ -17293,6 +17330,74 @@ var Grid = /** @class */ (function (_super) {
      */
     Grid.prototype.getSummaryValues = function (summaryCol, summaryData) {
         return sf.data.DataUtil.aggregates[summaryCol.type.toLowerCase()](summaryData, summaryCol.field);
+    };
+    /**
+     * Sends a Post request to export Grid to Excel data in server side.
+     * @param  {string} url - Pass Url for server side excel export action.
+     * @return {void}
+     */
+    Grid.prototype.serverExcelExport = function (url) {
+        this.exportGrid(url);
+    };
+    /**
+     * Sends a Post request to export Grid to Pdf data in server side.
+     * @param  {string} url - Pass Url for server side pdf export action.
+     * @return {void}
+     */
+    Grid.prototype.serverPdfExport = function (url) {
+        this.exportGrid(url);
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.exportGrid = function (url) {
+        var _this = this;
+        var grid = this;
+        var query = grid.getDataModule().generateQuery(true);
+        var state = new sf.data.UrlAdaptor().processQuery(new sf.data.DataManager({ url: '' }), query);
+        var queries = state.data;
+        var gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
+            'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.columns.forEach(function (e) {
+            if (grid.getColumnByUid(e.uid)) {
+                e.headerText = grid.getColumnByUid(e.uid).headerText;
+                if (e.format) {
+                    var format = typeof (e.format) === 'object' ? e.format.format : e.format;
+                    e.format = getNumberFormat(format, e.type);
+                }
+            }
+            if (e.columns) {
+                _this.setHeaderText(e.columns);
+            }
+        });
+        var form = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
+        var gridInput = this.createElement('input', { id: 'gridInput', attrs: { name: "gridModel" } });
+        var queryInput = this.createElement('input', { id: 'queryInput', attrs: { name: "requestModel" } });
+        gridInput.value = JSON.stringify(gridModel);
+        queryInput.value = queries;
+        form.method = "POST";
+        form.action = url;
+        form.appendChild(gridInput);
+        form.appendChild(queryInput);
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.setHeaderText = function (columns) {
+        for (var i = 0; i < columns.length; i++) {
+            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            if (columns[i].format) {
+                var e = columns[i];
+                var format = typeof (e.format) === 'object' ? e.format.format : e.format;
+                columns[i].format = getNumberFormat(format, columns[i].type);
+            }
+            if (columns[i].columns) {
+                this.setHeaderText(columns[i].columns);
+            }
+        }
     };
     /**
      * @hidden
@@ -19501,6 +19606,43 @@ function setRowsInTbody(tbody, mTbody, frTbody, tr, mTr, frTr, callBack) {
     if (frTbody && frTr) {
         callBack(frTbody, frTr);
     }
+}
+/** @hidden */
+function getNumberFormat(numberFormat, type) {
+    var format;
+    var intl = new sf.base.Internationalization();
+    if (type === 'number') {
+        try {
+            format = intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true }, true);
+        }
+        catch (error) {
+            format = numberFormat;
+        }
+    }
+    else if (type === 'date' || type === 'time' || type === 'datetime') {
+        try {
+            format = intl.getDatePattern({ skeleton: numberFormat, type: type }, false);
+        }
+        catch (error) {
+            try {
+                format = intl.getDatePattern({ format: numberFormat, type: type }, false);
+            }
+            catch (error) {
+                format = numberFormat;
+            }
+        }
+    }
+    else {
+        format = numberFormat;
+    }
+    if (type !== 'number') {
+        var patternRegex = /G|H|c|'| a|yy|y|EEEE|E/g;
+        var mtch_1 = { 'G': '', 'H': 'h', 'c': 'd', '\'': '"', ' a': ' AM/PM', 'yy': 'yy', 'y': 'yyyy', 'EEEE': 'dddd', 'E': 'ddd' };
+        format = format.replace(patternRegex, function (pattern) {
+            return mtch_1[pattern];
+        });
+    }
+    return format;
 }
 
 /* tslint:disable-next-line:max-line-length */
@@ -35323,8 +35465,14 @@ var Edit = /** @class */ (function () {
             sf.base.select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     };
     Edit.prototype.resetElemPosition = function (elem, args) {
-        if (args.element.offsetWidth < elem.offsetWidth) {
-            elem.style.left = args.element.getBoundingClientRect().left - ((elem.offsetWidth - args.element.offsetWidth) / 2) + 'px';
+        var td = parentsUntil(args.element, 'e-rowcell');
+        if (td) {
+            var tdRight = td.getBoundingClientRect().right;
+            var elemRight = elem.getBoundingClientRect().right;
+            if (elemRight > tdRight) {
+                var offSet = elemRight - tdRight;
+                elem.style.left = (elem.offsetLeft - offSet) + 'px';
+            }
         }
     };
     Edit.prototype.validationComplete = function (args) {
@@ -43083,6 +43231,7 @@ var InfiniteScroll = /** @class */ (function () {
      */
     function InfiniteScroll(parent, serviceLocator) {
         this.infiniteCache = {};
+        this.infiniteCurrentViewData = {};
         this.infiniteFrozenCache = {};
         this.isDownScroll = false;
         this.isUpScroll = false;
@@ -43138,6 +43287,7 @@ var InfiniteScroll = /** @class */ (function () {
         this.parent.on(infiniteEditHandler, this.infiniteEditHandler, this);
         this.parent.on(virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(modelChanged, this.modelChanged, this);
+        this.parent.on(refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
         this.parent.on(deleteComplete, this.deleteComplate, this);
         this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
@@ -43169,8 +43319,55 @@ var InfiniteScroll = /** @class */ (function () {
         this.parent.off(infiniteEditHandler, this.infiniteEditHandler);
         this.parent.off(virtualScrollAddActionBegin, this.infiniteAddActionBegin);
         this.parent.off(modelChanged, this.modelChanged);
+        this.parent.off(refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
         this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.removeEventListener(actionComplete, this.actionComplete.bind(this));
+    };
+    InfiniteScroll.prototype.updateCurrentViewData = function () {
+        var gObj = this.parent;
+        if (gObj.groupSettings.columns.length) {
+            return;
+        }
+        var keys = Object.keys(this.infiniteCurrentViewData);
+        gObj.currentViewData = [];
+        var page = gObj.pageSettings.currentPage;
+        var isCache = gObj.infiniteScrollSettings.enableCache;
+        var blocks = gObj.infiniteScrollSettings.maxBlocks;
+        var isMiddlePage = isCache && (page > blocks || (this.isUpScroll && page > 1));
+        var start = isMiddlePage ? this.isUpScroll ? page : (page - blocks) + 1 : 1;
+        var end = isMiddlePage ? (start + blocks) - 1 : isCache ? blocks : keys.length;
+        for (var i = start; i <= end; i++) {
+            if (this.infiniteCurrentViewData[i]) {
+                gObj.currentViewData = gObj.currentViewData.concat(this.infiniteCurrentViewData[i]);
+            }
+        }
+    };
+    InfiniteScroll.prototype.refreshInfiniteCurrentViewData = function (e) {
+        var page = this.parent.pageSettings.currentPage;
+        var size = this.parent.pageSettings.pageSize;
+        var blocks = this.parent.infiniteScrollSettings.initialBlocks;
+        var keys = Object.keys(this.infiniteCurrentViewData);
+        var cache = this.parent.infiniteScrollSettings.enableCache;
+        if (!this.parent.groupSettings.columns.length) {
+            var isAdd = e.args.requestType === 'save';
+            var isDelete = e.args.requestType === 'delete';
+            if (!cache && (isAdd || isDelete)) {
+                if (isAdd) {
+                    this.infiniteCurrentViewData[1] = e.data.concat(this.infiniteCurrentViewData[1]);
+                }
+                else {
+                    this.infiniteCurrentViewData[keys[keys.length - 1]].push(e.data[0]);
+                }
+            }
+            else {
+                if (e.data.length === (blocks * size)) {
+                    this.setInitialCache(e.data.slice(), {}, cache && e.args.requestType === 'delete', true);
+                }
+                else {
+                    this.infiniteCurrentViewData[page] = e.data.slice();
+                }
+            }
+        }
     };
     InfiniteScroll.prototype.deleteComplate = function () {
         if (this.parent.isFrozenGrid() && !this.parent.infiniteScrollSettings.enableCache) {
@@ -43220,7 +43417,7 @@ var InfiniteScroll = /** @class */ (function () {
             var rowElms = this.parent.getRows();
             var rows = this.parent.getRowsObject();
             if (this.ensureRowAvailability(rows, args.result[0])) {
-                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add');
+                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add', true);
                 if (frozenCols) {
                     var rows_1 = this.parent.getMovableRowsObject();
                     this.resetRowIndex(rows_1, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
@@ -43332,11 +43529,15 @@ var InfiniteScroll = /** @class */ (function () {
     InfiniteScroll.prototype.generateRows = function (data, args) {
         return this.rowModelGenerator.generateRows(data, args);
     };
-    InfiniteScroll.prototype.resetRowIndex = function (rows, args, rowElms, isAdd) {
+    InfiniteScroll.prototype.resetRowIndex = function (rows, args, rowElms, isAdd, isFrozen) {
+        var _this = this;
         var keyField = this.parent.getPrimaryKeyFieldNames()[0];
         var isRemove = !(rowElms.length % this.parent.pageSettings.pageSize);
         if (isAdd) {
             if (isRemove) {
+                if (isFrozen && !this.parent.groupSettings.columns.length) {
+                    this.swapCurrentViewData(1, true);
+                }
                 sf.base.remove(rowElms[rows.length - 1]);
                 rowElms.splice(rows.length - 1, 1);
                 rows.splice(rows.length - 1, 1);
@@ -43345,6 +43546,10 @@ var InfiniteScroll = /** @class */ (function () {
         else {
             rows.filter(function (e, index) {
                 if (e.data[keyField] === args.data[0][keyField]) {
+                    if (isFrozen && !_this.parent.groupSettings.columns.length) {
+                        var page = Math.ceil((index + 1) / _this.parent.pageSettings.pageSize);
+                        _this.resetInfiniteCurrentViewData(page, index);
+                    }
                     rows.splice(index, 1);
                     sf.base.remove(rowElms[index]);
                     rowElms.splice(index, 1);
@@ -43353,6 +43558,32 @@ var InfiniteScroll = /** @class */ (function () {
         }
         var startIndex = isAdd ? 1 : 0;
         resetRowIndex(this.parent, rows, rowElms, startIndex);
+    };
+    InfiniteScroll.prototype.resetInfiniteCurrentViewData = function (page, index) {
+        index = index - ((page - 1) * this.parent.pageSettings.pageSize);
+        this.infiniteCurrentViewData[page].splice(index, 1);
+        this.swapCurrentViewData(page, false);
+    };
+    InfiniteScroll.prototype.swapCurrentViewData = function (page, isAdd) {
+        var keys = Object.keys(this.infiniteCurrentViewData);
+        var end = isAdd ? keys.length + 1 : keys.length;
+        for (var i = page; i < end; i++) {
+            if (this.infiniteCurrentViewData[i + 1]) {
+                var pageIndex = isAdd ? i : i + 1;
+                var index = isAdd ? this.infiniteCurrentViewData[i].length - 1 : 0;
+                var data = this.infiniteCurrentViewData[pageIndex].splice(index, 1);
+                if (isAdd) {
+                    this.infiniteCurrentViewData[i + 1] = data.concat(this.infiniteCurrentViewData[i + 1]);
+                    if ((i + 1) === end - 1) {
+                        this.infiniteCurrentViewData[i + 1].splice(this.infiniteCurrentViewData[i + 1].length - 1, 1);
+                    }
+                }
+                else {
+                    this.infiniteCurrentViewData[i].push(data[0]);
+                }
+            }
+        }
+        this.updateCurrentViewData();
     };
     InfiniteScroll.prototype.setDisplayNone = function (args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
@@ -43557,6 +43788,7 @@ var InfiniteScroll = /** @class */ (function () {
         if (isCache) {
             this.infiniteCache = {};
             this.infiniteFrozenCache = {};
+            this.infiniteCurrentViewData = {};
             query.skip(this.firstIndex);
             query.take(initialBlocks * this.parent.pageSettings.pageSize);
         }
@@ -43671,6 +43903,7 @@ var InfiniteScroll = /** @class */ (function () {
         }
         if (!frozenCols) {
             this.parent.contentModule.getTable().appendChild(e.tbody);
+            this.updateCurrentViewData();
         }
         else {
             if (isInfiniteScroll) {
@@ -43692,6 +43925,7 @@ var InfiniteScroll = /** @class */ (function () {
                         this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
                     }
                     this.parent.contentModule.refreshScrollOffset();
+                    this.updateCurrentViewData();
                 }
             }
             else {
@@ -43703,12 +43937,14 @@ var InfiniteScroll = /** @class */ (function () {
                     table = this.parent.getMovableVirtualContent().querySelector('.e-table');
                     if (this.parent.getFrozenMode() !== 'Left-Right') {
                         this.parent.contentModule.refreshScrollOffset();
+                        this.updateCurrentViewData();
                     }
                 }
                 else {
                     table = this.parent.element.querySelector('.e-frozen-right-content').querySelector('.e-table');
                     if (this.parent.getFrozenMode() === 'Left-Right') {
                         this.parent.contentModule.refreshScrollOffset();
+                        this.updateCurrentViewData();
                     }
                 }
                 table.appendChild(e.tbody);
@@ -43910,6 +44146,7 @@ var InfiniteScroll = /** @class */ (function () {
                 scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
                 this.infiniteCache = this.infiniteFrozenCache = {};
+                this.infiniteCurrentViewData = {};
                 this.resetContentModuleCache({});
                 this.isRemove = false;
                 this.top = 0;
@@ -43953,25 +44190,30 @@ var InfiniteScroll = /** @class */ (function () {
             }
         }
     };
-    InfiniteScroll.prototype.setInitialCache = function (data, args, isEdit) {
+    InfiniteScroll.prototype.setInitialCache = function (data, args, isEdit, isCurrentViewData) {
         var frozenCols = this.parent.isFrozenGrid();
         var idx = args.isFrozen ? 1 : 0;
         var k = !isEdit ? 1 : this.firstBlock;
         for (var i = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             var startIndex = (i - 1) * this.parent.pageSettings.pageSize;
             var endIndex = i * this.parent.pageSettings.pageSize;
-            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !isCurrentViewData) {
                 this.setInitialGroupCache(data, k, startIndex, endIndex);
             }
             else {
-                if (frozenCols) {
-                    this.createFrozenCache(k);
-                    this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
-                    this.resetContentModuleCache(this.infiniteFrozenCache);
+                if (isCurrentViewData) {
+                    this.infiniteCurrentViewData[k] = data.slice(startIndex, endIndex);
                 }
                 else {
-                    this.infiniteCache[k] = data.slice(startIndex, endIndex);
-                    this.resetContentModuleCache(this.infiniteCache);
+                    if (frozenCols) {
+                        this.createFrozenCache(k);
+                        this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
+                        this.resetContentModuleCache(this.infiniteFrozenCache);
+                    }
+                    else {
+                        this.infiniteCache[k] = data.slice(startIndex, endIndex);
+                        this.resetContentModuleCache(this.infiniteCache);
+                    }
                 }
             }
             k++;
@@ -45649,6 +45891,7 @@ exports.setValidationRuels = setValidationRuels;
 exports.getMovableTbody = getMovableTbody;
 exports.getFrozenRightTbody = getFrozenRightTbody;
 exports.setRowsInTbody = setRowsInTbody;
+exports.getNumberFormat = getNumberFormat;
 exports.created = created;
 exports.destroyed = destroyed;
 exports.load = load;
@@ -45891,6 +46134,7 @@ exports.refreshFrozenHeight = refreshFrozenHeight;
 exports.setHeightToFrozenElement = setHeightToFrozenElement;
 exports.preventFrozenScrollRefresh = preventFrozenScrollRefresh;
 exports.nextCellIndex = nextCellIndex;
+exports.refreshInfiniteCurrentViewData = refreshInfiniteCurrentViewData;
 exports.Data = Data;
 exports.Sort = Sort;
 exports.Page = Page;

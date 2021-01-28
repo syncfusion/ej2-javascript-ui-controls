@@ -22,8 +22,9 @@ export class Insert {
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'insert' }); }
         switch (args.modelType) {
             case 'Sheet':
-                this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1) });
-                this.parent.renderModule.refreshSheet();
+                this.parent.notify(
+                    insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !isAction });
+                if (args.index === this.parent.activeSheetIndex) { this.parent.renderModule.refreshSheet(); }
                 this.parent.element.focus();
                 break;
             case 'Row':

@@ -235,9 +235,7 @@ export class Edit {
                                 }
                                 break;
                             case this.keyCodes.TAB:
-                                if (!this.hasFormulaSuggSelected()) {
-                                    this.endEdit(false, e);
-                                }
+                                if (!this.hasFormulaSuggSelected()) { this.endEdit(false, e); }
                                 break;
                             case this.keyCodes.ESC:
                                 this.cancelEdit(true, true, e);
@@ -272,6 +270,7 @@ export class Edit {
                             } else { this.startEdit(null, null, true, true); }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
+                            this.isLockCellDelete(e);
                             this.editingHandler('delete');
                         }
                     }
@@ -292,6 +291,22 @@ export class Edit {
                     }
                 }
             }
+        }
+    }
+    private isLockCellDelete(e: KeyboardEventArgs): void {
+        let sheet: SheetModel = this.parent.getActiveSheet(); let count: number = 0;
+        let address: number[] = getRangeIndexes(sheet.selectedRange);
+        for (let row: number = address[2]; row <= address[0]; row++) {
+            for (let col: number = address[3]; col <= address[1]; col++) {
+                let cell: CellModel = getCell(row, col, sheet);
+                if (isLocked(cell, getColumn(sheet, col))) {
+                    e.preventDefault();
+                    count++;
+                }
+            }
+        }
+        if (count > 0) {
+            return;
         }
     }
     private renderEditor(): void {

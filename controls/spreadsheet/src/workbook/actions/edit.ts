@@ -101,7 +101,7 @@ export class WorkbookEdit {
             let isFormula: boolean = checkIsFormula(value);
             if (!isFormula) {
                 cell.formula = '';
-                cell.value = value;
+                cell.value = <string>this.parseIntValue(value);
             }
             let eventArgs: { [key: string]: string | number | boolean } = {
                 action: 'refreshCalculate',
@@ -140,5 +140,9 @@ export class WorkbookEdit {
         if (this.parent.allowChart) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
+    }
+
+    private parseIntValue(value: string): string | number {
+        return /^\d*\.?\d*$/.test(value) ? parseFloat(value) : value;
     }
 }

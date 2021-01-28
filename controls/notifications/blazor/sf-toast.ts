@@ -55,6 +55,7 @@ class SfToast {
     private hideAnimation : ToastAnimationsModel;
     private newestOnTop : boolean;
     private isDevice: Boolean;
+    private progressDirection: string;
     private width: string;
     private progressObj: Progressbar[] = [];
     private extendedTimeout : number;
@@ -161,6 +162,7 @@ class SfToast {
 
     private updateProgressBar(progressObj: Progressbar): void {
       let percentage: number = ((progressObj.hideEta - (new Date().getTime())) / progressObj.maxHideTime) * 100;
+      percentage = this.progressDirection === 'LTR' ? 100  - percentage : percentage;
       progressObj.progressEle.style.width = percentage + '%';
     }
 

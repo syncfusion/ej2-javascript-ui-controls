@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
@@ -36,7 +36,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private tagName: string;
     private isFocused: boolean = false;
     private isMouseClick: boolean = false;
-    private keyboardModule: KeyboardEvents;
+    private isVue: boolean;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
     private wrapper: Element;
@@ -195,7 +195,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             this.changeState('check');
             this.checked = true;
         }
-        let changeEventArgs: ChangeEventArgs = { checked: this.element.checked, event: event };
+        let changeEventArgs: ChangeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
     }
 
@@ -274,6 +274,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         if (this.value) {
             this.element.setAttribute('value', this.value);
+            if (this.isVue && typeof this.value === 'boolean' && this.value === true) {
+                this.setProperties({ 'checked': true }, true);
+            }
         }
         if (this.checked) {
             this.changeState('check');
@@ -398,6 +401,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (this.isVue && typeof newProp.value === 'object') { break; }
                     this.element.setAttribute('value', newProp.value);
                     break;
                 case 'htmlAttributes':
@@ -437,6 +441,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
+        this.updateVueArrayModel(true);
         this.renderComplete();
         this.wrapper = this.getWrapper();
     }
@@ -506,6 +511,35 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
+    }
+
+    private updateVueArrayModel(init: boolean): boolean {
+        if (this.isVue && typeof this.value === 'object') {
+            let value: string = this.element.value;
+            if (value && this.value) {
+                if (init) {
+                    for (let i: number = 0; i < (this.value as string[]).length; i++) {
+                        if (value === (this.value as string[])[i]) {
+                            this.changeState('check'); this.setProperties({ 'checked': true }, true);
+                        }
+                    }
+                } else {
+                    let index: number = (this.value as string[]).indexOf(value);
+                    if (this.checked) {
+                        if (index < 0) {
+                            (this.value as string[]).push(value);
+                        }
+                    } else {
+                        if (index > -1) {
+                            (this.value as string[]).splice(index, 1);
+                        }
+                    }
+                    // tslint:disable-next-line:no-any
+                    return this.value as any;
+                }
+            }
+        }
+        return this.element.checked;
     }
 
     protected updateHtmlAttributeToWrapper(): void {

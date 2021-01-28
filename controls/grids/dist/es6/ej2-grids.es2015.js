@@ -835,6 +835,8 @@ const setHeightToFrozenElement = 'set-height-to-frozen-element';
 const preventFrozenScrollRefresh = 'prevent-frozen-scroll-refresh';
 /** @hidden */
 const nextCellIndex = 'next-cell-index';
+/** @hidden */
+const refreshInfiniteCurrentViewData = 'refresh-infinite-current-view-data';
 
 /**
  * Defines types of Cell
@@ -1521,6 +1523,9 @@ class Row {
      * @return {void}
      */
     setRowValue(data) {
+        if (!this.parent) {
+            return;
+        }
         let key = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
         this.parent.setRowData(key, data);
     }
@@ -1531,6 +1536,9 @@ class Row {
      * @return {void}
      */
     setCellValue(field, value) {
+        if (!this.parent) {
+            return;
+        }
         let isValDiff = !(this.data[field].toString() === value.toString());
         if (isValDiff) {
             let pKeyField = this.parent.getPrimaryKeyFieldNames()[0];
@@ -1543,6 +1551,9 @@ class Row {
         }
     }
     makechanges(key, data) {
+        if (!this.parent) {
+            return;
+        }
         let gObj = this.parent;
         let dataManager = gObj.getDataModule().dataManager;
         dataManager.update(key, data);
@@ -1939,7 +1950,8 @@ class RowModelGenerator {
         }
         this.refreshForeignKeyRow(options);
         let cells = this.ensureColumns();
-        let row = new Row(options, this.parent);
+        let row = isBlazor() ? new Row(options) :
+            new Row(options, this.parent);
         row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
             : cells.concat(this.generateCells(options));
         return row;
@@ -5528,6 +5540,7 @@ class Render {
             this.parent.notify(tooltipDestroy, {});
             this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = dataArgs.result;
+            gObj.notify(refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
             if (isBlazor() && gObj.filterSettings.type === 'FilterBar'
                 && (isNullOrUndefined(gObj.currentViewData) ||
                     (!isNullOrUndefined(gObj.currentViewData) && !gObj.currentViewData.length))) {
@@ -8364,6 +8377,12 @@ class Selection {
                 if (!this.isCancelDeSelect || (!this.isRowClicked && !this.checkSelectAllClicked)) {
                     this.updatePersistCollection(row[0], false);
                     this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+                    if (mRow) {
+                        this.updateCheckBoxes(mRow[0], undefined, rowIndex[0]);
+                    }
+                    if (frozenRightRow) {
+                        this.updateCheckBoxes(frozenRightRow[0], undefined, rowIndex[0]);
+                    }
                 }
                 if (rowDeselectCallBack !== undefined) {
                     rowDeselectCallBack();
@@ -9932,6 +9951,18 @@ class Selection {
     }
     refreshPersistSelection() {
         let rows = this.parent.getRows();
+        if (this.parent.isCheckBoxSelection && this.parent.isFrozenGrid()) {
+            let mtbody = this.parent.getMovableContentTbody();
+            if (mtbody.querySelector('.e-checkselect')) {
+                rows = this.parent.getMovableRows();
+            }
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                let frtbody = this.parent.getFrozenRightContentTbody();
+                if (frtbody.querySelector('.e-checkselect')) {
+                    rows = this.parent.getFrozenRightRows();
+                }
+            }
+        }
         this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             let indexes = [];
@@ -12852,6 +12883,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.frozenRightColumns = [];
         this.movableColumns = [];
         this.media = {};
+        this.isFreezeRefresh = false;
         /** @hidden */
         this.tableIndex = 0;
         this.componentRefresh = Component.prototype.refresh;
@@ -13421,6 +13453,10 @@ let Grid = Grid_1 = class Grid extends Component {
             this.element.style.display = 'none';
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
+        if (this.isAngular && !this.isFreezeRefresh) {
+            this.element = null;
+        }
+        this.isFreezeRefresh = false;
     }
     destroyDependentModules() {
         let gridElement = this.element;
@@ -15684,6 +15720,7 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     /** @hidden */
     freezeRefresh() {
+        this.isFreezeRefresh = true;
         if (this.enableVirtualization) {
             this.pageSettings.currentPage = 1;
         }
@@ -16747,6 +16784,73 @@ let Grid = Grid_1 = class Grid extends Component {
      */
     getSummaryValues(summaryCol, summaryData) {
         return DataUtil.aggregates[summaryCol.type.toLowerCase()](summaryData, summaryCol.field);
+    }
+    /**
+     * Sends a Post request to export Grid to Excel data in server side.
+     * @param  {string} url - Pass Url for server side excel export action.
+     * @return {void}
+     */
+    serverExcelExport(url) {
+        this.exportGrid(url);
+    }
+    /**
+     * Sends a Post request to export Grid to Pdf data in server side.
+     * @param  {string} url - Pass Url for server side pdf export action.
+     * @return {void}
+     */
+    serverPdfExport(url) {
+        this.exportGrid(url);
+    }
+    /**
+     * @hidden
+     */
+    exportGrid(url) {
+        let grid = this;
+        let query = grid.getDataModule().generateQuery(true);
+        let state = new UrlAdaptor().processQuery(new DataManager({ url: '' }), query);
+        let queries = state.data;
+        let gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
+            'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.columns.forEach((e) => {
+            if (grid.getColumnByUid(e.uid)) {
+                e.headerText = grid.getColumnByUid(e.uid).headerText;
+                if (e.format) {
+                    let format = typeof (e.format) === 'object' ? e.format.format : e.format;
+                    e.format = getNumberFormat(format, e.type);
+                }
+            }
+            if (e.columns) {
+                this.setHeaderText(e.columns);
+            }
+        });
+        let form = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
+        let gridInput = this.createElement('input', { id: 'gridInput', attrs: { name: "gridModel" } });
+        let queryInput = this.createElement('input', { id: 'queryInput', attrs: { name: "requestModel" } });
+        gridInput.value = JSON.stringify(gridModel);
+        queryInput.value = queries;
+        form.method = "POST";
+        form.action = url;
+        form.appendChild(gridInput);
+        form.appendChild(queryInput);
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+    }
+    /**
+     * @hidden
+     */
+    setHeaderText(columns) {
+        for (var i = 0; i < columns.length; i++) {
+            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            if (columns[i].format) {
+                let e = columns[i];
+                let format = typeof (e.format) === 'object' ? e.format.format : e.format;
+                columns[i].format = getNumberFormat(format, columns[i].type);
+            }
+            if (columns[i].columns) {
+                this.setHeaderText(columns[i].columns);
+            }
+        }
     }
     /**
      * @hidden
@@ -18924,6 +19028,43 @@ function setRowsInTbody(tbody, mTbody, frTbody, tr, mTr, frTr, callBack) {
     if (frTbody && frTr) {
         callBack(frTbody, frTr);
     }
+}
+/** @hidden */
+function getNumberFormat(numberFormat, type) {
+    let format;
+    let intl = new Internationalization();
+    if (type === 'number') {
+        try {
+            format = intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true }, true);
+        }
+        catch (error) {
+            format = numberFormat;
+        }
+    }
+    else if (type === 'date' || type === 'time' || type === 'datetime') {
+        try {
+            format = intl.getDatePattern({ skeleton: numberFormat, type: type }, false);
+        }
+        catch (error) {
+            try {
+                format = intl.getDatePattern({ format: numberFormat, type: type }, false);
+            }
+            catch (error) {
+                format = numberFormat;
+            }
+        }
+    }
+    else {
+        format = numberFormat;
+    }
+    if (type !== 'number') {
+        let patternRegex = /G|H|c|'| a|yy|y|EEEE|E/g;
+        let mtch = { 'G': '', 'H': 'h', 'c': 'd', '\'': '"', ' a': ' AM/PM', 'yy': 'yy', 'y': 'yyyy', 'EEEE': 'dddd', 'E': 'ddd' };
+        format = format.replace(patternRegex, (pattern) => {
+            return mtch[pattern];
+        });
+    }
+    return format;
 }
 
 /* tslint:disable-next-line:max-line-length */
@@ -34422,8 +34563,14 @@ class Edit {
             select('#' + this.parent.element.id + '_dialogEdit_wrapper', document);
     }
     resetElemPosition(elem, args) {
-        if (args.element.offsetWidth < elem.offsetWidth) {
-            elem.style.left = args.element.getBoundingClientRect().left - ((elem.offsetWidth - args.element.offsetWidth) / 2) + 'px';
+        let td = parentsUntil(args.element, 'e-rowcell');
+        if (td) {
+            let tdRight = td.getBoundingClientRect().right;
+            let elemRight = elem.getBoundingClientRect().right;
+            if (elemRight > tdRight) {
+                let offSet = elemRight - tdRight;
+                elem.style.left = (elem.offsetLeft - offSet) + 'px';
+            }
         }
     }
     validationComplete(args) {
@@ -42026,6 +42173,7 @@ class InfiniteScroll {
      */
     constructor(parent, serviceLocator) {
         this.infiniteCache = {};
+        this.infiniteCurrentViewData = {};
         this.infiniteFrozenCache = {};
         this.isDownScroll = false;
         this.isUpScroll = false;
@@ -42081,6 +42229,7 @@ class InfiniteScroll {
         this.parent.on(infiniteEditHandler, this.infiniteEditHandler, this);
         this.parent.on(virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(modelChanged, this.modelChanged, this);
+        this.parent.on(refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
         this.parent.on(deleteComplete, this.deleteComplate, this);
         this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
@@ -42112,8 +42261,55 @@ class InfiniteScroll {
         this.parent.off(infiniteEditHandler, this.infiniteEditHandler);
         this.parent.off(virtualScrollAddActionBegin, this.infiniteAddActionBegin);
         this.parent.off(modelChanged, this.modelChanged);
+        this.parent.off(refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
         this.parent.removeEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.removeEventListener(actionComplete, this.actionComplete.bind(this));
+    }
+    updateCurrentViewData() {
+        let gObj = this.parent;
+        if (gObj.groupSettings.columns.length) {
+            return;
+        }
+        let keys = Object.keys(this.infiniteCurrentViewData);
+        gObj.currentViewData = [];
+        let page = gObj.pageSettings.currentPage;
+        let isCache = gObj.infiniteScrollSettings.enableCache;
+        let blocks = gObj.infiniteScrollSettings.maxBlocks;
+        let isMiddlePage = isCache && (page > blocks || (this.isUpScroll && page > 1));
+        let start = isMiddlePage ? this.isUpScroll ? page : (page - blocks) + 1 : 1;
+        let end = isMiddlePage ? (start + blocks) - 1 : isCache ? blocks : keys.length;
+        for (let i = start; i <= end; i++) {
+            if (this.infiniteCurrentViewData[i]) {
+                gObj.currentViewData = gObj.currentViewData.concat(this.infiniteCurrentViewData[i]);
+            }
+        }
+    }
+    refreshInfiniteCurrentViewData(e) {
+        let page = this.parent.pageSettings.currentPage;
+        let size = this.parent.pageSettings.pageSize;
+        let blocks = this.parent.infiniteScrollSettings.initialBlocks;
+        let keys = Object.keys(this.infiniteCurrentViewData);
+        let cache = this.parent.infiniteScrollSettings.enableCache;
+        if (!this.parent.groupSettings.columns.length) {
+            let isAdd = e.args.requestType === 'save';
+            let isDelete = e.args.requestType === 'delete';
+            if (!cache && (isAdd || isDelete)) {
+                if (isAdd) {
+                    this.infiniteCurrentViewData[1] = e.data.concat(this.infiniteCurrentViewData[1]);
+                }
+                else {
+                    this.infiniteCurrentViewData[keys[keys.length - 1]].push(e.data[0]);
+                }
+            }
+            else {
+                if (e.data.length === (blocks * size)) {
+                    this.setInitialCache(e.data.slice(), {}, cache && e.args.requestType === 'delete', true);
+                }
+                else {
+                    this.infiniteCurrentViewData[page] = e.data.slice();
+                }
+            }
+        }
     }
     deleteComplate() {
         if (this.parent.isFrozenGrid() && !this.parent.infiniteScrollSettings.enableCache) {
@@ -42163,7 +42359,7 @@ class InfiniteScroll {
             let rowElms = this.parent.getRows();
             let rows = this.parent.getRowsObject();
             if (this.ensureRowAvailability(rows, args.result[0])) {
-                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add');
+                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add', true);
                 if (frozenCols) {
                     let rows = this.parent.getMovableRowsObject();
                     this.resetRowIndex(rows, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
@@ -42275,11 +42471,14 @@ class InfiniteScroll {
     generateRows(data, args) {
         return this.rowModelGenerator.generateRows(data, args);
     }
-    resetRowIndex(rows, args, rowElms, isAdd) {
+    resetRowIndex(rows, args, rowElms, isAdd, isFrozen) {
         let keyField = this.parent.getPrimaryKeyFieldNames()[0];
         let isRemove = !(rowElms.length % this.parent.pageSettings.pageSize);
         if (isAdd) {
             if (isRemove) {
+                if (isFrozen && !this.parent.groupSettings.columns.length) {
+                    this.swapCurrentViewData(1, true);
+                }
                 remove(rowElms[rows.length - 1]);
                 rowElms.splice(rows.length - 1, 1);
                 rows.splice(rows.length - 1, 1);
@@ -42288,6 +42487,10 @@ class InfiniteScroll {
         else {
             rows.filter((e, index) => {
                 if (e.data[keyField] === args.data[0][keyField]) {
+                    if (isFrozen && !this.parent.groupSettings.columns.length) {
+                        let page = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
+                        this.resetInfiniteCurrentViewData(page, index);
+                    }
                     rows.splice(index, 1);
                     remove(rowElms[index]);
                     rowElms.splice(index, 1);
@@ -42296,6 +42499,32 @@ class InfiniteScroll {
         }
         let startIndex = isAdd ? 1 : 0;
         resetRowIndex(this.parent, rows, rowElms, startIndex);
+    }
+    resetInfiniteCurrentViewData(page, index) {
+        index = index - ((page - 1) * this.parent.pageSettings.pageSize);
+        this.infiniteCurrentViewData[page].splice(index, 1);
+        this.swapCurrentViewData(page, false);
+    }
+    swapCurrentViewData(page, isAdd) {
+        let keys = Object.keys(this.infiniteCurrentViewData);
+        let end = isAdd ? keys.length + 1 : keys.length;
+        for (let i = page; i < end; i++) {
+            if (this.infiniteCurrentViewData[i + 1]) {
+                let pageIndex = isAdd ? i : i + 1;
+                let index = isAdd ? this.infiniteCurrentViewData[i].length - 1 : 0;
+                let data = this.infiniteCurrentViewData[pageIndex].splice(index, 1);
+                if (isAdd) {
+                    this.infiniteCurrentViewData[i + 1] = data.concat(this.infiniteCurrentViewData[i + 1]);
+                    if ((i + 1) === end - 1) {
+                        this.infiniteCurrentViewData[i + 1].splice(this.infiniteCurrentViewData[i + 1].length - 1, 1);
+                    }
+                }
+                else {
+                    this.infiniteCurrentViewData[i].push(data[0]);
+                }
+            }
+        }
+        this.updateCurrentViewData();
     }
     setDisplayNone(args) {
         if (this.parent.infiniteScrollSettings.enableCache) {
@@ -42498,6 +42727,7 @@ class InfiniteScroll {
         if (isCache) {
             this.infiniteCache = {};
             this.infiniteFrozenCache = {};
+            this.infiniteCurrentViewData = {};
             query.skip(this.firstIndex);
             query.take(initialBlocks * this.parent.pageSettings.pageSize);
         }
@@ -42611,6 +42841,7 @@ class InfiniteScroll {
         }
         if (!frozenCols) {
             this.parent.contentModule.getTable().appendChild(e.tbody);
+            this.updateCurrentViewData();
         }
         else {
             if (isInfiniteScroll) {
@@ -42632,6 +42863,7 @@ class InfiniteScroll {
                         this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
                     }
                     this.parent.contentModule.refreshScrollOffset();
+                    this.updateCurrentViewData();
                 }
             }
             else {
@@ -42643,12 +42875,14 @@ class InfiniteScroll {
                     table = this.parent.getMovableVirtualContent().querySelector('.e-table');
                     if (this.parent.getFrozenMode() !== 'Left-Right') {
                         this.parent.contentModule.refreshScrollOffset();
+                        this.updateCurrentViewData();
                     }
                 }
                 else {
                     table = this.parent.element.querySelector('.e-frozen-right-content').querySelector('.e-table');
                     if (this.parent.getFrozenMode() === 'Left-Right') {
                         this.parent.contentModule.refreshScrollOffset();
+                        this.updateCurrentViewData();
                     }
                 }
                 table.appendChild(e.tbody);
@@ -42849,6 +43083,7 @@ class InfiniteScroll {
                 scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
                 this.infiniteCache = this.infiniteFrozenCache = {};
+                this.infiniteCurrentViewData = {};
                 this.resetContentModuleCache({});
                 this.isRemove = false;
                 this.top = 0;
@@ -42892,25 +43127,30 @@ class InfiniteScroll {
             }
         }
     }
-    setInitialCache(data, args, isEdit) {
+    setInitialCache(data, args, isEdit, isCurrentViewData) {
         let frozenCols = this.parent.isFrozenGrid();
         let idx = args.isFrozen ? 1 : 0;
         let k = !isEdit ? 1 : this.firstBlock;
         for (let i = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             let startIndex = (i - 1) * this.parent.pageSettings.pageSize;
             let endIndex = i * this.parent.pageSettings.pageSize;
-            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !isCurrentViewData) {
                 this.setInitialGroupCache(data, k, startIndex, endIndex);
             }
             else {
-                if (frozenCols) {
-                    this.createFrozenCache(k);
-                    this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
-                    this.resetContentModuleCache(this.infiniteFrozenCache);
+                if (isCurrentViewData) {
+                    this.infiniteCurrentViewData[k] = data.slice(startIndex, endIndex);
                 }
                 else {
-                    this.infiniteCache[k] = data.slice(startIndex, endIndex);
-                    this.resetContentModuleCache(this.infiniteCache);
+                    if (frozenCols) {
+                        this.createFrozenCache(k);
+                        this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
+                        this.resetContentModuleCache(this.infiniteFrozenCache);
+                    }
+                    else {
+                        this.infiniteCache[k] = data.slice(startIndex, endIndex);
+                        this.resetContentModuleCache(this.infiniteCache);
+                    }
                 }
             }
             k++;
@@ -44463,5 +44703,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, getActualRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, getCurrentTableIndex, getFrozenTableName, getFreezeTableName, getColumnLevelFreezeTableName, splitFrozenRowObjectCells, gridActionHandler, getGridRowObjects, getGridRowElements, sliceElements, getCellsByTableName, getCellByColAndRowIndex, setValidationRuels, getMovableTbody, getFrozenRightTbody, setRowsInTbody, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnSelecting, columnSelected, columnDeselecting, columnDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, refreshFrozenColumns, setReorderDestinationElement, refreshVirtualFrozenHeight, setFreezeSelection, setInfiniteFrozenHeight, setInfiniteColFrozenHeight, beforeRefreshOnDataChange, immutableBatchCancel, refreshVirtualFrozenRows, checkScrollReset, refreshFrozenHeight, setHeightToFrozenElement, preventFrozenScrollRefresh, nextCellIndex, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, ColumnFreezeHeaderRenderer, ColumnFreezeContentRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, ResizeSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, getActualRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, setChecked, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, isRowEnteredInGrid, getEditedDataIndex, eventPromise, getStateEventArgument, ispercentageWidth, resetRowIndex, compareChanges, setRowElements, getCurrentTableIndex, getFrozenTableName, getFreezeTableName, getColumnLevelFreezeTableName, splitFrozenRowObjectCells, gridActionHandler, getGridRowObjects, getGridRowElements, sliceElements, getCellsByTableName, getCellByColAndRowIndex, setValidationRuels, getMovableTbody, getFrozenRightTbody, setRowsInTbody, getNumberFormat, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnSelecting, columnSelected, columnDeselecting, columnDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, lazyLoadGroupExpand, lazyLoadGroupCollapse, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, exportDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, infiniteShowHide, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, infiniteEditHandler, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, getFilterBarOperator, resetColumns, pdfAggregateQueryCellInfo, excelAggregateQueryCellInfo, setGroupCache, lazyLoadScrollHandler, groupCollapse, beforeCheckboxRenderer, refreshHandlers, refreshFrozenColumns, setReorderDestinationElement, refreshVirtualFrozenHeight, setFreezeSelection, setInfiniteFrozenHeight, setInfiniteColFrozenHeight, beforeRefreshOnDataChange, immutableBatchCancel, refreshVirtualFrozenRows, checkScrollReset, refreshFrozenHeight, setHeightToFrozenElement, preventFrozenScrollRefresh, nextCellIndex, refreshInfiniteCurrentViewData, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, LazyLoadGroup, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, GroupLazyLoadRenderer, ColumnFreezeHeaderRenderer, ColumnFreezeContentRenderer, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

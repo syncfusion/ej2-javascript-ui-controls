@@ -1,8 +1,9 @@
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI } from '../index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
-import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter } from '../../workbook/common/event';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel } from '../../workbook/index';
+import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection } from '../../workbook/common/event';
+import { FilterCollectionModel } from '../../workbook/index';
+import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel} from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
 import { L10n, getComponent } from '@syncfusion/ej2-base';
@@ -62,6 +63,7 @@ export class Filter {
         this.parent.on(filterCboxValue, this.filterCboxValueHandler, this);
         this.parent.on(getFilterRange, this.getFilterRangeHandler, this);
         this.parent.on(filterCellKeyDown, this.filterCellKeyDownHandler, this);
+        this.parent.on(getFilteredCollection, this.getFilteredCollection, this);
     }
 
     private removeEventListener(): void {
@@ -81,6 +83,7 @@ export class Filter {
             this.parent.on(filterCboxValue, this.filterCboxValueHandler);
             this.parent.off(getFilterRange, this.getFilterRangeHandler);
             this.parent.off(filterCellKeyDown, this.filterCellKeyDownHandler);
+            this.parent.off(getFilteredCollection, this.getFilteredCollection);
         }
     }
 
@@ -95,8 +98,9 @@ export class Filter {
     /**
      * Validates the range and returns false when invalid.
      */
-    private isInValidFilterRange(sheet: SheetModel): boolean {
-        let selectedRange: number[] = getSwapRange(getIndexesFromAddress(sheet.selectedRange));
+    private isInValidFilterRange(sheet: SheetModel, range?: string): boolean {
+        let selectedRange: number[] = range ? getSwapRange(getIndexesFromAddress(range)) :
+        getSwapRange(getIndexesFromAddress(sheet.selectedRange));
         return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
     }
 
@@ -148,15 +152,19 @@ export class Filter {
     /**
      * Initiates the filter UI for the selected range.
      */
-    private initiateFilterUIHandler(args: { predicates?: PredicateModel[], range?: string }): void {
+    private initiateFilterUIHandler(args: {
+        predicates?: PredicateModel[], range?: string,
+        sIdx?: number, isCut?: boolean
+    }): void {
         let predicates: PredicateModel[] = args ? args.predicates : null;
-        let sheetIdx: number = this.parent.activeSheetIndex;
+        let sheetIdx: number = args.sIdx;
+        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
         if (this.filterRange.size > 0 && this.filterRange.has(sheetIdx)) { //disable filter
             this.removeFilter(sheetIdx);
             if (!predicates) { return; }
         }
         let sheet: SheetModel = getSheet(this.parent, sheetIdx);
-        if (this.isInValidFilterRange(sheet)) {
+        if (this.isInValidFilterRange(sheet, args.range)) {
             let l10n: L10n = this.parent.serviceLocator.getService(locale);
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
@@ -169,13 +177,17 @@ export class Filter {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
             getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
                 this.filterSuccessHandler(
-                    new DataManager(jsonData), { action: 'filtering', filterCollection: predicates, field: predicates[0].field });
+                    new DataManager(jsonData), {
+                        action: 'filtering',
+                    filterCollection: predicates, field: predicates[0].field, sIdx: args.sIdx
+                });
                 predicates.forEach((predicate: PredicateModel) => {
-                    if (this.filterClassList.get(sheetIdx)[predicate.field].indexOf(' e-filtered') < 0) {
+                    if (this.filterClassList.get(sheetIdx)[predicate.field] &&
+                        this.filterClassList.get(sheetIdx)[predicate.field].indexOf(' e-filtered') < 0) {
                         this.filterClassList.get(sheetIdx)[predicate.field] += ' e-filtered';
                     }
                 });
-                this.refreshFilterRange();
+                this.refreshFilterRange(null, false, args.sIdx);
             });
         }
     }
@@ -191,7 +203,7 @@ export class Filter {
         this.filterRange.set(sheetIdx, range);
         this.filterCollection.set(sheetIdx, []);
         this.filterClassList.set(sheetIdx, {});
-        this.refreshFilterRange(range);
+        this.refreshFilterRange(range, false, sheetIdx);
     }
 
     /**
@@ -205,7 +217,7 @@ export class Filter {
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
         this.filterClassList.delete(sheetIdx);
-        this.refreshFilterRange(range, true);
+        this.refreshFilterRange(range, true, sheetIdx);
     }
     /**
      * Handles filtering cell value based on context menu.
@@ -242,8 +254,8 @@ export class Filter {
     /**
      * Creates filter buttons and renders the filter applied cells.
      */
-    private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number }): void {
-        let sheetIdx: number = this.parent.activeSheetIndex;
+    private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number , sIdx?: number}): void {
+        let sheetIdx: number = args.sIdx | this.parent.activeSheetIndex;
         if (this.filterRange.has(sheetIdx) && this.isFilterCell(sheetIdx, args.rowIndex, args.colIndex)) {
             if (!args.td) { return; }
             let field: string = getColumnHeaderText(args.colIndex + 1);
@@ -268,17 +280,19 @@ export class Filter {
     /**
      * Refreshes the filter header range.
      */
-    private refreshFilterRange(filterRange?: number[], remove?: boolean): void {
-        let range: number[] = filterRange || this.filterRange.get(this.parent.activeSheetIndex).slice();
+    private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number): void {
+        let sheetIdx: number = sIdx;
+        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
+        let range: number[] = filterRange || this.filterRange.get(sheetIdx).slice();
         for (let index: number = range[1]; index <= range[3]; index++) {
             let cell: HTMLElement = this.parent.getCell(range[0], index);
             if (remove) {
-                if (cell.hasChildNodes()) {
+                if (cell && cell.hasChildNodes()) {
                     let element: Element = cell.querySelector('.e-filter-btn');
-                    cell.removeChild(element);
+                    if (element) { cell.removeChild(element); }
                 }
             } else {
-                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index });
+                this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index , sIdx : sheetIdx});
             }
         }
     }
@@ -440,10 +454,12 @@ export class Filter {
             let field: string = args.column[fieldKey] as string;
             let dataKey: string = 'dataObj';
             let rowKey: string = '__rowIndex';
-            let indexes: number[] = getCellIndexes(field + args.data[dataKey][rowKey]);
-            let cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
-            if (cell && cell.format) {
-                args.value = this.parent.getDisplayText(cell);
+            if (args.value) {
+                let indexes: number[] = getCellIndexes(field + args.data[dataKey][rowKey]);
+                let cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+                if (cell && cell.format) {
+                    args.value = this.parent.getDisplayText(cell);
+                }
             }
         }
     }
@@ -480,9 +496,10 @@ export class Filter {
      * Triggers when OK button or clear filter item is selected
      */
     private filterSuccessHandler(dataSource: DataManager, args: {
-        action: string, filterCollection: PredicateModel[], field: string
+        action: string, filterCollection: PredicateModel[], field: string, sIdx?: number
     }): void {
-        let sheetIdx: number = this.parent.activeSheetIndex;
+        let sheetIdx: number = args.sIdx;
+        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
         let predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
         let dataManager: DataManager = new DataManager(predicates as JSON[]);
         let query: Query = new Query();
@@ -628,8 +645,8 @@ export class Filter {
     /**
      * Gets the filter information of the sheet.
      */
-    private getFilterRangeHandler(args: { sheetIdx?: number, filterRange?: number[], hasFilter?: boolean }): void {
-        let sheetIdx: number = args.sheetIdx || this.parent.activeSheetIndex;
+    private getFilterRangeHandler(args: FilterInfoArgs): void {
+        let sheetIdx: number = args.sheetIdx;
         if (this.filterRange && this.filterRange.has(sheetIdx)) {
             args.hasFilter = true;
             args.filterRange = this.filterRange.get(sheetIdx);
@@ -668,5 +685,41 @@ export class Filter {
             ]
         };
         return customOperators;
+    }
+
+    /**
+     * To get filtered range and predicates collections
+     */
+    private getFilteredCollection(): void {
+        let sheetLen: number = this.parent.sheets.length;
+        let col: FilterCollectionModel[] = []; let fil: FilterCollectionModel;
+        for (let i: number = 0; i < sheetLen; i++) {
+            let range: number[]; let hasFilter: boolean;
+            let args: FilterInfoArgs = { sheetIdx: i, filterRange: range, hasFilter: hasFilter };
+            this.getFilterRangeHandler(args);
+            if (args.hasFilter) {
+                let colCollection: number[] = []; let condition: string[] = [];
+                let value: (string | number | boolean | Date)[] = []; let type: string[] = [];
+                let predicate: PredicateModel[] = this.filterCollection.get(args.sheetIdx);
+                for (let i: number = 0; i < predicate.length; i++) {
+                    if (predicate[i].field && predicate[i].operator) {
+                        let colIdx: number = getCellIndexes(predicate[i].field + '1')[1];
+                        colCollection.push(colIdx);
+                        condition.push(predicate[i].operator);
+                        value.push(predicate[i].value);
+                        type.push(predicate[i].type);
+                    }
+                }
+                let address: string  = getRangeAddress(args.filterRange);
+                fil = {
+                        sheetIdx: args.sheetIdx, filterRange: address, hasFilter: args.hasFilter, column: colCollection,
+                        criteria: condition, value: value, dataType: type
+                    };
+                col.push(fil);
+            }
+        }
+        if (fil) {
+            this.parent.filterCollection = col;
+        }
     }
 }

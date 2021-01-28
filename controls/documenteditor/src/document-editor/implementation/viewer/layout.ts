@@ -36,6 +36,18 @@ export class Layout {
     /**
      * @private
      */
+    public footHeight: number = 0;
+    /**
+     * @private
+     */
+    public footnoteHeight: number = 0;
+    /**
+     * @private
+     */
+    public isTableFootNote: boolean = false;
+    /**
+     * @private
+     */
     public isRelayout: boolean = true;
     public isInitialLoad: boolean = true;
     private fieldBegin: FieldElementBox = undefined;
@@ -944,6 +956,8 @@ export class Layout {
             this.viewer.clientActiveArea = clientActiveArea;
             if (isFitted) {
                 this.viewer.clientActiveArea.height -= height;
+                this.footnoteHeight += height;
+               // this.footHeight += height;
             }
             this.viewer.clientArea = clientArea;
             // footnote.childWidgets.push(foot);
@@ -3365,6 +3379,12 @@ export class Layout {
         let count: number = 0;
         let tableRowWidget: TableRowWidget = row;
         let moveRowToNextTable: boolean = false;
+        if (this.isTableFootNote) {
+            this.footHeight = tableRowWidget.bodyWidget.page.footnoteWidget.height;
+            this.isTableFootNote = false;
+        } else {
+            this.footHeight = 0;
+        }
         if (row.ownerTable.continueHeader && !isHeader) {
             row.ownerTable.continueHeader = false;
         }
@@ -3387,7 +3407,7 @@ export class Layout {
             } else {
                 isInitialLayout = false;
                 //Split widget for next page
-                if (this.documentHelper.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
+                if (this.documentHelper.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height + this.footHeight <= viewer.clientArea.bottom) {
                     let isRowSpanEnd: boolean = this.isRowSpanEnd(row, viewer);
                     if (!isRowSpanEnd) {
                         if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
@@ -3400,7 +3420,7 @@ export class Layout {
                 }
                 let splittedWidget: TableRowWidget = tableRowWidget;
                 let tableWidget: TableWidget = tableWidgets[tableWidgets.length - 1] as TableWidget;
-                if (rowHeight + tableRowWidget.y > viewer.clientArea.bottom) {
+                if (rowHeight + tableRowWidget.y + this.footHeight > viewer.clientArea.bottom) {
                     // tslint:disable-next-line:max-line-length
                     if (!isAllowBreakAcrossPages || (isHeader && row.ownerTable.continueHeader) || (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientArea.bottom)) {
                         // tslint:disable-next-line:max-line-length
@@ -4086,7 +4106,7 @@ export class Layout {
         let splittedWidget: ParagraphWidget = undefined;
         for (let i: number = 0; i < paragraphWidget.childWidgets.length; i++) {
             let lineWidget: LineWidget = paragraphWidget.childWidgets[i] as LineWidget;
-            if (bottom < lineBottom + lineWidget.height) {
+            if (bottom < lineBottom + this.footHeight + lineWidget.height) {
                 if (i === 0) {
                     if (lineWidget.paragraph.containerWidget instanceof TableCellWidget) {
                         //checks first line of the page is exceed the page height
@@ -4192,7 +4212,8 @@ export class Layout {
         // }
         //checks first line of the page is exceed the page height
         if (this.documentHelper.isFirstLineFitInShiftWidgets) {
-            if (this.viewer.clientActiveArea.y === this.viewer.clientArea.y && paraWidget.y + lineWidget.height >= bottom) {
+            // tslint:disable-next-line:max-line-length
+            if (this.viewer.clientActiveArea.y === this.viewer.clientArea.y && paraWidget.y + lineWidget.height + this.footHeight >= bottom) {
                 return true;
             }
         } else {
@@ -4206,14 +4227,15 @@ export class Layout {
                     containerCellWidget = cellwidget.containerWidget.containerWidget.containerWidget as TableCellWidget;
                 }
                 if (!isNullOrUndefined(containerCellWidget) && cellwidget.containerWidget.y === containerCellWidget.y
-                    && paraWidget.y + lineWidget.height >= bottom) {
+                    && paraWidget.y + lineWidget.height + this.footHeight >= bottom) {
                     return true;
                 }
-            } else if (cellwidget.containerWidget.y === this.viewer.clientArea.y && paraWidget.y + lineWidget.height >= bottom) {
+                // tslint:disable-next-line:max-line-length
+            } else if (cellwidget.containerWidget.y === this.viewer.clientArea.y && paraWidget.y + lineWidget.height + this.footHeight >= bottom) {
                 return true;
             }
         }
-        return (paraWidget.y + lineWidget.height <= bottom);
+        return (paraWidget.y + lineWidget.height + this.footHeight <= bottom);
     }
     /**
      * Checks whether first line fits for table or not.
@@ -5214,6 +5236,21 @@ export class Layout {
             block.containerWidget = cell;
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
+            for (let k: number = 0; k < block.childWidgets.length; k++) {
+                if (block.childWidgets[k] instanceof LineWidget) {
+                    // tslint:disable-next-line
+                    let line: any = block.childWidgets[k];
+                    for (let j: number = 0; j < line.children.length; j++) {
+                        let child: ElementBox = line.children[j];
+                        if (child instanceof FootnoteElementBox) {
+                            this.footHeight = cell.bodyWidget.page.footnoteWidget.height;
+                            this.isTableFootNote = true;
+                            break;
+                        } else {
+                            this.footHeight = 0;
+                        }}
+                        }
+            }
         }
         this.updateWidgetToRow(cell);
         viewer.updateClientAreaForCell(cell, false);

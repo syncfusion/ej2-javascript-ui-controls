@@ -1,5 +1,5 @@
 import { Column } from '../models/column';
-import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs } from '@syncfusion/ej2-grids';
+import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs, ExcelExportProperties } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
  * @hidden
@@ -65,6 +65,12 @@ export interface ITreeData {
      * Specifies the Primary data
      */
     primaryParent?: ITreeData;
+}
+
+/** Specifies the Tree Grid ExcelExport properties */
+export interface TreeGridExcelExportProperties extends ExcelExportProperties {
+    /** Specifies the collapsed state persistence in exported file */
+    isCollapsedStatePersist: boolean;
 }
 
 export interface AggregateTemplateContext {

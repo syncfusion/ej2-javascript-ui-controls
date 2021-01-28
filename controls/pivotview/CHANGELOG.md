@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.39 (2021-01-28)
+
+### Pivot Table
+
+#### Features
+
+- `#294982`,`#F157008` - "Median" aggregation is now supported.
+
 ## 18.4.34 (2021-01-12)
 
 ### Pivot Table

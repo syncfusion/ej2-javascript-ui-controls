@@ -39,6 +39,15 @@ export interface SheetRenderArgs {
     initLoad?: boolean;
 }
 
+/** @hidden */
+export interface FilterInfoArgs {
+    sheetIdx: number;
+    hasFilter?: boolean;
+    filterRange?: number[];
+    col?: number[];
+    criteria?: string[];
+}
+
 /**
  * CellRender EventArgs
  */

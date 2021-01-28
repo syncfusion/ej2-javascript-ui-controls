@@ -274,6 +274,8 @@ export interface ITaskbarEditedEventArgs {
     cancel?: boolean;
     /** Defines the action. */
     action?: string;
+    /** Defines the target element. */
+    target?: Element;
 }
 export interface IKeyPressedEventArgs {
     /** Defines the request type. */
@@ -516,6 +518,8 @@ export interface ContextMenuOpenEventArgs extends GridContextMenuOpenEventArgs {
     hideItems?: string[];
     /** Defines the disabled items collection */
     disableItems?: string[];
+    /** Defines the target element. */
+    target?: Element;
     /**
      * @blazorType double?
      */
@@ -668,6 +672,8 @@ export interface ActionBeginArgs extends IDependencyEventArgs {
     action?: string;
     /** Defines the type of event. */
     type?: string;
+    /** Defines the target element. */
+    target?: Element;
 }
 
 export interface CellEditArgs  {

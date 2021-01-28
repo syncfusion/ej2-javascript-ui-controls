@@ -2191,7 +2191,23 @@ function changeBorderWidth(element, index, scale, maps) {
             changeNavaigationLineWidth(childNode, index, scale, maps);
         }
         else {
-            let currentStroke = (maps.layersCollection[index].shapeSettings.border.width);
+            let currentStroke;
+            let value = 0;
+            let borderWidthValue = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
+            if (maps.layersCollection[index].shapeSettings.borderWidthValuePath) {
+                value = checkShapeDataFields(maps.layersCollection[index].dataSource, maps.layersCollection[index].layerData[l]['property'], maps.layersCollection[index].shapeDataPath, maps.layersCollection[index].shapePropertyPath, maps.layersCollection[index]);
+                if (value !== null) {
+                    if (maps.layersCollection[index].dataSource[value][borderWidthValue]) {
+                        currentStroke = maps.layersCollection[index].dataSource[value][borderWidthValue];
+                    }
+                    else {
+                        currentStroke = (maps.layersCollection[index].shapeSettings.border.width);
+                    }
+                }
+            }
+            else {
+                currentStroke = (maps.layersCollection[index].shapeSettings.border.width);
+            }
             childNode.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
     }
@@ -3451,6 +3467,12 @@ __decorate$1([
 __decorate$1([
     Property(null)
 ], ShapeSettings.prototype, "colorValuePath", void 0);
+__decorate$1([
+    Property(null)
+], ShapeSettings.prototype, "borderColorValuePath", void 0);
+__decorate$1([
+    Property(null)
+], ShapeSettings.prototype, "borderWidthValuePath", void 0);
 __decorate$1([
     Property(null)
 ], ShapeSettings.prototype, "valuePath", void 0);
@@ -4846,6 +4868,10 @@ class LayerPanel {
         if (this.currentLayer.layerData.length !== 0) {
             for (let i = 0; i < this.currentLayer.layerData.length; i++) {
                 let k;
+                let borderValue = {
+                    color: shapeSettings.border.color,
+                    width: shapeSettings.border.width
+                };
                 let currentShapeData = this.currentLayer.layerData[i];
                 let pathOptions;
                 let polyLineOptions;
@@ -4856,9 +4882,6 @@ class LayerPanel {
                 let getShapeColor$$1;
                 let fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
                 let opacity;
-                if (this.mapObject.isBlazor) {
-                    k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer);
-                }
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer);
                     if (k !== null && shapeSettings.colorMapping.length === 0) {
@@ -4878,6 +4901,19 @@ class LayerPanel {
                 getShapeColor$$1 = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
                 fill = Object.prototype.toString.call(getShapeColor$$1) === '[object Object]' && !isNullOrUndefined(getShapeColor$$1['fill'])
                     ? getShapeColor$$1['fill'] : fill;
+                if (this.currentLayer.shapeSettings.borderColorValuePath || this.currentLayer.shapeSettings.borderWidthValuePath) {
+                    let borderColorValue = this.currentLayer.shapeSettings.borderColorValuePath;
+                    let borderWidthValue = this.currentLayer.shapeSettings.borderWidthValuePath;
+                    k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer);
+                    if (k !== null) {
+                        if (this.currentLayer.dataSource[k][shapeSettings.borderColorValuePath]) {
+                            borderValue.color = this.currentLayer.dataSource[k][shapeSettings.borderColorValuePath];
+                        }
+                        if (this.currentLayer.dataSource[k][shapeSettings.borderWidthValuePath]) {
+                            borderValue.width = this.currentLayer.dataSource[k][shapeSettings.borderWidthValuePath];
+                        }
+                    }
+                }
                 opacity = (Object.prototype.toString.call(getShapeColor$$1) === '[object Object]'
                     && !isNullOrUndefined(getShapeColor$$1['opacity'])) ? getShapeColor$$1['opacity'] : shapeSettings.opacity;
                 let eventArgs = {
@@ -4885,7 +4921,7 @@ class LayerPanel {
                     data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
                     maps: this.mapObject,
                     shape: shapeSettings, fill: fill,
-                    border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
+                    border: { width: borderValue.width, color: borderValue.color }
                 };
                 if (this.mapObject.isBlazor) {
                     const { maps } = eventArgs, blazorEventArgs = __rest$2(eventArgs, ["maps"]);
@@ -4898,10 +4934,15 @@ class LayerPanel {
                     drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                     if (!eventArgs.cancel) {
                         eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
-                        eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color
-                            : eventArgs.border.color;
+                        eventArgs.border.color = eventArgs.border.color === '#000000' ?
+                            eventArgs.shape.border.color : eventArgs.border.color;
                         eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
-                        this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                        if (isNullOrUndefined(shapeSettings.borderColorValuePath)) {
+                            this.mapObject.layers[layerIndex].shapeSettings.border.color = eventArgs.border.color;
+                        }
+                        else if (isNullOrUndefined(shapeSettings.borderWidthValuePath)) {
+                            this.mapObject.layers[layerIndex].shapeSettings.border.width = eventArgs.border.width;
+                        }
                     }
                     else {
                         eventArgs.fill = fill;
@@ -10786,6 +10827,7 @@ class MapsTooltip {
         let tooltipEle;
         let location;
         let templateData = [];
+        let keyString;
         let index = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
         let layer = this.maps.layersCollection[index];
         let tooltipContent = [];
@@ -10827,11 +10869,18 @@ class MapsTooltip {
                         }
                     }
                     index = isShape ? index : null;
-                    templateData = layer.dataSource[index];
+                    if (!isNullOrUndefined(layer.dataSource[index])) {
+                        templateData = JSON.parse(JSON.stringify(layer.dataSource[index]));
+                        for (keyString in value) {
+                            if (!templateData.hasOwnProperty(keyString)) {
+                                templateData[keyString] = value[keyString];
+                            }
+                        }
+                    }
                 }
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value)))) {
                     if (layer.tooltipSettings.format) {
-                        currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);
+                        currentData = this.formatter(layer.tooltipSettings.format, templateData);
                     }
                     else {
                         let shapePath = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);

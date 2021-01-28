@@ -389,31 +389,17 @@ var DatePicker = /** @class */ (function (_super) {
         }
     };
     DatePicker.prototype.bindEvents = function () {
-        if (this.enabled) {
-            sf.base.EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
-            sf.base.EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            sf.base.EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            this.bindInputEvent();
-            // To prevent the twice triggering.
-            sf.base.EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                sf.base.EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
-            }
-            if (this.formElement) {
-                sf.base.EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
-            }
+        sf.base.EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
+        sf.base.EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        sf.base.EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        this.bindInputEvent();
+        // To prevent the twice triggering.
+        sf.base.EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            sf.base.EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
         }
-        else {
-            sf.base.EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
-            sf.base.EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            sf.base.EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            sf.base.EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                sf.base.EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (this.formElement) {
-                sf.base.EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
-            }
+        if (this.formElement) {
+            sf.base.EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
         }
         this.defaultKeyConfigs = sf.base.extend(this.defaultKeyConfigs, this.keyConfigs);
         this.keyboardModules = new sf.base.KeyboardEvents(this.inputElement, {
@@ -422,7 +408,22 @@ var DatePicker = /** @class */ (function (_super) {
             keyConfigs: this.defaultKeyConfigs
         });
     };
+    DatePicker.prototype.unBindEvents = function () {
+        sf.base.EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
+        sf.base.EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        sf.base.EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        sf.base.EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            sf.base.EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (this.formElement) {
+            sf.base.EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
+        }
+    };
     DatePicker.prototype.resetFormHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.inputElement.disabled) {
             var value = this.inputElement.getAttribute('value');
             if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
@@ -449,6 +450,9 @@ var DatePicker = /** @class */ (function (_super) {
             });
     };
     DatePicker.prototype.inputChangeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
     };
     DatePicker.prototype.bindClearEvent = function () {
@@ -457,6 +461,9 @@ var DatePicker = /** @class */ (function (_super) {
         }
     };
     DatePicker.prototype.resetHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.preventDefault();
         this.clear(e);
     };
@@ -491,6 +498,9 @@ var DatePicker = /** @class */ (function (_super) {
         sf.inputs.Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     };
     DatePicker.prototype.dateIconHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (sf.base.Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -603,6 +613,9 @@ var DatePicker = /** @class */ (function (_super) {
         }
     };
     DatePicker.prototype.inputFocusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         var focusArguments = {
             model: sf.base.isBlazor() && this.isServerRendered ? null : this
         };
@@ -617,6 +630,9 @@ var DatePicker = /** @class */ (function (_super) {
         this.isPopupClicked = false;
     };
     DatePicker.prototype.inputBlurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.isBlazorServer) {
             this.strictModeUpdate();
             if (this.inputElement.value === '' && sf.base.isNullOrUndefined(this.value)) {
@@ -1301,6 +1317,7 @@ var DatePicker = /** @class */ (function (_super) {
      * @returns void
      */
     DatePicker.prototype.destroy = function () {
+        this.unBindEvents();
         if (!this.isBlazorServer) {
             _super.prototype.destroy.call(this);
             this.keyboardModules.destroy();
@@ -1732,7 +1749,6 @@ var DatePicker = /** @class */ (function (_super) {
                 case 'enabled':
                     sf.inputs.Input.setEnabled(this.enabled, this.inputElement);
                     this.setAriaDisabled();
-                    this.bindEvents();
                     break;
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();

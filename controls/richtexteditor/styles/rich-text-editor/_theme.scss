@@ -179,6 +179,16 @@
       }
     }
 
+    &:not(.e-rte-tb-expand) {
+      border: 1px solid $rte-border-color;
+
+      .e-rte-content {
+        border: 0;
+        border-bottom: 0;
+        border-top: 0;
+      }
+    }
+
     &.e-rte-tb-expand {
       border: 1px solid $rte-border-color;
 

@@ -217,6 +217,8 @@ class SfMaps {
     public previousWidth: number;
     public previousHeight: number;
     public key: string;
+    public panComplete: boolean = false;
+    public pinchComplete: boolean = false;
     constructor(id: string, element: BlazorMapsElement, options: any, dotnetRef: BlazorDotnetObject) {
         this.id = id;
         this.element = element;
@@ -327,6 +329,7 @@ class SfMaps {
     private mouseUp(event: MouseEvent): void {
         let id: string = event.target['id'];
         let layerX: number; let layerY: number;
+        let translatePoint : MapLocation = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
         this.lastScale = 1;
         if (event.type === 'touchend') {
             event.preventDefault();
@@ -346,8 +349,6 @@ class SfMaps {
         this.moveClientY = clientValue.y;
         let parentId: string = id.split('_')[0];
         if (!(id.indexOf('_Zooming_') > -1) && this.options.zoomOnClick && !this.isPanning) {
-            let parentEle: HTMLElement = document.getElementById(event.target['id'].split('_')[0]);
-            let parentElement: ClientRect = parentEle.getBoundingClientRect();
             let factor: number = this.scaleFactor + 1;
             if (factor >= 1) {
                 this.scaleFactor = factor;
@@ -366,11 +367,17 @@ class SfMaps {
             this.newTiles = [];
             // tslint:disable:max-line-length 
             this.dotNetRef.invokeMethodAsync('UpdateTranslatePoint', this.shapeTranslatePoint, this.tileTranslatePoint, this.scaleFactor, false);
+            if (this.panComplete) {
+                this.dotNetRef.invokeMethodAsync('TriggerPanningComplete', this.previousPoint.x, this.previousPoint.y, translatePoint.x, translatePoint.y, this.scaleFactor);
+            }
         }
         if (this.isPinchZoomed) {
             this.isPinchZoomed = false;
             // tslint:disable:max-line-length 
             this.dotNetRef.invokeMethodAsync('UpdateTranslatePoint', this.shapeTranslatePoint, this.tileTranslatePoint, this.scaleFactor, true);
+            if (this.pinchComplete) {
+                this.dotNetRef.invokeMethodAsync('TriggerOnZoomComplete', translatePoint.x, translatePoint.y, this.scaleFactor);
+            }
         }
         this.isPanning = false;
         this.allowPanning = false;
@@ -442,6 +449,7 @@ class SfMaps {
         this.moveClientX = event.pageX;
         this.moveClientY = event.pageY;
         let layerX: number; let layerY: number;
+        let translatePoint : MapLocation = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
         let x: number; let y: number;
         if (event.type === 'touchmove') {
             this.moveClientX = x = event['touches'][0].clientX;
@@ -524,7 +532,15 @@ class SfMaps {
                 if (this.clientX !== this.moveClientX && this.clientY !== this.moveClientY) {
                     let xDifference: number = this.clientX - this.moveClientX;
                     let yDifference: number = this.clientY - this.moveClientY;
+                    let x : number =  translatePoint.x - xDifference / this.scaleFactor;
+                    let y : number =  translatePoint.y - yDifference / this.scaleFactor;
+                    if (!this.panComplete && !this.pinchComplete) {
+                        this.previousPoint = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
+                        this.dotNetRef.invokeMethodAsync('TriggerPanning', translatePoint.x, translatePoint.y, x, y, this.scaleFactor);
+                    }
                     this.panning(xDifference, yDifference, layerX, layerY, this.scaleFactor);
+                    this.panComplete = this.isTouch && this.touchMoveList.length === 2 && this.touchStartList.length === 2 ?
+                    false : true;
                     this.clientX = this.moveClientX;
                     this.clientY = this.moveClientY;
                 }
@@ -536,7 +552,14 @@ class SfMaps {
                     this.scaleFactor = parseInt(element['className'], 10);
                     let xDifference: number = this.clientX - this.moveClientX;
                     let yDifference: number = this.clientY - this.moveClientY;
+                    let location : LatLog = this.getTileGeoLocation(layerX, layerY);
+                    if (!this.panComplete && this.touchMoveList.length !== 2 && this.touchStartList.length !== 2) {
+                        this.previousPoint = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
+                        this.dotNetRef.invokeMethodAsync('TriggerTilePanning', this.previousPoint.x, this.previousPoint.y, translatePoint.x, translatePoint.y, this.scaleFactor, location.latitude, location.longitude);
+                    }
                     this.panning(xDifference, yDifference, layerX, layerY, this.scaleFactor);
+                    this.panComplete = this.isTouch && this.touchMoveList.length === 2 && this.touchStartList.length === 2 
+                    ? false : true;
                     this.clientX = this.moveClientX;
                     this.clientY = this.moveClientY;
                 }
@@ -544,7 +567,11 @@ class SfMaps {
         }
         if (this.options.enablePinchZooming && this.touchMoveList.length === 2 && this.touchStartList.length === 2) {
             this.isPinchZoomed = true;
+            if (!this.pinchComplete && !this.panComplete) {
+                this.dotNetRef.invokeMethodAsync('TriggerOnZoom', translatePoint.x, translatePoint.y, this.scaleFactor);
+            }   
             this.pinchZooming(event);
+            this.pinchComplete = true;
         }
         if (!this.allowPanning && !(this.mouseClick && this.zoomClick)) {
             if (id.indexOf('shapeIndex') > -1 && this.options.tooltipDisplayMode === 'MouseMove') {
@@ -584,6 +611,7 @@ class SfMaps {
         let id: string = event.target['id'];
         this.isPinchZoomed = false;
         this.isTouch = false;
+        this.panComplete = false; this.pinchComplete = false;
         if (event.type === 'touchstart') {
             event.preventDefault();
             this.clientX = event['touches'][0].clientX;
@@ -933,10 +961,7 @@ class SfMaps {
                 this.shapeTranslatePoint = { x: this.shapeTranslatePoint.x, y: y };
                 this.applyTransform();
             }
-            this.dotNetRef.invokeMethodAsync('TriggerPanning', previousPoint.x, previousPoint.y, x, y,
-                scaleFactor);
         } else {
-            let previousPoint: MapLocation = this.tileTranslatePoint;
             let x: number = this.tileTranslatePoint.x - xDifference;
             let y: number = this.tileTranslatePoint.y - yDifference;
             this.tileTranslatePoint.x = x;
@@ -948,11 +973,8 @@ class SfMaps {
             }
             this.translatePoint.x = (this.tileTranslatePoint.x - xDifference) / Math.pow(2, scaleFactor - 1);
             this.translatePoint.y = (this.tileTranslatePoint.y - yDifference) / Math.pow(2, scaleFactor - 1);
-            let location: LatLog = this.getTileGeoLocation(layerX, layerY);
             this.generateTiles();
             this.renderMarkers();
-            this.dotNetRef.invokeMethodAsync('TriggerTilePanning', previousPoint.x, previousPoint.y, x, y,
-                scaleFactor, Math.pow(2, scaleFactor), location.latitude, location.longitude);
         }
     }
     private applyTransform(): void {

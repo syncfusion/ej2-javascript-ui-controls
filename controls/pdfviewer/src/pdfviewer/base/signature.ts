@@ -549,7 +549,11 @@ export class Signature {
         this.outputString = eventTarget.textContent;
         this.fontName = eventTarget.style.fontFamily;
     }
-    private addSignatureCollection(): void {
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public addSignatureCollection(bounds?: any, position?: any): void {
         let minimumX: number = -1;
         let minimumY: number = -1;
         let maximumX: number = -1;
@@ -592,10 +596,21 @@ export class Signature {
         let newdifferenceY: number = maximumY - minimumY;
         // tslint:disable-next-line
         let newCanvas: any = document.createElement('canvas');
-        newCanvas.width = 100;
-        newCanvas.height = 100;
         let differenceX: number = newdifferenceX / 100;
         let differenceY: number = newdifferenceY / 100;
+        let left: number = 0;
+        let top: number = 0;
+        if (bounds) {
+            newCanvas.width = position.currentWidth;
+            newCanvas.height = position.currentHeight;
+            differenceX = newdifferenceX / (bounds.width);
+            differenceY = newdifferenceY / (bounds.height);
+            left = bounds.x - position.currentLeft;
+            top = bounds.y - position.currentTop;
+        } else {
+            newCanvas.width = 100;
+            newCanvas.height = 100;
+        }
         // tslint:disable-next-line
         let context: any = newCanvas.getContext('2d');
         context.beginPath();
@@ -603,9 +618,9 @@ export class Signature {
             // tslint:disable-next-line
             let val: any = collectionData[n];
             // tslint:disable-next-line
-            let point1: number = (val['x'] - minimumX) / differenceX;
+            let point1: number = ((val['x'] - minimumX) / differenceX) + left;
             // tslint:disable-next-line
-            let point2: number = (val['y'] - minimumY) / differenceY;
+            let point2: number = ((val['y'] - minimumY) / differenceY) + top;
             // tslint:disable-next-line
             if (val['command'] === 'M') {
                 context.moveTo(point1, point2);
@@ -618,15 +633,19 @@ export class Signature {
         context.closePath();
         // tslint:disable-next-line
         let imageString: any = newCanvas.toDataURL();
-        // tslint:disable-next-line
-        let signCollection: any = {};
-        signCollection['sign_' + this.pdfViewerBase.imageCount] = this.outputString;
-        this.outputcollection.push(signCollection);
-        // tslint:disable-next-line
-        let signature: any = {};
-        signature['sign_' + this.pdfViewerBase.imageCount] = imageString;
-        this.signaturecollection.push(signature);
-        this.pdfViewerBase.imageCount++;
+        if (bounds) {
+            this.saveImageString = imageString;
+        } else {
+            // tslint:disable-next-line
+            let signCollection: any = {};
+            signCollection['sign_' + this.pdfViewerBase.imageCount] = this.outputString;
+            this.outputcollection.push(signCollection);
+            // tslint:disable-next-line
+            let signature: any = {};
+            signature['sign_' + this.pdfViewerBase.imageCount] = imageString;
+            this.signaturecollection.push(signature);
+            this.pdfViewerBase.imageCount++;
+        }
     }
 
     /**

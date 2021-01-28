@@ -567,6 +567,7 @@ var Toast = /** @class */ (function (_super) {
     };
     Toast.prototype.updateProgressBar = function (progressObj) {
         var percentage = ((progressObj.hideEta - (new Date().getTime())) / progressObj.maxHideTime) * 100;
+        percentage = this.progressDirection === 'Ltr' ? 100 - percentage : percentage;
         progressObj.progressEle.style.width = percentage + '%';
     };
     Toast.prototype.setIcon = function () {
@@ -793,6 +794,9 @@ var Toast = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property(5000)
     ], Toast.prototype, "timeOut", void 0);
+    __decorate([
+        sf.base.Property('Rtl')
+    ], Toast.prototype, "progressDirection", void 0);
     __decorate([
         sf.base.Property(1000)
     ], Toast.prototype, "extendedTimeout", void 0);

@@ -13950,7 +13950,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var ul = select('.' + PARENTITEM, liEle);
         var childItems = getValue(this.fields.child.toString(), newNodeData);
         if ((isRefreshChild && ul) || (isRefreshChild && !isNullOrUndefined(childItems))) {
-            liEle.innerHTML = newliEle[0].innerHTML;
+            var parentEle = liEle.parentElement;
+            var index = Array.prototype.indexOf.call(parentEle.childNodes, liEle);
+            remove(liEle);
+            parentEle.insertBefore(newliEle[0], parentEle.childNodes[index]);
             this.updatePosition(id, newNodeData, isRefreshChild, newData);
             if (isRefreshChild && ul) {
                 this.expandAll([id]);
@@ -13974,9 +13977,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     addClass([newIcon], 'interaction');
                 }
             }
-            txtEle.innerHTML = newTextEle.innerHTML;
+            remove(txtEle);
+            var fullEle = select('.' + FULLROW, liEle);
+            fullEle.parentNode.insertBefore(newTextEle, fullEle.nextSibling);
             this.updatePosition(id, newNodeData, isRefreshChild, newData);
         }
+        liEle = this.getElement(target);
         if (newNodeData[this.fields.tooltip]) {
             liEle.setAttribute("title", newNodeData[this.fields.tooltip]);
         }
@@ -13990,6 +13996,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             else {
                 attributes(liEle, attr);
             }
+        }
+        if (this.selectedNodes.indexOf(id) !== -1) {
+            liEle.setAttribute('aria-selected', 'true');
+            addClass([liEle], ACTIVE);
         }
         this.isRefreshed = false;
         this.triggerEvent();

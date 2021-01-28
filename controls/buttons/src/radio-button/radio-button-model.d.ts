@@ -75,4 +75,11 @@ export interface RadioButtonModel extends ComponentModel{
      */
     enableHtmlSanitizer?: boolean;
 
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string; };
+
 }

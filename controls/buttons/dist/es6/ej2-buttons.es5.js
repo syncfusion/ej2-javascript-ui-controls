@@ -555,7 +555,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
             this.changeState('check');
             this.checked = true;
         }
-        var changeEventArgs = { checked: this.element.checked, event: event };
+        var changeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
     };
     /**
@@ -630,6 +630,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.value) {
             this.element.setAttribute('value', this.value);
+            if (this.isVue && typeof this.value === 'boolean' && this.value === true) {
+                this.setProperties({ 'checked': true }, true);
+            }
         }
         if (this.checked) {
             this.changeState('check');
@@ -756,6 +759,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (this.isVue && typeof newProp.value === 'object') {
+                        break;
+                    }
                     this.element.setAttribute('value', newProp.value);
                     break;
                 case 'htmlAttributes':
@@ -792,6 +798,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
+        this.updateVueArrayModel(true);
         this.renderComplete();
         this.wrapper = this.getWrapper();
     };
@@ -856,6 +863,37 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
+    };
+    CheckBox.prototype.updateVueArrayModel = function (init) {
+        if (this.isVue && typeof this.value === 'object') {
+            var value = this.element.value;
+            if (value && this.value) {
+                if (init) {
+                    for (var i = 0; i < this.value.length; i++) {
+                        if (value === this.value[i]) {
+                            this.changeState('check');
+                            this.setProperties({ 'checked': true }, true);
+                        }
+                    }
+                }
+                else {
+                    var index = this.value.indexOf(value);
+                    if (this.checked) {
+                        if (index < 0) {
+                            this.value.push(value);
+                        }
+                    }
+                    else {
+                        if (index > -1) {
+                            this.value.splice(index, 1);
+                        }
+                    }
+                    // tslint:disable-next-line:no-any
+                    return this.value;
+                }
+            }
+        }
+        return this.element.checked;
     };
     CheckBox.prototype.updateHtmlAttributeToWrapper = function () {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -965,6 +1003,7 @@ var LABEL$1 = 'e-label';
 var RIPPLE$1 = 'e-ripple-container';
 var RTL$1 = 'e-rtl';
 var WRAPPER$1 = 'e-radio-wrapper';
+var ATTRIBUTES = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 /**
  * The RadioButton is a graphical user interface element that allows you to select one option from the choices.
  * It contains checked and unchecked states.
@@ -991,13 +1030,13 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     RadioButton.prototype.changeHandler = function (event) {
         this.checked = true;
         this.dataBind();
-        var changeEventArgs = { value: this.value, event: event };
-        this.trigger('change', changeEventArgs);
+        var value = this.isVue ? this.element.value : this.value;
+        this.trigger('change', { value: value, event: event });
         if (this.tagName === 'EJS-RADIOBUTTON') {
             event.stopPropagation();
         }
     };
-    RadioButton.prototype.updateChange = function (state) {
+    RadioButton.prototype.updateChange = function () {
         var input;
         var instance;
         var radioGrp = this.getRadioGroup();
@@ -1083,10 +1122,14 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             this.initialCheckedValue = this.checked;
         }
         this.initWrapper();
+        this.updateHtmlAttribute();
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
-        if (this.value) {
+        if (this.isVue && this.element.value && this.element.value === this.value) {
+            this.checked = true;
+        }
+        if (this.value && (!this.isVue || !this.element.value)) {
             this.element.setAttribute('value', this.value);
         }
         if (this.checked) {
@@ -1151,7 +1194,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'checked':
                     if (newProp.checked) {
-                        this.updateChange(newProp.checked);
+                        this.updateChange();
                     }
                     this.element.checked = newProp.checked;
                     break;
@@ -1196,7 +1239,13 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (!isNullOrUndefined(this.htmlAttributes) && this.htmlAttributes.value) {
+                        break;
+                    }
                     this.element.setAttribute('value', newProp.value);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttribute();
                     break;
             }
         }
@@ -1255,6 +1304,25 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.getLabel().classList.remove('e-right');
+        }
+    };
+    RadioButton.prototype.updateHtmlAttribute = function () {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (ATTRIBUTES.indexOf(key) > -1) {
+                    var wrapper = this.element.parentElement;
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'title' || key === 'style') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
         }
     };
     RadioButton.prototype.unWireEvents = function () {
@@ -1334,6 +1402,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(false)
     ], RadioButton.prototype, "enableHtmlSanitizer", void 0);
+    __decorate$2([
+        Property({})
+    ], RadioButton.prototype, "htmlAttributes", void 0);
     RadioButton = RadioButton_1 = __decorate$2([
         NotifyPropertyChanges
     ], RadioButton);

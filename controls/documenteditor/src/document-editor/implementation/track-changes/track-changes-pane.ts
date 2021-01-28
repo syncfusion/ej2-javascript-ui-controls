@@ -18,7 +18,10 @@ export class TrackChangesPane {
     private trackChangeDiv: HTMLElement;
     private toolbarElement: HTMLElement;
     private noChangeDivElement: HTMLElement;
-    private toolbar: Toolbar;
+    /**
+     * @private
+     */
+    public toolbar: Toolbar;
     public changesInfoDiv: HTMLElement;
     private locale: L10n;
     private commentReviewPane: CommentReviewPane;

@@ -2335,7 +2335,24 @@ export function changeBorderWidth(element: Element, index: number, scale: number
         if (childNode.id.indexOf('_NavigationGroup') > -1) {
             changeNavaigationLineWidth(childNode, index, scale, maps);
         } else {
-            let currentStroke: number = ((<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width);
+            let currentStroke: number;
+            let value: number = 0;
+            let borderWidthValue = maps.layersCollection[index].shapeSettings.borderWidthValuePath;
+            if (maps.layersCollection[index].shapeSettings.borderWidthValuePath) {
+                value = checkShapeDataFields(
+                    <Object[]>maps.layersCollection[index].dataSource, maps.layersCollection[index].layerData[l]['property'],
+                    maps.layersCollection[index].shapeDataPath, maps.layersCollection[index].shapePropertyPath, maps.layersCollection[index]
+                );
+                if (value !== null) {
+                    if (maps.layersCollection[index].dataSource[value][borderWidthValue]) {
+                        currentStroke = maps.layersCollection[index].dataSource[value][borderWidthValue];
+                    } else {
+                        currentStroke = ((<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width);
+                    }
+                }
+            } else {
+                currentStroke = ((<LayerSettingsModel>maps.layersCollection[index]).shapeSettings.border.width);
+            }
             childNode.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
     }

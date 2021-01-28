@@ -1,7 +1,7 @@
 
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType, CommentStatus } from './index';
-import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model';
 /**
  * Exports types used by PDF viewer.
  */
@@ -71,6 +71,23 @@ export interface ButtonFieldClickEventArgs extends BaseEventArgs {
      * specifies the form field id.
      */
     id: string;
+}
+/**
+ * This event provide necessary information about form fields.
+ */
+export interface FormFieldClickArgs extends BaseEventArgs {
+    /**
+     * Gets the name of the event.
+     */
+    name: string;
+    /**
+     * Gets the form field object.
+     */
+    field: FormFieldModel;
+    /**
+     * If TRUE, signature panel does not open for the signature field. FALSE by default.
+     */
+    cancel: boolean;
 }
 /**
  * This event arguments provides the necessary information about document load failed event.

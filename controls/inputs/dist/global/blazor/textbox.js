@@ -204,6 +204,7 @@ var TextBox = /** @class */ (function (_super) {
                 this.element.removeAttribute('name');
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
+                this.textarea.setAttribute('id', sf.base.getUniqueID('textarea'));
                 var attribute = ['required', 'minlength', 'maxlength'];
                 for (var i = 0; i < attribute.length; i++) {
                     if (this.element.hasAttribute(attribute[i])) {

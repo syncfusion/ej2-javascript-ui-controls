@@ -6803,12 +6803,12 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
         var isValidEvent = this.isValidEvent(eventObj, startTime, endTime, schedule);
         if (startTime <= endTime && isValidEvent) {
-            var appWidth = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay], diffInDays);
-            appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
+            var appWidth_1 = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay], diffInDays);
+            appWidth_1 = this.renderType === 'day' ? appWidth_1 - 2 : appWidth_1;
             var appLeft = 0;
             var appRight = 0;
             var position = this.getPosition(startTime, endTime, event[this.fields.isAllDay], this.day);
-            appWidth = (appWidth <= 0) ? this.cellWidth : appWidth; // appWidth 0 when start and end time as same
+            appWidth_1 = (appWidth_1 <= 0) ? this.cellWidth : appWidth_1; // appWidth 0 when start and end time as same
             this.renderedEvents.push(extend({}, event, null, true));
             var top_1 = this.getRowTop(resIndex);
             var appTop = (top_1 + (this.maxHeight ? 0 : EVENT_GAP$1)) + (overlapCount * (appHeight + EVENT_GAP$1));
@@ -6817,28 +6817,28 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             var height = ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight;
             var renderApp = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || renderApp) {
-                var appointmentElement_1;
+                var appointmentElement = void 0;
                 if (isNullOrUndefined(this.inlineValue)) {
-                    appointmentElement_1 = this.createAppointmentElement(event, resIndex);
+                    appointmentElement = this.createAppointmentElement(event, resIndex);
                 }
                 else {
-                    appointmentElement_1 = this.parent.inlineModule.createInlineAppointmentElement();
+                    appointmentElement = this.parent.inlineModule.createInlineAppointmentElement();
                 }
-                this.applyResourceColor(appointmentElement_1, event, 'backgroundColor', this.groupOrder);
-                setStyleAttribute(appointmentElement_1, {
-                    'width': appWidth + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
+                this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
+                setStyleAttribute(appointmentElement, {
+                    'width': appWidth_1 + 'px', 'left': appLeft + 'px', 'right': appRight + 'px', 'top': appTop + 'px'
                 });
-                this.wireAppointmentEvents(appointmentElement_1, event);
-                this.renderEventElement(event, appointmentElement_1, cellTd);
+                this.wireAppointmentEvents(appointmentElement, event);
+                this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
                     var firstChild = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
                 if (this.parent.activeViewOptions.option !== 'TimelineMonth' && this.parent.activeViewOptions.timeScale.enable
-                    && appWidth < this.cellWidth) {
-                    var resizeHandlers = [].slice.call(appointmentElement_1.querySelectorAll('.' + EVENT_RESIZE_CLASS));
+                    && appWidth_1 < this.cellWidth) {
+                    var resizeHandlers = [].slice.call(appointmentElement.querySelectorAll('.' + EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach(function (resizeHandler) {
-                        resizeHandler.style.width = Math.ceil(appointmentElement_1.offsetWidth / resizeHandler.offsetWidth) + 'px';
+                        resizeHandler.style.width = Math.ceil(appWidth_1 / resizeHandler.getBoundingClientRect().width) + 'px';
                     });
                 }
             }
@@ -6887,7 +6887,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         this.parent.renderTemplates();
     };
     TimelineEvent.prototype.updateCellHeight = function (cell, height) {
-        if ((height > cell.offsetHeight)) {
+        if ((height > cell.getBoundingClientRect().height)) {
             setStyleAttribute(cell, { 'height': height + 'px' });
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 var resourceCell = this.parent.element.querySelector('.' + RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +

@@ -15679,6 +15679,9 @@ var Resize = /** @__PURE__ @class */ (function () {
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
             this.parent.element.style.width = eventType.clientX - boundRect.left + 'px';
         }
+        if (!this.parent.toolbarSettings.enable) {
+            this.parent.setContentHeight('', false);
+        }
         this.parent.refreshUI();
     };
     Resize.prototype.stopResize = function (e) {
@@ -21198,7 +21201,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.notify(toolbarRefresh, { args: e });
         }
         if (!isNullOrUndefined(this.placeholder)) {
-            this.setPlaceHolder();
+            if (!(e.key === 'Enter' && e.keyCode === 13) && this.inputElement.innerHTML === '<p><br></p>') {
+                this.setPlaceHolder();
+            }
         }
     };
     /**
@@ -21765,8 +21770,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 &&
                     !isNullOrUndefined(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
-                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR' &&
-                    this.inputElement.innerHTML !== '<p><br></p><p><br></p>') {
+                    !isNullOrUndefined(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
                     this.placeHolderWrapper.style.display = 'block';
                 }
                 else {

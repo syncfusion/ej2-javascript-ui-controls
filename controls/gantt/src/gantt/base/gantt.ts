@@ -132,6 +132,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public editedRecords: IGanttData[] = [];
     /** @hidden */
+    public modifiedRecords: IGanttData[] = [];
+    /** @hidden */
     public isOnEdit: boolean = false;
     /** @hidden */
     public isOnDelete: boolean = false;
@@ -277,6 +279,14 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(true)
     public allowKeyboard: boolean;
+    /**    
+     * If `enableImmutableMode`  is set to true, the Gantt Chart will reuse old rows if it exists in the new result instead of
+     * full refresh while performing the Gantt actions.
+     * @default false
+     */
+    @Property(false)
+    public enableImmutableMode: boolean;
+
     /**
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
      * @default true
@@ -1939,7 +1949,7 @@ export class Gantt extends Component<HTMLElement>
         if (!this.enableVirtualization) {
             this.updateContentHeight();
         }
-        this.chartRowsModule.refreshGanttRows();
+        // this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();
             this.ganttChartModule.scrollObject.updateTopPosition();
@@ -1964,6 +1974,7 @@ export class Gantt extends Component<HTMLElement>
                 case 'showColumnMenu':
                 case 'allowResizing':
                 case 'allowReordering':
+                case 'enableImmutableMode':
                     this.treeGrid[prop] = this[prop];
                     this.treeGrid.dataBind();
                     break;
@@ -2892,6 +2903,9 @@ export class Gantt extends Component<HTMLElement>
             let task: IGanttData = this.getRecordByID(id);
             if (task && this.editedRecords.indexOf(task) === -1) {
                 this.editedRecords.push(task);
+                if (this.enableImmutableMode) {
+                    this.modifiedRecords.push(task);
+                }
             }
         }
         value = isUndefined(value) ? null : value;

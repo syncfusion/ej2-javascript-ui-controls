@@ -1090,6 +1090,8 @@ var selectionComplete = 'selectionComplete';
 /** @private */
 var resized = 'resized';
 /** @private */
+var beforeResize = 'beforeResize';
+/** @private */
 var beforePrint = 'beforePrint';
 /** @private */
 var annotationRender = 'annotationRender';
@@ -13110,21 +13112,25 @@ var Chart$1 = /** @class */ (function (_super) {
             currentSize: new sf.svgbase.Size(0, 0),
             previousSize: new sf.svgbase.Size(this.availableSize.width, this.availableSize.height),
         };
+        var beforeResizeArgs = { name: 'beforeResize', cancelResizedEvent: false };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        this.resizeTo = setTimeout(function () {
-            if (_this.isDestroyed || _this.stockChart) {
-                clearTimeout(_this.resizeTo);
-                return;
-            }
-            _this.createChartSvg();
-            arg.currentSize = _this.availableSize;
-            _this.trigger(resized, arg);
-            _this.refreshAxis();
-            _this.refreshBound();
-            _this.trigger('loaded', { chart: _this.isBlazor ? {} : _this });
-        }, 500);
+        this.trigger(beforeResize, beforeResizeArgs);
+        if (!beforeResizeArgs.cancelResizedEvent) {
+            this.resizeTo = setTimeout(function () {
+                if (_this.isDestroyed || _this.stockChart) {
+                    clearTimeout(_this.resizeTo);
+                    return;
+                }
+                _this.createChartSvg();
+                arg.currentSize = _this.availableSize;
+                _this.trigger(resized, arg);
+                _this.refreshAxis();
+                _this.refreshBound();
+                _this.trigger('loaded', { chart: _this.isBlazor ? {} : _this });
+            }, 500);
+        }
         return false;
     };
     /**
@@ -14198,6 +14204,9 @@ var Chart$1 = /** @class */ (function (_super) {
     __decorate$6([
         sf.base.Event()
     ], Chart$$1.prototype, "resized", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], Chart$$1.prototype, "beforeResize", void 0);
     __decorate$6([
         sf.base.Event()
     ], Chart$$1.prototype, "annotationRender", void 0);
@@ -19867,10 +19876,10 @@ var SplineBase = /** @class */ (function (_super) {
                     if (point_1.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
                         series.yMin = Math.min(series.yMin, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y);
                         series.yMax = Math.ceil(Math.max(series.yMax, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y));
+                        series.yMin = series.yAxis.valueType !== 'Logarithmic' ? Math.floor(series.yMin) : series.yMin;
                     }
                 }
             }
-            series.yMin = series.yAxis.valueType !== 'Logarithmic' ? Math.floor(series.yMin) : series.yMin;
             if (series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
                 value = this.getControlPoints({ xValue: points[points.length - 1].xValue, yValue: points[points.length - 1].yValue }, { xValue: points[points.length - 1].xValue + 1, yValue: points[0].yValue }, this.splinePoints[0], this.splinePoints[points[points.length - 1].index], series);
                 series.drawPoints.push(value);
@@ -26796,7 +26805,7 @@ var DataLabel = /** @class */ (function () {
                             else {
                                 notOverlapping = !isCollide(rect, chart.dataLabelCollections, clip);
                             }
-                            if (notOverlapping && isRender) {
+                            if ((notOverlapping || dataLabel.labelIntersectAction === 'None') && isRender) {
                                 chart.dataLabelCollections.push(actualRect);
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + point.index + '_TextShape_' + i_1, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -26929,7 +26938,7 @@ var DataLabel = /** @class */ (function () {
             !((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
                 (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
-            rect.y = rect.y < 0 ? padding : rect.y;
+            rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
                 - (clipRect.x + clipRect.width) + padding : 0;
             rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)

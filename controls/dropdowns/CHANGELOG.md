@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#310665` - Issue with "`select` event is triggered twice while preventing the value selection" has been resolved.
+
 ## 18.4.34 (2021-01-12)
 
 ### ListBox

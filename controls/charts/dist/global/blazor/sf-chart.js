@@ -286,6 +286,7 @@ var SfChart = /** @class */ (function () {
 var Chart = {
     initialize: function (element, dotnetRef, isZooming, isScrollbar) {
         var instance = new SfChart(element.id, element, dotnetRef, isZooming, isScrollbar);
+        this.getAllCharacters();
         instance.render();
     },
     destroy: function (element) {
@@ -496,12 +497,13 @@ var Chart = {
         };
         return sf.svgbase.measureText(text, font);
     },
-    charCollection: [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '"', '#', '$', '%', '&', '\\', '(', ')', '*', '+', ',', '-', '.', '/', ':',
-        ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ',
-    ],
+    charCollection: [],
+    getAllCharacters: function () {
+        this.charCollection = [];
+        for (var i = 33; i < 591; i++) {
+            this.charCollection.push(String.fromCharCode(i));
+        }
+    },
     measureText: function (text, size, fontWeight, fontStyle, fontFamily) {
         var textObject = document.getElementById('sfchartmeasuretext');
         if (textObject === null) {

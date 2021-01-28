@@ -1409,7 +1409,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.notify(events.toolbarRefresh, { args: e });
         }
         if (!isNOU(this.placeholder)) {
-            this.setPlaceHolder();
+            if (!(e.key === 'Enter' && e.keyCode === 13) && this.inputElement.innerHTML === '<p><br></p>') {
+                this.setPlaceHolder();
+            }
         }
     }
     /** 
@@ -1949,8 +1951,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.placeHolderWrapper.innerHTML = this.placeholder;
                 if (this.inputElement.textContent.length === 0 &&
                 !isNOU(this.inputElement.firstChild) && this.inputElement.firstChild.nodeName === 'P' &&
-                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR' &&
-                this.inputElement.innerHTML !== '<p><br></p><p><br></p>') {
+                !isNOU(this.inputElement.firstChild.firstChild) && this.inputElement.firstChild.firstChild.nodeName === 'BR') {
                     this.placeHolderWrapper.style.display = 'block';
                 } else {
                     this.placeHolderWrapper.style.display = 'none';

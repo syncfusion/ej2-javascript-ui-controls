@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+## 18.4.39 (2021-01-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#308150` - Fixed the data label issue for label instersect action.
+
 ## 18.4.35 (2021-01-19)
+
+### Chart
+
+#### Bug Fixes
+
+- `#307141` - Issue fixed in Y axis range interval.
 
 ### Stock Chart
 

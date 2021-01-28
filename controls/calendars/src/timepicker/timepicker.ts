@@ -1187,6 +1187,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
 
     private popupHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -1199,6 +1200,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
     }
     private mouseDownHandler(): void {
+        if (!this.enabled) { return; }
         if (!this.readonly) {
             let curPos: CursorPositionDetails = this.getCursorSelection();
             this.inputElement.setSelectionRange(0, 0);
@@ -1562,6 +1564,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
     }
     protected formResetHandler(): void {
+        if (!this.enabled) { return; }
         if (!this.inputElement.disabled) {
             let timeValue: string = this.inputElement.getAttribute('value');
             let val: Date = this.isBlazorServer ? this.inputEleValue : this.checkDateValue(this.inputEleValue);
@@ -1584,6 +1587,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
     }
     private inputChangeHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         e.stopPropagation();
     }
     protected unBindEvents(): void {
@@ -1619,6 +1623,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.trigger('cleared', clearedArgs);
     }
     protected clearHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         e.preventDefault();
         if (!isNullOrUndefined(this.value)) {
             this.clear(e);
@@ -2323,6 +2328,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.checkValueChange(null, false);
     }
     protected inputBlurHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         // IE popup closing issue when click over the scrollbar
         if (this.isPreventBlur && this.isPopupOpen()) {
             this.inputElement.focus();
@@ -2371,6 +2377,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return false;
     }
     private inputFocusHandler(): void {
+        if (!this.enabled) { return; }
         let focusArguments: FocusEventArgs = {
             model: this.isBlazorServer ? null : this
         };

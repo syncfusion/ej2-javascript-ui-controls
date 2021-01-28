@@ -254,7 +254,7 @@ export class WorkbookNumberFormat {
 
     private accountingFormat(args: { [key: string]: string | number | boolean | CellModel }, intl: Internationalization): string {
         args.format = args.format === '' ? getFormatFromType('Accounting') : args.format;
-        args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('');
+        args.format = (args.format as string).split('_(').join(' ').split('_)').join(' ').split('[Red]').join('').split('_').join('');
         let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         let formatArr: string[] = (args.format as string).split(';');
         if (Number(args.value) >= 0) {
@@ -540,6 +540,7 @@ export function getTypeFromFormat(format: string): string {
         case '_($*#,##0.00_);_($*(#,##0.00);_($*"-"??_);_(@_)':
         case '_($*#,##0.00_);_($* (#,##0.00);_($*"-"??_);_(@_)':
         case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
+        case '_ $ * #,##0.00_ ;_ $ * -#,##0.00_ ;_ $ * "-"??_ ;_ @_ ':
             code = 'Accounting';
             break;
         case 'mm-dd-yyyy':

@@ -382,6 +382,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.element.removeAttribute('name');
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
+                this.textarea.setAttribute('id', getUniqueID('textarea'));
                 let attribute: string[] = ['required', 'minlength', 'maxlength'];
                 for (let i: number = 0; i < attribute.length; i++) {
                     if (this.element.hasAttribute(attribute[i])) {

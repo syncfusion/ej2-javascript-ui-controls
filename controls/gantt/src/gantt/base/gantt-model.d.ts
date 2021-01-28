@@ -14,6 +14,13 @@ export interface GanttModel extends ComponentModel{
     allowKeyboard?: boolean;
 
     /**
+     * If `enableImmutableMode`  is set to true, the Gantt Chart will reuse old rows if it exists in the new result instead of
+     * full refresh while performing the Gantt actions.
+     * @default false
+     */
+    enableImmutableMode?: boolean;
+
+    /**
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
      * @default true
      */

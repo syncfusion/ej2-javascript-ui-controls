@@ -6076,6 +6076,7 @@ var GanttTreeGrid = /** @class */ (function () {
         this.parent.treeGrid = new sf.treegrid.TreeGrid();
         this.parent.treeGrid.allowSelection = false;
         this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
+        this.parent.treeGrid.enableImmutableMode = this.parent.enableImmutableMode;
         this.treeGridColumns = [];
         this.validateGanttColumns();
         this.addEventListener();
@@ -6197,6 +6198,7 @@ var GanttTreeGrid = /** @class */ (function () {
     GanttTreeGrid.prototype.dataBound = function (args) {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
+        this.prevCurrentView = sf.base.extend([], [], this.parent.currentViewData, true);
     };
     GanttTreeGrid.prototype.collapsing = function (args) {
         var _this = this;
@@ -7510,6 +7512,8 @@ var ChartRows = /** @class */ (function (_super) {
         _this.touchLeftConnectorpoint = '';
         _this.touchRightConnectorpoint = '';
         _this.dropSplit = false;
+        _this.refreshedTr = [];
+        _this.refreshedData = [];
         _this.parent = ganttObj;
         _this.initPublicProp();
         _this.addEventListener();
@@ -8629,21 +8633,51 @@ var ChartRows = /** @class */ (function (_super) {
      */
     ChartRows.prototype.createTaskbarTemplate = function () {
         this.updateTaskbarBlazorTemplate(false);
+        var trs = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
         this.ganttChartTableBody.innerHTML = '';
         var collapsedResourceRecord = [];
-        for (var i = 0; i < this.parent.currentViewData.length; i++) {
-            var tempTemplateData = this.parent.currentViewData[i];
-            if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
-                collapsedResourceRecord.push(tempTemplateData);
+        var prevCurrentView = this.parent.treeGridModule.prevCurrentView;
+        if (this.parent.enableImmutableMode && prevCurrentView && prevCurrentView.length > 0) {
+            this.refreshedTr = [];
+            this.refreshedData = [];
+            var oldKeys = {};
+            var oldRowElements = [];
+            var key = this.parent.treeGrid.getPrimaryKeyFieldNames()[0];
+            for (var i = 0; i < prevCurrentView.length; i++) {
+                oldRowElements[i] = trs[i];
+                oldKeys[prevCurrentView[i][key]] = i;
             }
-            var tRow = this.getGanttChartRow(i, tempTemplateData);
-            this.ganttChartTableBody.appendChild(tRow);
-            // To maintain selection when virtualization is enabled
-            if (this.parent.selectionModule && this.parent.allowSelection) {
-                this.parent.selectionModule.maintainSelectedRecords(parseInt(tRow.getAttribute('aria-rowindex'), 10));
+            for (var index = 0; index < this.parent.currentViewData.length; index++) {
+                var oldIndex = oldKeys[this.parent.currentViewData[index][key]];
+                var modifiedRecIndex = this.parent.modifiedRecords.indexOf(this.parent.currentViewData[index]);
+                if (sf.base.isNullOrUndefined(oldIndex) || modifiedRecIndex !== -1) {
+                    var tRow = this.getGanttChartRow(index, this.parent.currentViewData[index]);
+                    this.ganttChartTableBody.appendChild(tRow);
+                    this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[index]);
+                    this.refreshedData.push(this.parent.currentViewData[index]);
+                }
+                else if (!sf.base.isNullOrUndefined(oldIndex) && modifiedRecIndex === -1) {
+                    this.ganttChartTableBody.appendChild(oldRowElements[oldIndex]);
+                }
+                this.ganttChartTableBody.querySelectorAll('tr')[index].setAttribute('aria-rowindex', index.toString());
+            }
+        }
+        else {
+            for (var i = 0; i < this.parent.currentViewData.length; i++) {
+                var tempTemplateData = this.parent.currentViewData[i];
+                if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
+                    collapsedResourceRecord.push(tempTemplateData);
+                }
+                var tRow = this.getGanttChartRow(i, tempTemplateData);
+                this.ganttChartTableBody.appendChild(tRow);
+                // To maintain selection when virtualization is enabled
+                if (this.parent.selectionModule && this.parent.allowSelection) {
+                    this.parent.selectionModule.maintainSelectedRecords(parseInt(tRow.getAttribute('aria-rowindex'), 10));
+                }
             }
         }
         this.triggerQueryTaskbarInfo();
+        this.parent.modifiedRecords = [];
         if (collapsedResourceRecord.length) {
             for (var j = 0; j < collapsedResourceRecord.length; j++) {
                 if (collapsedResourceRecord[j].hasChildRecords) {
@@ -8802,12 +8836,13 @@ var ChartRows = /** @class */ (function (_super) {
         if (!this.parent.queryTaskbarInfo) {
             return;
         }
-        var length = this.ganttChartTableBody.querySelectorAll('tr').length;
+        var length = this.refreshedTr.length > 0 ?
+            this.refreshedTr.length : this.ganttChartTableBody.querySelectorAll('tr').length;
         var trElement;
         var data;
         for (var index = 0; index < length; index++) {
-            trElement = this.ganttChartTableBody.querySelectorAll('tr')[index];
-            data = this.parent.currentViewData[index];
+            trElement = this.refreshedTr.length > 0 ? this.refreshedTr[index] : this.ganttChartTableBody.querySelectorAll('tr')[index];
+            data = this.refreshedData.length > 0 ? this.refreshedData[index] : this.parent.currentViewData[index];
             var segmentLength = !sf.base.isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
             if (segmentLength > 0) {
                 for (var i = 0; i < segmentLength; i++) {
@@ -11579,6 +11614,8 @@ var Gantt = /** @class */ (function (_super) {
         /** @hidden */
         _this.editedRecords = [];
         /** @hidden */
+        _this.modifiedRecords = [];
+        /** @hidden */
         _this.isOnEdit = false;
         /** @hidden */
         _this.isOnDelete = false;
@@ -12259,7 +12296,7 @@ var Gantt = /** @class */ (function (_super) {
         if (!this.enableVirtualization) {
             this.updateContentHeight();
         }
-        this.chartRowsModule.refreshGanttRows();
+        // this.chartRowsModule.refreshGanttRows();
         if (this.virtualScrollModule && this.enableVirtualization) {
             this.ganttChartModule.virtualRender.adjustTable();
             this.ganttChartModule.scrollObject.updateTopPosition();
@@ -12284,6 +12321,7 @@ var Gantt = /** @class */ (function (_super) {
                 case 'showColumnMenu':
                 case 'allowResizing':
                 case 'allowReordering':
+                case 'enableImmutableMode':
                     this.treeGrid[prop] = this[prop];
                     this.treeGrid.dataBind();
                     break;
@@ -13192,6 +13230,9 @@ var Gantt = /** @class */ (function (_super) {
             var task = this.getRecordByID(id);
             if (task && this.editedRecords.indexOf(task) === -1) {
                 this.editedRecords.push(task);
+                if (this.enableImmutableMode) {
+                    this.modifiedRecords.push(task);
+                }
             }
         }
         value = sf.base.isUndefined(value) ? null : value;
@@ -14006,6 +14047,9 @@ var Gantt = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property(true)
     ], Gantt.prototype, "allowKeyboard", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], Gantt.prototype, "enableImmutableMode", void 0);
     __decorate([
         sf.base.Property(true)
     ], Gantt.prototype, "disableHtmlEncode", void 0);
@@ -21225,8 +21269,8 @@ var Edit$2 = /** @class */ (function () {
                 this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
-                flatParentData.expanded = false;
-                flatParentData.hasChildRecords = false;
+                this.parent.setRecordValue('expanded', false, flatParentData);
+                this.parent.setRecordValue('hasChildRecords', false, flatParentData);
             }
         }
     };
@@ -21261,8 +21305,8 @@ var Edit$2 = /** @class */ (function () {
         var recordId = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
         if (!droppedRecord.hasChildRecords) {
-            droppedRecord.hasChildRecords = true;
-            droppedRecord.expanded = true;
+            this.parent.setRecordValue('hasChildRecords', true, draggedRecord);
+            this.parent.setRecordValue('expanded', true, draggedRecord);
             if (!droppedRecord.childRecords.length) {
                 droppedRecord.childRecords = [];
                 if (!gObj.taskFields.parentID && sf.base.isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
@@ -21804,7 +21848,7 @@ var Edit$2 = /** @class */ (function () {
                             childRecords.splice(childIndex, 1);
                         }
                         if (!childRecords.length) {
-                            parentItem.hasChildRecords = false;
+                            this.parent.setRecordValue('hasChildRecords', false, parentItem);
                         }
                     }
                 }
@@ -21823,6 +21867,9 @@ var Edit$2 = /** @class */ (function () {
         }
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
+        if (this.parent.enableImmutableMode) {
+            this.refreshRecordInImmutableMode();
+        }
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';
         eventArgs.data = args.deletedRecordCollection;
@@ -22187,6 +22234,17 @@ var Edit$2 = /** @class */ (function () {
         // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
+        if (this.parent.enableImmutableMode) {
+            this.refreshRecordInImmutableMode();
+        }
+    };
+    Edit$$1.prototype.refreshRecordInImmutableMode = function () {
+        for (var i = 0; i < this.parent.editedRecords.length; i++) {
+            var originalData = this.parent.editedRecords[i];
+            var dataId = this.parent.viewType === 'ProjectView' ?
+                originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
+            this.parent.treeGrid.grid.setRowData(dataId, originalData);
+        }
     };
     /**
      *
@@ -22741,6 +22799,9 @@ var Edit$2 = /** @class */ (function () {
     Edit$$1.prototype.indentOutdentSuccess = function (args) {
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
+        if (this.parent.enableImmutableMode) {
+            this.refreshRecordInImmutableMode();
+        }
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
         }
@@ -22944,8 +23005,8 @@ var Edit$2 = /** @class */ (function () {
                 }
             }
             if (delRow.parentItem && flatParent && flatParent.childRecords && !flatParent.childRecords.length) {
-                flatParent.expanded = false;
-                flatParent.hasChildRecords = false;
+                this.parent.setRecordValue('expanded', false, flatParent);
+                this.parent.setRecordValue('hasChildRecords', false, flatParent);
             }
         }
     };
@@ -24822,6 +24883,9 @@ var ContextMenu$2 = /** @class */ (function () {
     };
     ContextMenu$$1.prototype.contextMenuItemClick = function (args) {
         this.item = this.getKeyFromId(args.item.id);
+        var position;
+        var data;
+        var taskfields;
         var parentItem = sf.base.getValue('parentObj', args.item);
         var index = -1;
         if (parentItem && !sf.base.isNullOrUndefined(parentItem.id) && this.getKeyFromId(parentItem.id) === 'DeleteDependency') {
@@ -24843,9 +24907,9 @@ var ContextMenu$2 = /** @class */ (function () {
             case 'Above':
             case 'Below':
             case 'Child':
-                var position = this.item;
-                var data = sf.base.extend({}, {}, this.rowData.taskData, true);
-                var taskfields = this.parent.taskFields;
+                position = this.item;
+                data = sf.base.extend({}, {}, this.rowData.taskData, true);
+                taskfields = this.parent.taskFields;
                 if (!sf.base.isNullOrUndefined(taskfields.dependency)) {
                     data[taskfields.dependency] = null;
                 }
@@ -24928,7 +24992,8 @@ var ContextMenu$2 = /** @class */ (function () {
             rowData: this.rowData,
             requestType: 'splitTaskbar',
             splitDate: currentClickedDate,
-            cancel: false
+            cancel: false,
+            target: this.targetElement
         };
         this.parent.trigger('actionBegin', eventArgs, function (eventArgs) {
             _this.parent.chartRowsModule.splitTask(_this.rowData[taskSettings.id], currentClickedDate);
@@ -24947,7 +25012,8 @@ var ContextMenu$2 = /** @class */ (function () {
             rowData: this.rowData,
             mergeSegmentIndexes: segmentIndexes,
             requestType: 'mergeSegment',
-            cancel: false
+            cancel: false,
+            target: this.targetElement
         };
         this.parent.trigger('actionBegin', eventArgs, function (eventArgs) {
             _this.parent.chartRowsModule.mergeTask(_this.rowData[taskSettings.id], segmentIndexes);
@@ -24975,6 +25041,10 @@ var ContextMenu$2 = /** @class */ (function () {
                 this.parent.ganttChartModule.targetElement;
         if (!sf.base.isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {
             this.clickedPosition = sf.base.getValue('event', args).clientX;
+        }
+        var targetElement = sf.base.closest(target, '.e-gantt-child-taskbar');
+        if (targetElement) {
+            this.targetElement = args.target = targetElement;
         }
         args.gridRow = sf.base.closest(target, '.e-row');
         args.chartRow = sf.base.closest(target, '.e-chart-row');

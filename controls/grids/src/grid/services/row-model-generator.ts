@@ -85,7 +85,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         }
         this.refreshForeignKeyRow(options);
         let cells: Cell<Column>[] = this.ensureColumns();
-        let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options, this.parent);
+        let row: Row<Column> = isBlazor() ? new Row<Column>(<{ [x: string]: Object }>options) :
+            new Row<Column>(<{ [x: string]: Object }>options, this.parent);
         row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
             : cells.concat(this.generateCells(options));
         return row;

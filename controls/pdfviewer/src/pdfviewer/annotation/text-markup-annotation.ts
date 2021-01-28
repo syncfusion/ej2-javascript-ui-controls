@@ -1366,10 +1366,10 @@ export class TextMarkupAnnotation {
                     let multiPageCollection: ITextMarkupAnnotation[] = this.multiPageCollectionList(annotation);
                     if (multiPageCollection.length > 0) {
                         // tslint:disable-next-line:max-line-length
-                        this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, annotation.annotName, annotation.textMarkupAnnotationType as AnnotationType, true, false, false, false, annotation.textMarkupContent, annotation.textMarkupStartIndex, annotation.textMarkupEndIndex, multiPageCollection); this.currentAnnotationIndex = null;
+                        this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, annotation.annotName, annotation.textMarkupAnnotationType as AnnotationType, false, true, false, false, annotation.textMarkupContent, annotation.textMarkupStartIndex, annotation.textMarkupEndIndex, multiPageCollection); this.currentAnnotationIndex = null;
                     } else {
                         // tslint:disable-next-line:max-line-length
-                        this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, annotation.annotName, annotation.textMarkupAnnotationType as AnnotationType, true, false, false, false, annotation.textMarkupContent, annotation.textMarkupStartIndex, annotation.textMarkupEndIndex); this.currentAnnotationIndex = null;
+                        this.pdfViewer.fireAnnotationPropertiesChange(this.selectTextMarkupCurrentPage, annotation.annotName, annotation.textMarkupAnnotationType as AnnotationType, false, true, false, false, annotation.textMarkupContent, annotation.textMarkupStartIndex, annotation.textMarkupEndIndex); this.currentAnnotationIndex = null;
                     }
                 }
             }

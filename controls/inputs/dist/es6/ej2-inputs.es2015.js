@@ -90,7 +90,7 @@ var Input;
     Input.bindInitialEvent = bindInitialEvent;
     function checkInputValue(floatLabelType, inputElement) {
         let inputValue = inputElement.value;
-        if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
+        if (inputValue !== '' && !isNullOrUndefined(inputValue) && inputElement.parentElement) {
             inputElement.parentElement.classList.add('e-valid-input');
         }
         else if (floatLabelType !== 'Always' && inputElement.parentElement) {
@@ -12951,6 +12951,7 @@ let TextBox = class TextBox extends Component {
                 this.element.removeAttribute('name');
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
+                this.textarea.setAttribute('id', getUniqueID('textarea'));
                 let attribute = ['required', 'minlength', 'maxlength'];
                 for (let i = 0; i < attribute.length; i++) {
                     if (this.element.hasAttribute(attribute[i])) {

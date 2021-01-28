@@ -12,6 +12,7 @@ const LABEL: string = 'e-label';
 const RIPPLE: string = 'e-ripple-container';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-radio-wrapper';
+const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 
 /**
  * The RadioButton is a graphical user interface element that allows you to select one option from the choices.
@@ -31,6 +32,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private formElement: HTMLFormElement;
     private initialCheckedValue: boolean;
     private angularValue: string;
+    private isVue: boolean;
 
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
@@ -109,6 +111,15 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      */
     @Property(false)
     public enableHtmlSanitizer: boolean;
+
+    /**
+     * You can add the additional html attributes such as disabled, value etc., to the element.
+     * If you configured both property and equivalent html attribute then the component considers the property value.
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string; };
+
     /**
      * Constructor for creating the widget
      * @private
@@ -118,16 +129,15 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private changeHandler(event: Event): void {
-        this.checked = true;
-        this.dataBind();
-        let changeEventArgs: ChangeArgs = { value: this.value, event: event };
-        this.trigger('change', changeEventArgs);
+        this.checked = true; this.dataBind();
+        let value: string = this.isVue ? this.element.value : this.value;
+        this.trigger('change', <ChangeArgs>{ value: value, event: event });
         if (this.tagName === 'EJS-RADIOBUTTON') {
             event.stopPropagation();
         }
     }
 
-    private updateChange(state: boolean): void {
+    private updateChange(): void {
         let input: HTMLInputElement; let instance: RadioButton;
         let radioGrp: NodeListOf<Element> = this.getRadioGroup();
         for (let i: number = 0; i < radioGrp.length; i++) {
@@ -213,10 +223,14 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             this.initialCheckedValue = this.checked;
         }
         this.initWrapper();
+        this.updateHtmlAttribute();
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
-        if (this.value) {
+        if (this.isVue && this.element.value && this.element.value === this.value) {
+            this.checked = true;
+        }
+        if (this.value && (!this.isVue || !this.element.value)) {
             this.element.setAttribute('value', this.value);
         }
         if (this.checked) {
@@ -285,7 +299,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             switch (prop) {
                 case 'checked':
                     if (newProp.checked) {
-                        this.updateChange(newProp.checked);
+                        this.updateChange();
                     }
                     this.element.checked = newProp.checked;
                     break;
@@ -327,7 +341,11 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (!isNullOrUndefined(this.htmlAttributes) && this.htmlAttributes.value) { break; }
                     this.element.setAttribute('value', newProp.value);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttribute();
                     break;
             }
         }
@@ -387,6 +405,23 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             this.getLabel().classList.add('e-right');
         } else {
             this.getLabel().classList.remove('e-right');
+        }
+    }
+
+    private updateHtmlAttribute(): void {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (ATTRIBUTES.indexOf(key) > -1) {
+                    let wrapper: Element = this.element.parentElement;
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                    } else if (key === 'title' || key === 'style') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    } else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
         }
     }
 

@@ -1,11 +1,11 @@
 import { detach, EventHandler, Browser, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, wrapEvent } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, wrapEvent, inRange } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
-import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType } from '../common/index';
+import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
+import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, createImageElement } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, beginAction, DialogBeforeOpenEventArgs } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
@@ -13,8 +13,8 @@ import { getMaxHgt, setMaxHgt, setRowEleHeight, deleteImage, getRowIdxFromClient
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, ChartModel, setChart } from '../../workbook/index';
-import {CellStyleExtendedModel, skipDefaultValue} from '../../workbook/index';
+import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
+import {CellStyleExtendedModel, skipDefaultValue, getFilteredCollection, getColumnHeaderText, setChart } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -24,6 +24,7 @@ export class Clipboard {
     private cutInfo: boolean;
     private externalMerge: boolean = false;
     private externalMergeRow: number;
+    private isFilterCut: boolean;
     private copiedInfo: { range: number[], sId: number, isCut: boolean };
     private copiedShapeInfo: {
         pictureElem: HTMLElement, sId: number, sheetIdx: number, isCut: boolean,
@@ -254,9 +255,18 @@ export class Clipboard {
                 this.parent.notify(pasteMerge, mergeArgs);
                 if (mergeArgs.cancel) { return; }
                 let pasteType: string = beginEventArgs.type ? beginEventArgs.type : args.type;
-                for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
+                let cRows: RowModel[] = [];
+                let inRange: boolean = this.isInRange(cIdx, selIdx);
+                for (let i: number = cIdx[0], l: number = 0;  i <= cIdx[2]; i++, l++) {
+                    if (inRange) {
+                        cRows[selIdx[0] + l] = { cells: [] };
+                    }
                     for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++, k++) {
-                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
+                        if (inRange) {
+                            cRows[selIdx[0] + l].cells[selIdx[1] + k] = getCell(selIdx[0] + l, selIdx[1] + k, prevSheet);
+                        }
+                        cell = isExternal ? rows[i].cells[j] : Object.assign({}, (inRange && cRows[i] && cRows[i].cells[j])
+                            ? cRows[i].cells[j] : getCell(i, j, prevSheet));
                         this.copiedCell = [i, j];
                         if (cell && args && args.type || pasteType) {
                             switch (pasteType) {
@@ -287,7 +297,10 @@ export class Clipboard {
                                     if (!this.externalMerge && prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
                                         mergeArgs = { range: [x + l, y + k, x + l, y + k] };
                                         let merge: MergeArgs = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
-                                        mergeCollection.push(merge); this.parent.notify(setMerge, merge);
+                                        mergeCollection.push(merge);
+                                        if (this.parent.activeSheetIndex === curSheet.index) {
+                                            this.parent.notify(setMerge, merge);
+                                        }
                                     }
                                     let colInd: number = y + k;
                                     if (this.externalMerge && this.externalMergeRow === x + l) {
@@ -360,6 +373,7 @@ export class Clipboard {
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
                 if (isCut) {
+                    this.updateFilter(copyInfo);
                     setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
                     let hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
@@ -368,6 +382,40 @@ export class Clipboard {
         } else {
             this.getClipboardEle().select();
         }
+    }
+
+    private updateFilter(copyInfo: { range: number[], sId: number, isCut: boolean }): void {
+        if (!this.isFilterCut) {
+            this.parent.notify(getFilteredCollection, null);
+            for (let i: number = 0; i < this.parent.sheets.length; i++) {
+                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                    this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
+                    let range: number[] = copyInfo.range;
+                    let fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                    let endCol: string = getColumnHeaderText(range[3]);
+                    let fEndCol: string = getColumnHeaderText(fRange[3]);
+                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                        this.isFilterCut = true;
+                    }
+                }
+            }
+        }
+        if (this.isFilterCut) {
+            for (let n: number = 0; n < this.parent.filterCollection.length; n++) {
+                let filterCol: FilterCollectionModel = this.parent.filterCollection[n];
+                let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                    this.parent.activeSheetIndex;
+                if (filterCol.sheetIdx === sheetIndex) {
+                    this.parent.notify(initiateFilterUI, { predicates: null, range: filterCol.filterRange, sIdx: sheetIndex, isCut: true });
+                }
+            }
+            this.parent.notify(initiateFilterUI, { predicates: null, range: null, sIdx: null, isCut: true });
+            this.isFilterCut = false;
+        }
+    }
+
+    private isInRange(cRng: number[], pRng: number[]): boolean {
+        return inRange(cRng, pRng[0], pRng[1]) || inRange(cRng, pRng[2], pRng[3]);
     }
 
     private isFormula(selIdx: number[]): string {
@@ -493,13 +541,27 @@ export class Clipboard {
     }
 
     private setCopiedInfo(args?: SetClipboardInfo & ClipboardEvent, isCut?: boolean): void {
-        if (this.parent.isEdit) {
+        if (this.parent.isEdit || this.isFilterCut) {
             return;
         }
         let deferred: Deferred = new Deferred();
         args.promise = deferred.promise;
         let sheet: ExtendedSheet = this.parent.getActiveSheet() as Sheet;
         let range: number[] = (args && args.range) || getRangeIndexes(sheet.selectedRange);
+        if (isCut) {
+            this.parent.notify(getFilteredCollection, null);
+            for (let i: number = 0; i < this.parent.sheets.length; i++) {
+                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                    this.parent.filterCollection[i].sheetIdx === this.parent.activeSheetIndex) {
+                    let fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                    let endCol: string = getColumnHeaderText(range[3]);
+                    let fEndCol: string = getColumnHeaderText(fRange[3]);
+                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                        this.isFilterCut = true;
+                    }
+                }
+            }
+        }
         let option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise:
                 new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })

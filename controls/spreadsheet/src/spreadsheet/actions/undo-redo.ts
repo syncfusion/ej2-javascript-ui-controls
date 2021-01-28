@@ -1,13 +1,13 @@
 import { Spreadsheet, locale, deleteImage, createImageElement } from '../../spreadsheet/index';
 import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction } from '../common/index';
-import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } from '../common/index';
+import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, initiateFilterUI } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
-import { SheetModel, MergeArgs, setMerge, getRangeAddress } from '../../workbook/index';
+import { SheetModel, MergeArgs, setMerge, getRangeAddress, getColumnHeaderText, FilterCollectionModel } from '../../workbook/index';
 import { addClass, L10n } from '@syncfusion/ej2-base';
-
+import { getFilteredCollection } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
  */
@@ -66,6 +66,9 @@ export class UndoRedo {
             case 'beforeInsertChart':
                 address = getRangeIndexes(eventArgs.range);
                 break;
+            case 'filter':
+                address = getRangeIndexes(eventArgs.range);
+                break;
         }
         cells = this.getCellDetails(address, sheet);
         this.beforeActionData = { cellDetails: cells, cutCellDetails: cutCellDetails };
@@ -100,6 +103,7 @@ export class UndoRedo {
                     undoRedoArgs = this.performOperation(undoRedoArgs);
                     break;
                 case 'insert':
+                case 'filter':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
                 case 'delete':
@@ -155,7 +159,7 @@ export class UndoRedo {
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
             'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
-            'chartRefresh'];
+            'chartRefresh', 'filter'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -167,7 +171,7 @@ export class UndoRedo {
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
             action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
-            action === 'chartRefresh') {
+            action === 'chartRefresh' || action === 'filter') {
             let beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -259,6 +263,27 @@ export class UndoRedo {
                     this.updateCellDetails(
                         cells, getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)),
                         copiedInfo.range as number[], isRefresh);
+                    this.parent.notify(getFilteredCollection, null);
+                    for (let i: number = 0; i < this.parent.sheets.length; i++) {
+                        let sheetIndex: number = getSheetIndexFromId(this.parent, <number>copiedInfo.sId);
+                        if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                            this.parent.filterCollection[i].sheetIdx === eventArgs.pasteSheetIndex) {
+                            let filterCol: FilterCollectionModel = this.parent.filterCollection[i];
+                            let fRange: number[] = getRangeIndexes(filterCol.filterRange);
+                            let endCol: string = getColumnHeaderText(range[3]);
+                            let fEndCol: string = getColumnHeaderText(fRange[3]);
+                            if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                                this.parent.notify(initiateFilterUI, {
+                                    predicates: null, range: filterCol.filterRange,
+                                    sIdx: eventArgs.pasteSheetIndex, isCut: true
+                                });
+                                this.parent.notify(initiateFilterUI, {
+                                    predicates: null,
+                                    range: getRangeAddress(copiedInfo.range as number[]), sIdx: sheetIndex, isCut: true
+                                });
+                            }
+                        }
+                    }
                 }
                 this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
                 setMaxHgt(sheet, range[0], range[1], 20);

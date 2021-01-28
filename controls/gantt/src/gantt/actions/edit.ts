@@ -1409,8 +1409,8 @@ export class Edit {
                 this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
-                flatParentData.expanded = false;
-                flatParentData.hasChildRecords = false;
+                this.parent.setRecordValue('expanded', false, flatParentData);
+                this.parent.setRecordValue('hasChildRecords', false, flatParentData);
             }
         }
     }
@@ -1444,8 +1444,8 @@ export class Edit {
         let recordId: string = draggedRecord.level === 0 ? 'R' + draggedRecord.ganttProperties.taskId : 'T' + draggedRecord.ganttProperties.taskId;
         this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
         if (!droppedRecord.hasChildRecords) {
-            droppedRecord.hasChildRecords = true;
-            droppedRecord.expanded = true;
+            this.parent.setRecordValue('hasChildRecords', true, draggedRecord);
+            this.parent.setRecordValue('expanded', true, draggedRecord);
             if (!droppedRecord.childRecords.length) {
                 droppedRecord.childRecords = [];
                 if (!gObj.taskFields.parentID && isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
@@ -1974,7 +1974,7 @@ export class Edit {
                         childIndex = childRecords.indexOf(deleteRecord);
                         if (childIndex !== -1) { childRecords.splice(childIndex, 1); }
                         if (!childRecords.length) {
-                            parentItem.hasChildRecords = false;
+                            this.parent.setRecordValue('hasChildRecords', false, parentItem);
                         }
                     }
                 }
@@ -1993,6 +1993,9 @@ export class Edit {
         }
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
+        if (this.parent.enableImmutableMode) {
+            this.refreshRecordInImmutableMode();
+        }
         // Trigger actioncomplete event for delete action
         eventArgs.requestType = 'delete';
         eventArgs.data = args.deletedRecordCollection;
@@ -2356,7 +2359,7 @@ export class Edit {
      * @return {void}
      * @private
      */
-    private addSuccess(args: ITaskAddedEventArgs, ): void {
+    private addSuccess(args: ITaskAddedEventArgs): void {
         // let addedRecords: IGanttData = args.addedRecord;
         // let eventArgs: IActionBeginEventArgs = {};
         // this.parent.updatedConnectorLineCollection = [];
@@ -2364,8 +2367,19 @@ export class Edit {
         // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
+        if (this.parent.enableImmutableMode) {
+            this.refreshRecordInImmutableMode();
+        }
     }
 
+    private refreshRecordInImmutableMode(): void {
+        for (let i: number = 0; i < this.parent.editedRecords.length; i++) {
+            let originalData: IGanttData = this.parent.editedRecords[i];
+            let dataId: number | string = this.parent.viewType === 'ProjectView' ?
+             originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
+            this.parent.treeGrid.grid.setRowData(dataId, originalData);
+        }
+    }
     /**
      *
      * @return {void}
@@ -2911,6 +2925,9 @@ export class Edit {
     private indentOutdentSuccess(args: RowDropEventArgs): void {
         this.parent.treeGrid.parentData = [];
         this.parent.treeGrid.refresh();
+        if (this.parent.enableImmutableMode) {
+            this.refreshRecordInImmutableMode();
+        }
         if (this.dropPosition === 'middleSegment') {
             args.requestType = 'indented';
         } else if (this.dropPosition === 'bottomSegment') {
@@ -3107,8 +3124,8 @@ export class Edit {
                 }
             }
             if (delRow.parentItem && flatParent && flatParent.childRecords && !flatParent.childRecords.length) {
-                flatParent.expanded = false;
-                flatParent.hasChildRecords = false;
+                this.parent.setRecordValue('expanded', false, flatParent);
+                this.parent.setRecordValue('hasChildRecords', false, flatParent);
             }
         }
     }

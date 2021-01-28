@@ -39,7 +39,6 @@ class SfLinearGauge {
     private gaugeOnResize(): void {
         let elementBounds: HTMLElement = document.getElementById(this.element.id);
         if (elementBounds != null) {
-            elementBounds = elementBounds.parentElement;
             let width: number = elementBounds.clientWidth || elementBounds.offsetWidth;
             let height: number = elementBounds.clientHeight || elementBounds.offsetHeight;
             this.dotNetRef.invokeMethodAsync('TriggerResizeEvent', width, height);

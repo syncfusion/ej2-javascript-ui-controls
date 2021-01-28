@@ -132,6 +132,7 @@ var SfToast = /** @class */ (function () {
     };
     SfToast.prototype.updateProgressBar = function (progressObj) {
         var percentage = ((progressObj.hideEta - (new Date().getTime())) / progressObj.maxHideTime) * 100;
+        percentage = this.progressDirection === 'LTR' ? 100 - percentage : percentage;
         progressObj.progressEle.style.width = percentage + '%';
     };
     SfToast.prototype.appendToast = function (toastElement) {

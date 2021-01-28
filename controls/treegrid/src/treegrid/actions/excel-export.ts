@@ -1,9 +1,9 @@
 import { TreeGrid } from '../base/treegrid';
-import { ITreeData } from '../base/interface';
+import { ITreeData, TreeGridExcelExportProperties } from '../base/interface';
 import { getObject, Grid, ExcelExport as GridExcel, ExcelExportProperties, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';
 import { ExcelStyle, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelRow, Row, Column } from '@syncfusion/ej2-grids';
-import { isRemoteData, isOffline, getParentData } from '../utils';
+import { isRemoteData, isOffline, getParentData, getExpandStatus } from '../utils';
 import { isNullOrUndefined, setValue, Ajax, extend } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
 import * as event from '../base/constant';
@@ -14,6 +14,7 @@ import * as event from '../base/constant';
 export class ExcelExport {
     private parent: TreeGrid;
     private dataResults: ReturnOption;
+    private isCollapsedStatePersist: boolean = false;
     /**
      * Constructor for Excel Export module
      */
@@ -68,6 +69,9 @@ export class ExcelExport {
         let property: Object = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
+        if (!isNullOrUndefined(excelExportProperties)) {
+          this.isCollapsedStatePersist = (excelExportProperties as TreeGridExcelExportProperties).isCollapsedStatePersist;
+        }
         return new Promise((resolve: Function, reject: Function) => {
           let dm: DataManager = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
                                                    : <DataManager>this.parent.dataSource;
@@ -116,7 +120,7 @@ export class ExcelExport {
         if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
           setValue('exportType',  property.exportType, args);
         }
-        if (!this.isLocal() || !isNullOrUndefined(this.parent.parentIdMapping)) {
+        if (!this.isLocal()) {
           this.parent.parentData = [];
           this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
           setValue('expresults',  this.parent.flatData, args);
@@ -162,7 +166,14 @@ export class ExcelExport {
               if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
                   let rowlength: number = excelRow.excelRows.length;
                   let rowlevel: number = excelrowobj.level;
-                  excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: false };
+                  let expandedStatus: boolean = false; let sublevelState: boolean = false;
+                  let state: boolean = getExpandStatus(this.parent, excelrowobj, this.parent.parentData);
+                  if (this.isCollapsedStatePersist && (!state || !this.parent.isLocalData)) {
+                      expandedStatus = true;
+                      sublevelState = excelrowobj.expanded ? false : true;
+                  }
+                  excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: sublevelState,
+                                                                 isHidden: expandedStatus };
               }
           }
       }

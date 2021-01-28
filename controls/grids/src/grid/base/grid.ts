@@ -3,12 +3,12 @@ import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from
 import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
 import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';
-import { Query, DataManager, DataUtil, DataOptions } from '@syncfusion/ej2-data';
+import { Query, DataManager, DataUtil, DataOptions, UrlAdaptor } from '@syncfusion/ej2-data';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel, ResizeSettingsModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
-import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable } from './util';
+import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable, getNumberFormat } from './util';
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
@@ -809,6 +809,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private frozenRightColumns: Column[] = [];
     private movableColumns: Column[] = [];
     private media: { [key: string]: MediaQueryList } = {};
+    private isFreezeRefresh: boolean = false;
     /** @hidden */
     public invokedFromMedia: boolean;
     /** @hidden */
@@ -2820,6 +2821,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.style.display = 'none';
         }
         classList(this.element, [], ['e-rtl', 'e-gridhover', 'e-responsive', 'e-default', 'e-device', 'e-grid-min-height']);
+        if ((<{ isAngular?: boolean }>this).isAngular && !this.isFreezeRefresh) {
+            this.element = null;
+        }
+        this.isFreezeRefresh = false;
     }
 
     private destroyDependentModules(): void {
@@ -5190,6 +5195,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /** @hidden */
     public freezeRefresh(): void {
+        this.isFreezeRefresh = true;
         if (this.enableVirtualization) {
             this.pageSettings.currentPage = 1;
         }
@@ -6295,6 +6301,77 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getSummaryValues(summaryCol: AggregateColumnModel, summaryData: Object): number {
         return DataUtil.aggregates[(summaryCol.type as string).toLowerCase()](summaryData, summaryCol.field);
 
+    }
+
+    /**
+     * Sends a Post request to export Grid to Excel data in server side.
+     * @param  {string} url - Pass Url for server side excel export action.
+     * @return {void} 
+     */
+    public serverExcelExport(url: string): void {
+        this.exportGrid(url);
+    }
+    /**
+     * Sends a Post request to export Grid to Pdf data in server side.
+     * @param  {string} url - Pass Url for server side pdf export action.
+     * @return {void} 
+     */
+    public serverPdfExport(url: string): void {
+        this.exportGrid(url);
+    }
+
+    /**
+     * @hidden
+     */
+    public exportGrid(url: string): void{
+        let grid = this;
+        let query: Query = grid.getDataModule().generateQuery(true);
+        let state: { data?: string, pvtData?: Object[] } = new UrlAdaptor().processQuery(new DataManager({ url: '' }), query);
+        let queries: string = state.data;
+
+        let gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
+            'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.columns.forEach((e: Column) => {
+            if (grid.getColumnByUid(e.uid)) {
+                e.headerText = grid.getColumnByUid(e.uid).headerText;
+                if (e.format) {
+                    let format: string = typeof (e.format) === 'object' ? e.format.format : e.format;
+                    e.format = getNumberFormat(format, e.type);
+                }
+            }
+            if (e.columns) {
+                this.setHeaderText(e.columns as Column[]);
+            }
+        });
+        let form: HTMLFormElement = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
+        let gridInput: HTMLInputElement = this.createElement('input', { id: 'gridInput', attrs:{name:"gridModel"} });
+        let queryInput: HTMLInputElement = this.createElement('input', { id: 'queryInput', attrs:{name:"requestModel"} });
+        gridInput.value = JSON.stringify(gridModel);
+        queryInput.value = queries;
+        form.method = "POST";
+        form.action = url;  
+        form.appendChild(gridInput);
+        form.appendChild(queryInput);
+        document.body.appendChild(form);
+        form.submit();
+        form.remove();
+    }
+
+    /**
+     * @hidden
+     */
+    public setHeaderText(columns: Column[]) {
+        for (var i = 0; i < columns.length; i++) {
+            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            if (columns[i].format) {
+                let e: Column = columns[i];
+                let format: string = typeof (e.format) === 'object' ? e.format.format : e.format;
+                columns[i].format = getNumberFormat(format, columns[i].type);
+            }
+            if (columns[i].columns) {
+                this.setHeaderText(columns[i].columns as Column[]);
+            }
+        }
     }
 
     /**

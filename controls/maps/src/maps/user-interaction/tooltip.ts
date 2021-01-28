@@ -48,8 +48,8 @@ export class MapsTooltip {
         let currentData: string = '';
         let targetId: string = target.id; let item: Object = {};
         let tooltipEle: HTMLElement; let location: MapLocation;
-        let toolTipData: Object = {};
         let templateData: object = [];
+        let keyString: string;
         let index: number = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[index];
         let tooltipContent: string[] = []; let markerFill: string;
@@ -88,11 +88,18 @@ export class MapsTooltip {
                         }
                     }
                     index = isShape ? index : null;
-                    templateData = layer.dataSource[index];
+                    if (!isNullOrUndefined(layer.dataSource[index])) {
+                        templateData = JSON.parse(JSON.stringify(layer.dataSource[index]));
+                        for (keyString in value) {
+                            if (!templateData.hasOwnProperty(keyString)) {
+                                templateData[keyString] = value[keyString];
+                            }
+                        }
+                    }
                 }
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value)))) {
                     if (layer.tooltipSettings.format) {
-                        currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);
+                        currentData = this.formatter(layer.tooltipSettings.format, templateData);
                     } else {
                         let shapePath: string = checkPropertyPath(layer.shapeDataPath, layer.shapePropertyPath, value);
                         currentData = (!isNullOrUndefined(layer.dataSource) && !isNullOrUndefined(index)) ?

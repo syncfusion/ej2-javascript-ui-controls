@@ -468,6 +468,7 @@ export class Render {
             this.parent.notify(events.tooltipDestroy, {});
             this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();
             gObj.currentViewData = <Object[]>dataArgs.result;
+            gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
             if (isBlazor() && gObj.filterSettings.type === 'FilterBar'
                 && (isNullOrUndefined(gObj.currentViewData) ||
                     (!isNullOrUndefined(gObj.currentViewData) && !gObj.currentViewData.length))) {

@@ -118,6 +118,60 @@ export class CellStyle extends ChildProperty<CellStyle> {
     public bottomPriority: boolean;
 }
 
+/**
+ * Represents the Filter Collection.
+ */
+export class FilterCollection extends ChildProperty<FilterCollection> {
+    /**
+     * Specifies the sheet index of the filter collection.
+     * @default null
+     */
+    @Property()
+    public sheetIdx: number;
+
+    /**
+     * Specifies the range of the filter collection.
+     * @default []
+     */
+    @Property()
+    public filterRange: string;
+
+    /**
+     * Specifies the sheet has filter or not.
+     * @default false
+     */
+    @Property(false)
+    public hasFilter: boolean;
+
+    /**
+     * Specifies the filtered column collection.
+     * @default []
+     */
+    @Property()
+    public column: number[];
+
+    /**
+     * Specifies the condition for column filtering.
+     * @default []
+     */
+    @Property()
+    public criteria: string[];
+
+    /**
+     * Specifies the value for column filtering.
+     * @default []
+     */
+    @Property()
+    public value: (string | number | boolean | Date)[];
+
+    /**
+     * Specifies the data type of column filtering.
+     * @default []
+     */
+    @Property()
+    public dataType: string[];
+}
+
 /**    
  * Represents the DefineName.
  */

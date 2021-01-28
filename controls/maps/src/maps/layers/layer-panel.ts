@@ -6,7 +6,7 @@ import { getElementByID, maintainSelection, getValueFromObject } from '../utils/
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
 import { getZoomTranslate, fixInitialScaleForTile } from '../utils/helper';
 import { LayerSettings, ShapeSettings, Tile, BubbleSettings } from '../model/base';
-import { LayerSettingsModel, ShapeSettingsModel, ToggleLegendSettingsModel } from '../model/base-model';
+import { BorderModel, LayerSettingsModel, ShapeSettingsModel, ToggleLegendSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
 import { ColorMapping } from './color-mapping';
 import { layerRendering, ILayerRenderingEventArgs, shapeRendering, IShapeRenderingEventArgs, BubbleSettingsModel, Rect } from '../index';
@@ -348,18 +348,16 @@ export class LayerPanel {
         if (this.currentLayer.layerData.length !== 0) {
             for (let i: number = 0; i < this.currentLayer.layerData.length; i++) {
                 let k: number;
+                let borderValue: BorderModel = {
+                    color: shapeSettings.border.color,
+                    width: shapeSettings.border.width
+                };
                 let currentShapeData: Object[] = <Object[]>this.currentLayer.layerData[i];
                 let pathOptions: PathOption; let polyLineOptions: PolylineOption;
                 let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
                 let path: string = ''; let points: string = ''; let getShapeColor: Object;
                 let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
                 let opacity: number;
-                if (this.mapObject.isBlazor) {
-                    k = checkShapeDataFields(
-                        <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
-                        this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
-                    );
-                }
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
                     k = checkShapeDataFields(
                         <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
@@ -381,6 +379,22 @@ export class LayerPanel {
                 getShapeColor = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
                 fill = Object.prototype.toString.call(getShapeColor) === '[object Object]' && !isNullOrUndefined(getShapeColor['fill'])
                     ? getShapeColor['fill'] : fill;
+                if (this.currentLayer.shapeSettings.borderColorValuePath || this.currentLayer.shapeSettings.borderWidthValuePath) {
+                    let borderColorValue: string = this.currentLayer.shapeSettings.borderColorValuePath;
+                    let borderWidthValue: string = this.currentLayer.shapeSettings.borderWidthValuePath;
+                    k = checkShapeDataFields(
+                        <Object[]>this.currentLayer.dataSource, currentShapeData['property'],
+                        this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
+                    );
+                    if (k !== null) {
+                        if (this.currentLayer.dataSource[k][shapeSettings.borderColorValuePath]) {
+                            borderValue.color = this.currentLayer.dataSource[k][shapeSettings.borderColorValuePath];
+                        }
+                        if (this.currentLayer.dataSource[k][shapeSettings.borderWidthValuePath]) {
+                            borderValue.width = this.currentLayer.dataSource[k][shapeSettings.borderWidthValuePath];
+                        }
+                    }
+                }
                 opacity = (Object.prototype.toString.call(getShapeColor) === '[object Object]'
                     && !isNullOrUndefined(getShapeColor['opacity'])) ? getShapeColor['opacity'] : shapeSettings.opacity;
                 let eventArgs: IShapeRenderingEventArgs = {
@@ -388,7 +402,7 @@ export class LayerPanel {
                     data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
                     maps: this.mapObject,
                     shape: shapeSettings, fill: fill,
-                    border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
+                    border: { width: borderValue.width, color: borderValue.color }
                 };
                 if (this.mapObject.isBlazor) {
                     const { maps, ...blazorEventArgs }: IShapeRenderingEventArgs = eventArgs;
@@ -401,10 +415,14 @@ export class LayerPanel {
                     drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                     if (!eventArgs.cancel) {
                         eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
-                        eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color
-                            : eventArgs.border.color;
+                        eventArgs.border.color = eventArgs.border.color === '#000000' ?
+                            eventArgs.shape.border.color : eventArgs.border.color;
                         eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
-                        this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                        if (isNullOrUndefined(shapeSettings.borderColorValuePath)) {
+                            this.mapObject.layers[layerIndex].shapeSettings.border.color = eventArgs.border.color;
+                        } else if (isNullOrUndefined(shapeSettings.borderWidthValuePath)) {
+                            this.mapObject.layers[layerIndex].shapeSettings.border.width = eventArgs.border.width;
+                        }
                     } else {
                         eventArgs.fill = fill;
                         eventArgs.border.color = shapeSettings.border.color;

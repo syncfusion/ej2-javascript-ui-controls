@@ -123,15 +123,17 @@ describe('Infinite scroll normal mode => ', () => {
         expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(3);
         expect(gridObj.infiniteScrollSettings.maxBlocks).toBe(3);
         expect(Object.keys((gridObj.infiniteScrollModule as any).infiniteCache).length).toBe(0);
+        expect(Object.keys((gridObj.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(gridObj.infiniteScrollSettings.initialBlocks);
     });
     it('scroll bottom', (done: Function) => {
         gridObj.getContent().firstElementChild.scrollTop = 5550;
         setTimeout(done, 200);
     });
     it('scroll bottom', () => {
-        expect(gridObj.getCurrentViewRecords().length).toBe(50);
+        expect(gridObj.getCurrentViewRecords().length).toBe(200);
         expect(parseInt(gridObj.getRows()[150].getAttribute('aria-rowindex'), 10)).toBe(150);
         expect(gridObj.getRows().length).toBe(200);
+        expect(Object.keys((gridObj.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(gridObj.infiniteScrollSettings.initialBlocks + 1);
     });
     it('Filter string column testing', (done: Function) => {
         actionComplete = (args?: Object): void => {
@@ -208,7 +210,7 @@ describe('Infinite scroll cache mode basic scroll => ', () => {
     });
     it('scroll to bottom', function (done) {
         gridObj.getContent().firstElementChild.scrollTop = 5500;
-        setTimeout(done, 200);
+        setTimeout(done, 400);
     });
     it('ensure rows count after scroll', function () {
         let totalRowsCount: number = gridObj.pageSettings.currentPage * gridObj.pageSettings.pageSize;
@@ -217,7 +219,7 @@ describe('Infinite scroll cache mode basic scroll => ', () => {
         let rows: object[] = gridObj.getRowsObject();
         expect((gridObj.infiniteScrollModule as any).infiniteCache).not.toBe({});
         expect((gridObj.infiniteScrollModule as any).infiniteCache[4]).toBeDefined();
-        expect(gridObj.getCurrentViewRecords().length).toBe(gridObj.pageSettings.pageSize);
+        expect(gridObj.getCurrentViewRecords().length).toBe(visibleRowsCount);
         expect(rowElements[0].getAttribute('aria-rowindex')).toBe("50");
         expect(rowElements.length).toBe(visibleRowsCount);
         expect(rows.length).toBe(totalRowsCount);

@@ -14,6 +14,8 @@ export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';
 /** @hidden */
+export const getFilteredCollection: string = 'getFilteredCollection';
+/** @hidden */
 export const saveCompleted: string = 'saveCompleted';
 /** @hidden */
 export const applyNumberFormatting: string = 'applyNumber';

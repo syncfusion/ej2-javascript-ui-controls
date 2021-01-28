@@ -87,8 +87,8 @@ import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventA
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
-import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
-import { chartMouseClick, pointClick, pointDoubleClick, axisLabelClick,  } from '../common/model/constants';
+import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs, IBeforeResizeEventArgs } from '../chart/model/chart-interface';
+import { chartMouseClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
@@ -904,6 +904,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     @Event()
     public resized: EmitType<IResizeEventArgs>;
+
+    /**
+     * Triggers before resizing of chart
+     * @event
+     * @blazorProperty 'BeforeResize'
+     */
+    @Event()
+    public beforeResize: EmitType<IBeforeResizeEventArgs>;
 
     /**
      * Triggers before the annotation gets rendered.
@@ -2572,23 +2580,27 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.availableSize.height
             ),
         };
+        let beforeResizeArgs: IBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false};
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        this.resizeTo = setTimeout(
-            (): void => {
-                if (this.isDestroyed || this.stockChart) {
-                    clearTimeout(this.resizeTo);
-                    return;
-                }
-                this.createChartSvg();
-                arg.currentSize = this.availableSize;
-                this.trigger(resized, arg);
-                this.refreshAxis();
-                this.refreshBound();
-                this.trigger('loaded', { chart: this.isBlazor ? {} : this });
-            },
-            500);
+        this.trigger(beforeResize, beforeResizeArgs);
+        if (!beforeResizeArgs.cancelResizedEvent) {
+            this.resizeTo = setTimeout(
+                (): void => {
+                    if (this.isDestroyed || this.stockChart) {
+                        clearTimeout(this.resizeTo);
+                        return;
+                    }
+                    this.createChartSvg();
+                    arg.currentSize = this.availableSize;
+                    this.trigger(resized, arg);
+                    this.refreshAxis();
+                    this.refreshBound();
+                    this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+                },
+                500);
+        }
         return false;
 
     }

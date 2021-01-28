@@ -2036,12 +2036,13 @@ class DataManipulation {
             results = this.dataResults.result;
             count = this.dataResults.count;
         }
-        if (isPrinting === true && this.parent.printMode === 'AllPages') {
+        let isPdfExport = 'isPdfExport';
+        if ((isPrinting === true || args[isPdfExport]) && this.parent.printMode === 'AllPages') {
             let actualResults = [];
             for (let i = 0; i < results.length; i++) {
-                actualResults.push(results[i]);
-                if (results[i].expanded === false) {
-                    i += findChildrenRecords(results[i]).length;
+                let expandStatus = getExpandStatus(this.parent, results[i], this.parent.parentData);
+                if (expandStatus) {
+                    actualResults.push(results[i]);
                 }
             }
             results = actualResults;
@@ -7389,6 +7390,7 @@ class ExcelExport$1 {
      * Constructor for Excel Export module
      */
     constructor(parent) {
+        this.isCollapsedStatePersist = false;
         Grid.Inject(ExcelExport);
         this.parent = parent;
         this.dataResults = {};
@@ -7440,6 +7442,9 @@ class ExcelExport$1 {
         let property = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
+        if (!isNullOrUndefined(excelExportProperties)) {
+            this.isCollapsedStatePersist = excelExportProperties.isCollapsedStatePersist;
+        }
         return new Promise((resolve, reject) => {
             let dm = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
                 : this.parent.dataSource;
@@ -7488,7 +7493,7 @@ class ExcelExport$1 {
         if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
             setValue('exportType', property.exportType, args);
         }
-        if (!this.isLocal() || !isNullOrUndefined(this.parent.parentIdMapping)) {
+        if (!this.isLocal()) {
             this.parent.parentData = [];
             this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
             setValue('expresults', this.parent.flatData, args);
@@ -7534,7 +7539,15 @@ class ExcelExport$1 {
             if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
                 let rowlength = excelRow.excelRows.length;
                 let rowlevel = excelrowobj.level;
-                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: false };
+                let expandedStatus = false;
+                let sublevelState = false;
+                let state = getExpandStatus(this.parent, excelrowobj, this.parent.parentData);
+                if (this.isCollapsedStatePersist && (!state || !this.parent.isLocalData)) {
+                    expandedStatus = true;
+                    sublevelState = excelrowobj.expanded ? false : true;
+                }
+                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: sublevelState,
+                    isHidden: expandedStatus };
             }
         }
     }
@@ -7652,10 +7665,11 @@ class PdfExport$1 {
         let isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
         setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
         setValue('isExport', true, args);
+        setValue('isPdfExport', true, args);
         if (!isNullOrUndefined(prop) && !isNullOrUndefined(prop.exportType)) {
             setValue('exportType', prop.exportType, args);
         }
-        if (!isLocal || !isNullOrUndefined(this.parent.parentIdMapping)) {
+        if (!isLocal) {
             this.parent.parentData = [];
             this.parent.dataModule.convertToFlatData(getValue('result', queryResult));
             setValue('expresults', this.parent.flatData, args);

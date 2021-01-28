@@ -1171,6 +1171,18 @@ export interface ShapeSettingsModel {
     colorValuePath?: string;
 
     /**
+     * Sets and gets the value path from the data source to set the color for the border of a particular shape in maps.
+     * @default null
+     */
+    borderColorValuePath?: string;
+
+    /**
+     * Sets and gets the value path from the data source to set the width for the border of a particular shape in maps.
+     * @default null
+     */
+    borderWidthValuePath?: string;
+
+    /**
      * Sets and gets the value from the data source based on which the shape gets rendered.
      * @default null
      */

@@ -90,7 +90,7 @@ var Input$1;
     Input$$1.bindInitialEvent = bindInitialEvent;
     function checkInputValue(floatLabelType, inputElement) {
         var inputValue = inputElement.value;
-        if (inputValue !== '' && !sf.base.isNullOrUndefined(inputValue)) {
+        if (inputValue !== '' && !sf.base.isNullOrUndefined(inputValue) && inputElement.parentElement) {
             inputElement.parentElement.classList.add('e-valid-input');
         }
         else if (floatLabelType !== 'Always' && inputElement.parentElement) {

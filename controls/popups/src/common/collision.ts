@@ -157,7 +157,12 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
                 BL: null,
                 BR: null
             };
+            let oldVisibility: string = element.style.visibility;
+            element.style.visibility = 'hidden';
+            element.style.display = 'block';
             let elementRect: ClientRect = element.getBoundingClientRect();
+            element.style.removeProperty('display');
+            element.style.visibility = oldVisibility;
             let pos: PositionLocation = {
                 posX: positionX, posY: positionY, offsetX: offsetX, offsetY: offsetY, position: {left: 0, top: 0}};
             targetContainer = viewPortElement;
@@ -259,7 +264,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
         if ((tEdge.TL.top - getBodyScrollTop()) <= ContainerTop()) {
             collideSide.topSide = false;
         }
-        if (tEdge.BL.top >= ContainerBottom()) {
+        if (tEdge.BL.top >= ContainerBottom() && target.getBoundingClientRect().bottom < window.innerHeight) {
             collideSide.bottomSide = false;
         }
         if ((collideSide.topSide && !collideSide.bottomSide) || (!collideSide.topSide && collideSide.bottomSide)) {

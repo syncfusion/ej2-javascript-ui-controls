@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, LineWidget, ParagraphWidget, Selection, TabElementBox, TableRowWidget, TableWidget } from '../../src/index';
+import { DocumentHelper, Editor, LineWidget, ParagraphWidget, Selection, TabElementBox, TableRowWidget, TableWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 describe('Merge cell index validtaion', () => {
     let editor: DocumentEditor = undefined;
@@ -321,3 +321,543 @@ describe('Table with merged cell spilts into page validation', () => {
         expect(() => { editor.editor.onEnter(); }).not.toThrowError();
     });
 });
+    let json: any = {
+        "sections": [
+            {
+                "sectionFormat": {
+                    "pageWidth": 612,
+                    "pageHeight": 792,
+                    "leftMargin": 72,
+                    "rightMargin": 72,
+                    "topMargin": 72,
+                    "bottomMargin": 72,
+                    "differentFirstPage": false,
+                    "differentOddAndEvenPages": false,
+                    "headerDistance": 36,
+                    "footerDistance": 36,
+                    "bidi": false,
+                    "restartPageNumbering": false,
+                    "pageStartingNumber": 0,
+                    "endnoteNumberFormat": "LowerCaseRoman",
+                    "footNoteNumberFormat": "Arabic",
+                    "restartIndexForFootnotes": "DoNotRestart",
+                    "restartIndexForEndnotes": "DoNotRestart",
+                    "initialFootNoteNumber": 1,
+                    "initialEndNoteNumber": 1
+                },
+                "blocks": [
+                    {
+                        "rows": [
+                            {
+                                "cells": [
+                                    {
+                                        "blocks": [
+                                            {
+                                                "paragraphFormat": {
+                                                    "styleName": "Normal",
+                                                    "listFormat": {}
+                                                },
+                                                "characterFormat": {},
+                                                "inlines": [
+                                                    {
+                                                        "characterFormat": {
+                                                            "bidi": false
+                                                        },
+                                                        "text": "dfihgdishg"
+                                                    },
+                                                    {
+                                                        "footnoteType": "Footnote",
+                                                        "characterFormat": {
+                                                            "baselineAlignment": "Superscript"
+                                                        },
+                                                        "blocks": [
+                                                            {
+                                                                "paragraphFormat": {
+                                                                    "listFormat": {}
+                                                                },
+                                                                "characterFormat": {},
+                                                                "inlines": [
+                                                                    {
+                                                                        "characterFormat": {
+                                                                            "baselineAlignment": "Superscript"
+                                                                        },
+                                                                        "text": "1"
+                                                                    },
+                                                                    {
+                                                                        "characterFormat": {},
+                                                                        "text": " "
+                                                                    },
+                                                                    {
+                                                                        "characterFormat": {
+                                                                            "bidi": false
+                                                                        },
+                                                                        "text": "dfgdsghdsjfsd"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "cellFormat": {
+                                            "borders": {
+                                                "top": {},
+                                                "left": {},
+                                                "right": {},
+                                                "bottom": {},
+                                                "diagonalDown": {},
+                                                "diagonalUp": {},
+                                                "horizontal": {},
+                                                "vertical": {}
+                                            },
+                                            "shading": {},
+                                            "preferredWidth": 468,
+                                            "cellWidth": 468,
+                                            "columnSpan": 1,
+                                            "rowSpan": 1
+                                        },
+                                        "columnIndex": 0
+                                    }
+                                ],
+                                "rowFormat": {
+                                    "height": 0,
+                                    "heightType": "Auto",
+                                    "borders": {
+                                        "top": {},
+                                        "left": {},
+                                        "right": {},
+                                        "bottom": {},
+                                        "diagonalDown": {},
+                                        "diagonalUp": {},
+                                        "horizontal": {},
+                                        "vertical": {}
+                                    },
+                                    "gridBefore": 0,
+                                    "gridAfter": 0
+                                }
+                            }
+                        ],
+                        "grid": [
+                            468
+                        ],
+                        "tableFormat": {
+                            "borders": {
+                                "top": {
+                                    "lineStyle": "Single",
+                                    "lineWidth": 0.5
+                                },
+                                "left": {
+                                    "lineStyle": "Single",
+                                    "lineWidth": 0.5
+                                },
+                                "right": {
+                                    "lineStyle": "Single",
+                                    "lineWidth": 0.5
+                                },
+                                "bottom": {
+                                    "lineStyle": "Single",
+                                    "lineWidth": 0.5
+                                },
+                                "diagonalDown": {},
+                                "diagonalUp": {},
+                                "horizontal": {
+                                    "lineStyle": "Single",
+                                    "lineWidth": 0.5
+                                },
+                                "vertical": {
+                                    "lineStyle": "Single",
+                                    "lineWidth": 0.5
+                                }
+                            },
+                            "shading": {},
+                            "topMargin": 0,
+                            "rightMargin": 5.4,
+                            "leftMargin": 5.4,
+                            "bottomMargin": 0,
+                            "preferredWidthType": "Auto"
+                        },
+                        "columnCount": 1
+                    },
+                    {
+                        "paragraphFormat": {
+                            "styleName": "Normal",
+                            "listFormat": {}
+                        },
+                        "characterFormat": {},
+                        "inlines": []
+                    }
+                ],
+                "headersFooters": {
+                    "header": {
+                        "blocks": [
+                            {
+                                "paragraphFormat": {
+                                    "listFormat": {}
+                                },
+                                "characterFormat": {},
+                                "inlines": []
+                            }
+                        ]
+                    },
+                    "footer": {
+                        "blocks": [
+                            {
+                                "paragraphFormat": {
+                                    "listFormat": {}
+                                },
+                                "characterFormat": {},
+                                "inlines": []
+                            }
+                        ]
+                    },
+                    "evenHeader": {},
+                    "evenFooter": {},
+                    "firstPageHeader": {},
+                    "firstPageFooter": {}
+                }
+            }
+        ],
+        "characterFormat": {
+            "bold": false,
+            "italic": false,
+            "fontSize": 11,
+            "fontFamily": "Calibri",
+            "underline": "None",
+            "strikethrough": "None",
+            "baselineAlignment": "Normal",
+            "highlightColor": "NoColor",
+            "fontColor": "empty",
+            "boldBidi": false,
+            "italicBidi": false,
+            "fontSizeBidi": 11,
+            "fontFamilyBidi": "Calibri",
+            "allCaps": false
+        },
+        "paragraphFormat": {
+            "leftIndent": 0,
+            "rightIndent": 0,
+            "firstLineIndent": 0,
+            "textAlignment": "Left",
+            "beforeSpacing": 0,
+            "afterSpacing": 0,
+            "lineSpacing": 1,
+            "lineSpacingType": "Multiple",
+            "listFormat": {},
+            "bidi": false
+        },
+        "defaultTabWidth": 36,
+        "trackChanges": false,
+        "enforcement": false,
+        "hashValue": "",
+        "saltValue": "",
+        "formatting": false,
+        "protectionType": "NoProtection",
+        "dontUseHTMLParagraphAutoSpacing": false,
+        "formFieldShading": true,
+        "styles": [
+            {
+                "name": "Normal",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "listFormat": {}
+                },
+                "characterFormat": {},
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 1",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "leftIndent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "textAlignment": "Left",
+                    "beforeSpacing": 12,
+                    "afterSpacing": 0,
+                    "lineSpacing": 1.0791666507720948,
+                    "lineSpacingType": "Multiple",
+                    "outlineLevel": "Level1",
+                    "listFormat": {}
+                },
+                "characterFormat": {
+                    "fontSize": 16,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "fontSizeBidi": 16,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Normal",
+                "link": "Heading 1 Char",
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 1 Char",
+                "type": "Character",
+                "characterFormat": {
+                    "fontSize": 16,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "fontSizeBidi": 16,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Default Paragraph Font"
+            },
+            {
+                "name": "Default Paragraph Font",
+                "type": "Character",
+                "characterFormat": {}
+            },
+            {
+                "name": "Heading 2",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "leftIndent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "textAlignment": "Left",
+                    "beforeSpacing": 2,
+                    "afterSpacing": 0,
+                    "lineSpacing": 1.0791666507720948,
+                    "lineSpacingType": "Multiple",
+                    "outlineLevel": "Level2",
+                    "listFormat": {}
+                },
+                "characterFormat": {
+                    "fontSize": 13,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "fontSizeBidi": 13,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Normal",
+                "link": "Heading 2 Char",
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 2 Char",
+                "type": "Character",
+                "characterFormat": {
+                    "fontSize": 13,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "fontSizeBidi": 13,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Default Paragraph Font"
+            },
+            {
+                "name": "Heading 3",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "leftIndent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "textAlignment": "Left",
+                    "beforeSpacing": 2,
+                    "afterSpacing": 0,
+                    "lineSpacing": 1.0791666507720948,
+                    "lineSpacingType": "Multiple",
+                    "outlineLevel": "Level3",
+                    "listFormat": {}
+                },
+                "characterFormat": {
+                    "fontSize": 12,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#1F3763",
+                    "fontSizeBidi": 12,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Normal",
+                "link": "Heading 3 Char",
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 3 Char",
+                "type": "Character",
+                "characterFormat": {
+                    "fontSize": 12,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#1F3763",
+                    "fontSizeBidi": 12,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Default Paragraph Font"
+            },
+            {
+                "name": "Heading 4",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "leftIndent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "textAlignment": "Left",
+                    "beforeSpacing": 2,
+                    "afterSpacing": 0,
+                    "lineSpacing": 1.0791666507720948,
+                    "lineSpacingType": "Multiple",
+                    "outlineLevel": "Level4",
+                    "listFormat": {}
+                },
+                "characterFormat": {
+                    "italic": true,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "italicBidi": true,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Normal",
+                "link": "Heading 4 Char",
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 4 Char",
+                "type": "Character",
+                "characterFormat": {
+                    "italic": true,
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "italicBidi": true,
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Default Paragraph Font"
+            },
+            {
+                "name": "Heading 5",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "leftIndent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "textAlignment": "Left",
+                    "beforeSpacing": 2,
+                    "afterSpacing": 0,
+                    "lineSpacing": 1.0791666507720948,
+                    "lineSpacingType": "Multiple",
+                    "outlineLevel": "Level5",
+                    "listFormat": {}
+                },
+                "characterFormat": {
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Normal",
+                "link": "Heading 5 Char",
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 5 Char",
+                "type": "Character",
+                "characterFormat": {
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#2F5496",
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Default Paragraph Font"
+            },
+            {
+                "name": "Heading 6",
+                "type": "Paragraph",
+                "paragraphFormat": {
+                    "leftIndent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "textAlignment": "Left",
+                    "beforeSpacing": 2,
+                    "afterSpacing": 0,
+                    "lineSpacing": 1.0791666507720948,
+                    "lineSpacingType": "Multiple",
+                    "outlineLevel": "Level6",
+                    "listFormat": {}
+                },
+                "characterFormat": {
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#1F3763",
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Normal",
+                "link": "Heading 6 Char",
+                "next": "Normal"
+            },
+            {
+                "name": "Heading 6 Char",
+                "type": "Character",
+                "characterFormat": {
+                    "fontFamily": "Calibri Light",
+                    "fontColor": "#1F3763",
+                    "fontFamilyBidi": "Calibri Light"
+                },
+                "basedOn": "Default Paragraph Font"
+            }
+        ],
+        "lists": [],
+        "abstractLists": [],
+        "comments": [],
+        "revisions": [],
+        "customXml": [],
+        "footnotes": {
+            "separator": [
+                {
+                    "paragraphFormat": {
+                        "listFormat": {}
+                    },
+                    "characterFormat": {},
+                    "inlines": [
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "text": "\u0003"
+                        }
+                    ]
+                }
+            ],
+            "continuationSeparator": [
+                {
+                    "paragraphFormat": {
+                        "listFormat": {}
+                    },
+                    "characterFormat": {},
+                    "inlines": [
+                        {
+                            "characterFormat": {
+                                "fontColor": "empty"
+                            },
+                            "text": "\u0004"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+describe('Table with Footnote Layout validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Table with Footnote Layout validation', () => {
+        editor.open(JSON.stringify(json));
+        //editor.editor.insertTable(1, 1);
+        //editor.editor.insertFootnote();
+        //editor.editor.insertText("thanver");
+        expect(editor.documentHelper.layout.footHeight).toBeGreaterThan(0);
+    });
+})

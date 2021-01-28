@@ -85,6 +85,9 @@ export class Row<T> {
      * @return {void}
      */
     public setRowValue(data: Object): void {
+        if (!this.parent) {
+            return;
+        }
         let key: string | number = this.data[this.parent.getPrimaryKeyFieldNames()[0]];
         this.parent.setRowData(key, data);
     }
@@ -96,6 +99,9 @@ export class Row<T> {
      * @return {void}
      */
     public setCellValue(field: string, value: string | number | boolean | Date): void {
+        if (!this.parent) {
+            return;
+        }
         let isValDiff: boolean = !(this.data[field].toString() === value.toString());
         if (isValDiff) {
             let pKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
@@ -108,6 +114,9 @@ export class Row<T> {
     }
 
     private makechanges(key: string, data: Object): void {
+        if (!this.parent) {
+            return;
+        }
         let gObj: IGrid = this.parent;
         let dataManager: DataManager = gObj.getDataModule().dataManager;
         dataManager.update(key, data);

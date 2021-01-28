@@ -22,6 +22,7 @@ export class InfiniteScroll implements IAction {
     private serviceLocator: ServiceLocator;
     private maxPage: number;
     private infiniteCache: { [x: number]: Row<Column>[] } = {};
+    private infiniteCurrentViewData: { [x: number]: Object[] } = {};
     private infiniteFrozenCache: { [x: number]: Row<Column>[][] } = {};
     private isDownScroll: boolean = false;
     private isUpScroll: boolean = false;
@@ -102,6 +103,7 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.infiniteEditHandler, this.infiniteEditHandler, this);
         this.parent.on(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
+        this.parent.on(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
         this.parent.on(events.deleteComplete, this.deleteComplate, this);
         this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(events.actionComplete, this.actionComplete.bind(this));
@@ -132,8 +134,54 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.infiniteEditHandler, this.infiniteEditHandler);
         this.parent.off(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin);
         this.parent.off(events.modelChanged, this.modelChanged);
+        this.parent.off(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
         this.parent.removeEventListener(events.actionBegin, this.actionBegin.bind(this));
         this.parent.removeEventListener(events.actionComplete, this.actionComplete.bind(this));
+    }
+
+    private updateCurrentViewData(): void {
+        let gObj: IGrid = this.parent;
+        if (gObj.groupSettings.columns.length) {
+            return;
+        }
+        let keys: string[] = Object.keys(this.infiniteCurrentViewData);
+        gObj.currentViewData = [];
+        let page: number = gObj.pageSettings.currentPage;
+        let isCache: boolean = gObj.infiniteScrollSettings.enableCache;
+        let blocks: number = gObj.infiniteScrollSettings.maxBlocks;
+        let isMiddlePage: boolean = isCache && (page > blocks || (this.isUpScroll && page > 1));
+        let start: number = isMiddlePage ? this.isUpScroll ? page : (page - blocks) + 1 : 1;
+        let end: number = isMiddlePage ? (start + blocks) - 1 : isCache ? blocks : keys.length;
+        for (let i: number = start; i <= end; i++) {
+            if (this.infiniteCurrentViewData[i]) {
+                gObj.currentViewData = gObj.currentViewData.concat(this.infiniteCurrentViewData[i]);
+            }
+        }
+    }
+
+    private refreshInfiniteCurrentViewData(e: { args: NotifyArgs, data: Object[] }): void {
+        let page: number = this.parent.pageSettings.currentPage;
+        let size: number = this.parent.pageSettings.pageSize;
+        let blocks: number = this.parent.infiniteScrollSettings.initialBlocks;
+        let keys: string[] = Object.keys(this.infiniteCurrentViewData);
+        let cache: boolean = this.parent.infiniteScrollSettings.enableCache;
+        if (!this.parent.groupSettings.columns.length) {
+            let isAdd: boolean = e.args.requestType === 'save';
+            let isDelete: boolean = e.args.requestType === 'delete';
+            if (!cache && (isAdd || isDelete)) {
+                if (isAdd) {
+                    this.infiniteCurrentViewData[1] = e.data.concat(this.infiniteCurrentViewData[1]);
+                } else {
+                    this.infiniteCurrentViewData[keys[keys.length - 1]].push(e.data[0]);
+                }
+            } else {
+                if (e.data.length === (blocks * size)) {
+                    this.setInitialCache(e.data.slice() as Row<Column>[], {}, cache && e.args.requestType === 'delete', true);
+                } else {
+                    this.infiniteCurrentViewData[page] = e.data.slice();
+                }
+            }
+        }
     }
 
     private deleteComplate(): void {
@@ -186,7 +234,7 @@ export class InfiniteScroll implements IAction {
             let rowElms: Element[] = this.parent.getRows();
             let rows: Row<Column>[] = this.parent.getRowsObject();
             if (this.ensureRowAvailability(rows, args.result[0])) {
-                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add');
+                this.resetRowIndex(rows, args.e, rowElms, this.requestType === 'add', true);
                 if (frozenCols) {
                     let rows: Row<Column>[] = this.parent.getMovableRowsObject();
                     this.resetRowIndex(rows, args.e, this.parent.getMovableDataRows(), this.requestType === 'add');
@@ -301,11 +349,14 @@ export class InfiniteScroll implements IAction {
         return this.rowModelGenerator.generateRows(data, args);
     }
 
-    private resetRowIndex(rows: Row<Column>[], args: NotifyArgs, rowElms: Element[], isAdd: boolean): void {
+    private resetRowIndex(rows: Row<Column>[], args: NotifyArgs, rowElms: Element[], isAdd: boolean, isFrozen?: boolean): void {
         let keyField: string = this.parent.getPrimaryKeyFieldNames()[0];
         let isRemove: boolean = !(rowElms.length % this.parent.pageSettings.pageSize);
         if (isAdd) {
             if (isRemove) {
+                if (isFrozen && !this.parent.groupSettings.columns.length) {
+                    this.swapCurrentViewData(1, true);
+                }
                 remove(rowElms[rows.length - 1]);
                 rowElms.splice(rows.length - 1, 1);
                 rows.splice(rows.length - 1, 1);
@@ -313,6 +364,10 @@ export class InfiniteScroll implements IAction {
         } else {
             rows.filter((e: Row<Column>, index: number) => {
                 if (e.data[keyField] === (<{ data?: Object[] }>args).data[0][keyField]) {
+                    if (isFrozen && !this.parent.groupSettings.columns.length) {
+                        let page: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
+                        this.resetInfiniteCurrentViewData(page, index);
+                    }
                     rows.splice(index, 1);
                     remove(rowElms[index]);
                     rowElms.splice(index, 1);
@@ -321,6 +376,33 @@ export class InfiniteScroll implements IAction {
         }
         let startIndex: number = isAdd ? 1 : 0;
         resetRowIndex(this.parent, rows, rowElms as HTMLTableRowElement[], startIndex);
+    }
+
+    private resetInfiniteCurrentViewData(page: number, index: number): void {
+        index = index - ((page - 1) * this.parent.pageSettings.pageSize);
+        this.infiniteCurrentViewData[page].splice(index, 1);
+        this.swapCurrentViewData(page, false);
+    }
+
+    private swapCurrentViewData(page: number, isAdd: boolean): void {
+        let keys: string[] = Object.keys(this.infiniteCurrentViewData);
+        let end: number = isAdd ? keys.length + 1 : keys.length;
+        for (let i: number = page; i < end; i++) {
+            if (this.infiniteCurrentViewData[i + 1]) {
+                let pageIndex: number = isAdd ? i : i + 1;
+                let index: number = isAdd ? this.infiniteCurrentViewData[i].length - 1 : 0;
+                let data: Object[] = this.infiniteCurrentViewData[pageIndex].splice(index, 1);
+                if (isAdd) {
+                    this.infiniteCurrentViewData[i + 1] = data.concat(this.infiniteCurrentViewData[i + 1]);
+                    if ((i + 1) === end - 1) {
+                        this.infiniteCurrentViewData[i + 1].splice(this.infiniteCurrentViewData[i + 1].length - 1, 1);
+                    }
+                } else {
+                    this.infiniteCurrentViewData[i].push(data[0]);
+                }
+            }
+        }
+        this.updateCurrentViewData();
     }
 
     private setDisplayNone(args: { visible: string, index: number, isFreeze: boolean }): void {
@@ -545,6 +627,7 @@ export class InfiniteScroll implements IAction {
         if (isCache) {
             this.infiniteCache = {};
             this.infiniteFrozenCache = {};
+            this.infiniteCurrentViewData = {};
             query.skip(this.firstIndex);
             query.take(initialBlocks * this.parent.pageSettings.pageSize);
         } else {
@@ -665,6 +748,7 @@ export class InfiniteScroll implements IAction {
         }
         if (!frozenCols) {
             (this.parent as Grid).contentModule.getTable().appendChild(e.tbody);
+            this.updateCurrentViewData();
         } else {
             if (isInfiniteScroll) {
                 if (e.tableName === 'frozen-left' || (this.parent.getFrozenMode() === 'Right' && e.tableName === 'frozen-right')) {
@@ -682,6 +766,7 @@ export class InfiniteScroll implements IAction {
                         this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(e.tbody);
                     }
                     (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
+                    this.updateCurrentViewData();
                 }
             } else {
                 let table: Element;
@@ -691,11 +776,13 @@ export class InfiniteScroll implements IAction {
                     table = this.parent.getMovableVirtualContent().querySelector('.e-table');
                     if (this.parent.getFrozenMode() !== 'Left-Right') {
                         (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
+                        this.updateCurrentViewData();
                     }
                 } else {
                     table = this.parent.element.querySelector('.e-frozen-right-content').querySelector('.e-table');
                     if (this.parent.getFrozenMode() === 'Left-Right') {
                         (<{ refreshScrollOffset?: Function }>this.parent.contentModule).refreshScrollOffset();
+                        this.updateCurrentViewData();
                     }
                 }
                 table.appendChild(e.tbody);
@@ -903,6 +990,7 @@ export class InfiniteScroll implements IAction {
                 scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
                 this.infiniteCache = this.infiniteFrozenCache = {};
+                this.infiniteCurrentViewData = {};
                 this.resetContentModuleCache({});
                 this.isRemove = false;
                 this.top = 0;
@@ -948,23 +1036,27 @@ export class InfiniteScroll implements IAction {
         }
     }
 
-    private setInitialCache(data: Row<Column>[], args?: InfiniteScrollArgs, isEdit?: boolean): void {
+    private setInitialCache(data: Row<Column>[], args?: InfiniteScrollArgs, isEdit?: boolean, isCurrentViewData?: boolean): void {
         let frozenCols: boolean = this.parent.isFrozenGrid();
         let idx: number = args.isFrozen ? 1 : 0;
         let k: number = !isEdit ? 1 : this.firstBlock;
         for (let i: number = 1; i <= this.parent.infiniteScrollSettings.initialBlocks; i++) {
             let startIndex: number = (i - 1) * this.parent.pageSettings.pageSize;
             let endIndex: number = i * this.parent.pageSettings.pageSize;
-            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length && !isCurrentViewData) {
                 this.setInitialGroupCache(data, k, startIndex, endIndex);
             } else {
-                if (frozenCols) {
-                    this.createFrozenCache(k);
-                    this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
-                    this.resetContentModuleCache(this.infiniteFrozenCache);
+                if (isCurrentViewData) {
+                    this.infiniteCurrentViewData[k] = data.slice(startIndex, endIndex);
                 } else {
-                    this.infiniteCache[k] = data.slice(startIndex, endIndex);
-                    this.resetContentModuleCache(this.infiniteCache);
+                    if (frozenCols) {
+                        this.createFrozenCache(k);
+                        this.infiniteFrozenCache[k][idx] = data.slice(startIndex, endIndex);
+                        this.resetContentModuleCache(this.infiniteFrozenCache);
+                    } else {
+                        this.infiniteCache[k] = data.slice(startIndex, endIndex);
+                        this.resetContentModuleCache(this.infiniteCache);
+                    }
                 }
             }
             k++;

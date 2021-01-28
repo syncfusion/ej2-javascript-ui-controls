@@ -2159,12 +2159,13 @@ var DataManipulation = /** @class */ (function () {
             results = this.dataResults.result;
             count = this.dataResults.count;
         }
-        if (isPrinting === true && this.parent.printMode === 'AllPages') {
+        var isPdfExport = 'isPdfExport';
+        if ((isPrinting === true || args[isPdfExport]) && this.parent.printMode === 'AllPages') {
             var actualResults = [];
             for (var i = 0; i < results.length; i++) {
-                actualResults.push(results[i]);
-                if (results[i].expanded === false) {
-                    i += findChildrenRecords(results[i]).length;
+                var expandStatus = getExpandStatus(this.parent, results[i], this.parent.parentData);
+                if (expandStatus) {
+                    actualResults.push(results[i]);
                 }
             }
             results = actualResults;
@@ -7687,6 +7688,7 @@ var ExcelExport$1 = /** @class */ (function () {
      * Constructor for Excel Export module
      */
     function ExcelExport$$1(parent) {
+        this.isCollapsedStatePersist = false;
         sf.grids.Grid.Inject(sf.grids.ExcelExport);
         this.parent = parent;
         this.dataResults = {};
@@ -7739,6 +7741,9 @@ var ExcelExport$1 = /** @class */ (function () {
         var property = Object();
         sf.base.setValue('isCsv', isCsv, property);
         sf.base.setValue('cancel', false, property);
+        if (!sf.base.isNullOrUndefined(excelExportProperties)) {
+            this.isCollapsedStatePersist = excelExportProperties.isCollapsedStatePersist;
+        }
         return new Promise(function (resolve, reject) {
             var dm = _this.isLocal() && !(dataSource instanceof sf.data.DataManager) ? new sf.data.DataManager(dataSource)
                 : _this.parent.dataSource;
@@ -7787,7 +7792,7 @@ var ExcelExport$1 = /** @class */ (function () {
         if (!sf.base.isNullOrUndefined(property) && !sf.base.isNullOrUndefined(property.exportType)) {
             sf.base.setValue('exportType', property.exportType, args);
         }
-        if (!this.isLocal() || !sf.base.isNullOrUndefined(this.parent.parentIdMapping)) {
+        if (!this.isLocal()) {
             this.parent.parentData = [];
             this.parent.dataModule.convertToFlatData(sf.grids.getObject('result', queryResult));
             sf.base.setValue('expresults', this.parent.flatData, args);
@@ -7833,7 +7838,15 @@ var ExcelExport$1 = /** @class */ (function () {
             if (excelrowobj.parentItem && getParentData(this.parent, excelrowobj.parentItem.uniqueID, Boolean(filtercolumnlength))) {
                 var rowlength = excelRow.excelRows.length;
                 var rowlevel = excelrowobj.level;
-                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: false };
+                var expandedStatus = false;
+                var sublevelState = false;
+                var state = getExpandStatus(this.parent, excelrowobj, this.parent.parentData);
+                if (this.isCollapsedStatePersist && (!state || !this.parent.isLocalData)) {
+                    expandedStatus = true;
+                    sublevelState = excelrowobj.expanded ? false : true;
+                }
+                excelRow.excelRows[rowlength - 1].grouping = { outlineLevel: rowlevel, isCollapsed: sublevelState,
+                    isHidden: expandedStatus };
             }
         }
     };
@@ -7953,10 +7966,11 @@ var PdfExport$1 = /** @class */ (function () {
         var isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
         sf.base.setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
         sf.base.setValue('isExport', true, args);
+        sf.base.setValue('isPdfExport', true, args);
         if (!sf.base.isNullOrUndefined(prop) && !sf.base.isNullOrUndefined(prop.exportType)) {
             sf.base.setValue('exportType', prop.exportType, args);
         }
-        if (!isLocal || !sf.base.isNullOrUndefined(this.parent.parentIdMapping)) {
+        if (!isLocal) {
             this.parent.parentData = [];
             this.parent.dataModule.convertToFlatData(sf.base.getValue('result', queryResult));
             sf.base.setValue('expresults', this.parent.flatData, args);

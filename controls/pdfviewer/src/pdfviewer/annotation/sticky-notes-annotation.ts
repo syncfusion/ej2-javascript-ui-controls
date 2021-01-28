@@ -3065,12 +3065,18 @@ export class StickyNotesAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public updateAnnotationCollection(newAnnotation: any, annotation: any): void {
+    public updateAnnotationCollection(newAnnotation: any, annotation: any, isCut: boolean): void {
         let type: string = this.findAnnotationType(annotation);
         // tslint:disable-next-line
         let pageAnnotations: any = this.getAnnotations(annotation.pageIndex, null, type);
+        if (isCut) {
+            pageAnnotations = this.pdfViewer.annotationModule.removedAnnotationCollection;
+        }
         if (pageAnnotations !== null) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
+                if (isCut && !pageAnnotations[i].annotName) {
+                    pageAnnotations[i].annotName = pageAnnotations[i].annotationId;
+                }
                 if (pageAnnotations[i].annotName === annotation.annotName) {
                     // tslint:disable-next-line
                     let updateAnnotation: any = cloneObject(pageAnnotations[i]);
@@ -3089,7 +3095,7 @@ export class StickyNotesAnnotation {
                         updateAnnotation.bounds.top = newAnnotation.bounds.y;
                         updateAnnotation.vertexPoints = newAnnotation.vertexPoints;
                     }
-                    updateAnnotation.note = '';
+                    updateAnnotation.note = updateAnnotation.note ? updateAnnotation.note : '';
                     updateAnnotation.comments = [];
                     // tslint:disable-next-line:max-line-length
                     updateAnnotation.review = { state: '', stateModel: '', modifiedDate: updateAnnotation.ModifiedDate, author: updateAnnotation.author };
@@ -3097,6 +3103,9 @@ export class StickyNotesAnnotation {
                     updateAnnotation.stateModel = '';
                     this.pdfViewer.annotationModule.storeAnnotations(annotation.pageIndex, updateAnnotation, '_annotations_' + type);
                     this.createCommentsContainer(updateAnnotation, annotation.pageIndex + 1, true);
+                    if (isCut) {
+                        this.pdfViewer.annotationModule.removedAnnotationCollection = [];
+                    }
                     break;
                 }
             }

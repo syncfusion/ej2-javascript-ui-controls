@@ -477,45 +477,48 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.bindEvents = function () {
+        sf.base.EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
+        sf.base.EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        sf.base.EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        sf.base.EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            sf.base.EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
+        }
+        if (!this.isMobile) {
+            this.keyInputConfigs = sf.base.extend(this.keyInputConfigs, this.keyConfigs);
+            this.inputKeyboardModule = new sf.base.KeyboardEvents(this.inputElement, {
+                eventName: 'keydown',
+                keyAction: this.inputHandler.bind(this),
+                keyConfigs: this.keyInputConfigs
+            });
+        }
+        if (this.formElement) {
+            sf.base.EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.enabled) {
-            sf.base.EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
-            sf.base.EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            sf.base.EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            sf.base.EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                sf.base.EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
-            }
-            if (!this.isMobile) {
-                this.keyInputConfigs = sf.base.extend(this.keyInputConfigs, this.keyConfigs);
-                this.inputKeyboardModule = new sf.base.KeyboardEvents(this.inputElement, {
-                    eventName: 'keydown',
-                    keyAction: this.inputHandler.bind(this),
-                    keyConfigs: this.keyInputConfigs
-                });
-            }
-            if (this.formElement) {
-                sf.base.EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
-            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
         }
         else {
-            sf.base.EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
-            sf.base.EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            sf.base.EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            sf.base.EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                sf.base.EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (!this.isMobile) {
-                if (!sf.base.isNullOrUndefined(this.inputKeyboardModule)) {
-                    this.inputKeyboardModule.destroy();
-                }
-            }
-            if (this.formElement) {
-                sf.base.EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-            }
             this.inputElement.tabIndex = -1;
         }
+    };
+    DateRangePicker.prototype.unBindEvents = function () {
+        sf.base.EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
+        sf.base.EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        sf.base.EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        sf.base.EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            sf.base.EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (!this.isMobile) {
+            if (!sf.base.isNullOrUndefined(this.inputKeyboardModule)) {
+                this.inputKeyboardModule.destroy();
+            }
+        }
+        if (this.formElement) {
+            sf.base.EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
+        this.inputElement.tabIndex = -1;
     };
     DateRangePicker.prototype.updateHiddenInput = function () {
         if (this.firstHiddenChild && this.secondHiddenChild) {
@@ -535,6 +538,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.inputChangeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
         this.updateHiddenInput();
     };
@@ -544,6 +550,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.resetHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
@@ -568,6 +577,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         this.setModelValue();
     };
     DateRangePicker.prototype.formResetHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (this.formElement && (e.target === this.formElement) && !this.inputElement.disabled) {
             var val = this.inputElement.getAttribute('value');
             if (!sf.base.isNullOrUndefined(this.startCopy)) {
@@ -620,6 +632,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         this.removeSelection();
     };
     DateRangePicker.prototype.rangeIconHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (this.isMobile) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -901,6 +916,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.inputFocusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         this.preventBlur = false;
         var focusArguments = {
             model: (sf.base.isBlazor() && this.isServerRendered) ? null : this
@@ -916,6 +934,9 @@ var DateRangePicker = /** @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.inputBlurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.preventBlur) {
             var value = this.inputElement.value;
             if (!sf.base.isNullOrUndefined(this.presetsItem)) {
@@ -3618,6 +3639,7 @@ var DateRangePicker = /** @class */ (function (_super) {
      * @returns void
      */
     DateRangePicker.prototype.destroy = function () {
+        this.unBindEvents();
         this.hide(null);
         var ariaAttrs = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
@@ -3991,7 +4013,12 @@ var DateRangePicker = /** @class */ (function (_super) {
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     sf.inputs.Input.setEnabled(this.enabled, this.inputElement);
-                    this.bindEvents();
+                    if (this.enabled) {
+                        this.inputElement.setAttribute('tabindex', this.tabIndex);
+                    }
+                    else {
+                        this.inputElement.tabIndex = -1;
+                    }
                     break;
                 case 'allowEdit':
                     this.setRangeAllowEdit();

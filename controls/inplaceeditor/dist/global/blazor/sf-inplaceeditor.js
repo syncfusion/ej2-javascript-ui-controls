@@ -157,6 +157,8 @@ var SfInPlaceEditor = /** @class */ (function () {
         var ele = this.mode === INLINE ? this.element.querySelector('.' + EDITABLE_COMPONENT) : this.element;
         var btnEle = this.mode === INLINE ? this.element.querySelector('.e-editable-action-buttons') : this.componentParent;
         if (ele.contains(e.target) || (btnEle && btnEle.contains(e.target) ||
+            sf.base.closest(e.target, '.e-dropdown-popup.e-control.e-rte-elements') ||
+            sf.base.closest(e.target, '.e-dropdown-popup.e-control.e-colorpicker-popup') ||
             (this.popupConent && this.popupConent.contains(e.target)))) {
             return;
         }

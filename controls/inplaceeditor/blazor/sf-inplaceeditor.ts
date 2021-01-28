@@ -182,6 +182,8 @@ class SfInPlaceEditor {
         let ele: HTMLElement = this.mode === INLINE ? this.element.querySelector('.' + EDITABLE_COMPONENT) : this.element;
         let btnEle: HTMLElement = this.mode === INLINE ? this.element.querySelector('.e-editable-action-buttons') : this.componentParent;
         if (ele.contains(e.target as HTMLElement) || ( btnEle && btnEle.contains(e.target as HTMLElement) ||
+        closest(e.target as HTMLElement, '.e-dropdown-popup.e-control.e-rte-elements') ||
+        closest(e.target as HTMLElement, '.e-dropdown-popup.e-control.e-colorpicker-popup') ||
          ( this.popupConent && this.popupConent.contains(e.target as HTMLElement)))) {
             return;
         } else {

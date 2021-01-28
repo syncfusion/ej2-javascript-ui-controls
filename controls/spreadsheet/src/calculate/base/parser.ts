@@ -67,7 +67,7 @@ export class Parser {
         this.tokenAdd, this.tokenSubtract, this.tokenMultiply, this.tokenDivide, this.tokenLess,
         this.tokenGreater, this.tokenEqual, this.tokenLessEq, this.tokenGreaterEq, this.tokenNotEqual, this.tokenAnd, this.tokenOr];
     private charNOTop: string = String.fromCharCode(167);
-    private specialSym: string[] = ['~', '@', '#', '?', '%'];
+    private specialSym: string[] = ['~', '@', '#', '?'];
     private isFailureTriggered: boolean = false;
 
     /** @hidden */
@@ -272,7 +272,7 @@ export class Parser {
                     if (this.parent.isDigit(formula[i])) {
                         form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i] : form + formula[i];
                     }
-                    if (formula[i] === '-') {
+                    if (formula[i] === '-' || formula[i] === '+') {
                         form = form + formula[i];
                         form = form.split('++').join('+').split('+-').join('-').split('-+').join('-');
                     }

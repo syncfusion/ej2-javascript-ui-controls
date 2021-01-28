@@ -5,7 +5,7 @@ import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
 import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange } from '../common/index';
-import { ProtectSettings } from '../common/index';
+import { ProtectSettings, getRangeIndexes, getRangeAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 
@@ -415,7 +415,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
         sheet.topLeftCell = sheet.topLeftCell || 'A1';
         sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = sheet.selectedRange || 'A1:A1';
+        sheet.selectedRange = getMaxSelectionRange(sheet.selectedRange || 'A1:A1', sheet);
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
@@ -431,6 +431,17 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         initRow(sheet.rows);
     });
     processIdx(sheets, true, context);
+}
+
+function getMaxSelectionRange(range: string, sheet: SheetModel): string {
+    let selectedIndex: number[] = getRangeIndexes(range);
+    if (selectedIndex[2] > sheet.rowCount) {
+        selectedIndex[2] = sheet.rowCount - 1;
+    }
+    if (selectedIndex[3] > sheet.colCount) {
+        selectedIndex[3] = sheet.colCount - 1;
+    }
+    return getRangeAddress(selectedIndex);
 }
 
 function initRangeSettings(ranges: RangeModel[]): RangeModel[] {

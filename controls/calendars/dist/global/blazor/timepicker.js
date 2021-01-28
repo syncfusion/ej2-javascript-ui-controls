@@ -862,6 +862,9 @@ var TimePicker = /** @class */ (function (_super) {
         this.blazorTimeCollections = listData;
     };
     TimePicker.prototype.popupHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (sf.base.Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -877,6 +880,9 @@ var TimePicker = /** @class */ (function (_super) {
         }
     };
     TimePicker.prototype.mouseDownHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.readonly) {
             var curPos = this.getCursorSelection();
             this.inputElement.setSelectionRange(0, 0);
@@ -1252,6 +1258,9 @@ var TimePicker = /** @class */ (function (_super) {
         }
     };
     TimePicker.prototype.formResetHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.inputElement.disabled) {
             var timeValue = this.inputElement.getAttribute('value');
             var val = this.isBlazorServer ? this.inputEleValue : this.checkDateValue(this.inputEleValue);
@@ -1276,6 +1285,9 @@ var TimePicker = /** @class */ (function (_super) {
         }
     };
     TimePicker.prototype.inputChangeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
     };
     TimePicker.prototype.unBindEvents = function () {
@@ -1308,6 +1320,9 @@ var TimePicker = /** @class */ (function (_super) {
         this.trigger('cleared', clearedArgs);
     };
     TimePicker.prototype.clearHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         e.preventDefault();
         if (!sf.base.isNullOrUndefined(this.value)) {
             this.clear(e);
@@ -2059,6 +2074,9 @@ var TimePicker = /** @class */ (function (_super) {
         this.checkValueChange(null, false);
     };
     TimePicker.prototype.inputBlurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isPreventBlur && this.isPopupOpen()) {
             this.inputElement.focus();
@@ -2107,6 +2125,9 @@ var TimePicker = /** @class */ (function (_super) {
         return false;
     };
     TimePicker.prototype.inputFocusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         var focusArguments = {
             model: this.isBlazorServer ? null : this
         };

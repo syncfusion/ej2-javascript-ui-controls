@@ -51,6 +51,12 @@ export interface SanitizeRemoveAttrs {
  */
 export type PositionY = 'Top' | 'Bottom';
 
+
+/**
+ * Specifies the direction for the Toast progressBar.
+ */
+export type ProgressDirectionType  = 'Rtl' | 'Ltr';
+
 /**
  * Specifies the options for positioning the Toast in X axis.
  */
@@ -396,6 +402,12 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
    */
   @Property(5000)
   public timeOut: number;
+
+  /**
+   * Specifies whether to show the progress bar with left to right direction to denote the Toast message display timeout.
+   */
+  @Property('Rtl')
+  public progressDirection: ProgressDirectionType;
 
   /**
    * Specifies the Toast display time duration after interacting with the Toast. 
@@ -955,6 +967,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
 
   private updateProgressBar(progressObj: Progressbar): void {
     let percentage: number = ((progressObj.hideEta - (new Date().getTime())) / progressObj.maxHideTime) * 100;
+    percentage = this.progressDirection === 'Ltr' ? 100  - percentage : percentage;
     progressObj.progressEle.style.width = percentage + '%';
   }
 

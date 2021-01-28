@@ -157,7 +157,7 @@ export class TimelineEvent extends MonthEvent {
                     && appWidth < this.cellWidth) {
                     let resizeHandlers: HTMLElement[] = [].slice.call(appointmentElement.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
                     resizeHandlers.forEach((resizeHandler: HTMLElement) => {
-                        resizeHandler.style.width = Math.ceil(appointmentElement.offsetWidth / resizeHandler.offsetWidth) + 'px';
+                        resizeHandler.style.width = Math.ceil(appWidth / resizeHandler.getBoundingClientRect().width) + 'px';
                     });
                 }
             } else {
@@ -207,7 +207,7 @@ export class TimelineEvent extends MonthEvent {
     }
 
     public updateCellHeight(cell: HTMLElement, height: number): void {
-        if ((height > cell.offsetHeight)) {
+        if ((height > cell.getBoundingClientRect().height)) {
             setStyleAttribute(cell, { 'height': height + 'px' });
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 let resourceCell: HTMLElement = this.parent.element.querySelector

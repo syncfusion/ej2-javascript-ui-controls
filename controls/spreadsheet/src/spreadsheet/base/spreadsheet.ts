@@ -801,6 +801,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * By default, Spreadsheet shows the spinner for all its actions. To manually show spinner you this method at your needed time.
      * @return {void}
+     * {% codeBlock src='spreadsheet/showSpinner/index.md' %}{% endcodeBlock %}
      */
     public showSpinner(): void {
         showSpinner(this.element);
@@ -808,6 +809,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To hide showed spinner manually.
      * @return {void}
+     * {% codeBlock src='spreadsheet/hideSpinner/index.md' %}{% endcodeBlock %}
      */
     public hideSpinner(): void {
         hideSpinner(this.element);
@@ -819,6 +821,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
      * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
      * @return {void}
+     * {% codeBlock src='spreadsheet/protectSheet/index.md' %}{% endcodeBlock %}
      */
     public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
         if (typeof (sheet) === 'string') {
@@ -837,6 +840,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To unprotect the particular sheet.
      * @param {number | string} sheet - Specifies the sheet to Unprotect.
      * @return {void}
+     * {% codeBlock src='spreadsheet/unprotectSheet/index.md' %}{% endcodeBlock %}
      */
     public unprotectSheet(sheet?: number | string): void {
         if (typeof (sheet) === 'string') {
@@ -863,6 +867,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} args.sheetIndex - Specifies the current sheet to find.
      * @default { mode: 'Sheet', searchBy: 'By Row', isCSen: 'false', isEMatch:'false' }
      * @return {void}
+     * {% codeBlock src='spreadsheet/find/index.md' %}{% endcodeBlock %}
      */
     public find(args: FindOptions): void {
         super.findHandler(args);
@@ -874,6 +879,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
      * @param {string} args.value - Specifies the value to be replaced
      * @return {void}
+     * {% codeBlock src='spreadsheet/replace/index.md' %}{% endcodeBlock %}
      */
     public replace(args: FindOptions): void {
         args = {
@@ -892,6 +898,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {boolean} isEMatch - Specifies the find match with entire match or not.
      * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      * @return {string[]}
+     * {% codeBlock src='spreadsheet/findAll/index.md' %}{% endcodeBlock %}
      */
     public findAll(value: string, mode?: string, isCSen?: boolean, isEMatch?: boolean, sheetIndex?: number): string[] {
         mode = mode ? mode : 'Sheet'; sheetIndex = sheetIndex ? sheetIndex : this.activeSheetIndex;
@@ -911,6 +918,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * `{sheet name}!{cell address}` - Switch to specified sheet and navigate to specified cell address.
      * `{cell address}` - Navigate to specified cell address with in the active sheet.
      * @return {void}
+     * {% codeBlock src='spreadsheet/goTo/index.md' %}{% endcodeBlock %}
      */
     public goTo(address: string): void {
         if (address.includes('!')) {
@@ -997,6 +1005,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Used to resize the Spreadsheet.
+     * {% codeBlock src='spreadsheet/resize/index.md' %}{% endcodeBlock %}
      */
     public resize(): void {
         this.renderModule.setSheetPanelSize();
@@ -1007,6 +1016,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To cut the specified cell or cells properties such as value, format, style etc...
      * @param {string} address - Specifies the range address to cut.
+     * {% codeBlock src='spreadsheet/cut/index.md' %}{% endcodeBlock %}
      */
     public cut(address?: string): Promise<Object> {
         let promise: Promise<Object> =
@@ -1022,6 +1032,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To copy the specified cell or cells properties such as value, format, style etc...
      * @param {string} address - Specifies the range address.
+     * {% codeBlock src='spreadsheet/copy/index.md' %}{% endcodeBlock %}
      */
     public copy(address?: string): Promise<Object> {
         let activeAddress: string = this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
@@ -1040,6 +1051,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * This method is used to paste the cut or copied cells in to specified address.
      * @param {string} address - Specifies the cell or range address.
      * @param {PasteSpecialType} type - Specifies the type of paste.
+     * {% codeBlock src='spreadsheet/paste/index.md' %}{% endcodeBlock %}
      */
     public paste(address?: string, type?: PasteSpecialType): void {
         this.notify(paste, {
@@ -1053,6 +1065,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} options - It describes an action and event args to perform.
      * @param {string} options.action - specifies an action.
      * @param {string} options.eventArgs - specifies an args to perform an action.
+     * {% codeBlock src='spreadsheet/updateAction/index.md' %}{% endcodeBlock %}
      */
     public updateAction(options: CollaborativeEditArgs): void {
         updateAction(options, this);
@@ -1180,6 +1193,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * Spreadsheet.autoFit('1:4'); // Auto fit from 1 to 4 rows
      * 
      * ```
+     * {% codeBlock src='spreadsheet/autoFit/index.md' %}{% endcodeBlock %}
      */
     public autoFit(range: string): void {
         let values: { startIdx: number, endIdx: number, isCol: boolean } = this.getIndexes(range);
@@ -1248,6 +1262,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To add the hyperlink in the cell 
      * @param {string | HyperlinkModel} hyperlink
      * @param {string} address
+     * {% codeBlock src='spreadsheet/addHyperlink/index.md' %}{% endcodeBlock %}
      */
     public addHyperlink(hyperlink: string | HyperlinkModel, address: string): void {
         this.insertHyperlink(hyperlink, address, '', true);
@@ -1256,6 +1271,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To remove the hyperlink in the cell 
      * @param {string} range
+     * {% codeBlock src='spreadsheet/removeHyperlink/index.md' %}{% endcodeBlock %}
      */
     public removeHyperlink(range: string): void {
         let rangeArr: string[];
@@ -1363,6 +1379,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * This method is used to add data validation.
      * @param {ValidationModel} rules - specifies the validation rules.
      * @param {string} range - range that needs to be add validation.
+     * {% codeBlock src='spreadsheet/addDataValidation/index.md' %}{% endcodeBlock %}
      */
     public addDataValidation(rules: ValidationModel, range?: string): void {
         super.addDataValidation(rules, range);
@@ -1371,6 +1388,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * This method is used for remove validation.
      * @param {string} range - range that needs to be remove validation.
+     * {% codeBlock src='spreadsheet/removeDataValidation/index.md' %}{% endcodeBlock %}
      */
     public removeDataValidation(range?: string): void {
         super.removeDataValidation(range);
@@ -1379,6 +1397,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * This method is used to highlight the invalid data.
      * @param {string} range - range that needs to be highlight the invalid data.
+     * {% codeBlock src='spreadsheet/addInvalidHighlight/index.md' %}{% endcodeBlock %}
      */
     public addInvalidHighlight(range?: string): void {
         super.addInvalidHighlight(range);
@@ -1387,6 +1406,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * This method is used for remove highlight from invalid data.
      * @param {string} range - range that needs to be remove invalid highlight.
+     * {% codeBlock src='spreadsheet/removeInvalidHighlight/index.md' %}{% endcodeBlock %}
      */
     public removeInvalidHighlight(range?: string): void {
         super.removeInvalidHighlight(range);
@@ -1407,6 +1427,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * CFColor - 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT'.
      * @param  {string} value - Pass the value to set the conditional formatting.
      * @param  {string} range - Pass the range to set the conditional formatting.
+     * {% codeBlock src='spreadsheet/conditionalFormat/index.md' %}{% endcodeBlock %}
      */
     public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
         super.conditionalFormat(conditionalFormat);
@@ -1415,6 +1436,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * This method is used for remove conditional formatting.
      * @param {string} range - range that needs to be remove conditional formatting.
+     * {% codeBlock src='spreadsheet/clearConditionalFormat/index.md' %}{% endcodeBlock %}
      */
     public clearConditionalFormat(range?: string): void {
         range = range || this.getActiveSheet().selectedRange;
@@ -1432,6 +1454,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Opens the Excel file.
      * @param {OpenOptions} options - Options for opening the excel file.
+     * {% codeBlock src='spreadsheet/open/index.md' %}{% endcodeBlock %}
      */
     public open(options: OpenOptions): void {
         this.isOpen = true;
@@ -1461,7 +1484,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * This method is used to Clear contents, formats and hyperlinks in spreadsheet.
-     *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.     
+     *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.
+     * {% codeBlock src='spreadsheet/clear/index.md' %}{% endcodeBlock %}     
      */
     public clear(options: ClearOptions): void {
         this.notify(clearViewer, { options: options, isPublic: true });
@@ -1470,6 +1494,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * Used to refresh the spreadsheet.
      * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
      * @returns void
+     * {% codeBlock src='spreadsheet/refresh/index.md' %}{% endcodeBlock %}
      */
     public refresh(isNew?: boolean): void {
         if (this[isReact]) {
@@ -1595,6 +1620,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * Sorts the range of cells in the active sheet.
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
+     * {% codeBlock src='spreadsheet/sort/index.md' %}{% endcodeBlock %}
      */
     public sort(sortOptions?: SortOptions, range?: string): Promise<SortEventArgs> {
         if (!this.allowSorting) { return Promise.reject(); }
@@ -1735,6 +1761,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * To perform the undo operation in spreadsheet.
+     * {% codeBlock src='spreadsheet/undo/index.md' %}{% endcodeBlock %}
      */
     public undo(): void {
         this.notify(performUndoRedo, { isUndo: true, isPublic: true });
@@ -1742,6 +1769,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * To perform the redo operation in spreadsheet.
+     * {% codeBlock src='spreadsheet/redo/index.md' %}{% endcodeBlock %}
      */
     public redo(): void {
         this.notify(performUndoRedo, { isUndo: false, isPublic: true });
@@ -1750,6 +1778,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To update the undo redo collection in spreadsheet.
      * @param {object} args - options for undo redo.
+     * {% codeBlock src='spreadsheet/updateUndoRedoCollection/index.md' %}{% endcodeBlock %}
      */
     public updateUndoRedoCollection(args: { [key: string]: Object }): void {
         this.notify(updateUndoRedoCollection, { args: args, isPublic: true });
@@ -1850,6 +1879,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {boolean} insertAfter - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * {% codeBlock src='spreadsheet/addContextMenu/index.md' %}{% endcodeBlock %}
      */
     public addContextMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
         this.notify(addContextMenuItems, { items: items, text: text, insertAfter: insertAfter, isUniqueId: isUniqueId });
@@ -1859,6 +1889,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To remove existing context menu items.
      * @param {string[]} items - Items that needs to be removed.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * {% codeBlock src='spreadsheet/removeContextMenuItems/index.md' %}{% endcodeBlock %}
      */
     public removeContextMenuItems(items: string[], isUniqueId?: boolean): void {
         this.notify(removeContextMenuItems, { items: items, isUniqueId: isUniqueId });
@@ -1869,6 +1900,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     * {% codeBlock src='spreadsheet/enableContextMenuItems/index.md' %}{% endcodeBlock %}
      */
     public enableContextMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
         this.notify(enableContextMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
@@ -1880,6 +1912,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
+     * {% codeBlock src='spreadsheet/enableFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     public enableFileMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
         this.notify(enableFileMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
@@ -1891,6 +1924,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
+     * {% codeBlock src='spreadsheet/hideFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     public hideFileMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
         this.notify(hideFileMenuItems, { items: items, hide: hide, isUniqueId: isUniqueId });
@@ -1904,6 +1938,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * By default, `items` are added after the `text`.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
+     * {% codeBlock src='spreadsheet/addFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     public addFileMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
         this.notify(addFileMenuItems, { items: items, text: text, insertAfter: insertAfter, isUniqueId: isUniqueId });
@@ -1914,6 +1949,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
      * @returns void.
+     * {% codeBlock src='spreadsheet/hideRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     public hideRibbonTabs(tabs: string[], hide: boolean = true): void {
         this.notify(hideRibbonTabs, { tabs: tabs, hide: hide });
@@ -1924,6 +1960,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
      * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
      * @returns void.
+     * {% codeBlock src='spreadsheet/enableRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     public enableRibbonTabs(tabs: string[], enable: boolean = true): void {
         this.notify(enableRibbonTabs, { tabs: tabs, enable: enable });
@@ -1936,6 +1973,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
      * @returns void.
+     * {% codeBlock src='spreadsheet/addRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     public addRibbonTabs(items: RibbonItemModel[], insertBefore?: string): void {
         this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
@@ -1948,6 +1986,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * If it is not specified the entire toolbar items will be enabled / disabled.
      * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
      * @returns void.
+     * {% codeBlock src='spreadsheet/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     public enableToolbarItems(tab: string, items?: number[] | string[], enable?: boolean): void {
         this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable }]);
@@ -1959,6 +1998,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
      * @returns void.
+     * {% codeBlock src='spreadsheet/hideToolbarItems/index.md' %}{% endcodeBlock %}
      */
     public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
         this.notify(hideToolbarItems, { tab: tab, indexes: indexes, hide: hide });
@@ -1971,6 +2011,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      * @returns void.
+     * * {% codeBlock src='spreadsheet/addToolbarItems/index.md' %}{% endcodeBlock %}
      */
     public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
         this.notify(addToolbarItems, { tab: tab, items: items, index: index });
@@ -1979,6 +2020,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Selects the cell / range of cells with specified address.
      * @param {string} address - Specifies the range address.
+     * {% codeBlock src='spreadsheet/selectRange/index.md' %}{% endcodeBlock %}
      */
     public selectRange(address: string): void {
         this.notify(selectRange, { indexes: getRangeIndexes(address) });
@@ -1987,6 +2029,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Start edit the active cell.
      * @return {void}
+     * {% codeBlock src='spreadsheet/startEdit/index.md' %}{% endcodeBlock %}
      */
     public startEdit(): void {
         this.notify(editOperation, { action: 'startEdit', isNewValueEdit: false });
@@ -1995,6 +2038,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Cancels the edited state, this will not update any value in the cell.
      * @return {void}
+     * {% codeBlock src='spreadsheet/closeEdit/index.md' %}{% endcodeBlock %}
      */
     public closeEdit(): void {
         this.notify(editOperation, { action: 'cancelEdit' });
@@ -2003,6 +2047,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * If Spreadsheet is in editable state, you can save the cell by invoking endEdit.
      * @return {void}
+     * {% codeBlock src='spreadsheet/endEdit/index.md' %}{% endcodeBlock %}
      */
     public endEdit(): void {
         this.notify(editOperation, { action: 'endEdit' });
@@ -2129,6 +2174,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Appends the control within the given HTML Div element.
      * @param {string | HTMLElement} selector - Target element where control needs to be appended.
+     * {% codeBlock src='spreadsheet/appendTo/index.md' %}{% endcodeBlock %}
      */
     public appendTo(selector: string | HTMLElement): void {
         super.appendTo(selector);
@@ -2156,6 +2202,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Applies the filter UI in the range of cells in the sheet.
+     * {% codeBlock src='spreadsheet/applyFilter/index.md' %}{% endcodeBlock %}
      */
     public applyFilter(predicates?: PredicateModel[], range?: string): void {
         this.notify(initiateFilterUI, { predicates: predicates, range: range });

@@ -37,7 +37,7 @@ import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs } from './base';
 // tslint:disable-next-line:max-line-length
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
@@ -1975,7 +1975,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     public isPrint: boolean;
 
     /**
-     * Allows to edit the free text annotation
+     * Allow to edit the FreeText annotation. FALSE, by default.
      */
     @Property(false)
     public isReadonly: boolean;
@@ -3577,11 +3577,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers an event when the button is clicked.
+     * @deprecated This property renamed into "formFieldClick"
      * @event
      * @blazorProperty 'ButtonFieldClick'
      */
     @Event()
     public buttonFieldClick: EmitType<ButtonFieldClickEventArgs>;
+
+    /**
+     * Triggers an event when the form field is clicked.
+     * @event
+     * @blazorProperty 'FormFieldClick'
+     */
+    @Event()
+    public formFieldClick: EmitType<FormFieldClickArgs>;
 
     /**
      * Triggers an event when the download actions is finished.
@@ -4171,6 +4180,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             target.options[target.selectedIndex].text = fieldValue.value;
         }
         if (fieldValue.type === 'SignatureField') {
+            if (fieldValue.signatureType) {
+                fieldValue.signatureType = fieldValue.signatureType[0];
+            }
             this.formFieldsModule.drawSignature(fieldValue.signatureType, fieldValue.value, target, fieldValue.fontName);
         } else {
             this.formFieldsModule.updateDataInSession(target);
@@ -4236,15 +4248,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line
     public importAnnotation(importData: any, annotationDataFormat?: AnnotationDataFormat): void {
         if (this.annotationModule) {
-           if (typeof(importData) === 'string') {
-               if (importData.split('.')[1] === 'json') {
-                  this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
-               } else {
-                  this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf);
-               }
-           } else {
+            if (typeof (importData) === 'string') {
+                if (annotationDataFormat) {
+                    this.viewerBase.importAnnotations(importData, annotationDataFormat);
+                } else {
+                    if (importData.split('.')[1] === 'json') {
+                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Json);
+                    } else {
+                        this.viewerBase.importAnnotations(importData, AnnotationDataFormat.Xfdf);
+                    }
+                }
+            } else {
                 this.viewerBase.importAnnotations(importData);
-           }
+            }
         }
     }
 
@@ -4335,11 +4351,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.formFieldsModule.resetFormFields();
     }
     /**
-     * clear all form fields data
+     * Clears data from the form fields.
+     * Parameter - Specifies the form field object.
      * @returns void
      */
-    public clearFormFields(): void {
-        this.formFieldsModule.clearFormFields();
+    // tslint:disable-next-line
+    public clearFormFields(formField?: any): void {
+        this.formFieldsModule.clearFormFields(formField);
     }
     /**
      * To delete the annotation Collections in the PDF Document.
@@ -4383,6 +4401,24 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireButtonFieldClickEvent(value: string, fieldName: string, id: string): void {
         let eventArgs: ButtonFieldClickEventArgs = { name: 'buttonFieldClicked', buttonFieldValue: value, buttonFieldName: fieldName, id: id };
         this.trigger('buttonFieldClick', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    public async fireFormFieldClickEvent(name: string, field: FormFieldModel, cancel?: boolean): Promise<void> {
+        let eventArgs: FormFieldClickArgs = { name: name, field: field, cancel: cancel };
+        if (isBlazor()) {
+            eventArgs = await this.triggerEvent('formFieldClick', eventArgs) as FormFieldClickArgs || eventArgs;
+            eventArgs.field.type = field.type;
+        } else {
+            this.triggerEvent('formFieldClick', eventArgs);
+        }
+        if (field.type === 'SignatureField') {
+            if (!eventArgs.cancel) {
+                this.viewerBase.signatureModule.showSignatureDialog(true);
+            }
+        }
     }
 
     /**

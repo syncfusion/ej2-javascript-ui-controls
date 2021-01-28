@@ -1004,46 +1004,51 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     protected bindEvents(): void {
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
+        EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
+        }
+        if (!this.isMobile) {
+            this.keyInputConfigs = (extend(this.keyInputConfigs, this.keyConfigs) as { [key: string]: string });
+            this.inputKeyboardModule = new KeyboardEvents(
+                this.inputElement, {
+                    eventName: 'keydown',
+                    keyAction: this.inputHandler.bind(this),
+                    keyConfigs: this.keyInputConfigs
+                });
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.enabled) {
-            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
-            EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
-            }
-            if (!this.isMobile) {
-                this.keyInputConfigs = (extend(this.keyInputConfigs, this.keyConfigs) as { [key: string]: string });
-                this.inputKeyboardModule = new KeyboardEvents(
-                    this.inputElement, {
-                        eventName: 'keydown',
-                        keyAction: this.inputHandler.bind(this),
-                        keyConfigs: this.keyInputConfigs
-                    });
-            }
-            if (this.formElement) {
-                EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
-            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
         } else {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
-            EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (!this.isMobile) {
-                if (!isNullOrUndefined(this.inputKeyboardModule)) {
-                    this.inputKeyboardModule.destroy();
-                }
-            }
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-            }
             this.inputElement.tabIndex = -1;
         }
     }
+
+    private unBindEvents() : void {
+        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
+        EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (!this.isMobile) {
+            if (!isNullOrUndefined(this.inputKeyboardModule)) {
+                this.inputKeyboardModule.destroy();
+            }
+        }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
+        this.inputElement.tabIndex = -1;
+    }
+
     private updateHiddenInput(): void {
         if (this.firstHiddenChild && this.secondHiddenChild) {
             let format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
@@ -1064,6 +1069,7 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private inputChangeHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         e.stopPropagation();
         this.updateHiddenInput();
     }
@@ -1073,6 +1079,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     protected resetHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
@@ -1098,6 +1105,7 @@ export class DateRangePicker extends CalendarBase {
         this.setModelValue();
     }
     protected formResetHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         if (this.formElement && (e.target === this.formElement) && !this.inputElement.disabled) {
             let val: string = this.inputElement.getAttribute('value');
             if (!isNullOrUndefined(this.startCopy)) {
@@ -1150,6 +1158,7 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private rangeIconHandler(e: MouseEvent): void {
+        if (!this.enabled) { return; }
         if (this.isMobile) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -1431,6 +1440,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private inputFocusHandler(): void {
+        if (!this.enabled) { return; }
         this.preventBlur = false;
         let focusArguments: FocusEventArgs = {
             model: (isBlazor() && this.isServerRendered) ? null : this
@@ -1447,6 +1457,7 @@ export class DateRangePicker extends CalendarBase {
     }
 
     private inputBlurHandler(e: MouseEvent | KeyboardEvent): void {
+        if (!this.enabled) { return; }
         if (!this.preventBlur) {
             let value: string = (<HTMLInputElement>this.inputElement).value;
             if (!isNullOrUndefined(this.presetsItem)) {
@@ -4028,6 +4039,7 @@ export class DateRangePicker extends CalendarBase {
      * @returns void
      */
     public destroy(): void {
+        this.unBindEvents();
         this.hide(null);
         let ariaAttrs: object = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
@@ -4392,7 +4404,11 @@ export class DateRangePicker extends CalendarBase {
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     Input.setEnabled(this.enabled, this.inputElement);
-                    this.bindEvents();
+                    if (this.enabled) {
+                        this.inputElement.setAttribute('tabindex', this.tabIndex);
+                    } else {
+                        this.inputElement.tabIndex = -1;
+                    }
                     break;
                 case 'allowEdit':
                     this.setRangeAllowEdit();

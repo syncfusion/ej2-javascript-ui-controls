@@ -22,12 +22,15 @@ export class GanttTreeGrid {
      */
     public currentEditRow: {};
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
+    /** @hidden */
+    public prevCurrentView: Object;
 
     constructor(parent: Gantt) {
         this.parent = parent;
         this.parent.treeGrid = new TreeGrid();
         this.parent.treeGrid.allowSelection = false;
         this.parent.treeGrid.allowKeyboard = this.parent.allowKeyboard;
+        this.parent.treeGrid.enableImmutableMode = this.parent.enableImmutableMode;
         this.treeGridColumns = [];
         this.validateGanttColumns();
         this.addEventListener();
@@ -153,6 +156,7 @@ export class GanttTreeGrid {
     private dataBound(args: object): void {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
+        this.prevCurrentView = extend([], [], this.parent.currentViewData, true);
     }
     private collapsing(args: object): void | Deferred {
         // Collapsing event

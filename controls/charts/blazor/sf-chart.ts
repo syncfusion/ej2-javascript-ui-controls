@@ -352,10 +352,12 @@ interface IChartOptions {
     chartResize: Function;
     resizeBound: any;
     resize: any;
+    getAllCharacters: Function;
 }
 let Chart: IChartOptions = {
     initialize(element: BlazorChartElement, dotnetRef: BlazorDotnetObject, isZooming: boolean, isScrollbar: boolean): void {
         let instance: SfChart = new SfChart(element.id, element, dotnetRef, isZooming, isScrollbar);
+        this.getAllCharacters();
         instance.render();
     },
     destroy(element: BlazorChartElement): void {
@@ -568,12 +570,13 @@ let Chart: IChartOptions = {
         };
         return textMeasure(text, font);
     },
-    charCollection: [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '"', '#', '$', '%', '&', '\\', '(', ')', '*', '+', ',', '-', '.', '/', ':',
-        ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ',
-    ],
+    charCollection:[],
+    getAllCharacters() : void {
+        this.charCollection = [];
+        for (var i = 33; i < 591; i++) {
+            this.charCollection.push(String.fromCharCode(i));
+        }
+    },
     measureText(text: string, size: string, fontWeight: string, fontStyle: string, fontFamily: string): { Width: number, Height: number } {
         let textObject: HTMLElement = document.getElementById('sfchartmeasuretext');
         if (textObject === null) {

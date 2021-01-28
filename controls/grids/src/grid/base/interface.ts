@@ -674,6 +674,8 @@ export interface IGrid extends Component<HTMLElement> {
     mergePersistGridData?(setData?: Object): void;
     setForeignKeyData?(args: DataResult): void;
     getSelectedColumnsUid?(): string[];
+    serverExcelExport?(url: string): void;
+    serverPdfExport?(url: string): void;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;

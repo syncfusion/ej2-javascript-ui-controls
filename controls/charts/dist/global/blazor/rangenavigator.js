@@ -932,6 +932,8 @@ var axisRangeCalculated = 'axisRangeCalculated';
 /** @private */
 
 /** @private */
+
+/** @private */
 var beforePrint = 'beforePrint';
 /** @private */
 

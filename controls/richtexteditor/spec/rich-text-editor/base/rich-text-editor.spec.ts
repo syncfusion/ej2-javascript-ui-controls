@@ -1834,14 +1834,25 @@ describe('RTE base module', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('type something');
         });
-        it('ensure placeholder property when enter key is pressed(with exact enter key content added)', () => {
+        it('ensure placeholder when backspace key is pressed(with exact enter key content added)', () => {            
             rteObj.placeholder = 'write content';
             rteObj.dataBind();
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');
-            rteObj.value = '<p><br></p><p><br></p>';
+            rteObj.value = '<p><br></p>';
             rteObj.dataBind();
-            expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+        });
+        it('ensure placeholder when enter key is pressed', () => {            
+            rteObj.placeholder = 'write content';
+            rteObj.dataBind();
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+            expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');            
+            keyboardEventArgs.action = 'enter';
+            keyboardEventArgs.keyCode = 13;
+            (rteObj as any).keyUp(keyboardEventArgs);
+            rteObj.dataBind();
+            expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
         });
         it('ensure through onproperty change - placeholder', () => {
             rteObj.placeholder = 'changed';

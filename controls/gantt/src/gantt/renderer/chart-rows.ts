@@ -36,6 +36,8 @@ export class ChartRows extends DateProcessor {
     public taskBarMarginTop: number;
     public milestoneMarginTop: number;
     private dropSplit: boolean = false;
+    private refreshedTr: Element[] = [];
+    private refreshedData: IGanttData[] = [];
 
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
@@ -1217,21 +1219,48 @@ export class ChartRows extends DateProcessor {
      */
     private createTaskbarTemplate(): void {
         this.updateTaskbarBlazorTemplate(false);
+        let trs: Element[] = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
         this.ganttChartTableBody.innerHTML = '';
         let collapsedResourceRecord: IGanttData[] = [];
-        for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-            let tempTemplateData: IGanttData = this.parent.currentViewData[i];
-            if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
-                collapsedResourceRecord.push(tempTemplateData);
+        let prevCurrentView: Object[] = this.parent.treeGridModule.prevCurrentView as object[];
+        if (this.parent.enableImmutableMode && prevCurrentView && prevCurrentView.length > 0) {
+            this.refreshedTr = []; this.refreshedData = [];
+            let oldKeys: object = {};
+            let oldRowElements: Element[] = [];
+            let key: string = this.parent.treeGrid.getPrimaryKeyFieldNames()[0];
+            for (let i: number = 0; i < prevCurrentView.length; i++) {
+                oldRowElements[i] = trs[i];
+                oldKeys[prevCurrentView[i][key]] = i;
             }
-            let tRow: Node = this.getGanttChartRow(i, tempTemplateData);
-            this.ganttChartTableBody.appendChild(tRow);
-            // To maintain selection when virtualization is enabled
-            if (this.parent.selectionModule && this.parent.allowSelection) {
-                this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
+            for (let index: number = 0; index < this.parent.currentViewData.length; index++) {
+                let oldIndex: number = oldKeys[this.parent.currentViewData[index][key]];
+                let modifiedRecIndex: number = this.parent.modifiedRecords.indexOf(this.parent.currentViewData[index]);
+                if (isNullOrUndefined(oldIndex) || modifiedRecIndex !== -1) {
+                    let tRow: Node = this.getGanttChartRow(index, this.parent.currentViewData[index]);
+                    this.ganttChartTableBody.appendChild(tRow);
+                    this.refreshedTr.push(this.ganttChartTableBody.querySelectorAll('tr')[index]);
+                    this.refreshedData.push(this.parent.currentViewData[index]);
+                } else if (!isNullOrUndefined(oldIndex) && modifiedRecIndex === -1) {
+                    this.ganttChartTableBody.appendChild(oldRowElements[oldIndex]);
+                }
+                this.ganttChartTableBody.querySelectorAll('tr')[index].setAttribute('aria-rowindex', index.toString());
+           }
+        }  else {
+             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
+                let tempTemplateData: IGanttData = this.parent.currentViewData[i];
+                if (this.parent.viewType === 'ResourceView' && !tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
+                    collapsedResourceRecord.push(tempTemplateData);
+                }
+                let tRow: Node = this.getGanttChartRow(i, tempTemplateData);
+                this.ganttChartTableBody.appendChild(tRow);
+                // To maintain selection when virtualization is enabled
+                if (this.parent.selectionModule && this.parent.allowSelection) {
+                    this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
+                }
             }
         }
         this.triggerQueryTaskbarInfo();
+        this.parent.modifiedRecords = [];
         if (collapsedResourceRecord.length) {
             for (let j: number = 0; j < collapsedResourceRecord.length; j++) {
                 if (collapsedResourceRecord[j].hasChildRecords) {
@@ -1388,12 +1417,13 @@ export class ChartRows extends DateProcessor {
         if (!this.parent.queryTaskbarInfo) {
             return;
         }
-        let length: number = this.ganttChartTableBody.querySelectorAll('tr').length;
+        let length: number = this.refreshedTr.length > 0 ?
+         this.refreshedTr.length : this.ganttChartTableBody.querySelectorAll('tr').length;
         let trElement: Element;
         let data: IGanttData;
         for (let index: number = 0; index < length; index++) {
-            trElement = this.ganttChartTableBody.querySelectorAll('tr')[index];
-            data = this.parent.currentViewData[index];
+            trElement = this.refreshedTr.length > 0 ? this.refreshedTr[index] : this.ganttChartTableBody.querySelectorAll('tr')[index];
+            data = this.refreshedData.length > 0 ? this.refreshedData[index] : this.parent.currentViewData[index];
             let segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
             if (segmentLength > 0) {
                 for (let i: number = 0; i < segmentLength; i++) {

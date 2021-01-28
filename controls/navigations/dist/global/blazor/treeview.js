@@ -3919,7 +3919,7 @@ var TreeView = /** @class */ (function (_super) {
             this.updateChildField(obj, mapper, id, key, value);
         }
     };
-    TreeView.prototype.updateChildField = function (obj, mapper, id, key, value, remove) {
+    TreeView.prototype.updateChildField = function (obj, mapper, id, key, value, remove$$1) {
         var removedData;
         if (sf.base.isNullOrUndefined(obj)) {
             return removedData;
@@ -3927,7 +3927,7 @@ var TreeView = /** @class */ (function (_super) {
         for (var i = 0, objlen = obj.length; i < objlen; i++) {
             var nodeId = sf.base.getValue(mapper.id, obj[i]);
             if (obj[i] && nodeId && nodeId.toString() === id) {
-                if (remove) {
+                if (remove$$1) {
                     removedData = obj.splice(i, 1);
                 }
                 else {
@@ -3938,14 +3938,14 @@ var TreeView = /** @class */ (function (_super) {
             }
             else if (typeof mapper.child === 'string' && !sf.base.isNullOrUndefined(sf.base.getValue(mapper.child, obj[i]))) {
                 var childData = sf.base.getValue(mapper.child, obj[i]);
-                removedData = this.updateChildField(childData, this.getChildMapper(mapper), id, key, value, remove);
+                removedData = this.updateChildField(childData, this.getChildMapper(mapper), id, key, value, remove$$1);
                 if (removedData !== undefined) {
                     break;
                 }
             }
             else if (this.fields.dataSource instanceof sf.data.DataManager && !sf.base.isNullOrUndefined(sf.base.getValue('child', obj[i]))) {
                 var childItems = sf.base.getValue('child', obj[i]);
-                removedData = this.updateChildField(childItems, this.getChildMapper(mapper), id, key, value, remove);
+                removedData = this.updateChildField(childItems, this.getChildMapper(mapper), id, key, value, remove$$1);
                 if (removedData !== undefined) {
                     break;
                 }
@@ -4806,7 +4806,10 @@ var TreeView = /** @class */ (function (_super) {
         var ul = sf.base.select('.' + PARENTITEM, liEle);
         var childItems = sf.base.getValue(this.fields.child.toString(), newNodeData);
         if ((isRefreshChild && ul) || (isRefreshChild && !sf.base.isNullOrUndefined(childItems))) {
-            liEle.innerHTML = newliEle[0].innerHTML;
+            var parentEle = liEle.parentElement;
+            var index = Array.prototype.indexOf.call(parentEle.childNodes, liEle);
+            sf.base.remove(liEle);
+            parentEle.insertBefore(newliEle[0], parentEle.childNodes[index]);
             this.updatePosition(id, newNodeData, isRefreshChild, newData);
             if (isRefreshChild && ul) {
                 this.expandAll([id]);
@@ -4830,9 +4833,12 @@ var TreeView = /** @class */ (function (_super) {
                     sf.base.addClass([newIcon], 'interaction');
                 }
             }
-            txtEle.innerHTML = newTextEle.innerHTML;
+            sf.base.remove(txtEle);
+            var fullEle = sf.base.select('.' + FULLROW, liEle);
+            fullEle.parentNode.insertBefore(newTextEle, fullEle.nextSibling);
             this.updatePosition(id, newNodeData, isRefreshChild, newData);
         }
+        liEle = this.getElement(target);
         if (newNodeData[this.fields.tooltip]) {
             liEle.setAttribute("title", newNodeData[this.fields.tooltip]);
         }
@@ -4846,6 +4852,10 @@ var TreeView = /** @class */ (function (_super) {
             else {
                 sf.base.attributes(liEle, attr);
             }
+        }
+        if (this.selectedNodes.indexOf(id) !== -1) {
+            liEle.setAttribute('aria-selected', 'true');
+            sf.base.addClass([liEle], ACTIVE);
         }
         this.isRefreshed = false;
         this.triggerEvent();

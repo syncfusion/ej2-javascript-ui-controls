@@ -168,7 +168,7 @@ class SfDropDownList {
         return this.list ? <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + LIST_ITEM) : [];
     }
     // tslint:disable
-    public renderPopup(popupElement: HTMLElement, popupHolderEle: HTMLElement, openEventArgs: PopupObjectArgs, options: IDropDownListOptions, dataItem: any): void {
+    public renderPopup(popupElement: HTMLElement, popupHolderEle: HTMLElement, openEventArgs: PopupObjectArgs, isModifiedPopup: boolean, options: IDropDownListOptions, dataItem: any): void {
         this.options = options;
         this.popupHolder = popupHolderEle;
         this.list = popupHolderEle.querySelector('.' + POPUP_CONTENT) as HTMLElement || select('.' + POPUP_CONTENT);
@@ -253,6 +253,44 @@ class SfDropDownList {
                 for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
             }
             if (this.isFilterLayout()) { EventHandler.add(this.list, 'scroll', this.listScroll, this); }
+        }
+        if (openEventArgs !== null && openEventArgs.popup !== null && isModifiedPopup) {
+            for (let prop of Object.keys(openEventArgs.popup)) {
+                switch (prop) {
+                    case 'collision':
+                        if (openEventArgs.popup.collision && (this.popupObj.collision.X !== openEventArgs.popup.collision.X.toLowerCase() || this.popupObj.collision.Y !== openEventArgs.popup.collision.Y.toLowerCase())) {
+                            this.popupObj.collision = { X: (openEventArgs.popup.collision.X as any).toLowerCase(), Y: (openEventArgs.popup.collision.Y as any).toLowerCase() };
+                        }
+                        break;
+                    case 'position':
+                        if (this.popupObj.position && (this.popupObj.position.X !== openEventArgs.popup.position.X || this.popupObj.position.Y !== openEventArgs.popup.position.Y)) {
+                            this.popupObj.position = { X: openEventArgs.popup.position.X, Y: openEventArgs.popup.position.Y };
+                        }
+                        break;
+                    case 'relateTo':
+                        if (this.popupObj.relateTo !== openEventArgs.popup.relateTo) {
+                            this.popupObj.relateTo = openEventArgs.popup.relateTo;
+                        }
+                        break;
+                    case 'targetType':
+                        if (this.popupObj.targetType !== openEventArgs.popup.targetType.toLowerCase()) {
+                            this.popupObj.targetType = openEventArgs.popup.targetType;
+                        }
+                        break;
+                    case 'offsetX':
+                        if (this.popupObj.offsetX !== openEventArgs.popup.offsetX) {
+                            this.popupObj.offsetX = openEventArgs.popup.offsetX;
+                        }
+                        break;
+                    case 'offsetY':
+                        if (this.popupObj.offsetY !== openEventArgs.popup.offsetY) {
+                            this.popupObj.offsetY = openEventArgs.popup.offsetY;
+                        }
+                        break;
+                }
+            }
+            this.popupObj.dataBind();
+            this.popupObj.refreshPosition(this.popupObj.relateTo as HTMLElement, true);
         }
         if (this.options.enableVirtualization) {
             EventHandler.add(this.list, 'scroll', this.virtualScroll, this);
@@ -531,9 +569,9 @@ let DropDownList: object = {
             }
         }
     },
-    renderPopup(element: BlazorDropDownListElement, popupElement: HTMLElement, popupHolderEle: HTMLElement, openEventArgs: PopupObjectArgs, options: IDropDownListOptions, dataItem: any) {
+    renderPopup(element: BlazorDropDownListElement, popupElement: HTMLElement, popupHolderEle: HTMLElement, openEventArgs: PopupObjectArgs, isModifiedPopup: boolean, options: IDropDownListOptions, dataItem: any) {
         if (element && element.blazor__instance && popupElement && popupHolderEle) {
-            element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, options, dataItem);
+            element.blazor__instance.renderPopup(popupElement, popupHolderEle, openEventArgs, isModifiedPopup, options, dataItem);
         }
     },
     refreshPopup(element: BlazorDropDownListElement) {
@@ -580,6 +618,7 @@ interface BlazorDropDownListElement extends HTMLElement {
 export interface PopupObjectArgs {
     cancel?: boolean;
     event?: MouseEvent | KeyboardEvent | Event;
+    popup?: Popup;
 }
 interface IDropDownListOptions {
     enableRtl: boolean;

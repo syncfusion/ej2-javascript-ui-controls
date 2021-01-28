@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
 import { applySort, completeAction, beginAction } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject } from '../../workbook/common/event';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getCell } from '../../workbook/index';
+import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress } from '../../workbook/index';
 import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/common/interface';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
@@ -468,7 +468,7 @@ export class Sort {
         let eventArgs: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //check for filter range
             this.parent.notify(getFilterRange, eventArgs);
-            if (eventArgs.hasFilter && eventArgs.filterRange) {
+            if (eventArgs.hasFilter && inRange(<number[]>eventArgs.filterRange, range[0], range[1])) {
                 range[0] = eventArgs.filterRange[0]; range[1] = 0;
                 range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
                 beforeArgs.sortOptions.containsHeader = true;
@@ -489,7 +489,6 @@ export class Sort {
      */
     private sortCompleteHandler(args: SortEventArgs): void {
         let range: number[] = getIndexesFromAddress(args.range);
-        if (args.sortOptions.containsHeader) { range[0] += 1; }
         this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
         this.parent.hideSpinner();
     }

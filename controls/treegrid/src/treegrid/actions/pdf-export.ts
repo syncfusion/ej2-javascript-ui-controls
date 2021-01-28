@@ -109,10 +109,11 @@ export class PdfExport {
         let isLocal: Boolean = !isRemoteData(this.parent) && isOffline(this.parent);
         setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
         setValue('isExport',  true, args);
+        setValue('isPdfExport', true, args);
         if (!isNullOrUndefined(prop) && !isNullOrUndefined(prop.exportType)) {
           setValue('exportType',  prop.exportType, args);
         }
-        if (!isLocal || !isNullOrUndefined(this.parent.parentIdMapping)) {
+        if (!isLocal) {
           this.parent.parentData = [];
           this.parent.dataModule.convertToFlatData(getValue('result', queryResult));
           setValue('expresults',  this.parent.flatData, args);

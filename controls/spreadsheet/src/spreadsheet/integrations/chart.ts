@@ -16,6 +16,7 @@ import { Tooltip } from '@syncfusion/ej2-popups';
 import { getTypeFromFormat } from '../../workbook/integrations/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress } from '../../workbook/common/index';
 import { insertChart, chartRangeSelection } from '../common/index';
+import { IBeforeResizeEventArgs } from '@syncfusion/ej2-charts';
 
 Chart.Inject(ColumnSeries, LineSeries, BarSeries, AreaSeries, StackingColumnSeries, StackingLineSeries, StackingBarSeries, ScatterSeries);
 Chart.Inject(StackingAreaSeries, Category, Legend, Tooltip);
@@ -634,6 +635,9 @@ export class SpreadsheetChart {
                     selectedTheme = selectedTheme ? selectedTheme : 'Material';
                     args.chart.theme = <ChartTheme>(selectedTheme.charAt(0).toUpperCase() +
                         selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+                },
+                beforeResize: (args: IBeforeResizeEventArgs) => {
+                    args.cancelResizedEvent = true; // This is for cancel the resized event.
                 }
             });
             this.chart.appendTo(chartContent);

@@ -868,8 +868,14 @@ export class Edit implements IAction {
 
     public resetElemPosition(elem: HTMLElement, args: { status: string, inputName: string,
         element: HTMLElement, message: string }): void {
-        if (args.element.offsetWidth < elem.offsetWidth) {
-            elem.style.left = args.element.getBoundingClientRect().left - ((elem.offsetWidth - args.element.offsetWidth) / 2) + 'px';
+        let td: Element = parentsUntil(args.element, 'e-rowcell');
+        if (td) {
+            let tdRight: number = td.getBoundingClientRect().right;
+            let elemRight: number = elem.getBoundingClientRect().right;
+            if (elemRight > tdRight) {
+                let offSet: number = elemRight - tdRight;
+                elem.style.left = (elem.offsetLeft - offSet) + 'px';
+            }
         }
     }
 

@@ -89,7 +89,7 @@ export class WorkbookInsert {
             mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(insertMerge, mergeArgs); });
         } else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
-            this.parent.createSheet(index, model); let id: number;
+            delete model[0].index; this.parent.createSheet(index, model); let id: number;
             if (args.activeSheetIndex) { this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true); }
             model.forEach((sheet: SheetModel): void => {
                 id = sheet.id;

@@ -530,6 +530,7 @@ let Toast = class Toast extends Component {
     }
     updateProgressBar(progressObj) {
         let percentage = ((progressObj.hideEta - (new Date().getTime())) / progressObj.maxHideTime) * 100;
+        percentage = this.progressDirection === 'Ltr' ? 100 - percentage : percentage;
         progressObj.progressEle.style.width = percentage + '%';
     }
     setIcon() {
@@ -752,6 +753,9 @@ __decorate([
 __decorate([
     Property(5000)
 ], Toast.prototype, "timeOut", void 0);
+__decorate([
+    Property('Rtl')
+], Toast.prototype, "progressDirection", void 0);
 __decorate([
     Property(1000)
 ], Toast.prototype, "extendedTimeout", void 0);

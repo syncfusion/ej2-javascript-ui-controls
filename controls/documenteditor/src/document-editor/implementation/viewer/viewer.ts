@@ -3400,7 +3400,7 @@ export abstract class LayoutViewer {
             this.clientActiveArea.width = this.clientArea.width = tableWidget.width;
             this.clientArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
             // tslint:disable-next-line:max-line-length
-            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height);
+            this.clientActiveArea = new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height - this.documentHelper.layout.footnoteHeight);
         }
     }
     /**

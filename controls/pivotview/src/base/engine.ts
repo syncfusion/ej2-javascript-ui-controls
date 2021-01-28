@@ -2821,16 +2821,23 @@ export class PivotEngine {
                 }
                 parentMember = (level || hierarchy[iln].formattedText) as string;
                 if (!this.showHeaderWhenEmpty && rlen - 1 > keyInd && hierarchy[iln].index &&
-                    hierarchy[iln].index.length > 0 && !showNoDataItems) {
-                    let headerValue: string =
-                        (data as any)[hierarchy[iln].index[0]][this.fieldKeys[keys[keyInd + 1].name] as any] as string;
-                    let hasChild: boolean = (isNullOrUndefined(headerValue) || (this.localeObj &&
-                        headerValue === this.localeObj.getConstant('undefined'))) && hierarchy[iln].index.length === 1 ? false : true;
-                    hierarchy[iln].hasChild = hasChild;
-                } else if (
-                    !this.showHeaderWhenEmpty && showNoDataItems && keys[keyInd + 1] && keys[keyInd + 1].name &&
-                    Object.keys(this.fieldList[keys[keyInd + 1].name].members).length) {
-                    hierarchy[iln].hasChild = true;
+                    hierarchy[iln].index.length > 0) {
+                    if (showNoDataItems && keys[keyInd + 1] && keys[keyInd + 1].name &&
+                        Object.keys(this.fieldList[keys[keyInd + 1].name].members).length > 0) {
+                        hierarchy[iln].hasChild = true;
+                    } else {
+                        let hIndLen: number = hierarchy[iln].index.length;
+                        let count: number = 0;
+                        for (let len: number = 0; len < hIndLen; len++) {
+                            let headerValue: string =
+                                (data as any)[hierarchy[iln].index[len]][this.fieldKeys[keys[keyInd + 1].name] as any] as string;
+                            if ((isNullOrUndefined(headerValue) || (this.localeObj &&
+                                headerValue === this.localeObj.getConstant('undefined')))) {
+                                count++;
+                            }
+                        }
+                        hierarchy[iln].hasChild = count !== hIndLen;
+                    }
                 }
                 if (rlen - 1 > keyInd && hierarchy[iln].isDrilled) {
                     this.columnCount -= (!(this.showSubTotals && this.showColumnSubTotals && field.showSubTotals) && axis === 'column') ?

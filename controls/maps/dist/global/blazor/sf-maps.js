@@ -133,6 +133,8 @@ var SfMaps = /** @class */ (function () {
         this.marginTop = 0;
         this.marginLeft = 0;
         this.isPinchZoomed = false;
+        this.panComplete = false;
+        this.pinchComplete = false;
         this.id = id;
         this.element = element;
         this.dotNetRef = dotnetRef;
@@ -241,6 +243,7 @@ var SfMaps = /** @class */ (function () {
         var id = event.target['id'];
         var layerX;
         var layerY;
+        var translatePoint = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
         this.lastScale = 1;
         if (event.type === 'touchend') {
             event.preventDefault();
@@ -261,8 +264,6 @@ var SfMaps = /** @class */ (function () {
         this.moveClientY = clientValue.y;
         var parentId = id.split('_')[0];
         if (!(id.indexOf('_Zooming_') > -1) && this.options.zoomOnClick && !this.isPanning) {
-            var parentEle = document.getElementById(event.target['id'].split('_')[0]);
-            var parentElement = parentEle.getBoundingClientRect();
             var factor = this.scaleFactor + 1;
             if (factor >= 1) {
                 this.scaleFactor = factor;
@@ -281,11 +282,17 @@ var SfMaps = /** @class */ (function () {
             this.newTiles = [];
             // tslint:disable:max-line-length 
             this.dotNetRef.invokeMethodAsync('UpdateTranslatePoint', this.shapeTranslatePoint, this.tileTranslatePoint, this.scaleFactor, false);
+            if (this.panComplete) {
+                this.dotNetRef.invokeMethodAsync('TriggerPanningComplete', this.previousPoint.x, this.previousPoint.y, translatePoint.x, translatePoint.y, this.scaleFactor);
+            }
         }
         if (this.isPinchZoomed) {
             this.isPinchZoomed = false;
             // tslint:disable:max-line-length 
             this.dotNetRef.invokeMethodAsync('UpdateTranslatePoint', this.shapeTranslatePoint, this.tileTranslatePoint, this.scaleFactor, true);
+            if (this.pinchComplete) {
+                this.dotNetRef.invokeMethodAsync('TriggerOnZoomComplete', translatePoint.x, translatePoint.y, this.scaleFactor);
+            }
         }
         this.isPanning = false;
         this.allowPanning = false;
@@ -359,6 +366,7 @@ var SfMaps = /** @class */ (function () {
         this.moveClientY = event.pageY;
         var layerX;
         var layerY;
+        var translatePoint = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
         var x;
         var y;
         if (event.type === 'touchmove') {
@@ -444,7 +452,15 @@ var SfMaps = /** @class */ (function () {
                 if (this.clientX !== this.moveClientX && this.clientY !== this.moveClientY) {
                     var xDifference = this.clientX - this.moveClientX;
                     var yDifference = this.clientY - this.moveClientY;
+                    var x_1 = translatePoint.x - xDifference / this.scaleFactor;
+                    var y_1 = translatePoint.y - yDifference / this.scaleFactor;
+                    if (!this.panComplete && !this.pinchComplete) {
+                        this.previousPoint = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
+                        this.dotNetRef.invokeMethodAsync('TriggerPanning', translatePoint.x, translatePoint.y, x_1, y_1, this.scaleFactor);
+                    }
                     this.panning(xDifference, yDifference, layerX, layerY, this.scaleFactor);
+                    this.panComplete = this.isTouch && this.touchMoveList.length === 2 && this.touchStartList.length === 2 ?
+                        false : true;
                     this.clientX = this.moveClientX;
                     this.clientY = this.moveClientY;
                 }
@@ -456,7 +472,14 @@ var SfMaps = /** @class */ (function () {
                     this.scaleFactor = parseInt(element['className'], 10);
                     var xDifference = this.clientX - this.moveClientX;
                     var yDifference = this.clientY - this.moveClientY;
+                    var location_1 = this.getTileGeoLocation(layerX, layerY);
+                    if (!this.panComplete && this.touchMoveList.length !== 2 && this.touchStartList.length !== 2) {
+                        this.previousPoint = this.isTileMap ? this.tileTranslatePoint : this.shapeTranslatePoint;
+                        this.dotNetRef.invokeMethodAsync('TriggerTilePanning', this.previousPoint.x, this.previousPoint.y, translatePoint.x, translatePoint.y, this.scaleFactor, location_1.latitude, location_1.longitude);
+                    }
                     this.panning(xDifference, yDifference, layerX, layerY, this.scaleFactor);
+                    this.panComplete = this.isTouch && this.touchMoveList.length === 2 && this.touchStartList.length === 2
+                        ? false : true;
                     this.clientX = this.moveClientX;
                     this.clientY = this.moveClientY;
                 }
@@ -464,7 +487,11 @@ var SfMaps = /** @class */ (function () {
         }
         if (this.options.enablePinchZooming && this.touchMoveList.length === 2 && this.touchStartList.length === 2) {
             this.isPinchZoomed = true;
+            if (!this.pinchComplete && !this.panComplete) {
+                this.dotNetRef.invokeMethodAsync('TriggerOnZoom', translatePoint.x, translatePoint.y, this.scaleFactor);
+            }
             this.pinchZooming(event);
+            this.pinchComplete = true;
         }
         if (!this.allowPanning && !(this.mouseClick && this.zoomClick)) {
             if (id.indexOf('shapeIndex') > -1 && this.options.tooltipDisplayMode === 'MouseMove') {
@@ -501,6 +528,8 @@ var SfMaps = /** @class */ (function () {
         var id = event.target['id'];
         this.isPinchZoomed = false;
         this.isTouch = false;
+        this.panComplete = false;
+        this.pinchComplete = false;
         if (event.type === 'touchstart') {
             event.preventDefault();
             this.clientX = event['touches'][0].clientX;
@@ -761,10 +790,10 @@ var SfMaps = /** @class */ (function () {
                 element.setAttribute('transform', 'translate( ' + point.x + ' ' + point.y + ' )');
             }
             else {
-                var location_1 = this.convertGeoToPoint(latitude, longitude, factor);
-                location_1.x = (location_1.x + x) * scale;
-                location_1.y = (location_1.y + y) * scale;
-                element.setAttribute('transform', 'translate( ' + location_1.x + ' ' + location_1.y + ' )');
+                var location_2 = this.convertGeoToPoint(latitude, longitude, factor);
+                location_2.x = (location_2.x + x) * scale;
+                location_2.y = (location_2.y + y) * scale;
+                element.setAttribute('transform', 'translate( ' + location_2.x + ' ' + location_2.y + ' )');
             }
         }
     };
@@ -777,9 +806,9 @@ var SfMaps = /** @class */ (function () {
             var point = [];
             if (this.navigation[layerIndex][lineIndex].Latitude.length === this.navigation[layerIndex][lineIndex].Longitude.length) {
                 for (var i = 0; i < this.navigation[layerIndex][lineIndex].Latitude.length; i++) {
-                    var location_2 = this.isTileMap ? this.convertTileLatLongToPoint({ x: this.navigation[layerIndex][lineIndex].Longitude[i], y: this.navigation[layerIndex][lineIndex].Latitude[i] }, this.tileZoomLevel, this.tileTranslatePoint, true) :
+                    var location_3 = this.isTileMap ? this.convertTileLatLongToPoint({ x: this.navigation[layerIndex][lineIndex].Longitude[i], y: this.navigation[layerIndex][lineIndex].Latitude[i] }, this.tileZoomLevel, this.tileTranslatePoint, true) :
                         this.convertGeoToPoint(this.navigation[layerIndex][lineIndex].Latitude[i], this.navigation[layerIndex][lineIndex].Longitude[i], factor);
-                    point.push(location_2);
+                    point.push(location_3);
                 }
             }
             for (var j = 0; j < point['length'] - 1; j++) {
@@ -858,10 +887,8 @@ var SfMaps = /** @class */ (function () {
                 this.shapeTranslatePoint = { x: this.shapeTranslatePoint.x, y: y };
                 this.applyTransform();
             }
-            this.dotNetRef.invokeMethodAsync('TriggerPanning', previousPoint.x, previousPoint.y, x, y, scaleFactor);
         }
         else {
-            var previousPoint = this.tileTranslatePoint;
             var x = this.tileTranslatePoint.x - xDifference;
             var y = this.tileTranslatePoint.y - yDifference;
             this.tileTranslatePoint.x = x;
@@ -873,10 +900,8 @@ var SfMaps = /** @class */ (function () {
             }
             this.translatePoint.x = (this.tileTranslatePoint.x - xDifference) / Math.pow(2, scaleFactor - 1);
             this.translatePoint.y = (this.tileTranslatePoint.y - yDifference) / Math.pow(2, scaleFactor - 1);
-            var location_3 = this.getTileGeoLocation(layerX, layerY);
             this.generateTiles();
             this.renderMarkers();
-            this.dotNetRef.invokeMethodAsync('TriggerTilePanning', previousPoint.x, previousPoint.y, x, y, scaleFactor, Math.pow(2, scaleFactor), location_3.latitude, location_3.longitude);
         }
     };
     SfMaps.prototype.applyTransform = function () {

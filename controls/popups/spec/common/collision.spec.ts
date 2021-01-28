@@ -1286,7 +1286,16 @@ describe('Collision Module Specs', () => {
             expect(getViewPortHeight()-elementRect.height).toEqual(fitpos.top);
             removeContainerContent();
         });
-
+        it('Bottom collision with flip', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" class="flex-item" style="height: 100px;width: 400px;background: #4e699c;margin:' + (getViewPortHeight() - 80) + 'px 0px 50px 165px;"><div id="popup" style="height: 200px;width: 100px;background: rgb(88, 82, 82);position: absolute;left: 315px;top: '+(getViewPortHeight()-80)+'px;"></div></div>';
+            document.body.appendChild(elem.firstChild);
+            let element: HTMLElement = <HTMLElement>getElem('#popup'), targetContainer = <HTMLElement>getElem('#targetContainer');
+            collision.flip(element, targetContainer, 0, 0, "left", "bottom");
+            let elementRect = element.getBoundingClientRect();
+            expect(getViewPortHeight() - 80 - elementRect.height).toEqual(elementRect.top);
+            removeContainerContent();
+        });
         it('Collision with scrollable body element', () => {
             document.body.style.overflow = 'scroll';
             expect(getViewPortWidth()).not.toEqual(window.innerWidth);

@@ -241,7 +241,12 @@ function flip(element, target, offsetX, offsetY, positionX, positionY, viewPortE
         BL: null,
         BR: null
     };
+    var oldVisibility = element.style.visibility;
+    element.style.visibility = 'hidden';
+    element.style.display = 'block';
     var elementRect = element.getBoundingClientRect();
+    element.style.removeProperty('display');
+    element.style.visibility = oldVisibility;
     var pos = {
         posX: positionX, posY: positionY, offsetX: offsetX, offsetY: offsetY, position: { left: 0, top: 0 }
     };
@@ -325,7 +330,7 @@ function topFlip(target, edge, tEdge, pos, elementRect, deepCheck) {
     if ((tEdge.TL.top - getBodyScrollTop()) <= ContainerTop()) {
         collideSide.topSide = false;
     }
-    if (tEdge.BL.top >= ContainerBottom()) {
+    if (tEdge.BL.top >= ContainerBottom() && target.getBoundingClientRect().bottom < window.innerHeight) {
         collideSide.bottomSide = false;
     }
     if ((collideSide.topSide && !collideSide.bottomSide) || (!collideSide.topSide && collideSide.bottomSide)) {

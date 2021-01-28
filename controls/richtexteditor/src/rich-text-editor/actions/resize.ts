@@ -65,6 +65,9 @@ export class Resize {
             this.parent.element.style.height = eventType.clientY - boundRect.top + 'px';
             this.parent.element.style.width = eventType.clientX - boundRect.left + 'px';
         }
+        if (!this.parent.toolbarSettings.enable) {
+            this.parent.setContentHeight('', false);
+        }
         this.parent.refreshUI();
     }
 

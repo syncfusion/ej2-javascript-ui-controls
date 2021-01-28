@@ -106,7 +106,7 @@ document.getElementById('bootstrap4').onclick = (e : Event) => {
 
 function refresh(): void {
     setTimeout(() => {
-        let ele: NodeListOf<HTMLInputElement> = document.getElementById('radio').getElementsByTagName('input');
+        let ele: HTMLCollectionOf<HTMLInputElement> = document.getElementById('radio').getElementsByTagName('input') as HTMLCollectionOf<HTMLInputElement>;
         for (let i: number = 0; i < ele.length; i++) {
             (ele[i] as any).ej2_instances[0].refresh();
         }

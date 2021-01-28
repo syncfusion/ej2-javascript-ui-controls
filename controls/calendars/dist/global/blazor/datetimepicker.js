@@ -78,6 +78,9 @@ var DateTimePicker = /** @class */ (function (_super) {
         return _this;
     }
     DateTimePicker.prototype.focusHandler = function () {
+        if (!this.enabled) {
+            return;
+        }
         sf.base.addClass([this.inputWrapper.container], INPUTFOCUS);
     };
     /**
@@ -98,6 +101,9 @@ var DateTimePicker = /** @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.blurHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isTimePopupOpen() && this.isPreventBlur) {
             this.inputElement.focus();
@@ -378,6 +384,9 @@ var DateTimePicker = /** @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.timeHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (sf.base.Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -401,6 +410,9 @@ var DateTimePicker = /** @class */ (function (_super) {
         this.isIconClicked = false;
     };
     DateTimePicker.prototype.dateHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
             e.preventDefault();
         }
@@ -1342,7 +1354,6 @@ var DateTimePicker = /** @class */ (function (_super) {
                     if (!this.enabled) {
                         this.inputElement.tabIndex = -1;
                     }
-                    this.bindEvents();
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;

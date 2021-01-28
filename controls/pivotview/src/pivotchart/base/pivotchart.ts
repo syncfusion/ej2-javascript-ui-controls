@@ -257,7 +257,7 @@ export class PivotChart {
                         let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
                         let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
-                        if (!cell.isGrandSum && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                        if (!(this.parent.dataType === 'olap' && cell.isGrandSum) && !totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                             actualText !== '' && ((chartSettings.enableMultiAxis && this.accumulationType.indexOf(chartSettings.chartSeries.type) < 0) ? true : actualText === this.currentMeasure)) {
                             if (isNullOrUndefined(firstRowCell.members)) {
                                 firstRowCell.members = [];
@@ -670,7 +670,7 @@ export class PivotChart {
 
     private pointClick(args: IPointEventArgs): void {
         let dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.seriesIndex].dataSource;
-        if ((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) {
+        if (((['Pie', 'Funnel', 'Doughnut', 'Pyramid', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) || !this.parent.chartSettings.showMultiLevelLabels) && this.parent.dataSourceSettings.rows.length > 1) {
             this.pivotIndex = {
                 rIndex: dataSource ? dataSource[args.pointIndex].rIndex : undefined,
                 cIndex: dataSource ? dataSource[args.pointIndex].cIndex : undefined,

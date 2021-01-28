@@ -522,7 +522,7 @@ let CheckBox = class CheckBox extends Component {
             this.changeState('check');
             this.checked = true;
         }
-        let changeEventArgs = { checked: this.element.checked, event: event };
+        let changeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
     }
     /**
@@ -596,6 +596,9 @@ let CheckBox = class CheckBox extends Component {
         }
         if (this.value) {
             this.element.setAttribute('value', this.value);
+            if (this.isVue && typeof this.value === 'boolean' && this.value === true) {
+                this.setProperties({ 'checked': true }, true);
+            }
         }
         if (this.checked) {
             this.changeState('check');
@@ -721,6 +724,9 @@ let CheckBox = class CheckBox extends Component {
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (this.isVue && typeof newProp.value === 'object') {
+                        break;
+                    }
                     this.element.setAttribute('value', newProp.value);
                     break;
                 case 'htmlAttributes':
@@ -757,6 +763,7 @@ let CheckBox = class CheckBox extends Component {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
+        this.updateVueArrayModel(true);
         this.renderComplete();
         this.wrapper = this.getWrapper();
     }
@@ -821,6 +828,37 @@ let CheckBox = class CheckBox extends Component {
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
+    }
+    updateVueArrayModel(init) {
+        if (this.isVue && typeof this.value === 'object') {
+            let value = this.element.value;
+            if (value && this.value) {
+                if (init) {
+                    for (let i = 0; i < this.value.length; i++) {
+                        if (value === this.value[i]) {
+                            this.changeState('check');
+                            this.setProperties({ 'checked': true }, true);
+                        }
+                    }
+                }
+                else {
+                    let index = this.value.indexOf(value);
+                    if (this.checked) {
+                        if (index < 0) {
+                            this.value.push(value);
+                        }
+                    }
+                    else {
+                        if (index > -1) {
+                            this.value.splice(index, 1);
+                        }
+                    }
+                    // tslint:disable-next-line:no-any
+                    return this.value;
+                }
+            }
+        }
+        return this.element.checked;
     }
     updateHtmlAttributeToWrapper() {
         if (!isNullOrUndefined(this.htmlAttributes)) {
@@ -916,6 +954,7 @@ const LABEL$1 = 'e-label';
 const RIPPLE$1 = 'e-ripple-container';
 const RTL$1 = 'e-rtl';
 const WRAPPER$1 = 'e-radio-wrapper';
+const ATTRIBUTES = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
 /**
  * The RadioButton is a graphical user interface element that allows you to select one option from the choices.
  * It contains checked and unchecked states.
@@ -939,13 +978,13 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     changeHandler(event) {
         this.checked = true;
         this.dataBind();
-        let changeEventArgs = { value: this.value, event: event };
-        this.trigger('change', changeEventArgs);
+        let value = this.isVue ? this.element.value : this.value;
+        this.trigger('change', { value: value, event: event });
         if (this.tagName === 'EJS-RADIOBUTTON') {
             event.stopPropagation();
         }
     }
-    updateChange(state) {
+    updateChange() {
         let input;
         let instance;
         let radioGrp = this.getRadioGroup();
@@ -1030,10 +1069,14 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             this.initialCheckedValue = this.checked;
         }
         this.initWrapper();
+        this.updateHtmlAttribute();
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
-        if (this.value) {
+        if (this.isVue && this.element.value && this.element.value === this.value) {
+            this.checked = true;
+        }
+        if (this.value && (!this.isVue || !this.element.value)) {
             this.element.setAttribute('value', this.value);
         }
         if (this.checked) {
@@ -1097,7 +1140,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             switch (prop) {
                 case 'checked':
                     if (newProp.checked) {
-                        this.updateChange(newProp.checked);
+                        this.updateChange();
                     }
                     this.element.checked = newProp.checked;
                     break;
@@ -1142,7 +1185,13 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
                     this.element.setAttribute('name', newProp.name);
                     break;
                 case 'value':
+                    if (!isNullOrUndefined(this.htmlAttributes) && this.htmlAttributes.value) {
+                        break;
+                    }
                     this.element.setAttribute('value', newProp.value);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHtmlAttribute();
                     break;
             }
         }
@@ -1201,6 +1250,24 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         }
         else {
             this.getLabel().classList.remove('e-right');
+        }
+    }
+    updateHtmlAttribute() {
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (ATTRIBUTES.indexOf(key) > -1) {
+                    let wrapper = this.element.parentElement;
+                    if (key === 'class') {
+                        addClass([wrapper], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'title' || key === 'style') {
+                        wrapper.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                    else {
+                        this.element.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
         }
     }
     unWireEvents() {
@@ -1280,6 +1347,9 @@ __decorate$2([
 __decorate$2([
     Property(false)
 ], RadioButton.prototype, "enableHtmlSanitizer", void 0);
+__decorate$2([
+    Property({})
+], RadioButton.prototype, "htmlAttributes", void 0);
 RadioButton = RadioButton_1 = __decorate$2([
     NotifyPropertyChanges
 ], RadioButton);

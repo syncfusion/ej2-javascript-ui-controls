@@ -870,7 +870,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let rangevalue: string = argArr[0];
-        let criteria: string = argCount > 2 ? argArr[2].trim() : argArr[1].trim();
+        let criteria: string = argArr[1].trim();
         criteria = criteria.split(this.tic).join(this.emptyString);
         if (criteria.length > 255) {
             return this.getErrorStrings()[CommonErrors.value];
@@ -896,8 +896,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             criteria = criteria.substring(1);
         }
         let checkCriteria: number = this.parseFloat(criteria);
-        let criteriaRangeArray: string = argCount === 2 ? rangevalue : argArr[1];
-        let sumRange: string[] | string = this.getCellCollection(argArr[0]);
+        let criteriaRangeArray: string = argArr[0];
+        let sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
         let criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
         let result: number[] = this.getComputeSumIfValue(criteriaRange, sumRange, criteria, checkCriteria, opt);
         return [result[0], result[1]];
@@ -1078,6 +1078,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         let value1: string = this.getValueFromArg(sumRange[i].split(this.tic).join(''));
                         let val1: number = this.parseFloat(value1);
                         sum = sum + val1;
+                        count = count + 1;
+                    } else if (value === criteria) {
+                        let sumRangeVal: string | number = sumRange[i];
+                        sumRangeVal = this.getValueFromArg(sumRangeVal);
+                        sum = this.parseFloat(sumRangeVal.toString());
                         count = count + 1;
                     }
                 }
@@ -1507,7 +1512,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         let num2: string = stack.pop();
-        num2 = num2 === this.emptyString ? '0' : num2;
+        num2 = num2 === this.emptyString ? (stack.length ? stack.pop() : '0') : num2;
         num = Number(num2);
         if (isNaN(num)) {
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
@@ -1711,6 +1716,15 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         cellRanges = cellRanges.toString().split(',,').join(',');
         cellRanges = cellRanges.split(this.getParseArgumentSeparator());
+        let len: number[] = [];
+        for (let i: number = 0; i < cellRanges.length; i++) {
+            len.push(this.getCellCollection(cellRanges[i]).length);
+        }
+        for (let j: number = 0; j < len.length; j++) {
+            if (len[j] && len[j + 1] && len[j] !== len[j + 1]) {
+                return this.getErrorStrings()[CommonErrors.value];
+            }
+        }
         let cellvalue: string[] | string;
         let isCriteria: string;
         if (isCountIfs === this.falseValue) {

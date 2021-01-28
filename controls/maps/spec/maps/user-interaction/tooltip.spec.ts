@@ -779,6 +779,20 @@ describe('Map layer testing', () => {
             tooltips.layers[0].dataSource = [];
             tooltips.refresh();
         });
+        it('tooltip data from both data source and shapeData', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltipparent_template');
+                expect(tooltipElement.textContent).toBe('Texas_26448193_United States of America');
+                done();
+            };
+            let layer: LayerSettingsModel = tooltips.layers[0];
+            layer.tooltipSettings.valuePath = 'name', 
+            layer.tooltipSettings.template = '<div class="black"><div>${name}_</div><div>${population}_</div><div>${admin}</div></div>';
+            layer.dataSource = populationData;
+            tooltips.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

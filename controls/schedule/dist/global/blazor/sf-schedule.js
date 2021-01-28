@@ -1608,6 +1608,8 @@ var VerticalViews = /** @class */ (function (_super) {
         }
         if (this.parent.options.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             var currentDateIndex = this.getCurrentTimeIndicatorIndex();
+            var timeCellsWrap = this.getLeftPanelElement();
+            sf.base.removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
             if (currentDateIndex.length > 0) {
                 var workCells = [].slice.call(this.element.querySelectorAll('.' + WORK_CELLS_CLASS));
                 if (workCells.length > 0) {

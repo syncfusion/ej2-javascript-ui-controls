@@ -977,6 +977,12 @@ export class Selection implements IAction {
                     if (!this.isCancelDeSelect || (!this.isRowClicked && !this.checkSelectAllClicked)) {
                         this.updatePersistCollection(row[0], false);
                         this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+                        if (mRow) {
+                            this.updateCheckBoxes(mRow[0], undefined, rowIndex[0]);
+                        }
+                        if (frozenRightRow) {
+                            this.updateCheckBoxes(frozenRightRow[0], undefined, rowIndex[0]);
+                        }
                     }
                     if (rowDeselectCallBack !== undefined) {
                         rowDeselectCallBack();
@@ -2613,6 +2619,18 @@ export class Selection implements IAction {
 
     private refreshPersistSelection(): void {
         let rows: Element[] = this.parent.getRows();
+        if (this.parent.isCheckBoxSelection && this.parent.isFrozenGrid()) {
+            let mtbody: Element = this.parent.getMovableContentTbody();
+            if (mtbody.querySelector('.e-checkselect')) {
+                rows = this.parent.getMovableRows();
+            }
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                let frtbody: Element = this.parent.getFrozenRightContentTbody();
+                if (frtbody.querySelector('.e-checkselect')) {
+                    rows = this.parent.getFrozenRightRows();
+                }
+            }
+        }
         this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         if (rows !== null && rows.length > 0 && (this.parent.isPersistSelection || this.chkField)) {
             let indexes: number[] = [];

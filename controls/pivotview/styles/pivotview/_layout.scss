@@ -692,6 +692,13 @@
   }
   // sass-lint:enable-all
 
+  .e-contextmenu-container.e-menu-popup.e-menu-container.e-pivot-chart-menu ul {
+    .e-dialog-multiple-axis .e-label,
+    .e-dialog-multiple-axis .e-label {
+      white-space: nowrap;
+    }
+  }
+
   .e-drillthrough-dialog {
     .e-drillthrough-body-header-container {
       margin-bottom: 20px;

@@ -395,7 +395,7 @@ let CalendarBase = class CalendarBase extends Component {
         this.blazorRef = ref;
         this.serverModuleName = moduleName;
     }
-    todayButtonClick(e, value) {
+    todayButtonClick(e, value, isCustomDate) {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
                 this.effect = '';
@@ -404,10 +404,10 @@ let CalendarBase = class CalendarBase extends Component {
                 this.effect = 'e-zoomin';
             }
             if (this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                this.navigateTo(this.depth, new Date(this.checkValue(value)));
+                this.navigateTo(this.depth, new Date(this.checkValue(value)), isCustomDate);
             }
             else {
-                this.navigateTo('Month', new Date(this.checkValue(value)));
+                this.navigateTo('Month', new Date(this.checkValue(value)), isCustomDate);
             }
         }
     }
@@ -639,11 +639,11 @@ let CalendarBase = class CalendarBase extends Component {
         }
         return localDate;
     }
-    renderMonths(e, value) {
+    renderMonths(e, value, isCustomDate) {
         let numCells = this.weekNumber ? 8 : 7;
         let tdEles;
         if (this.calendarMode === 'Gregorian') {
-            tdEles = this.renderDays(this.currentDate, e, value);
+            tdEles = this.renderDays(this.currentDate, value, null, null, isCustomDate);
         }
         else {
             tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
@@ -657,9 +657,10 @@ let CalendarBase = class CalendarBase extends Component {
         }
     }
     // tslint:disable-next-line:max-func-body-length
-    renderDays(currentDate, e, value, multiSelection, values) {
+    renderDays(currentDate, value, multiSelection, values, isTodayDate) {
         let tdEles = [];
         let cellsCount = 42;
+        let todayDate = isTodayDate ? new Date(+currentDate) : new Date();
         let localDate = new Date(this.checkValue(currentDate));
         let minMaxDate;
         let numCells = this.weekNumber ? 8 : 7;
@@ -774,10 +775,9 @@ let CalendarBase = class CalendarBase extends Component {
             else {
                 this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
             }
-            if (date.getMonth() === new Date().getMonth() && date.getDate() === new Date().getDate()) {
-                if (date.getFullYear() === new Date().getFullYear()) {
-                    addClass([tdEle], TODAY);
-                }
+            if (date.getFullYear() === todayDate.getFullYear() && date.getMonth() === todayDate.getMonth()
+                && date.getDate() === todayDate.getDate()) {
+                addClass([tdEle], TODAY);
             }
             tdEles.push(this.renderDayCellArgs.element);
             localDate = new Date(+minMaxDate);
@@ -1097,11 +1097,11 @@ let CalendarBase = class CalendarBase extends Component {
                 }
         }
     }
-    switchView(view, e, multiSelection) {
+    switchView(view, e, multiSelection, isCustomDate) {
         switch (view) {
             case 0:
                 detach(this.tableBodyElement);
-                this.renderMonths(e);
+                this.renderMonths(e, null, isCustomDate);
                 if (multiSelection && !isNullOrUndefined(this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0])) {
                     this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
                 }
@@ -1471,7 +1471,7 @@ let CalendarBase = class CalendarBase extends Component {
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
      */
-    navigateTo(view, date) {
+    navigateTo(view, date, isCustomDate) {
         if (+date >= +this.min && +date <= +this.max) {
             this.currentDate = date;
         }
@@ -1487,7 +1487,7 @@ let CalendarBase = class CalendarBase extends Component {
                 view = this.depth;
             }
         }
-        this.switchView(this.getViewNumber(view));
+        this.switchView(this.getViewNumber(view), null, null, isCustomDate);
     }
     /**
      * Gets the current view of the Calendar.
@@ -1788,7 +1788,7 @@ let CalendarBase = class CalendarBase extends Component {
         if ((!isNullOrUndefined(value) && value.getMonth()) === (!isNullOrUndefined(this.currentDate) && this.currentDate.getMonth())) {
             let tdEles;
             if (this.calendarMode === 'Gregorian') {
-                tdEles = this.renderDays(value, null);
+                tdEles = this.renderDays(value);
             }
             else {
                 tdEles = this.islamicModule.islamicRenderDays(this.currentDate, value);
@@ -2103,11 +2103,11 @@ let Calendar = class Calendar extends CalendarBase {
     minMaxDate(localDate) {
         return super.minMaxDate(localDate);
     }
-    renderMonths(e) {
-        super.renderMonths(e, this.value);
+    renderMonths(e, value, isCustomDate) {
+        super.renderMonths(e, this.value, isCustomDate);
     }
-    renderDays(currentDate, e) {
-        let tempDays = super.renderDays(currentDate, e, this.value, this.isMultiSelection, this.values);
+    renderDays(currentDate, value, isMultiSelect, values, isCustomDate) {
+        let tempDays = super.renderDays(currentDate, this.value, this.isMultiSelection, this.values, isCustomDate);
         if (this.isMultiSelection) {
             super.validateValues(this.isMultiSelection, this.values);
         }
@@ -2160,8 +2160,8 @@ let Calendar = class Calendar extends CalendarBase {
             this.tableBodyElement.querySelectorAll('.' + FOCUSEDDATE)[0].classList.remove(FOCUSEDDATE);
         }
     }
-    switchView(view, e) {
-        super.switchView(view, e, this.isMultiSelection);
+    switchView(view, e, isMultiSelection, isCustomDate) {
+        super.switchView(view, e, this.isMultiSelection, isCustomDate);
     }
     /**
      * To get component name
@@ -2257,9 +2257,9 @@ let Calendar = class Calendar extends CalendarBase {
      * @returns void
      * @deprecated
      */
-    navigateTo(view, date) {
+    navigateTo(view, date, isCustomDate) {
         this.minMaxUpdate();
-        super.navigateTo(view, date);
+        super.navigateTo(view, date, isCustomDate);
     }
     /**
      * Gets the current view of the Calendar.
@@ -2345,6 +2345,15 @@ let Calendar = class Calendar extends CalendarBase {
             this.changedArgs = { value: this.value, values: this.values };
             this.changeHandler();
         }
+    }
+    /**
+     * To set custom today date in calendar
+     * @private
+     */
+    setTodayDate(date) {
+        let todayDate = new Date(+date);
+        this.setProperties({ value: todayDate }, true);
+        super.todayButtonClick(null, todayDate, true);
     }
     update() {
         this.validateDate();
@@ -3277,31 +3286,17 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     bindEvents() {
-        if (this.enabled) {
-            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
-            EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            this.bindInputEvent();
-            // To prevent the twice triggering.
-            EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
-            }
-            if (this.formElement) {
-                EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
-            }
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
+        EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        this.bindInputEvent();
+        // To prevent the twice triggering.
+        EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
         }
-        else {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
-            EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
-                EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
-            }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.resetFormHandler, this);
         }
         this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
         this.keyboardModules = new KeyboardEvents(this.inputElement, {
@@ -3310,7 +3305,22 @@ let DatePicker = class DatePicker extends Calendar {
             keyConfigs: this.defaultKeyConfigs
         });
     }
+    unBindEvents() {
+        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
+        EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.resetFormHandler);
+        }
+    }
     resetFormHandler() {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.inputElement.disabled) {
             let value = this.inputElement.getAttribute('value');
             if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
@@ -3337,6 +3347,9 @@ let DatePicker = class DatePicker extends Calendar {
             });
     }
     inputChangeHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
     }
     bindClearEvent() {
@@ -3345,6 +3358,9 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     resetHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         e.preventDefault();
         this.clear(e);
     }
@@ -3379,6 +3395,9 @@ let DatePicker = class DatePicker extends Calendar {
         Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     }
     dateIconHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -3489,6 +3508,9 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     inputFocusHandler() {
+        if (!this.enabled) {
+            return;
+        }
         let focusArguments = {
             model: isBlazor() && this.isServerRendered ? null : this
         };
@@ -3503,6 +3525,9 @@ let DatePicker = class DatePicker extends Calendar {
         this.isPopupClicked = false;
     }
     inputBlurHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.isBlazorServer) {
             this.strictModeUpdate();
             if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
@@ -4184,6 +4209,7 @@ let DatePicker = class DatePicker extends Calendar {
      * @returns void
      */
     destroy() {
+        this.unBindEvents();
         if (!this.isBlazorServer) {
             super.destroy();
             this.keyboardModules.destroy();
@@ -4613,7 +4639,6 @@ let DatePicker = class DatePicker extends Calendar {
                 case 'enabled':
                     Input.setEnabled(this.enabled, this.inputElement);
                     this.setAriaDisabled();
-                    this.bindEvents();
                     break;
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
@@ -5211,45 +5236,48 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     bindEvents() {
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
+        EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
+        EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+        EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
+        }
+        if (!this.isMobile) {
+            this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
+            this.inputKeyboardModule = new KeyboardEvents(this.inputElement, {
+                eventName: 'keydown',
+                keyAction: this.inputHandler.bind(this),
+                keyConfigs: this.keyInputConfigs
+            });
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.enabled) {
-            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler, this);
-            EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
-            EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
-            EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
-            }
-            if (!this.isMobile) {
-                this.keyInputConfigs = extend(this.keyInputConfigs, this.keyConfigs);
-                this.inputKeyboardModule = new KeyboardEvents(this.inputElement, {
-                    eventName: 'keydown',
-                    keyAction: this.inputHandler.bind(this),
-                    keyConfigs: this.keyInputConfigs
-                });
-            }
-            if (this.formElement) {
-                EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
-            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
         }
         else {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
-            EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
-            EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
-            EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
-                EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
-            }
-            if (!this.isMobile) {
-                if (!isNullOrUndefined(this.inputKeyboardModule)) {
-                    this.inputKeyboardModule.destroy();
-                }
-            }
-            if (this.formElement) {
-                EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-            }
             this.inputElement.tabIndex = -1;
         }
+    }
+    unBindEvents() {
+        EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
+        EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
+        EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
+        EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
+        if (this.showClearButton && this.inputWrapper.clearButton) {
+            EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
+        }
+        if (!this.isMobile) {
+            if (!isNullOrUndefined(this.inputKeyboardModule)) {
+                this.inputKeyboardModule.destroy();
+            }
+        }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
+        this.inputElement.tabIndex = -1;
     }
     updateHiddenInput() {
         if (this.firstHiddenChild && this.secondHiddenChild) {
@@ -5269,6 +5297,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     inputChangeHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
         this.updateHiddenInput();
     }
@@ -5278,6 +5309,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     resetHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         this.valueType = this.value;
         e.preventDefault();
         this.clear();
@@ -5302,6 +5336,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setModelValue();
     }
     formResetHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         if (this.formElement && (e.target === this.formElement) && !this.inputElement.disabled) {
             let val = this.inputElement.getAttribute('value');
             if (!isNullOrUndefined(this.startCopy)) {
@@ -5354,6 +5391,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.removeSelection();
     }
     rangeIconHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         if (this.isMobile) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -5634,6 +5674,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     inputFocusHandler() {
+        if (!this.enabled) {
+            return;
+        }
         this.preventBlur = false;
         let focusArguments = {
             model: (isBlazor() && this.isServerRendered) ? null : this
@@ -5649,6 +5692,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     inputBlurHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.preventBlur) {
             let value = this.inputElement.value;
             if (!isNullOrUndefined(this.presetsItem)) {
@@ -8336,6 +8382,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
      * @returns void
      */
     destroy() {
+        this.unBindEvents();
         this.hide(null);
         let ariaAttrs = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
@@ -8706,7 +8753,12 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
                     Input.setEnabled(this.enabled, this.inputElement);
-                    this.bindEvents();
+                    if (this.enabled) {
+                        this.inputElement.setAttribute('tabindex', this.tabIndex);
+                    }
+                    else {
+                        this.inputElement.tabIndex = -1;
+                    }
                     break;
                 case 'allowEdit':
                     this.setRangeAllowEdit();
@@ -9836,6 +9888,9 @@ let TimePicker = class TimePicker extends Component {
         this.blazorTimeCollections = listData;
     }
     popupHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
         }
@@ -9851,6 +9906,9 @@ let TimePicker = class TimePicker extends Component {
         }
     }
     mouseDownHandler() {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.readonly) {
             let curPos = this.getCursorSelection();
             this.inputElement.setSelectionRange(0, 0);
@@ -10225,6 +10283,9 @@ let TimePicker = class TimePicker extends Component {
         }
     }
     formResetHandler() {
+        if (!this.enabled) {
+            return;
+        }
         if (!this.inputElement.disabled) {
             let timeValue = this.inputElement.getAttribute('value');
             let val = this.isBlazorServer ? this.inputEleValue : this.checkDateValue(this.inputEleValue);
@@ -10249,6 +10310,9 @@ let TimePicker = class TimePicker extends Component {
         }
     }
     inputChangeHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         e.stopPropagation();
     }
     unBindEvents() {
@@ -10281,6 +10345,9 @@ let TimePicker = class TimePicker extends Component {
         this.trigger('cleared', clearedArgs);
     }
     clearHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         e.preventDefault();
         if (!isNullOrUndefined(this.value)) {
             this.clear(e);
@@ -11030,6 +11097,9 @@ let TimePicker = class TimePicker extends Component {
         this.checkValueChange(null, false);
     }
     inputBlurHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isPreventBlur && this.isPopupOpen()) {
             this.inputElement.focus();
@@ -11078,6 +11148,9 @@ let TimePicker = class TimePicker extends Component {
         return false;
     }
     inputFocusHandler() {
+        if (!this.enabled) {
+            return;
+        }
         let focusArguments = {
             model: this.isBlazorServer ? null : this
         };
@@ -11576,6 +11649,9 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         this.dateTimeOptions = options;
     }
     focusHandler() {
+        if (!this.enabled) {
+            return;
+        }
         addClass([this.inputWrapper.container], INPUTFOCUS$2);
     }
     /**
@@ -11596,6 +11672,9 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     blurHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         // IE popup closing issue when click over the scrollbar
         if (this.isTimePopupOpen() && this.isPreventBlur) {
             this.inputElement.focus();
@@ -11876,6 +11955,9 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     timeHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         this.isIconClicked = true;
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
@@ -11899,6 +11981,9 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         this.isIconClicked = false;
     }
     dateHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         if (e.currentTarget === this.inputWrapper.buttons[0]) {
             e.preventDefault();
         }
@@ -12835,7 +12920,6 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                     if (!this.enabled) {
                         this.inputElement.tabIndex = -1;
                     }
-                    this.bindEvents();
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;

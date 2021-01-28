@@ -1326,3 +1326,36 @@ export function setRowsInTbody(
         callBack(frTbody, frTr);
     }
 }
+
+/** @hidden */
+export function getNumberFormat(numberFormat: string, type: string): string {
+    let format: string;
+    let intl: Internationalization = new Internationalization();
+    if (type === 'number') {
+        try {
+            format = intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true }, true);
+        } catch (error) {
+            format = numberFormat;
+        }
+    } else if (type === 'date' || type === 'time' || type === 'datetime') {
+        try {
+            format = intl.getDatePattern({ skeleton: numberFormat, type: type }, false);
+        } catch (error) {
+            try {
+                format = intl.getDatePattern({ format: numberFormat, type: type }, false);
+            } catch (error) {
+                format = numberFormat;
+            }
+        }
+    } else {
+        format = numberFormat;
+    }
+    if (type !== 'number') {
+        let patternRegex: RegExp = /G|H|c|'| a|yy|y|EEEE|E/g;
+        let mtch: Object = { 'G': '', 'H': 'h', 'c': 'd', '\'': '"', ' a': ' AM/PM', 'yy': 'yy', 'y': 'yyyy', 'EEEE': 'dddd', 'E': 'ddd' };
+        format = format.replace(patternRegex, (pattern: string): string => {
+            return (<any>mtch)[pattern];
+        });
+    }
+    return format;
+}

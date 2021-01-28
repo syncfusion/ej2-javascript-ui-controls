@@ -61,6 +61,8 @@ export const selectionComplete: string = 'selectionComplete';
 /** @private */
 export const resized : string = 'resized';
 /** @private */
+export const beforeResize: string = 'beforeResize';
+/** @private */
 export const beforePrint : string = 'beforePrint';
 /** @private */
 export const annotationRender : string = 'annotationRender';

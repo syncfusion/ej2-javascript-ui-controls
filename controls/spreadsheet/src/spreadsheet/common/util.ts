@@ -9,6 +9,7 @@ import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRul
 import { removeSheetTab, rowHeightChanged, replace } from './index';
 import { getCellIndexes, getCell, getColumnWidth, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
+import { initiateFilterUI } from './event';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -161,7 +162,7 @@ export function locateElem(
         'width': getColumnsWidth(sheet, range[1], range[3]) + (swapRange[1] === startIndex[1] ? 0 : 1) + 'px'
     };
     attrs[isRtl ? 'right' : 'left'] = (swapRange[1] === startIndex[1] ? cellPosition.left : cellPosition.left - 1) + 'px';
-    setStyleAttribute([{ element: ele, attrs: attrs }]);
+    if (ele) { setStyleAttribute([{ element: ele, attrs: attrs }]); }
 }
 
 /**
@@ -704,6 +705,9 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
         case 'replace':
             spreadsheet.updateCell({ value: eventArgs.compareVal }, eventArgs.address);
             break;
+        case 'filter':
+            spreadsheet.notify(initiateFilterUI, { predicates: null, range: eventArgs.range, sIdx: eventArgs.index, isCut: true });
+                break;
         case 'insert':
             if (isRedo === false) {
                 spreadsheet.delete(
@@ -891,8 +895,10 @@ export function setRowEleHeight(
         }
         height = getTextHeight(parent, cell.style || parent.cellStyle, n) + 1;
     }
-    (row || parent.getRow(rowIdx)).style.height = `${height}px`;
-    if (sheet.showHeaders) {
+    if (row || parent.getRow(rowIdx)) {
+        (row || parent.getRow(rowIdx)).style.height = `${height}px`;
+    }
+    if (sheet.showHeaders && hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())) {
         (hRow || parent.getRow(rowIdx, parent.getRowHeaderTable())).style.height = `${height}px`;
     }
     setRowHeight(sheet, rowIdx, height);

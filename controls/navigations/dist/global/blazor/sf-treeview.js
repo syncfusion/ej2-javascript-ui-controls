@@ -391,8 +391,21 @@ var SfTreeView = /** @class */ (function () {
         }
     };
     // tslint:disable
+    SfTreeView.prototype.getOffsetValue = function (e, direction) {
+        var value;
+        var classList = e.target.classList;
+        if (sf.base.Browser.info.name === 'mozilla' && !sf.base.isNullOrUndefined(classList)) {
+            var rect = e.target.getBoundingClientRect();
+            value = Math.ceil((direction === 'Y') ? (e.event.clientY - rect.top) : (e.event.clientX - rect.left));
+        }
+        else {
+            value = (direction === 'Y') ? e.event.offsetY : e.event.offsetX;
+        }
+        return value;
+    };
+    // tslint:disable
     SfTreeView.prototype.dropAction = function (e, isBlazorDrop) {
-        var offsetY = e.event.offsetY;
+        var offsetY = this.getOffsetValue(e, 'Y');
         var dropTarget = e.target;
         var dragObj;
         var level;
@@ -478,8 +491,9 @@ var SfTreeView = /** @class */ (function () {
         var checkContainer = sf.base.closest(dropTarget, '.' + CHECKBOXWRAP);
         var collapse = sf.base.closest(e.target, '.' + COLLAPSIBLE);
         var expand = sf.base.closest(e.target, '.' + EXPANDABLE);
-        if (!dragLi.classList.contains(DISABLE) && !checkContainer && ((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)
-            || (expand && e.event.offsetY > 19) || (collapse && e.event.offsetX > 19) || (!expand && !collapse))) {
+        var offsetX = this.getOffsetValue(e, "X");
+        if (!dragLi.classList.contains(DISABLE) && !checkContainer && ((expand && offsetY < 5) || (collapse && offsetX < 3)
+            || (expand && offsetY > 19) || (collapse && offsetX > 19) || (!expand && !collapse))) {
             if (dropTarget.nodeName === 'LI') {
                 this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
             }
@@ -506,17 +520,19 @@ var SfTreeView = /** @class */ (function () {
         var dropParentLi = sf.base.closest(dropUl, '.' + LISTITEM);
         var dropParentLiId = null, dragParentLiId = null;
         var pre;
-        if (e.target.offsetHeight > 0 && e.event.offsetY > e.target.offsetHeight - 2) {
+        var offsetX = this.getOffsetValue(e, "X");
+        var offsetY = this.getOffsetValue(e, "Y");
+        if (e.target.offsetHeight > 0 && offsetY > e.target.offsetHeight - 2) {
             pre = false;
         }
-        else if (e.event.offsetY < 2) {
+        else if (offsetY < 2) {
             pre = true;
         }
         else if (e.target.classList.contains(EXPANDABLE) || (e.target.classList.contains(COLLAPSIBLE))) {
-            if ((e.event.offsetY < 5) || (e.event.offsetX < 3)) {
+            if ((offsetY < 5) || (offsetX < 3)) {
                 pre = true;
             }
-            else if ((e.event.offsetY > 15) || (e.event.offsetX > 17)) {
+            else if ((offsetY > 15) || (offsetX > 17)) {
                 pre = false;
             }
         }
@@ -585,6 +601,8 @@ var SfTreeView = /** @class */ (function () {
         var dropRoot = sf.base.closest(e.target, '.' + DROPPABLE);
         var dropWrap = sf.base.closest(e.target, '.' + TEXTWRAP);
         var icon = sf.base.select('div.' + ICON, virtualEle);
+        var offsetX = this.getOffsetValue(e, "X");
+        var offsetY = this.getOffsetValue(e, "Y");
         sf.base.removeClass([icon], [DROPIN, DROPNEXT, DROPOUT, NODROP]);
         this.removeVirtualEle();
         document.body.style.cursor = EMPTY;
@@ -599,16 +617,16 @@ var SfTreeView = /** @class */ (function () {
             var expand = sf.base.closest(e.target, '.' + EXPANDABLE);
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                if ((dropLi && e && (!expand && !collapse) && (e.event.offsetY < 7) && !checkContainer) ||
-                    (((expand && e.event.offsetY < 5) || (collapse && e.event.offsetX < 3)))) {
+                if ((dropLi && e && (!expand && !collapse) && (offsetY < 7) && !checkContainer) ||
+                    (((expand && offsetY < 5) || (collapse && offsetX < 3)))) {
                     sf.base.addClass([icon], DROPNEXT);
                     var element = sf.base.createElement('div', { className: SIBLING });
                     var index = this.options.fullRowSelect ? (1) : (0);
                     dropLi.insertBefore(element, dropLi.children[index]);
                 }
-                else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && e.event.offsetY >
-                    (e.target.offsetHeight - 10)) && !checkContainer) || (((expand && e.event.offsetY > 19) ||
-                    (collapse && e.event.offsetX > 19)))) {
+                else if ((dropLi && e && (!expand && !collapse) && (e.target.offsetHeight > 0 && offsetY >
+                    (e.target.offsetHeight - 10)) && !checkContainer) || (((expand && offsetY > 19) ||
+                    (collapse && offsetX > 19)))) {
                     sf.base.addClass([icon], DROPNEXT);
                     var element = sf.base.createElement('div', { className: SIBLING });
                     var index = this.options.fullRowSelect ? (2) : (1);
@@ -654,11 +672,12 @@ var SfTreeView = /** @class */ (function () {
         }
     };
     SfTreeView.prototype.renderVirtualEle = function (e) {
+        var offsetY = this.getOffsetValue(e, "Y");
         var previous;
-        if (e.event.offsetY > e.target.offsetHeight - 2) {
+        if (offsetY > e.target.offsetHeight - 2) {
             previous = false;
         }
-        else if (e.event.offsetY < 2) {
+        else if (offsetY < 2) {
             previous = true;
         }
         var element = sf.base.createElement('div', { className: SIBLING });
@@ -1125,12 +1144,12 @@ var SfTreeView = /** @class */ (function () {
         }
     };
     SfTreeView.prototype.unselectNode = function (li, e, multiSelect) {
-        var eventArgs = this.getSelectEvent(li, 'un-select', e);
-        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs, multiSelect, e.ctrlKey, e.shiftKey, []);
+        var eventArgs = this.getSelectEvent(li, 'un-select', e, multiSelect, []);
+        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs);
     };
-    SfTreeView.prototype.getSelectEvent = function (currLi, action, e) {
+    SfTreeView.prototype.getSelectEvent = function (currLi, action, e, multiSelect, nodes) {
         var detail = this.getNodeData(currLi);
-        return { action: action, isInteracted: !sf.base.isNullOrUndefined(e), nodeData: detail };
+        return { action: action, isInteracted: !sf.base.isNullOrUndefined(e), nodeData: detail, isMultiSelect: multiSelect, isCtrKey: e.ctrlKey, isShiftKey: e.shiftKey, nodes: nodes };
     };
     SfTreeView.prototype.selectNode = function (li, e, multiSelect) {
         if (sf.base.isNullOrUndefined(li) || (!this.options.allowMultiSelection && this.isActive(li) && !sf.base.isNullOrUndefined(e))) {
@@ -1138,7 +1157,6 @@ var SfTreeView = /** @class */ (function () {
             this.focussedElement = li;
             return;
         }
-        var eventArgs = this.getSelectEvent(li, 'select', e);
         var array = [];
         if (this.options.allowMultiSelection && e && e.shiftKey) {
             if (!this.startNode) {
@@ -1159,7 +1177,9 @@ var SfTreeView = /** @class */ (function () {
                 }
             }
         }
-        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs, multiSelect, e.ctrlKey, e.shiftKey, array);
+        var eventArgs = this.getSelectEvent(li, 'select', e, multiSelect, array);
+        this.dotNetRef.invokeMethodAsync('TriggerNodeSelectingEvent', eventArgs);
+        this.startNode = li;
     };
     SfTreeView.prototype.setFocusElement = function (li) {
         if (!sf.base.isNullOrUndefined(li)) {
@@ -1188,9 +1208,6 @@ var SfTreeView = /** @class */ (function () {
             selectedItem = sf.base.select('.' + LISTITEM, this.element);
         }
         return sf.base.isNullOrUndefined(fNode) ? (sf.base.isNullOrUndefined(selectedItem) ? this.element.firstElementChild : selectedItem) : fNode;
-    };
-    SfTreeView.prototype.selectedNode = function (nodeId) {
-        this.startNode = this.element.querySelector('[data-uid="' + nodeId + '"]');
     };
     SfTreeView.prototype.setFullRow = function (isEnabled) {
         isEnabled ? sf.base.addClass([this.element], FULLROWWRAP) : sf.base.removeClass([this.element], FULLROWWRAP);
@@ -1586,11 +1603,6 @@ var TreeView = {
     collapsedNode: function (element, args) {
         if (this.valid(element)) {
             element.blazor__instance.collapsedNode(args);
-        }
-    },
-    selectedNode: function (element, args) {
-        if (this.valid(element)) {
-            element.blazor__instance.selectedNode(args);
         }
     },
     KeyActionHandler: function (element, args, nodeId) {

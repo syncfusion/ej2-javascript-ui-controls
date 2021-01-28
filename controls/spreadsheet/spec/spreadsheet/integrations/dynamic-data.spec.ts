@@ -46,7 +46,7 @@ describe('Dynamic data binding - ', () => {
 
         helper.edit('E8', '13');
         expect(dataChangeArgs.action).toBe('edit');
-        expect(dataChangeArgs.data[0]['Price']).toBe('13');
+        expect(dataChangeArgs.data[0]['Price']).toBe(13);
 
         helper.getInstance().delete(6, 6, 'Row');
         expect(dataChangeArgs.action).toBe('delete');
