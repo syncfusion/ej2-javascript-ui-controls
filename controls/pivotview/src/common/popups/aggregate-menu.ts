@@ -219,10 +219,17 @@ export class AggregateMenu {
             let text: string = (field.caption ? field.caption : field.name);
             fieldDataSource.push({ value: value, text: text });
         }
-        /* tslint:disable-next-line:max-line-length */
-        baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value as string);
-        fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
-            baseField : fieldDataSource[0].value as string)].formattedMembers);
+        if (Object.keys(fieldDataSource).length === 0) {
+            fieldDataSource.push({ value: '', text: '' });
+            baseField = '';
+            fieldItemDataSource = [];
+        }
+        else {
+            /* tslint:disable-next-line:max-line-length */
+            baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value as string);
+            fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
+                baseField : fieldDataSource[0].value as string)].formattedMembers);
+        }
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
         let mainDiv: HTMLElement = createElement('div', {
             className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',

@@ -2798,7 +2798,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         var blazor = 'Blazor';
         var tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        var elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
+        var templateId = dataLabelId ? dataLabelId + '_template' : 'template';
+        var elementData = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -9578,10 +9579,12 @@ var BaseTooltip = /** @class */ (function (_super) {
     BaseTooltip.prototype.removeTooltip = function (duration) {
         var _this = this;
         var tooltipElement = this.getElement(this.element.id + '_tooltip');
+        var tooltipTemplate = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
+        var isTemplateRendered = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        if (this.chart.isReact) {
-            this.chart.clearTemplate();
+        if (this.chart.isReact && isTemplateRendered) {
+            this.chart.clearTemplate([tooltipTemplate.id], [0]);
         }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(function () {

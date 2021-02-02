@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### CheckBox
+
+#### Bug Fixes
+
+- Issue with click event has been fixed.
+
 ## 18.4.33 (2021-01-05)
 
 ### CheckBox

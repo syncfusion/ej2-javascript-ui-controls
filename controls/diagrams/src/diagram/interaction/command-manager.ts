@@ -2878,7 +2878,13 @@ export class CommandHandler {
                 } else {
                     hasEnds = true;
                 }
-                if (!hasEnds) {
+                let canDragPoints: boolean = false;
+                for (let i: number = 0; i < this.diagram.selectedItems.connectors.length; i++) {
+                    if (this.diagram.selectedItems.connectors[i].id === obj.id) {
+                        canDragPoints = true;
+                    }
+                }
+                if (!hasEnds || canDragPoints) {
                     this.dragControlPoint(connector, tx, ty, true);
                     let conn: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
                     this.diagram.connectorPropertyChange(connector as Connector, oldValues, conn);

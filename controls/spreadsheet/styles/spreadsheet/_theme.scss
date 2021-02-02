@@ -408,23 +408,21 @@
 
     .e-copy-indicator div,
     .e-formularef-indicator div {
-      // sass-lint:disable-all
       &.e-top {
-        background: url('https://ej2.syncfusion.com/products/images/spreadsheet/copy_indicator/t_b_#{$sheet-skin}.gif') repeat-x left top;
+        background: url($copy-indicator-t-b) repeat-x left top;
       }
 
       &.e-bottom {
-        background: url('https://ej2.syncfusion.com/products/images/spreadsheet/copy_indicator/t_b_#{$sheet-skin}.gif') repeat-x left bottom;
+        background: url($copy-indicator-t-b) repeat-x left bottom;
       }
 
       &.e-left {
-        background: url('https://ej2.syncfusion.com/products/images/spreadsheet/copy_indicator/l_r_#{$sheet-skin}.gif') repeat-y left top;
+        background: url($copy-indicator-l-r) repeat-y left top;
       }
 
       &.e-right {
-        background: url('https://ej2.syncfusion.com/products/images/spreadsheet/copy_indicator/l_r_#{$sheet-skin}.gif') repeat-y right top;
+        background: url($copy-indicator-l-r) repeat-y right top;
       }
-      // sass-lint:enable-all
     }
 
     &.e-hide-column-gridlines .e-sheet-panel {

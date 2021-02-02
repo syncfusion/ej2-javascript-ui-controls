@@ -771,18 +771,20 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public destroy(): void {
         super.destroy();
-        removeClass([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION]);
         if (this.target) {
-            removeClass([this.element], SIDEBARABSOLUTE);
             removeClass([<HTMLElement>this.target], CONTEXT);
         }
         this.destroyBackDrop();
-        this.element.style.width = '';
-        this.element.style.zIndex = '';
-        this.element.style.transform = '';
-        this.windowWidth = null;
-        (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
+        if (this.element) {
+            removeClass([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION]);
+            removeClass([this.element], SIDEBARABSOLUTE);
+            this.element.style.width = '';
+            this.element.style.zIndex = '';
+            this.element.style.transform = '';
+            (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
+        }
+        this.windowWidth = null;
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetEle;
         if (!isNullOrUndefined(sibling)) {
             sibling.style.margin = '';

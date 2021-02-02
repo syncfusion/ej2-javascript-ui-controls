@@ -82,6 +82,9 @@ export class Agenda extends ViewBase implements IRenderer {
         let contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         contentArea.scrollTop = 1;
         this.parent.notify(event.eventsLoaded, {});
+        if (!this.parent.activeViewOptions.allowVirtualScrolling) {
+            this.retainScrollPosition();
+        }
     }
 
     private refreshEvent(refreshDate: Date): void {
@@ -200,6 +203,9 @@ export class Agenda extends ViewBase implements IRenderer {
         this.parent.quickPopup.quickPopupHide();
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             this.virtualScrolling(event);
+        }
+        if (!this.parent.activeViewOptions.allowVirtualScrolling) {
+            this.setPersistence();
         }
     }
 

@@ -4,6 +4,33 @@
     display: block;
   }
 
+  #{&}.e-calendar.e-disabled {
+    #{if(&, '&', '*')} .e-header {
+      #{if(&, '&', '*')} .e-prev,
+      #{if(&, '&', '*')} .e-next {
+        cursor: $calendar-cursor-default-style;
+        pointer-events: $calendar-none-style;
+        touch-action: $calendar-none-style;
+       }
+
+      #{if(&, '&', '*')} .e-title {
+        cursor: $calendar-cursor-default-style;
+        pointer-events: $calendar-none-style;
+        touch-action: $calendar-none-style;
+  }
+}
+
+    #{if(&, '&', '*')} .e-content td {
+      pointer-events: $calendar-none-style;
+      touch-action: $calendar-none-style;
+}
+
+    #{if(&, '&', '*')} .e-btn.e-today {
+      pointer-events: $calendar-none-style;
+      touch-action: $calendar-none-style;
+}
+}
+
   #{&}.e-calendar,
   .e-bigger.e-small #{&}.e-calendar {
     // sass-lint:disable no-vendor-prefixes

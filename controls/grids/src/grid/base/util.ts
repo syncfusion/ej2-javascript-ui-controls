@@ -1223,15 +1223,16 @@ export function splitFrozenRowObjectCells(gObj: IGrid, cells: Cell<Column>[], ta
 }
 
 /** @hidden */
-export function gridActionHandler(gObj: IGrid, callBack: Function, rows: Row<Column>[][] | Element[][], force?: boolean): void {
+export function gridActionHandler(
+    gObj: IGrid, callBack: Function, rows: Row<Column>[][] | Element[][], force?: boolean, rowObj?: Row<Column>[][]): void {
     if (rows[0].length || force) {
-        callBack('frozen-left', rows[0]);
+        rowObj ? callBack('frozen-left', rows[0], rowObj[0]) : callBack('frozen-left', rows[0]);
     }
     if (gObj.isFrozenGrid() && (rows[1].length || force)) {
-        callBack('movable', rows[1]);
+        rowObj ? callBack('movable', rows[1], rowObj[1]) : callBack('movable', rows[1]);
     }
     if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
-        callBack('frozen-right', rows[2]);
+        rowObj ? callBack('frozen-right', rows[2], rowObj[2]) : callBack('frozen-right', rows[2]);
     }
 }
 

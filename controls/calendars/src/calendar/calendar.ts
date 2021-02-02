@@ -117,6 +117,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     @Property(new Date(1900, 0, 1))
     public min: Date;
     /**
+     * Specifies the component to be disabled or not.
+     * @default true
+     */
+    @Property(true)
+    public enabled: boolean;
+    /**
+     * Specifies the root CSS class of the Calendar that allows to
+     * customize the appearance by overriding the styles.
+     * @default null
+     */
+    @Property(null)
+    public cssClass: string;
+    /**
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
@@ -1642,14 +1655,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @returns void
      */
     public destroy(): void {
-        if (this.getModuleName() === 'calendar') {
+        if (this.getModuleName() === 'calendar' && this.element) {
             removeClass([this.element], [ROOT]);
         } else {
-            if (this.calendarElement) {
+            if (this.calendarElement && this.element) {
                 removeClass([this.element], [ROOT]);
             }
         }
-        if (this.getModuleName() === 'calendar') {
+        if (this.getModuleName() === 'calendar' && this.element) {
             EventHandler.remove(this.headerTitleElement, 'click', this.navigateTitle);
             if (this.todayElement) {
                 EventHandler.remove(this.todayElement, 'click', this.todayButtonClick);
@@ -1661,7 +1674,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) ?
                 this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         }
-        this.element.innerHTML = '';
+        if (this.element) {
+            this.element.innerHTML = '';
+        }
         super.destroy();
     }
     protected title(e?: Event): void {
@@ -2226,6 +2241,10 @@ export class Calendar extends CalendarBase {
         }
         this.validateDate();
         this.minMaxUpdate();
+        this.setEnable(this.enabled);
+        if (this.getModuleName() === 'calendar') {
+            this.setClass(this.cssClass);
+        }
         super.render();
         if (this.getModuleName() === 'calendar') {
             let form: Element = closest(this.element, 'form');
@@ -2235,6 +2254,27 @@ export class Calendar extends CalendarBase {
             this.setTimeZone(this.serverTimezoneOffset);
         }
         this.renderComplete();
+    }
+    protected setEnable(enable: boolean): void {
+        if (!enable) {
+            addClass([this.element], DISABLED);
+        } else {
+            removeClass([this.element], DISABLED);
+        }
+    }
+    protected setClass(newCssClass: string, oldCssClass?: string): void {
+        if (!isNullOrUndefined(oldCssClass)) {
+            oldCssClass = (oldCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            newCssClass = (newCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(oldCssClass) && oldCssClass !== '') {
+            removeClass([this.element], oldCssClass.split(' '));
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            addClass([this.element], newCssClass.split(' '));
+        }
     }
     protected isDayLightSaving(): boolean {
         let secondOffset: number = new Date(this.value.getFullYear(), 6 , 1).getTimezoneOffset();
@@ -2467,6 +2507,14 @@ export class Calendar extends CalendarBase {
                     if (this.isDateSelected) {
                         this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
                         this.update();
+                    }
+                    break;
+                case 'enabled':
+                    this.setEnable(this.enabled);
+                    break;
+                case 'cssClass':
+                    if (this.getModuleName() === 'calendar') {
+                        this.setClass(newProp.cssClass, oldProp.cssClass);
                     }
                     break;
                 default:

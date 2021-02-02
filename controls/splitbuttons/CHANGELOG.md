@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.39 (2021-01-28)
+## 18.4.41 (2021-02-02)
+
+### SplitButton
+
+#### Bug Fixes
+
+- Issue with destroy has been fixed.
+
+## 18.4.31 (2020-12-22)
 
 ### ProgressButton
 

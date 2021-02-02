@@ -71,7 +71,7 @@ export class Year extends ViewBase implements IRenderer {
         cTd.appendChild(calendarWrapper);
         let monthCollection: number[] = Array.apply(null, { length: 12 }).map((value: number, index: number) => index);
         for (let month of monthCollection) {
-            let currentMonth: Date = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            let currentMonth: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             let calendarElement: HTMLElement = createElement('div', {
                 className: 'e-month-calendar e-calendar',
                 attrs: { 'data-role': 'calendar' }
@@ -243,6 +243,7 @@ export class Year extends ViewBase implements IRenderer {
         if (scrollTopElement) {
             scrollTopElement.scrollTop = target.scrollTop;
         }
+        this.setPersistence();
     }
 
     public onScrollUiUpdate(args: NotifyEventArgs): void {
@@ -273,6 +274,7 @@ export class Year extends ViewBase implements IRenderer {
             // tslint:enable:no-any
         }
         this.setColWidth(this.getContentAreaElement());
+        this.retainScrollPosition();
     }
 
     public startDate(): Date {

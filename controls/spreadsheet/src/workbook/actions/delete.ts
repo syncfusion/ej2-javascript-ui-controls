@@ -1,4 +1,4 @@
-import { Workbook, RowModel, CellModel, getCell, setCell, getSheetIndex } from '../base/index';
+import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
 import { deleteModel, deleteAction, InsertDeleteModelArgs, updateUsedRange, ExtendedRange, MergeArgs } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs } from '../../workbook/common/index';
 import { SheetModel } from '../../workbook/base/index';
@@ -28,7 +28,7 @@ export class WorkbookDelete {
             let temp: number = args.start; args.start = args.end; args.end = temp;
         }
         let deletedCells: RowModel[]; let mergeArgsCollection: MergeArgs[] = []; let count: number = (args.end - args.start) + 1;
-        let range: number[]; let prevCell: CellModel; let sheetIndex: number;
+        let range: number[]; let prevCell: CellModel;
         if (args.modelType === 'Row') {
             args.model = <SheetModel>args.model;
             if (args.start > args.model.usedRange.rowIndex) { return; }
@@ -148,6 +148,8 @@ export class WorkbookDelete {
                     mergeArgs = null;
                 }
             }
+        } else {
+            if (args.end - args.start === this.parent.sheets.length - 1) { return; }
         }
         let deletedModel: RowModel[] = [];
         for (let i: number = args.start; i <= args.end; i++) {
@@ -161,7 +163,6 @@ export class WorkbookDelete {
 
         }
         mergeArgsCollection.forEach((merge: MergeArgs): void => { this.parent.notify(setMerge, merge); });
-        sheetIndex = getSheetIndex(this.parent, (args.model as SheetModel).name);
         let insertArgs: { action: string, insertArgs: InsertDeleteEventArgs } = {
             action: 'refreshNamedRange', insertArgs: {
                 startIndex: args.start, endIndex: args.end, modelType: args.modelType,

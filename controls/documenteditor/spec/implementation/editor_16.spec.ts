@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
+import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition, TableWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
 import { Search } from '../../src/document-editor/implementation/search/index';
@@ -365,5 +365,37 @@ describe('Page break revision validation', () => {
         editor.editor.insertText('hello');
         editor.editor.onEnter();
         expect(editor.revisions.length).toBe(0);
+    }); 
+});
+describe('Pargrapgh indent on table creation validtaion', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true });
+        DocumentEditor.Inject(Editor, Selection);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Pargrapgh indent on table creation validtaion', () => {
+        editor.editor.insertText('hello');
+        editor.selection.selectAll();
+        editor.editor.onApplyParagraphFormat('leftIndent', 200, true, false);
+        editor.selection.handleHomeKey();
+        editor.editor.insertTable(2, 2);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBeGreaterThan(0);
     }); 
 });

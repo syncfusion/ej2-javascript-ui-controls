@@ -1785,4 +1785,57 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+
+    describe('Connector segments not updating at the connection', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramDecoratorIssue' });
+            document.body.appendChild(ele);
+            let nodeport2: PointPortModel = { offset: { x: 1 } };
+            nodeport2.id = 'fff';
+
+            nodeport2.shape = 'Circle';
+            let nodeport21: PointPortModel = { offset: { y: 1 } };
+            nodeport21.id = 'ggg';
+
+            var nodes = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300,
+                },]
+            var connector2: ConnectorModel = {};
+            connector2.id = 'connector2';
+            connector2.sourceID = "node1"
+            //connector2.type = 'Str';
+            connector2.sourcePoint = { x: 250, y: 250 };
+            connector2.targetPoint = { x: 350, y: 350 };
+            connector2.segments = [{ direction: "Right", length: 70 }, { direction: "Bottom", length: 20 }];
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: nodes, connectors: [connector2],
+                getConnectorDefaults: function (connector: ConnectorModel) {
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                }
+            
+            });
+            diagram.appendTo('#diagramDecoratorIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Connector segments not updating at the connection', function (done) {
+            debugger
+            console.log("Connector segments not updating at the connection")
+            diagram.selectAll();
+            diagram.nudge("Right",100,100)
+            
+            expect((diagram.connectors[0].segments[0] as any).points[1].x===50);
+            done();
+        });
+        
+    });
 });

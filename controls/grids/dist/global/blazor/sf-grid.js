@@ -4929,7 +4929,7 @@ var VirtualContentRenderer = /** @class */ (function () {
                 _this_1.virtualEle.adjustTable(x, Math.min(y, _this_1.offsets[_this_1.maxBlock]));
             }
             else if (_this_1.offsets[_this_1.maxBlock] > y) {
-                _this_1.virtualEle.adjustTable(x, Math.min(direction == "right" || direction == "left" ? _this_1.translateMaskY : y, _this_1.offsets[_this_1.maxBlock]));
+                _this_1.virtualEle.adjustTable(x, Math.min(direction == "right" || direction == "left" || direction == "down" ? _this_1.translateMaskY : y, _this_1.offsets[_this_1.maxBlock]));
             }
             if (xAxis) {
                 _this_1.setColVTableWidthAndTranslate({ refresh: true });

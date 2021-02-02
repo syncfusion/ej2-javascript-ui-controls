@@ -1483,10 +1483,12 @@ let ListView = class ListView extends Component {
         }
     }
     /**
-     * Refresh the height of the list item.
+     * Refresh the height of the list item only on enabling the virtualization property.
      */
     refreshItemHeight() {
-        this.virtualizationModule.refreshItemHeight();
+        if (this.virtualizationModule) {
+            this.virtualizationModule.refreshItemHeight();
+        }
     }
     clickHandler(e) {
         let target = e.target;

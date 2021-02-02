@@ -1,5 +1,5 @@
-import { isNullOrUndefined as NOU, BlazorDotnetObject, formatUnit, select } from '@syncfusion/ej2-base';
-import { createElement, closest, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as NOU, BlazorDotnetObject, formatUnit, select, TapEventArgs } from '@syncfusion/ej2-base';
+import { createElement, closest, KeyboardEvents, KeyboardEventArgs, Touch } from '@syncfusion/ej2-base';
 import { Draggable, DragEventArgs, BlazorDragEventArgs, detach, EventHandler } from '@syncfusion/ej2-base';
 
 const TOOLBAR_ID: string = '_toolbar';
@@ -33,6 +33,8 @@ class SfFileManager {
     public dragType: string;
     public dragCount: number;
     public dragLeft: number;
+    public isMobile: boolean;
+    public clickObj: Touch;
     public dragTop: number;
     public viewElem: Element;
     public ctrlId: string;
@@ -50,6 +52,35 @@ class SfFileManager {
         }
         this.bindKeyboardEvent();
         this.wireEvents();
+    }
+
+    public unWireMobileEvents(): void {
+        this.clickObj.destroy();
+    }
+
+    public wireMobileEvents(): void {
+        let fileElement: Element;
+        let proxy: SfFileManager = this;
+        if (this.properties.view === 'Details') {
+            fileElement = this.element.querySelector('.e-view-container .e-grid .e-gridcontent');
+        } else {
+            fileElement = this.element.querySelector('.e-view-container .e-large-icons');
+        }
+        this.clickObj = new Touch(fileElement as HTMLElement, {
+            tapHold: (e: TapEventArgs) => {
+                let targetElement: Element; let rowId: string;
+                if (proxy.properties.view === 'Details') {
+                    targetElement = closest(e.originalEvent.target as Element, '.e-row');
+                    rowId = targetElement ? targetElement.getAttribute('aria-rowindex') : null;
+                } else {
+                    targetElement = closest(e.originalEvent.target as Element, 'li.e-list-item');
+                    rowId = targetElement ? targetElement.getAttribute('data-uid') : null;
+                }
+                if (targetElement != null && rowId != null) {
+                    proxy.dotnetRef.invokeMethodAsync('ChangeMobileMultiSelection', rowId);
+                }
+            }
+        });
     }
 
     public wireEvents(): void {
@@ -86,19 +117,21 @@ class SfFileManager {
         }
         if (this.properties.draggable) {
             if (this.dragObj) { this.dragObj.destroy(); }
-            this.dragObj = new Draggable(dragEle, {
-                cursorAt: { left: 44, top: 18 },
-                enableTailMode: true,
-                dragArea: this.element,
-                dragTarget: '.' + FULLROW,
-                drag: this.draggingHandler.bind(this),
-                dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
-                    this.dragStartHandler(args);
-                },
-                dragStop: this.dragStopHandler.bind(this),
-                enableAutoScroll: true,
-                helper: this.dragHelper.bind(this)
-            });
+            if (dragEle) {
+                this.dragObj = new Draggable(dragEle, {
+                    cursorAt: { left: 44, top: 18 },
+                    enableTailMode: true,
+                    dragArea: this.element,
+                    dragTarget: '.' + FULLROW,
+                    drag: this.draggingHandler.bind(this),
+                    dragStart: (args: DragEventArgs & BlazorDragEventArgs) => {
+                        this.dragStartHandler(args);
+                    },
+                    dragStop: this.dragStopHandler.bind(this),
+                    enableAutoScroll: true,
+                    helper: this.dragHelper.bind(this)
+                });
+            }
         } else if (!this.properties.draggable) {
             this.dragObj.destroy();
         }
@@ -707,17 +740,21 @@ class SfFileManager {
 
 // tslint:disable-next-line
 let FileManager: object = {
-    initialize(element: BlazorElement, dotnetRef: BlazorDotnetObject, properties: InitProps): string {
+    initialize(element: BlazorElement, dotnetRef: BlazorDotnetObject, properties: InitProps, isMobile: boolean): string {
         new SfFileManager(element, dotnetRef, properties);
         if (properties.draggable) {
             element.blazor__instance.createDragObj();
         }
+        element.blazor__instance.isMobile = isMobile;
         return element.blazor__instance.adjustHeight();
     },
     dragStartActionContinue(element: BlazorElement, cancel: boolean): void {
         if (element) {
             element.blazor__instance.TriggerDragStartEvent(cancel);
         }
+    },
+    wireMobileEvents(element:  BlazorElement): void {
+        element.blazor__instance.wireMobileEvents();
     },
     dragActionContinue(element: BlazorElement, cancel: boolean): void {
         if (element) {
@@ -728,6 +765,10 @@ let FileManager: object = {
         element.blazor__instance.properties = properties;
         element.blazor__instance.unWireEvents();
         element.blazor__instance.wireEvents();
+        if (element.blazor__instance.isMobile) {
+            element.blazor__instance.unWireMobileEvents();
+            element.blazor__instance.wireMobileEvents();
+        }
         return element.blazor__instance.adjustHeight();
     },
     uploadOpen(element: BlazorElement, id: string): void {
@@ -738,6 +779,10 @@ let FileManager: object = {
         if (element) {
             element.blazor__instance.properties.view = view;
             element.blazor__instance.bindKeyboardEvent();
+            if (element.blazor__instance.isMobile) {
+                element.blazor__instance.unWireMobileEvents();
+                element.blazor__instance.wireMobileEvents();
+            }
         }
     },
     updateGridRow(gridEle: HTMLElement, index: number): void {

@@ -90,7 +90,6 @@ export class Data {
         if (this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
             let resultData: Object[] = extend([], args.result, null, true) as Object[];
-            this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
             this.parent.kanbanData = resultData;
             this.parent.notify(events.dataReady, { processedData: resultData });
             this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());

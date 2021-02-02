@@ -419,6 +419,39 @@ export class Chart extends ChildProperty<CellModel> {
      */
     @Property('')
     public id: string;
+
+    /**
+     * Specifies the height of the chart.
+     * @default 290
+     * @asptype int
+     */
+    @Property(290)
+    public height: number;
+
+    /**
+     * Specifies the width of the chart.
+     * @default 480
+     * @asptype int
+     */
+    @Property(480)
+    public width: number;
+
+    /**
+     * Specifies the top position of the chart.
+     * @default 0
+     * @hidden
+     */
+    @Property(0)
+    protected top: number;
+
+    /**
+     * Specifies the left side of the chart.
+     * @default 0
+     * @hidden
+     */
+    @Property(0)
+    protected left: number;
+
 }
 
 /**

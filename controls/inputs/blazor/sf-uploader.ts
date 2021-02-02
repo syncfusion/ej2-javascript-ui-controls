@@ -2034,7 +2034,9 @@ class SfUploader {
                     this.raiseSuccessEvent(e, metaData.file);
                     return;
                 }
-                this.sendNextRequest(metaData);
+                if (metaData.file.statusCode !== '4') {
+                    this.sendNextRequest(metaData);
+                }
             }
         } else {
             this.chunkUploadFailed(e, metaData);
@@ -2112,8 +2114,10 @@ class SfUploader {
     }
 
     private abortUpload(metaData: MetaData, custom: boolean, eventArgs?: PauseResumeEventArgs): void {
-        metaData.request.emitError = false;
-        metaData.request.httpRequest.abort();
+        if (metaData.file.statusCode !== '4') {
+            metaData.request.emitError = false;
+            metaData.request.httpRequest.abort();
+        }
         let liElement: HTMLElement = this.getLiElement(metaData.file);
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom)) {
             let targetElement: HTMLElement = liElement.querySelector('.' + PAUSE_UPLOAD) as HTMLElement;

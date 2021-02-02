@@ -208,7 +208,11 @@ export class SheetTabs {
             this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
         }
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        if (!args.preventUpdate) { this.updateSheetTab({ idx: args.startIdx }); }
+        if (args.preventUpdate) {
+            if (args.startIdx !== this.tabInstance.selectedItem) { this.refreshSheetTab(); }
+        } else {
+            this.updateSheetTab({ idx: args.startIdx });
+        }
     }
 
     private updateSheetTab(args: { idx: number, name?: string }): void {

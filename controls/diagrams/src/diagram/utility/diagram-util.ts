@@ -2201,6 +2201,14 @@ export let findPath: Function = (sourcePoint: PointModel, targetPoint: PointMode
     let path: string = 'M' + startpoint.x + ' ' + startpoint.y + ' L' + endpoint.x + ' ' + endpoint.y;
     return [path, transferpt];
 };
+/** @private */
+export let getConnectorDirection: Function = (src: PointModel, tar: PointModel): string => {
+    if (Math.abs(tar.x - src.x) > Math.abs(tar.y - src.y)) {
+        return src.x < tar.x ? 'Right' : 'Left';
+    } else {
+        return src.y < tar.y ? 'Bottom' : 'Top';
+    }
+};
 
 /** @private */
 export let findDistance: Function = (point1: PointModel, point2: PointModel): number => {

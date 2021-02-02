@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#305138` - The issue with "Incorrect message is displayed in delete dialog for File Manager Component" has been resolved.
+
 ## 18.3.42 (2020-10-20)
 
 ### File Manager

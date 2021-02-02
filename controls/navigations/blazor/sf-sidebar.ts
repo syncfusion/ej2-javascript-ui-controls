@@ -280,13 +280,13 @@ class SfSidebar {
         let elementWidth: number | string = this.element.getBoundingClientRect().width;
         elementWidth = this.enableDock && !this.isOpen ? this.dockSize : elementWidth;
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') || this.targetElement;
-        this.isPositionChange = false;
         if (sibling) {
             if (this.isPositionChange) { this.position === LEFT ? sibling.style.marginRight = '0px' : sibling.style.marginLeft = '0px'; }
             sibling.style.transform = 'translateX(' + 0 + 'px)';
             if (!Browser.isDevice && this.type !== AUTO) {
                 this.position === LEFT ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
             }
+            this.isPositionChange = false;
             let margin: string = typeof (elementWidth) === 'string' ? elementWidth : elementWidth + 'px';
             let translate: string | number = this.position === LEFT ? elementWidth : - (elementWidth);
             let value: boolean = sibling && (this.enableDock || this.isOpen || this.isSwipChange);
@@ -332,7 +332,7 @@ let Sidebar: object = {
     initialize(element: BlazorSidebarElement, dotnetRef: BlazorDotnetObject, property: ISidebar): boolean {
         new SfSidebar(element, dotnetRef, property);
         if (this.isValid(element)) { element.blazor__instance.initialize(); }
-        return !Browser.isDevice && window.matchMedia(property.MediaQuery) ? true : false;
+        return !Browser.isDevice && window.matchMedia(property.MediaQuery) ? true : (Browser.isDevice && property.IsOpen) ? true : false;
     },
     setType(element: BlazorSidebarElement, property: ISidebar): void {
         if (this.isValid(element)) {

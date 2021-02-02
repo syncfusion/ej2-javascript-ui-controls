@@ -1791,7 +1791,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (refreshLayout && !refereshColelction) {
-                if (oldProp.layout && oldProp.layout.connectionPointOrigin === "DifferentPoint" && newProp.layout.connectionPointOrigin === "SamePoint") {
+                if (oldProp.layout && oldProp.layout.connectionPointOrigin === "DifferentPoint" && newProp.layout.connectionPointOrigin === "SamePoint"
+                    || (oldProp.layout && newProp.layout && !newProp.layout.enableRouting && oldProp.layout.enableRouting)) {
                     for (let i: number = 0; i < this.nodes.length; i++) {
                         let node: NodeModel = this.nodes[i];
                         if ((node.ports && node.ports.length > 0)) {
@@ -2343,7 +2344,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 args: []
             });
         }
-        if ((this.layout && this.layout.connectionPointOrigin==="DifferentPoint")||(this.layout.arrangement==="Linear")) {
+        if ((this.layout && this.layout.connectionPointOrigin==="DifferentPoint")||(this.layout.arrangement==="Linear"||(this.layout.enableRouting))) {
             modules.push({
                 member: 'LineDistribution',
                 args: []
@@ -4761,6 +4762,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return nodesCollection;
     }
+
 /* tslint:disable */
     /**
      * Automatically updates the diagram objects based on the type of the layout
@@ -4770,9 +4772,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let canDoOverlap: boolean = (this.layout.type == "ComplexHierarchicalTree" || this.layout.type === "HierarchicalTree")
         let propChange: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
         let nodes: INode[] = this.removeChildrenFromLayout(this.nodes as INode[]);
+        var canEnableRouting = this.layout.enableRouting && this.layout.type == "ComplexHierarchicalTree";
         let viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
-            if (((this.layout as Layout).connectionPointOrigin==="DifferentPoint" && this.lineDistributionModule && canDoOverlap)||this.layout.arrangement === "Linear") {
+            if (canEnableRouting||((this.layout as Layout).connectionPointOrigin==="DifferentPoint" && this.lineDistributionModule && canDoOverlap)||this.layout.arrangement === "Linear") {
                 this.lineDistributionModule.initLineDistribution((this.layout as Layout), this);
             }
             if (this.organizationalChartModule) {
@@ -4842,8 +4845,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 for (let conn of Object.keys(connectors)) {
+                    if (canEnableRouting) {
+                        this.lineDistributionModule.resetConnectorSegments(this.nameTable[conn]);
+                    }
                     let connector: Connector = connectors[conn] as Connector;
                     let points: PointModel[] = this.getPoints(connector);
+                    if (canEnableRouting) {
+                        this.lineDistributionModule.resetRoutingSegments(connector,this,points);
+                    }
                     updateConnector(connector, points);
                     if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
                         this.commandHandler.updatePathElementOffset(connector);
@@ -4855,7 +4864,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
-                if ((this.layout as Layout).connectionPointOrigin==="DifferentPoint" && this.lineDistributionModule && canDoOverlap) {
+                 if (canEnableRouting||(this.layout as Layout).connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) {
                     this.lineDistributionModule.distributeLines((this.layout as Layout), this);
                 }
                 this.preventDiagramUpdate = false;
@@ -9796,7 +9805,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.triggerEvent(DiagramEvent.drop, arg); let clonedObject: Object; let id: string = 'id';
             }
             let selectedSymbols: string = 'selectedSymbols';
-            if (this.droppable[selectedSymbols]) { remove(this.droppable[selectedSymbols]); }
+            if (this.droppable[selectedSymbols] && this.droppable[selectedSymbols].parentNode) { remove(this.droppable[selectedSymbols]); } else {
+                let draggableElement: HTMLCollection = document.getElementsByClassName("e-dragclone") as HTMLCollection;
+                for (let i: number = 0; i < draggableElement.length; i++) {
+                    draggableElement[i].remove();
+                }
+            }
             this.allowServerDataBinding = true;
         };
         this.droppable.out = (args: Object) => {

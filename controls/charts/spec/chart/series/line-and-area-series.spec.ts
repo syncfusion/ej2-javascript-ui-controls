@@ -13,6 +13,7 @@ import { AreaSeries } from '../../../src/chart/series/area-series';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { DataLabel } from '../../../src/chart/series/data-label';
+import { Legend } from '../../../src/chart/legend/legend';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
 import { MouseEvents } from '../base/events.spec';
@@ -24,7 +25,7 @@ import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs,
     IPointRenderEventArgs, ITextRenderEventArgs } from '../../../src/chart/model/chart-interface';
 
-Chart.Inject(LineSeries, ColumnSeries, AreaSeries, DateTime, Category, DataEditing, DataLabel, StepLineSeries);
+Chart.Inject(LineSeries, ColumnSeries, AreaSeries, DateTime, Category, DataEditing, DataLabel, StepLineSeries, Legend);
 
 export interface series1 {
     series: Series;
@@ -1994,6 +1995,67 @@ describe('Chart Control Series', () => {
             chart.series[1].animation.enable = true;
             chart.animationComplete = animationComplete;
             chart.refresh();
+        });
+    });
+    describe('Line Series - Data Label with rotation', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let series1: object[] = [
+            { x: "Jan", y: 54.481, text: "54.48%" },
+            { x: "Feb", y: 50.56382, text: "50.56%" },
+            { x: "Mar", y: 53.68715, text: "53.69%" },
+            { x: "Apr", y: 49.143363, text: "49.14%" },
+            { x: "May", y: 57.423575, text: "57.42%" },
+            { x: "Jun", y: 55.959774, text: "55.96%" },
+            { x: "Jul", y: 52.360737, text: "52.36%" },
+            { x: "Aug", y: 56.654956, text: "56.65%" },
+            { x: "Sep", y: 51.387971, text: "51.39%" },
+            { x: "Oct", y: 53.137774, text: "53.14%" },
+            { x: "Nov", y: 54.889794, text: "54.89%" },
+            { x: "Dec", y: 56.760399, text: "56.76%" }];
+        let chartContainerDiv: Element;
+        chartContainerDiv = createElement('div', { id: 'container', styles: 'height:250px;width:590px;float: left;' });
+        beforeAll(() => {
+            document.body.appendChild(chartContainerDiv);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    series: [
+                        {
+                            dataSource: series1, xName: 'x', yName: 'y', type: 'Line', fill: 'red',
+                            animation: { enable: false }, name: 'series1', legendShape: 'Circle',
+                            marker: {
+                                visible: true,
+                                dataLabel: {
+                                    angle: 45,
+                                    enableRotation: true,
+                                    visible: true,
+                                    position: 'Outer',
+                                    font: { color: 'red', size: '12px' }
+                                }
+                            }
+                        }
+                    ],
+                    legendSettings: {
+                        visible: true, position: 'Bottom'
+                    },
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            chartContainerDiv.remove();
+        });
+
+        it('Datalabel count check', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                let groupElement: Element = document.getElementById('containerTextGroup0');
+                expect(groupElement.childElementCount === 9).toBe(true);
+                done();
+            };
+            chartObj.refresh();
         });
     });
     it('memory leak', () => {

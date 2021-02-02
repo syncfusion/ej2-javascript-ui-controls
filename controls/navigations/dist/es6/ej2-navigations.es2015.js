@@ -906,12 +906,12 @@ function addScrolling(createElement$$1, container, content, scrollType, enableRt
     let containerOffset;
     let contentOffset;
     if (scrollType === 'vscroll') {
-        containerOffset = offset || container.offsetHeight;
-        contentOffset = content.offsetHeight;
+        containerOffset = offset || container.getBoundingClientRect().height;
+        contentOffset = content.getBoundingClientRect().height;
     }
     else {
-        containerOffset = container.offsetWidth;
-        contentOffset = content.offsetWidth;
+        containerOffset = container.getBoundingClientRect().width;
+        contentOffset = content.getBoundingClientRect().width;
     }
     if (containerOffset < contentOffset) {
         let scrollEle = createElement$$1('div', { className: 'e-menu-' + scrollType });
@@ -14451,18 +14451,20 @@ let Sidebar = class Sidebar extends Component {
      */
     destroy() {
         super.destroy();
-        removeClass([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION]);
         if (this.target) {
-            removeClass([this.element], SIDEBARABSOLUTE);
             removeClass([this.target], CONTEXT);
         }
         this.destroyBackDrop();
-        this.element.style.width = '';
-        this.element.style.zIndex = '';
-        this.element.style.transform = '';
+        if (this.element) {
+            removeClass([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION]);
+            removeClass([this.element], SIDEBARABSOLUTE);
+            this.element.style.width = '';
+            this.element.style.zIndex = '';
+            this.element.style.transform = '';
+            (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
+                this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
+        }
         this.windowWidth = null;
-        (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
-            this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         let sibling = document.querySelector('.e-main-content') || this.targetEle;
         if (!isNullOrUndefined(sibling)) {
             sibling.style.margin = '';

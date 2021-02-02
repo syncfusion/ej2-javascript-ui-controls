@@ -178,10 +178,10 @@ describe('Grid clipboard copy testing - cells type selection => ', () => {
             gridObj.selectRow(0, true);
             gridObj.copy();
             expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
-                === '1	Nancy		WA	USA').toBeTruthy();
+                === '1	Nancy	WA	USA').toBeTruthy();
             gridObj.copy(true);
             expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
-                === 'Employee ID	Name	Region	Country\n1	Nancy		WA	USA').toBeTruthy();
+                === 'Employee ID	Name	Region	Country\n1	Nancy	WA	USA').toBeTruthy();
         });
         it('memory leak', () => {     
             profile.sample();

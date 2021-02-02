@@ -1820,8 +1820,10 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
     }
     unBindCommonEvent() {
-        EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
-        let formElement = closest(this.inputElement, 'form');
+        if (this.targetElement()) {
+            EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
+        }
+        let formElement = this.inputElement && closest(this.inputElement, 'form');
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
@@ -4011,7 +4013,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         this.closePopup();
         let dataItem = this.getItemData();
         let isSelectVal = this.isServerBlazor ? !isNullOrUndefined(this.value) : !isNullOrUndefined(this.selectedLI);
-        if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
+        if (this.inputElement && this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);
@@ -4051,7 +4053,9 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         this.isTyped = true;
         this.hidePopup(e);
-        this.targetElement().blur();
+        if (this.targetElement()) {
+            this.targetElement().blur();
+        }
         removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
     }
     /**
@@ -4081,16 +4085,18 @@ let DropDownList = class DropDownList extends DropDownBase {
             if (this.element && !this.element.classList.contains('e-' + this.getModuleName())) {
                 return;
             }
-            let attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
-                'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
-                'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            for (let i = 0; i < attrArray.length; i++) {
-                this.inputElement.removeAttribute(attrArray[i]);
+            if (this.inputElement) {
+                let attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
+                    'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
+                    'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
+                    'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
+                for (let i = 0; i < attrArray.length; i++) {
+                    this.inputElement.removeAttribute(attrArray[i]);
+                }
+                this.inputElement.setAttribute('tabindex', this.tabIndex);
+                this.inputElement.classList.remove('e-input');
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             }
-            this.inputElement.setAttribute('tabindex', this.tabIndex);
-            this.inputElement.classList.remove('e-input');
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             this.element.style.display = 'block';
             if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
                 detach(this.inputWrapper.container);
@@ -7221,7 +7227,7 @@ let ComboBox = class ComboBox extends DropDownList {
         }
     }
     onBlur(e) {
-        let inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        let inputValue = this.inputElement && this.inputElement.value === '' ? null : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
             this.customValue(e);
         }
@@ -7291,7 +7297,7 @@ let ComboBox = class ComboBox extends DropDownList {
     }
     updateIconState() {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '' && !this.readonly) {
+            if (this.inputElement && this.inputElement.value !== '' && !this.readonly) {
                 removeClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
             }
             else {
@@ -7552,12 +7558,14 @@ let ComboBox = class ComboBox extends DropDownList {
         if (!isNullOrUndefined(this.inputWrapper.buttons[0])) {
             EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.dropDownClick);
         }
-        EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
-        if (!this.readonly) {
-            EventHandler.remove(this.inputElement, 'input', this.onInput);
-            EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
-            EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
-            EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+        if (this.inputElement) {
+            EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
+            if (!this.readonly) {
+                EventHandler.remove(this.inputElement, 'input', this.onInput);
+                EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
+                EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+                EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+            }
         }
         this.unBindCommonEvent();
     }
@@ -7774,7 +7782,8 @@ let ComboBox = class ComboBox extends DropDownList {
      * @deprecated
      */
     hidePopup(e) {
-        let inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        let inputValue = this.inputElement && this.inputElement.value === '' ? null
+            : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData)) {
             let isEscape = this.isEscapeKey;
             if (this.isEscapeKey) {
@@ -7786,7 +7795,7 @@ let ComboBox = class ComboBox extends DropDownList {
             }
             let dataItem = this.isSelectCustom ? { text: '' } : this.getItemData();
             let selected = this.list.querySelector('.' + dropDownListClasses.selected);
-            if (dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
+            if (this.inputElement && dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
                     this.onChangeEvent(e);
                     this.isSelectCustom = false;
@@ -10882,6 +10891,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let text = this.getTextByValue(value);
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
             let temp = li.cloneNode(true);
+            let fieldValue = this.fields.value ? this.fields.value : 'value';
+            if (this.allowCustomValue && this.mainData.length && typeof getValue(fieldValue, this.mainData[0]) === 'number') {
+                value = !isNaN(parseFloat(value.toString())) ? parseFloat(value.toString()) : value;
+            }
             let data = this.getDataByValue(value);
             let eventArgs = {
                 newData: data,

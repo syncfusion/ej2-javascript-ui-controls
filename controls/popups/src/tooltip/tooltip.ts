@@ -847,6 +847,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (this.openDelay > 0) {
                 let show: Function = (): void => {
+                    if (this.mouseTrail) {
+                        EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
+                    }
                     if (this.popupObj) {
                         this.popupObj.show(openAnimation, target);
                     }
@@ -1195,7 +1198,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
                 }
             }
-            if (this.mouseTrail) {
+            if (this.mouseTrail && this.openDelay === 0) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
             }
         }

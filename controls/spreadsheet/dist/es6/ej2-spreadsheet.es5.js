@@ -569,6 +569,8 @@ var deleteChartColl = 'deleteChartColl';
 var initiateChartModel = 'initiateChartModel';
 /** @hidden */
 var focusChartBorder = 'focusChartBorder';
+/** @hidden */
+var saveError = 'saveError';
 
 /**
  * Specifies number format.
@@ -743,7 +745,8 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(options.fResult)) {
             var res = options.fResult.toString();
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
-                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
+                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN' &&
+                !this.parent.isEdit) {
                 options.args.value = Number(res.split('%')[0].split(this.groupSep).join(''));
                 options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
@@ -752,7 +755,8 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
                 options.isRightAlign = true;
             }
             else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
-                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
+                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN' &&
+                !this.parent.isEdit) {
                 options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
                 options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);
@@ -2027,6 +2031,7 @@ var WorkbookOpen = /** @__PURE__ @class */ (function () {
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
         workbookModel.activeSheetIndex = workbookModel.activeSheetIndex || 0;
+        this.setSelectAllRange(workbookModel.sheets);
         this.parent.setProperties({
             'sheets': workbookModel.sheets,
             'activeSheetIndex': workbookModel.activeSheetIndex,
@@ -2037,6 +2042,28 @@ var WorkbookOpen = /** @__PURE__ @class */ (function () {
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         this.parent.notify(protectSheetWorkBook, null);
+    };
+    WorkbookOpen.prototype.setSelectAllRange = function (sheets) {
+        sheets.forEach(function (sheet) {
+            if (sheet.selectedRange) {
+                var selectedIndex = getRangeIndexes(sheet.selectedRange);
+                var rowCount = (isUndefined(sheet.rowCount) ? 100 : sheet.rowCount) - 1;
+                var colCount = (isUndefined(sheet.colCount) ? 100 : sheet.colCount) - 1;
+                if (selectedIndex[2] === 65535) {
+                    selectedIndex[2] = rowCount;
+                }
+                if (selectedIndex[3] === 255) {
+                    selectedIndex[3] = colCount;
+                }
+                if (selectedIndex[0] === 65535) {
+                    selectedIndex[0] = rowCount;
+                }
+                if (selectedIndex[1] === 255) {
+                    selectedIndex[1] = colCount;
+                }
+                sheet.selectedRange = getRangeAddress(selectedIndex);
+            }
+        });
     };
     /**
      * Adding event listener for workbook open.
@@ -2122,7 +2149,22 @@ var SaveWorker = /** @__PURE__ @class */ (function () {
             }
         })
             .then(function (data) {
-            postMessage(data);
+            new Promise(function (resolve) {
+                var reader = new FileReader();
+                reader.onload = function () {
+                    if (reader.result.toString().indexOf('data:text/plain;base64,') > -1) {
+                        var str = atob(reader.result.replace('data:text/plain;base64,', '')).split(/(\r\n|\n|\r)/gm);
+                        if (str.length) {
+                            postMessage({ dialog: str[0] });
+                        }
+                    }
+                    else {
+                        postMessage(data);
+                    }
+                    resolve(reader.result);
+                };
+                reader.readAsDataURL(data);
+            });
         })
             .catch(function (error) {
             postMessage({ error: error.message });
@@ -2321,6 +2363,9 @@ var WorkbookSave = /** @__PURE__ @class */ (function (_super) {
         if (typeof (result) === 'object' && result.error) {
             args.status = 'Failure';
             args.message = result.error.toString();
+        }
+        else if (typeof (result) === 'object' && result.dialog) {
+            this.parent.notify(saveError, { content: result.dialog });
         }
         else {
             if (this.needBlobData) {
@@ -6804,7 +6849,11 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
             col = parseInt((col / 26).toString(), 10);
             n++;
         }
-        return arrCol.join('');
+        var arr = [];
+        for (var i = 0; i < n; i++) {
+            arr[n - i - 1] = arrCol[i];
+        }
+        return arr.join('');
     };
     /** @hidden */
     Calculate.prototype.getCellCollection = function (cellRange) {
@@ -7362,7 +7411,7 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                 }
                 else if (this.isDigit(pFormula[i])) {
                     var s = this.emptyString;
-                    while (i < pFormula.length && this.isDigit(pFormula[i])) {
+                    while (i < pFormula.length && (this.isDigit(pFormula[i]) || pFormula[i] === this.parseDecimalSeparator)) {
                         s = s + pFormula[i];
                         i = i + 1;
                     }
@@ -7509,6 +7558,22 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
                                         || pFormula[i] === this.getParseDecimalSeparator()) {
                                         s = s + pFormula[i];
                                         i = i + 1;
+                                    }
+                                    if (i < pFormula.length && pFormula[i] === '%') {
+                                        i = i + 1;
+                                        if (s === '') {
+                                            if (stack.length > 0) {
+                                                var stackValue = stack[0];
+                                                var value = this.parseFloat(stackValue);
+                                                if (!this.isNaN(value)) {
+                                                    stack.pop();
+                                                    stack.push((value / 100).toString());
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            s = (this.parseFloat(s) / 100).toString();
+                                        }
                                     }
                                 }
                                 stack.push(s);
@@ -9300,7 +9365,11 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
                 formula += ')';
             }
-            formula = formula.indexOf('=') === 0 ? formula.slice(1) : formula;
+            var isEqual = void 0;
+            if (formula.indexOf('=') === 0) {
+                formula = formula.slice(1);
+                isEqual = true;
+            }
             var lessEq = formula.match(/</g);
             var greaterEq = formula.match(/>/g);
             var equal = formula.match(/=/g);
@@ -9325,7 +9394,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
                 }
                 formula = formula.split(equalOp).join('=');
             }
-            formula = '=' + formula;
+            formula = isEqual ? '=' + formula : formula;
             if (lessEq || greaterEq || equal) {
                 getCell(rowIdx, colIdx, this.parent.getActiveSheet()).formula = formula;
             }
@@ -9836,12 +9905,17 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
         }
         var containsHeader = sortOptions.containsHeader;
         if (range[0] === range[2]) { //if selected range is a single cell 
-            range[0] = 0;
-            range[1] = 0;
-            range[2] = sheet.usedRange.rowIndex;
-            range[3] = sheet.usedRange.colIndex;
+            range = this.getSortDataRange(range[0], range[1], sheet);
             isSingleCell = true;
-            containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
+            if (isNullOrUndefined(sortOptions.containsHeader)) {
+                if (typeof getCell(range[0], range[1], sheet, null, true).value ===
+                    typeof getCell(range[0] + 1, range[1], sheet, null, true).value) {
+                    containsHeader = this.isSameStyle(getCell(range[0], range[1], sheet, null, true).style, getCell(range[0] + 1, range[1], sheet, null, true).style) ? false : true;
+                }
+                else {
+                    containsHeader = true;
+                }
+            }
         }
         if ((isNullOrUndefined(args.sortOptions) || isNullOrUndefined(args.sortOptions.containsHeader)) && !isSingleCell) {
             if (!isNullOrUndefined(getCell(range[0], range[1], sheet)) && !isNullOrUndefined(getCell(range[0] + 1, range[1], sheet))) {
@@ -9895,7 +9969,7 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
                 var cell = {};
                 var rowKey = '__rowIndex';
                 Array.prototype.forEach.call(e.result, function (data, index) {
-                    if (!data || !jsonData[index]) {
+                    if (!data) {
                         return;
                     }
                     sCIdx = range[1];
@@ -9912,69 +9986,73 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
             });
         });
     };
-    WorkbookSort.prototype.getDataRange = function (rowIdx, colIdx, sheet) {
-        var range = [rowIdx, colIdx, rowIdx, colIdx];
-        var j;
-        var rIdx = rowIdx;
-        var cIdx = colIdx;
-        var loopLength = 0;
-        var length = sheet.usedRange.rowIndex + sheet.usedRange.colIndex;
-        for (var i = 1; i < length + 1; i++) {
-            for (j = -loopLength; j < loopLength + 1; j++) { // start from right
-                if (getCell(rIdx + j, cIdx + i, sheet)) {
-                    range[2] = range[2] > rIdx + j ? range[2] : rIdx + j;
-                    range[3] = range[3] > cIdx + i ? range[3] : cIdx + i;
-                }
+    WorkbookSort.prototype.isSameStyle = function (firstCellStyle, secondCellStyle) {
+        if (firstCellStyle === void 0) { firstCellStyle = {}; }
+        if (secondCellStyle === void 0) { secondCellStyle = {}; }
+        var sameStyle = true;
+        var keys = Object.keys(firstCellStyle);
+        for (var i = 0; i < keys.length; i++) {
+            if (firstCellStyle[keys[i]] === secondCellStyle[keys[i]] || this.parent.cellStyle[keys[i]] === firstCellStyle[keys[i]]) {
+                sameStyle = true;
             }
-            if (getCell(rIdx + i, cIdx + i, sheet)) {
-                range[2] = range[2] > rIdx + i ? range[2] : rIdx + i;
-                range[3] = range[3] > cIdx + i ? range[3] : cIdx + i;
-            }
-            for (j = -loopLength; j < loopLength + 1; j++) {
-                if (getCell(rIdx + i, cIdx + j, sheet)) {
-                    range[2] = range[2] > rIdx + i ? range[2] : rIdx + i;
-                    range[3] = range[3] > cIdx + j ? range[3] : cIdx + j;
-                }
-            }
-            if (!getCell(rIdx, cIdx, sheet)) {
-                if (range[3] === colIdx && range[2] === rowIdx && range[0] === rowIdx && range[1] === colIdx) {
-                    if (loopLength === 0) {
-                        break;
-                    }
-                }
-            }
-            if (getCell(rIdx + i, cIdx - i, sheet)) {
-                range[2] = range[2] > rIdx + i ? range[2] : rIdx + i;
-                range[1] = range[1] < cIdx - i ? range[1] : cIdx - i;
-            }
-            for (j = -loopLength; j < loopLength + 1; j++) {
-                if (getCell(rIdx + j, cIdx - i, sheet)) {
-                    range[0] = range[0] < rIdx + j ? range[0] : rIdx + j;
-                    range[1] = range[1] < cIdx - i ? range[1] : cIdx - i;
-                    range[2] = range[2] > rIdx + j ? range[2] : rIdx + j;
-                }
-            }
-            if (getCell(rIdx - i, cIdx - i, sheet)) {
-                range[0] = range[0] < rIdx - i ? range[0] : rIdx - i;
-                range[1] = range[1] < cIdx - i ? range[1] : cIdx - i;
-            }
-            for (j = -loopLength; j < loopLength + 1; j++) {
-                if (getCell(rIdx - i, cIdx + j, sheet)) {
-                    range[0] = range[0] < rIdx - i ? range[0] : rIdx - i;
-                    range[1] = range[1] < cIdx + j ? range[1] : cIdx + j;
-                    range[3] = range[3] > cIdx + j ? range[3] : cIdx + j;
-                }
-            }
-            if (getCell(rIdx - i, cIdx + i, sheet)) {
-                range[0] = range[0] < rIdx - i ? range[0] : rIdx - i;
-                range[3] = range[3] > cIdx + i ? range[3] : cIdx + i;
-            }
-            if (range[3] === colIdx && range[2] === rowIdx && range[0] === rowIdx && range[1] === colIdx) {
+            else {
+                sameStyle = false;
                 break;
             }
-            loopLength++;
         }
-        return range;
+        return sameStyle;
+    };
+    WorkbookSort.prototype.getSortDataRange = function (rowIdx, colIdx, sheet) {
+        var topIdx = rowIdx;
+        var btmIdx = rowIdx;
+        var leftIdx = colIdx;
+        var prevleftIdx;
+        var rightIdx = colIdx;
+        var prevrightIdx;
+        var topReached;
+        var btmReached;
+        var leftReached;
+        var rightReached;
+        for (var i = 1;; i++) {
+            if (!btmReached && getCell(rowIdx + i, colIdx, sheet, null, true).value) {
+                btmIdx = rowIdx + i;
+            }
+            else {
+                btmReached = true;
+            }
+            if (!topReached && getCell(rowIdx - i, colIdx, sheet, null, true).value) {
+                topIdx = rowIdx - i;
+            }
+            else {
+                topReached = true;
+            }
+            if (topReached && btmReached) {
+                break;
+            }
+        }
+        for (var j = 1;; j++) {
+            prevleftIdx = leftIdx;
+            prevrightIdx = rightIdx;
+            for (var i = topIdx; i <= btmIdx; i++) {
+                if (!leftReached && getCell(i, leftIdx - 1, sheet, null, true).value) {
+                    leftIdx = prevleftIdx - 1;
+                }
+                if (!rightReached && getCell(i, rightIdx + 1, sheet, null, true).value) {
+                    rightIdx = prevrightIdx + 1;
+                }
+                if (i === btmIdx) {
+                    if (leftIdx === prevleftIdx) {
+                        leftReached = true;
+                    }
+                    if (rightIdx === prevrightIdx) {
+                        rightReached = true;
+                    }
+                }
+                if (rightReached && leftReached) {
+                    return [topIdx, leftIdx, btmIdx, rightIdx];
+                }
+            }
+        }
     };
     /**
      * Compares the two cells for sorting.
@@ -9995,6 +10073,15 @@ var WorkbookSort = /** @__PURE__ @class */ (function () {
             else {
                 return collator.compare(x.value, y.value) * -1;
             }
+        }
+        if ((x === null || isNullOrUndefined(x.value)) && (y === null || isNullOrUndefined(y.value))) {
+            return -1;
+        }
+        if (x === null || isNullOrUndefined(x.value)) {
+            return 1;
+        }
+        if (y === null || isNullOrUndefined(y.value)) {
+            return -1;
         }
         return comparer(x ? x.value : x, y ? y.value : y);
     };
@@ -10233,6 +10320,8 @@ var WorkbookChart = /** @__PURE__ @class */ (function () {
                     chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
                     idAvailable = false;
                 }
+                chart[i].height = chart[i].height || 290;
+                chart[i].width = chart[i].width || 480;
                 this.parent.notify(initiateChart, {
                     option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, isUndoRedo: args.isUndoRedo,
                     dataSheetIdx: args.dataSheetIdx, range: args.range
@@ -10907,7 +10996,7 @@ var WorkbookEdit = /** @__PURE__ @class */ (function () {
         }
     };
     WorkbookEdit.prototype.parseIntValue = function (value) {
-        return /^\d*\.?\d*$/.test(value) ? parseFloat(value) : value;
+        return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
     };
     return WorkbookEdit;
 }());
@@ -11018,6 +11107,7 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
         var index;
         var model = [];
         var mergeCollection;
+        var isModel;
         if (typeof (args.start) === 'number') {
             index = args.start;
             args.end = args.end || index;
@@ -11033,6 +11123,7 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
             if (args.start) {
                 index = args.start[0].index || 0;
                 model = args.start;
+                isModel = true;
             }
             else {
                 index = 0;
@@ -11121,7 +11212,13 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
             if (args.activeSheetIndex) {
                 this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
             }
+            else if (!args.isAction && args.start < this.parent.activeSheetIndex) {
+                this.parent.setProperties({ activeSheetIndex: this.parent.skipHiddenSheets(this.parent.activeSheetIndex) }, true);
+            }
             model.forEach(function (sheet) {
+                if (isModel) {
+                    _this.updateRangeModel(sheet.ranges);
+                }
                 id_1 = sheet.id;
                 _this.parent.notify(workbookFormulaOperation, {
                     action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id_1, index: id_1
@@ -11144,6 +11241,16 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
         }
         this.parent.notify(insert, {
             model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length, insertType: args.insertType
+        });
+    };
+    WorkbookInsert.prototype.updateRangeModel = function (ranges) {
+        ranges.forEach(function (range) {
+            if (range.dataSource) {
+                range.startCell = range.startCell || 'A1';
+                range.showFieldAsHeader = range.showFieldAsHeader === undefined || range.showFieldAsHeader;
+                range.template = range.template || '';
+                range.address = range.address || 'A1';
+            }
         });
     };
     WorkbookInsert.prototype.setInsertInfo = function (sheet, startIndex, count, totalKey, modelType) {
@@ -11215,7 +11322,6 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
         var mergeArgsCollection = [];
         var count = (args.end - args.start) + 1;
         var prevCell;
-        var sheetIndex;
         if (args.modelType === 'Row') {
             args.model = args.model;
             if (args.start > args.model.usedRange.rowIndex) {
@@ -11365,6 +11471,11 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        else {
+            if (args.end - args.start === this.parent.sheets.length - 1) {
+                return;
+            }
+        }
         var deletedModel = [];
         for (var i = args.start; i <= args.end; i++) {
             if (args.model[modelName][args.start]) {
@@ -11379,7 +11490,6 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
             }
         }
         mergeArgsCollection.forEach(function (merge$$1) { _this.parent.notify(setMerge, merge$$1); });
-        sheetIndex = getSheetIndex(this.parent, args.model.name);
         var insertArgs = {
             action: 'refreshNamedRange', insertArgs: {
                 startIndex: args.start, endIndex: args.end, modelType: args.modelType,
@@ -14447,6 +14557,18 @@ var Chart$1 = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Property('')
     ], Chart$$1.prototype, "id", void 0);
+    __decorate$3([
+        Property(290)
+    ], Chart$$1.prototype, "height", void 0);
+    __decorate$3([
+        Property(480)
+    ], Chart$$1.prototype, "width", void 0);
+    __decorate$3([
+        Property(0)
+    ], Chart$$1.prototype, "top", void 0);
+    __decorate$3([
+        Property(0)
+    ], Chart$$1.prototype, "left", void 0);
     return Chart$$1;
 }(ChildProperty));
 /**
@@ -14671,7 +14793,7 @@ var Cell = /** @__PURE__ @class */ (function (_super) {
 /**
  * @hidden
  */
-function getCell(rowIndex, colIndex, sheet, isInitRow) {
+function getCell(rowIndex, colIndex, sheet, isInitRow, returnEmptyObjIfNull) {
     var row = getRow(sheet, rowIndex);
     if (!row || !row.cells) {
         if (isInitRow) {
@@ -14683,10 +14805,10 @@ function getCell(rowIndex, colIndex, sheet, isInitRow) {
             }
         }
         else {
-            return null;
+            return returnEmptyObjIfNull ? {} : null;
         }
     }
-    return sheet.rows[rowIndex].cells[colIndex] || null;
+    return sheet.rows[rowIndex].cells[colIndex] || (returnEmptyObjIfNull ? {} : null);
 }
 /**
  * @hidden
@@ -14775,9 +14897,7 @@ function getData(context, address, columnWiseData, valueOnly) {
                             if (indexes[3] < i + 1) {
                                 cells[rowKey] = (sRow + 1).toString();
                             }
-                            if (cells[key]) {
-                                data[index.toString()] = cells;
-                            }
+                            data[index.toString()] = cells;
                         }
                         else {
                             var cellObj = {};
@@ -15283,7 +15403,7 @@ function initSheet(context, sheet) {
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
         sheet.topLeftCell = sheet.topLeftCell || 'A1';
         sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = getMaxSelectionRange(sheet.selectedRange || 'A1:A1', sheet);
+        sheet.selectedRange = sheet.selectedRange || 'A1:A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         context.setSheetPropertyOnMute(sheet, 'rows', sheet.rows || []);
@@ -15299,16 +15419,6 @@ function initSheet(context, sheet) {
         initRow(sheet.rows);
     });
     processIdx(sheets, true, context);
-}
-function getMaxSelectionRange(range, sheet) {
-    var selectedIndex = getRangeIndexes(range);
-    if (selectedIndex[2] > sheet.rowCount) {
-        selectedIndex[2] = sheet.rowCount - 1;
-    }
-    if (selectedIndex[3] > sheet.colCount) {
-        selectedIndex[3] = sheet.colCount - 1;
-    }
-    return getRangeAddress(selectedIndex);
 }
 function initRow(rows) {
     rows.forEach(function (row) {
@@ -15394,6 +15504,8 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      */
     function Workbook(options) {
         var _this = _super.call(this, options) || this;
+        /** @hidden */
+        _this.isEdit = false;
         /**
          * To generate sheet name based on sheet count.
          * @hidden
@@ -15467,9 +15579,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Applies the style (font family, font weight, background color, etc...) to the specified range of cells.
+     * {% codeBlock src='spreadsheet/cellFormat/index.md' %}{% endcodeBlock %}
      * @param {CellStyleModel} style - Specifies the cell style.
      * @param {string} range? - Specifies the address for the range of cells.
-     * {% codeBlock src='spreadsheet/cellFormat/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.cellFormat = function (style, range) {
         var sheet = this.getActiveSheet();
@@ -15478,9 +15590,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Applies cell lock to the specified range of cells.
+     * {% codeBlock src='spreadsheet/lockCells/index.md' %}{% endcodeBlock %}
      * @param {string} range? - Specifies the address for the range of cells.
      * @param {boolean} isLocked -Specifies the cell is locked or not.
-     * {% codeBlock src='spreadsheet/lockCells/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.lockCells = function (range, isLocked) {
         var sheet = this.getActiveSheet();
@@ -15502,9 +15614,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Applies the number format (number, currency, percentage, short date, etc...) to the specified range of cells.
+     * {% codeBlock src='spreadsheet/numberFormat/index.md' %}{% endcodeBlock %}
      * @param {string} format - Specifies the number format code.
      * @param {string} range? - Specifies the address for the range of cells.
-     * {% codeBlock src='spreadsheet/numberFormat/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.numberFormat = function (format, range) {
         this.notify(applyNumberFormatting, { format: format, range: range });
@@ -15597,11 +15709,11 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Sets the border to specified range of cells.
+     * {% codeBlock src='spreadsheet/setBorder/index.md' %}{% endcodeBlock %}
      * @param {CellStyleModel} style? - Specifies the style property which contains border value.
      * @param {string} range? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @param {BorderType} type? - Specifies the range of cell reference. If not specified, it will considered the active cell reference.
      * @returns void
-     * {% codeBlock src='spreadsheet/setBorder/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.setBorder = function (style, range, type) {
         this.notify(setCellFormat, {
@@ -15610,20 +15722,20 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to insert rows in to the spreadsheet.
+     * {% codeBlock src='spreadsheet/insertRow/index.md' %}{% endcodeBlock %}
      * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
      * @param {number} endRow? - Specifies the end row index.
      * @returns void
-     * {% codeBlock src='spreadsheet/insertRow/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.insertRow = function (startRow, endRow) {
         this.notify(insertModel, { model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
     };
     /**
      * Used to insert columns in to the spreadsheet.
+     * {% codeBlock src='spreadsheet/insertColumn/index.md' %}{% endcodeBlock %}
      * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
      * @param {number} endColumn? - Specifies the end column index.
      * @returns void
-     * {% codeBlock src='spreadsheet/insertColumn/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.insertColumn = function (startColumn, endColumn) {
         this.notify(insertModel, {
@@ -15633,16 +15745,17 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to insert sheets in to the spreadsheet.
+     * {% codeBlock src='spreadsheet/insertSheet/index.md' %}{% endcodeBlock %}
      * @param {number | SheetModel[]} startSheet? - Specifies the start sheet index / sheet model which needs to be inserted.
      * @param {number} endSheet? - Specifies the end sheet index.
      * @returns void
-     * {% codeBlock src='spreadsheet/insertSheet/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.insertSheet = function (startSheet, endSheet) {
         this.notify(insertModel, { model: this, start: startSheet, end: endSheet, modelType: 'Sheet' });
     };
     /**
      * Used to delete rows, columns and sheets from the spreadsheet.
+     * {% codeBlock src='spreadsheet/delete/index.md' %}{% endcodeBlock %}
      * @param {number | RowModel[]} startIndex? - Specifies the start sheet / row / column index.
      * @param {number} endIndex? - Specifies the end sheet / row / column index.
      * @param {ModelType} model? - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
@@ -15650,22 +15763,23 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * - Column: To delete columns.
      * - Sheet: To delete sheets.
      * @returns void
-     * {% codeBlock src='spreadsheet/delete/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.delete = function (startIndex, endIndex, model) {
+        startIndex = startIndex || 0;
         this.notify(deleteModel, {
-            model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
+            model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex,
+            end: isNullOrUndefined(endIndex) ? startIndex : endIndex, modelType: model || 'Sheet'
         });
     };
     /**
      * Used to merge the range of cells.
+     * {% codeBlock src='spreadsheet/merge/index.md' %}{% endcodeBlock %}
      * @param {string} range? - Specifies the rnage of cells as address.
      * @param {MergeType} type? - Specifies the merge type. The possible values are,
      * - All: Merge all the cells between provided range.
      * - Horizontally: Merge the cells row-wise.
      * - Vertically: Merge the cells column-wise.
      * @returns void
-     * {% codeBlock src='spreadsheet/merge/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.merge = function (range, type) {
         var sheetIdx = this.getAddressInfo(range).sheetIndex;
@@ -15674,9 +15788,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         this.notify(setMerge, { merge: true, range: range, type: type || 'All', sheet: sheet, refreshRibbon: range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
     };
     /** Used to compute the specified expression/formula.
+     * {% codeBlock src='spreadsheet/computeExpression/index.md' %}{% endcodeBlock %}
      * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
      * @returns string | number
-     * {% codeBlock src='spreadsheet/computeExpression/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.computeExpression = function (formula) {
         var args = {
@@ -15697,6 +15811,27 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     Workbook.prototype.getActiveSheet = function () {
         return this.sheets[this.activeSheetIndex];
     };
+    /** @hidden */
+    Workbook.prototype.skipHiddenSheets = function (index, initIdx, hiddenCount) {
+        if (hiddenCount === void 0) { hiddenCount = 0; }
+        if (this.sheets[index] && this.sheets[index].state !== 'Visible') {
+            if (initIdx === undefined) {
+                initIdx = index;
+            }
+            if (index && index + 1 === this.sheets.length) {
+                index = initIdx - 1;
+            }
+            else {
+                index < initIdx ? index-- : index++;
+            }
+            index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
+        }
+        if (hiddenCount === this.sheets.length) {
+            this.setSheetPropertyOnMute(this.sheets[0], 'state', 'Visible');
+            return 0;
+        }
+        return index;
+    };
     /**
      * Used for setting the used range row and column index.
      * @hidden
@@ -15714,8 +15849,8 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Gets the range of data as JSON from the specified address.
-     * @param {string} address - Specifies the address for range of cells.
      * {% codeBlock src='spreadsheet/getData/index.md' %}{% endcodeBlock %}
+     * @param {string} address - Specifies the address for range of cells.
      */
     Workbook.prototype.getData = function (address) {
         return getData(this, address);
@@ -15762,13 +15897,13 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Opens the specified JSON object.
+     * {% codeBlock src='spreadsheet/openFromJson/index.md' %}{% endcodeBlock %}
      * <br><br>
      * The available arguments in options are:
      * * file: Specifies the spreadsheet model as object or string. And the object contains the jsonObject,
      * which is saved from spreadsheet using saveAsJson method.
      *
      * @param options - Options for opening the JSON object.
-     * {% codeBlock src='spreadsheet/openFromJson/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.openFromJson = function (options) {
         this.isOpen = true;
@@ -15783,8 +15918,8 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * * fileName: Specifies the file name.
      * * saveType: Specifies the file type need to be saved.
      *
-     * @param {SaveOptions} saveOptions - Options for saving the excel file.
      * {% codeBlock src='spreadsheet/save/index.md' %}{% endcodeBlock %}
+     * @param {SaveOptions} saveOptions - Options for saving the excel file.
      */
     Workbook.prototype.save = function (saveOptions) {
         if (saveOptions === void 0) { saveOptions = {}; }
@@ -15827,8 +15962,8 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To find the specified cell value.
+     * @hidden
      * @param args - options for find.
-     * {% codeBlock src='spreadsheet/findHandler/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.findHandler = function (args) {
         if (args.findOpt === 'next') {
@@ -15839,9 +15974,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To replace the specified cell or entire match value.
-     * @param args - options for replace.
-     * {% codeBlock src='spreadsheet/replaceHandler/index.md' %}{% endcodeBlock %}
+     * @hidden
      */
     Workbook.prototype.replaceHandler = function (args) {
         if (args.replaceBy === 'replace') {
@@ -15926,7 +16059,6 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * To update a cell properties.
      * @param {CellModel} cell - Cell properties.
      * @param {string} address - Address to update.
-     * {% codeBlock src='spreadsheet/updateCell/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.updateCell = function (cell, address) {
         var sheetIdx;
@@ -15950,10 +16082,10 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * This method is used to wrap/unwrap the text content of the cell.
+     * {% codeBlock src='spreadsheet/wrap/index.md' %}{% endcodeBlock %}
      * @param address - Address of the cell to be wrapped.
      * @param wrap - Set `false` if the text content of the cell to be unwrapped.
      * @returns void
-     * {% codeBlock src='spreadsheet/wrap/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.wrap = function (address, wrap$$1) {
         if (wrap$$1 === void 0) { wrap$$1 = true; }
@@ -15963,7 +16095,6 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * Adds the defined name to the Spreadsheet.
      * @param {DefineNameModel} definedName - Specifies the name.
      * @return {boolean} - Return the added status of the defined name.
-     * {% codeBlock src='spreadsheet/addDefinedName/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.addDefinedName = function (definedName) {
         var eventArgs = {
@@ -15979,7 +16110,6 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * @param {string} definedName - Specifies the name.
      * @param {string} scope - Specifies the scope of the defined name.
      * @return {boolean} - Return the removed status of the defined name.
-     * {% codeBlock src='spreadsheet/removeDefinedName/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.removeDefinedName = function (definedName, scope) {
         if (scope === void 0) { scope = ''; }
@@ -16008,6 +16138,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to set the chart in spreadsheet.
+     * {% codeBlock src='spreadsheet/insertChart/index.md' %}{% endcodeBlock %}
      * @param {ChartModel} chart - Specifies the options to insert chart in spreadsheet.
      * @returns void
      */
@@ -16016,6 +16147,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to delete the chart from spreadsheet.
+     * {% codeBlock src='spreadsheet/deleteChart/index.md' %}{% endcodeBlock %}
      * @param {string} id - Specifies the chart element id.
      * @returns void
      */
@@ -16041,7 +16173,6 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Clears the filter changes of the sheet.
-     * {% codeBlock src='spreadsheet/clearFilter/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.clearFilter = function () {
         this.notify(clearAllFilter, null);
@@ -16050,7 +16181,6 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * To add custom library function.
      * @param {string} functionHandler - Custom function handler name
      * @param {string} functionName - Custom function name
-     * {% codeBlock src='spreadsheet/addCustomFunction/index.md' %}{% endcodeBlock %}
      */
     Workbook.prototype.addCustomFunction = function (functionHandler, functionName) {
         functionName = functionName ? functionName : typeof functionHandler === 'string' ? functionHandler :
@@ -17470,7 +17600,7 @@ function updateAction(options, spreadsheet, isRedo) {
             if (isRedo) {
                 var chartOptions = [{
                         type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                        range: eventArgs.range, id: eventArgs.id
+                        range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
                     }];
                 spreadsheet.notify(setChart, {
                     chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
@@ -17487,7 +17617,7 @@ function updateAction(options, spreadsheet, isRedo) {
             else {
                 var chartOpts = [{
                         type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                        range: eventArgs.range, id: eventArgs.id
+                        range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
                     }];
                 spreadsheet.notify(setChart, {
                     chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
@@ -17995,7 +18125,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     this.clearCopiedInfo();
                     this.cutInfo = isCut;
                 }
-                if (isExternal && this.copiedInfo) {
+                if ((isExternal || inRange_1) && this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
                 if (isExternal || (args && args.isAction)) {
@@ -18017,7 +18147,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
                 if (isCut) {
-                    this.updateFilter(copyInfo);
+                    this.updateFilter(copyInfo, rfshRange);
                     setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
                     var hgt = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
@@ -18028,23 +18158,27 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             this.getClipboardEle().select();
         }
     };
-    Clipboard.prototype.updateFilter = function (copyInfo) {
-        if (!this.isFilterCut) {
-            this.parent.notify(getFilteredCollection, null);
-            for (var i = 0; i < this.parent.sheets.length; i++) {
-                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
-                    this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
-                    var range = copyInfo.range;
-                    var fRange = getRangeIndexes(this.parent.filterCollection[i].filterRange);
-                    var endCol = getColumnHeaderText(range[3]);
-                    var fEndCol = getColumnHeaderText(fRange[3]);
-                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
-                        this.isFilterCut = true;
-                    }
+    Clipboard.prototype.updateFilter = function (copyInfo, pastedRange) {
+        var isFilterCut;
+        this.parent.notify(getFilteredCollection, null);
+        for (var i = 0; i < this.parent.sheets.length; i++) {
+            if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
+                var range = copyInfo.range;
+                var fRange = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                var endCol = getColumnHeaderText(range[3]);
+                var fEndCol = getColumnHeaderText(fRange[3]);
+                if ((fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) ||
+                    (fRange[0] === range[2] && fRange[1] === range[3] && endCol === fEndCol)) {
+                    isFilterCut = true;
                 }
             }
         }
-        if (this.isFilterCut) {
+        var cell = this.parent.getCell(copyInfo.range[0], copyInfo.range[1]);
+        cell = cell.querySelector('.e-filter-icon') ? cell : this.parent.getCell(copyInfo.range[2], copyInfo.range[3]);
+        var asc = cell.querySelector('.e-sortasc-filter');
+        var desc = cell.querySelector('.e-sortdesc-filter');
+        if (isFilterCut) {
             for (var n = 0; n < this.parent.filterCollection.length; n++) {
                 var filterCol = this.parent.filterCollection[n];
                 var sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
@@ -18052,9 +18186,19 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 if (filterCol.sheetIdx === sheetIndex) {
                     this.parent.notify(initiateFilterUI, { predicates: null, range: filterCol.filterRange, sIdx: sheetIndex, isCut: true });
                 }
+                if (filterCol.sheetIdx === sheetIndex && sheetIndex === this.parent.activeSheetIndex) {
+                    this.parent.notify(initiateFilterUI, { predicates: null, range: null, sIdx: null, isCut: true });
+                    if (copyInfo.range[3] === copyInfo.range[1]) { // To update sorted icon after pasting.
+                        var filteredCell = this.parent.getCell(pastedRange[0], pastedRange[1]);
+                        if (asc && filteredCell) {
+                            filteredCell.querySelector('.e-filter-icon').classList.add('e-sortasc-filter');
+                        }
+                        if (desc && filteredCell) {
+                            filteredCell.querySelector('.e-filter-icon').classList.add('e-sortdesc-filter');
+                        }
+                    }
+                }
             }
-            this.parent.notify(initiateFilterUI, { predicates: null, range: null, sIdx: null, isCut: true });
-            this.isFilterCut = false;
         }
     };
     Clipboard.prototype.isInRange = function (cRng, pRng) {
@@ -18187,27 +18331,13 @@ var Clipboard = /** @__PURE__ @class */ (function () {
     };
     Clipboard.prototype.setCopiedInfo = function (args, isCut) {
         var _this = this;
-        if (this.parent.isEdit || this.isFilterCut) {
+        if (this.parent.isEdit) {
             return;
         }
         var deferred = new Deferred();
         args.promise = deferred.promise;
         var sheet = this.parent.getActiveSheet();
         var range = (args && args.range) || getRangeIndexes(sheet.selectedRange);
-        if (isCut) {
-            this.parent.notify(getFilteredCollection, null);
-            for (var i = 0; i < this.parent.sheets.length; i++) {
-                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
-                    this.parent.filterCollection[i].sheetIdx === this.parent.activeSheetIndex) {
-                    var fRange = getRangeIndexes(this.parent.filterCollection[i].filterRange);
-                    var endCol = getColumnHeaderText(range[3]);
-                    var fEndCol = getColumnHeaderText(fRange[3]);
-                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
-                        this.isFilterCut = true;
-                    }
-                }
-            }
-        }
         var option = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise: new Promise(function (resolve, reject) { resolve((function () { })()); })
         };
@@ -18345,8 +18475,8 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         for (var i = range[0]; i <= range[2]; i++) {
             data += '<tr>';
             for (var j = range[1]; j <= range[3]; j++) {
-                data += '<td style="white-space:nowrap;vertical-align:bottom;';
                 cell = getCell(i, j, sheet);
+                data += '<td style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
                 if (cell && cell.style) {
                     Object.keys(cell.style).forEach(function (style) {
                         var regex = style.match(/[A-Z]/);
@@ -18413,7 +18543,11 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                         var cSpan = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
                         var rSpan = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
-                        cells[j] = { value: td.textContent, style: _this.getStyle(td, ele), colSpan: cSpan, rowSpan: rSpan };
+                        cellStyle = _this.getStyle(td, ele);
+                        cells[j] = { value: td.textContent, style: cellStyle, colSpan: cSpan, rowSpan: rSpan };
+                        if (cellStyle.whiteSpace) {
+                            cells[j].wrap = true;
+                        }
                     });
                     rows.push({ cells: cells });
                     cells = [];
@@ -18431,6 +18565,9 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             text.trim().split('\n').forEach(function (row) {
                 row.split('\t').forEach(function (col, j) {
                     cells[j] = { style: cellStyle };
+                    if (cellStyle.whiteSpace) {
+                        cells[j].wrap = true;
+                    }
                     if (checkIsFormula(col)) {
                         cells[j].formula = col;
                     }
@@ -18462,7 +18599,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     var char = style.split(':')[0].trim();
                     if (['font-family', 'vertical-align', 'text-align', 'text-indent', 'color', 'background', 'font-weight', 'font-style',
                         'font-size', 'text-decoration', 'border-bottom', 'border-top', 'border-right', 'border-left',
-                        'border'].indexOf(char) > -1) {
+                        'border', 'white-space'].indexOf(char) > -1) {
                         char = char === 'background' ? 'backgroundColor' : char;
                         var regex = char.match(/-[a-z]/);
                         cellStyle[regex ? char.replace(regex[0], regex[0].charAt(1).toUpperCase()) : char] = style.split(':')[1];
@@ -24048,6 +24185,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             eventArgs.address.split('!')
             : eventArgs.range.split('!');
         var range = getRangeIndexes(address[1]);
+        var indexes = range;
         var sheetIndex = getSheetIndex(this.parent, address[0]);
         var sheet = getSheet(this.parent, sheetIndex);
         var actionData = eventArgs.beforeActionData;
@@ -24059,7 +24197,80 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             setRowEleHeight(this.parent, sheet, hgt, range[0]);
         }
         else {
-            updateAction(args, this.parent);
+            /* tslint:disable-next-line:no-any */
+            var argsEventArgs = args.eventArgs;
+            var activeCellIndexes = getRangeIndexes(sheet.activeCell);
+            var cellValue = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration;
+            if (argsEventArgs && argsEventArgs.style && argsEventArgs.style.textDecoration) {
+                var value = argsEventArgs.style.textDecoration;
+                var changedValue = value;
+                var changedStyle = void 0;
+                var removeProp = false;
+                if (cellValue === 'underline') {
+                    changedValue = value === 'underline' ? 'none' : 'underline line-through';
+                }
+                else if (cellValue === 'line-through') {
+                    changedValue = value === 'line-through' ? 'none' : 'underline line-through';
+                }
+                else if (cellValue === 'underline line-through') {
+                    changedValue = value === 'underline' ? 'line-through' : 'underline';
+                    removeProp = true;
+                }
+                if (changedValue === 'none') {
+                    removeProp = true;
+                }
+                argsEventArgs.style.textDecoration = changedValue;
+                args.eventArgs = argsEventArgs;
+                this.parent.notify(setCellFormat, {
+                    style: { textDecoration: changedValue }, range: activeCellIndexes, refreshRibbon: true,
+                    onActionUpdate: true
+                });
+                for (var i = indexes[0]; i <= indexes[2]; i++) {
+                    for (var j = indexes[1]; j <= indexes[3]; j++) {
+                        if (i === activeCellIndexes[0] && j === activeCellIndexes[1]) {
+                            continue;
+                        }
+                        changedStyle = {};
+                        cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration;
+                        if (cellValue === 'none') {
+                            if (removeProp) {
+                                continue;
+                            }
+                            changedStyle.textDecoration = value;
+                        }
+                        else if (cellValue === 'underline' || cellValue === 'line-through') {
+                            if (removeProp) {
+                                if (value === cellValue) {
+                                    changedStyle.textDecoration = 'none';
+                                }
+                                else {
+                                    continue;
+                                }
+                            }
+                            else {
+                                changedStyle.textDecoration = value !== cellValue ? 'underline line-through' : value;
+                            }
+                        }
+                        else if (cellValue === 'underline line-through') {
+                            if (removeProp) {
+                                changedStyle.textDecoration = value === 'underline' ? 'line-through' : 'underline';
+                            }
+                            else {
+                                continue;
+                            }
+                        }
+                        this.parent.notify(setCellFormat, {
+                            style: { textDecoration: changedStyle.textDecoration }, range: [i, j, i, j], refreshRibbon: true,
+                            onActionUpdate: true
+                        });
+                    }
+                }
+                argsEventArgs.style.textDecoration = value;
+                args.eventArgs = argsEventArgs;
+            }
+            else {
+                updateAction(args, this.parent);
+            }
         }
         if (isRefresh) {
             this.parent.notify(selectRange, { indexes: range });
@@ -24203,8 +24414,13 @@ var WrapText = /** @__PURE__ @class */ (function () {
                     if (ele) {
                         args.wrap ? ele.classList.add(WRAPTEXT) : ele.classList.remove(WRAPTEXT);
                         if (isCustomHgt) {
-                            ele.innerHTML
-                                = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                            if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
+                                ele.innerHTML
+                                    = this.parent.createElement('span', {
+                                        className: 'e-wrap-content',
+                                        innerHTML: ele.innerHTML
+                                    }).outerHTML;
+                            }
                         }
                     }
                     if (Browser.isIE) {
@@ -24302,7 +24518,12 @@ var WrapText = /** @__PURE__ @class */ (function () {
                 var cell = getCell(args.rowIdx, i, sheet);
                 if (cell && cell.wrap) {
                     var ele = this.parent.getCell(args.rowIdx, i);
-                    ele.innerHTML = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                    if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
+                        ele.innerHTML = this.parent.createElement('span', {
+                            className: 'e-wrap-content',
+                            innerHTML: ele.innerHTML
+                        }).outerHTML;
+                    }
                 }
             }
         }
@@ -24345,9 +24566,7 @@ var Insert = /** @__PURE__ @class */ (function () {
         switch (args.modelType) {
             case 'Sheet':
                 this.parent.notify(insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !isAction });
-                if (args.index === this.parent.activeSheetIndex) {
-                    this.parent.renderModule.refreshSheet();
-                }
+                this.parent.renderModule.refreshSheet();
                 this.parent.element.focus();
                 break;
             case 'Row':
@@ -24454,9 +24673,15 @@ var Delete = /** @__PURE__ @class */ (function () {
             this.parent.notify(beginAction, { eventArgs: args, action: 'delete' });
         }
         if (args.modelType === 'Sheet') {
-            this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex - 1 }, true);
-            this.parent.notify(refreshSheetTabs, this);
-            this.parent.renderModule.refreshSheet();
+            var activeSheetDeleted = args.activeSheetIndex >= args.startIndex && args.activeSheetIndex <= args.endIndex;
+            if (activeSheetDeleted) {
+                this.parent.setProperties({ activeSheetIndex: this.parent.skipHiddenSheets(args.startIndex < this.parent.sheets.length ? args.startIndex :
+                        (args.startIndex ? args.startIndex - 1 : 0)) }, true);
+            }
+            this.parent.notify(refreshSheetTabs, null);
+            if (activeSheetDeleted) {
+                this.parent.renderModule.refreshSheet();
+            }
             this.parent.element.focus();
         }
         else if (args.modelType === 'Row') {
@@ -24731,13 +24956,17 @@ var DataValidation = /** @__PURE__ @class */ (function () {
     DataValidation.prototype.listValueChange = function (value) {
         var sheet = this.parent.getActiveSheet();
         var cellIdx = getIndexesFromAddress(sheet.activeCell);
-        var cellObj = getCell(cellIdx[0], cellIdx[1], sheet);
+        var cellObj = Object.assign({}, getCell(cellIdx[0], cellIdx[1], sheet));
         if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
         }
         else {
             this.parent.notify(workbookEditOperation, { action: 'updateCellValue', address: sheet.activeCell, value: value });
             this.parent.serviceLocator.getService('cell').refreshRange(cellIdx);
+            this.parent.trigger('cellSave', {
+                value: value, oldValue: cellObj && cellObj.value, address: sheet.name + '!' + sheet.activeCell,
+                displayText: this.parent.getDisplayText(getCell(cellIdx[0], cellIdx[1], sheet))
+            });
         }
     };
     DataValidation.prototype.initiateDataValidationHandler = function () {
@@ -27929,9 +28158,9 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
+     * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
      * @method destroy
      * @return {void}
-     * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
      */
     Ribbon.prototype.destroy = function () {
         var expandCollapseElem = this.element.querySelector('.e-drop-icon');
@@ -31197,7 +31426,14 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
                     var isFormulaEdit = (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0) ||
                         checkIsFormula(eventArgs.editedValue);
                     var formulaInp = document.getElementById(_this.parent.element.id + '_formula_input');
-                    formulaInp.value = value;
+                    var addressRange = getRangeIndexes(address);
+                    var cellEle = _this.parent.getCell(addressRange[0], addressRange[1]);
+                    if (cell && !cell.formula && cellEle) {
+                        formulaInp.value = cellEle.textContent;
+                    }
+                    else {
+                        formulaInp.value = value;
+                    }
                     if (!isNullOrUndefined(value) && !isFormulaEdit) {
                         _this.parent.notify(editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });
                     }
@@ -32178,7 +32414,12 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
             this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
         }
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        if (!args.preventUpdate) {
+        if (args.preventUpdate) {
+            if (args.startIdx !== this.tabInstance.selectedItem) {
+                this.refreshSheetTab();
+            }
+        }
+        else {
             this.updateSheetTab({ idx: args.startIdx });
         }
     };
@@ -32755,11 +32996,13 @@ var Save = /** @__PURE__ @class */ (function () {
     Save.prototype.addEventListener = function () {
         this.parent.on(beginSave, this.initiateSave, this);
         this.parent.on(saveCompleted, this.saveCompleted, this);
+        this.parent.on(saveError, this.showErrorDialog, this);
     };
     Save.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(beginSave, this.initiateSave);
             this.parent.off(saveCompleted, this.saveCompleted);
+            this.parent.off(saveError, this.showErrorDialog);
         }
     };
     /**
@@ -32783,6 +33026,14 @@ var Save = /** @__PURE__ @class */ (function () {
      */
     Save.prototype.saveCompleted = function (args) {
         this.parent.hideSpinner();
+    };
+    Save.prototype.showErrorDialog = function (args) {
+        var _this = this;
+        var dialogInst = this.parent.serviceLocator.getService(dialog);
+        dialogInst.show({
+            target: this.parent.element, isModal: true, showCloseIcon: true, height: 180, width: 400, content: args.content,
+            beforeOpen: function () { return _this.parent.element.focus(); }
+        });
     };
     return Save;
 }());
@@ -33916,6 +34167,22 @@ var Filter = /** @__PURE__ @class */ (function () {
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
         }
+        var selectedRange = sheet.selectedRange;
+        var rangeIdx = getRangeIndexes(selectedRange);
+        if (rangeIdx[0] === rangeIdx[2] && rangeIdx[1] === rangeIdx[3]) {
+            rangeIdx[0] = 0;
+            rangeIdx[1] = 1;
+            rangeIdx[2] = sheet.usedRange.rowIndex;
+            rangeIdx[3] = sheet.usedRange.colIndex;
+            selectedRange = getRangeAddress(rangeIdx);
+        }
+        var eventArgs = {
+            range: args.range ? args.range : selectedRange,
+            filterOptions: { predicates: args.predicates }, cancel: false
+        };
+        if (!args.isCut) {
+            this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
+        }
         this.processRange(sheet, sheetIdx, args ? args.range : null);
         if (predicates) {
             var range = this.filterRange.get(sheetIdx).slice();
@@ -33934,6 +34201,9 @@ var Filter = /** @__PURE__ @class */ (function () {
                 });
                 _this.refreshFilterRange(null, false, args.sIdx);
             });
+        }
+        if (!args.isCut) {
+            this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
         }
     };
     /**
@@ -34913,6 +35183,10 @@ var SpreadsheetChart = /** @__PURE__ @class */ (function () {
                 var chartEleClassName = document.getElementById(prevCellChart[i].id);
                 if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
                     prevChartObj = prevCellChart[i];
+                    prevChartObj.height = args.currentHeight;
+                    prevChartObj.width = args.currentWidth;
+                    prevChartObj.top = args.currentTop;
+                    prevChartObj.left = args.currentLeft;
                     prevCellChart.splice(i, 1);
                 }
             }
@@ -35323,7 +35597,8 @@ var SpreadsheetChart = /** @__PURE__ @class */ (function () {
         if (argsOpt.isUndoRedo) {
             eventArgs = {
                 type: argsOpt.option.type, theme: argsOpt.option.theme, isSeriesInRows: argsOpt.option.isSeriesInRows,
-                range: argsOpt.option.range, id: argsOpt.option.id, posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
+                range: argsOpt.option.range, height: argsOpt.option.height, width: argsOpt.option.width, id: argsOpt.option.id,
+                posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
             };
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
             if (eventArgs.cancel) {
@@ -35334,6 +35609,8 @@ var SpreadsheetChart = /** @__PURE__ @class */ (function () {
             argsOpt.option.isSeriesInRows = eventArgs.isSeriesInRows;
             argsOpt.option.range = eventArgs.range;
             argsOpt.option.id = eventArgs.id;
+            argsOpt.option.height = eventArgs.height;
+            argsOpt.option.width = eventArgs.width;
         }
         var id = argsOpt.option.id + '_overlay';
         var sheetIndex = (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
@@ -35342,8 +35619,12 @@ var SpreadsheetChart = /** @__PURE__ @class */ (function () {
         var eleRange = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
         var element = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
         element.classList.add('e-datavisualization-chart');
-        element.style.width = '482px';
-        element.style.height = '290px';
+        element.style.width = argsOpt.option.width + 'px';
+        element.style.height = argsOpt.option.height + 'px';
+        element.style.top = isNullOrUndefined(argsOpt.option.top) ? element.style.top : (argsOpt.option.top + 'px');
+        element.style.left = isNullOrUndefined(argsOpt.option.left) ? element.style.left : (argsOpt.option.left + 'px');
+        argsOpt.option.top = parseInt(element.style.top.replace('px', ''), 10);
+        argsOpt.option.left = parseInt(element.style.left.replace('px', ''), 10);
         var chartContent = this.parent.createElement('div', {
             id: argsOpt.option.id, className: argsOpt.option.id
         });
@@ -35430,8 +35711,8 @@ var SpreadsheetChart = /** @__PURE__ @class */ (function () {
             }
         }
         var eventArgs = {
-            id: chartObj.id, range: chartObj.range, type: chartObj.type, theme: chartObj.theme,
-            isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null, cancel: false
+            id: chartObj.id, range: chartObj.range, type: chartObj.type, theme: chartObj.theme, height: chartObj.height,
+            width: chartObj.width, isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null, cancel: false
         };
         if (chartElements) {
             this.parent.notify(deleteChartColl, { id: args.id });
@@ -36266,10 +36547,11 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         if (this.parent[isReact]) {
             this.parent[renderReactTemplates]();
         }
-        this.getContentTable().insertBefore(colGrp.cloneNode(true), cTBody);
+        cTBody.parentElement.insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf(function () {
             var content = _this.parent.getMainContent();
-            document.getElementById(_this.parent.element.id + '_sheet').appendChild(frag);
+            var sheetContent = document.getElementById(_this.parent.element.id + '_sheet');
+            sheetContent.appendChild(frag);
             if (args.top) {
                 content.scrollTop = args.top;
                 if (sheet.showHeaders) {
@@ -37366,7 +37648,20 @@ var Render = /** @__PURE__ @class */ (function () {
             this.parent.trigger(beforeDataBound, {});
         }
         setAriaOptions(this.parent.getMainContent(), { busy: true });
+        var sheetsLen = this.parent.sheets.length;
         this.parent.getData(sheetName + "!" + address).then(function (values) {
+            if (args.refresh === 'All') {
+                if (sheetsLen < _this.parent.sheets.length) {
+                    return;
+                }
+                var sheetIdx = _this.parent.sheets.indexOf(sheet);
+                if (sheetIdx === -1 || sheetIdx !== _this.parent.activeSheetIndex) {
+                    if (sheetIdx > -1) {
+                        _this.checkTopLeftCell();
+                    }
+                    return;
+                }
+            }
             var indexes = [args.rowIndex, args.colIndex].concat(getCellIndexes(address.split(':')[1]));
             switch (args.refresh) {
                 case 'All':
@@ -37777,8 +38072,12 @@ var Overlay = /** @__PURE__ @class */ (function () {
         var target = e.target;
         var overlayElem = e.target;
         if (!target.classList.contains('e-ss-overlay')) {
-            overlayElem = closest(e.target, '.e-datavisualization-chart') ?
-                closest(e.target, '.e-datavisualization-chart') : target.parentElement;
+            overlayElem = target.parentElement;
+            if (closest(e.target, '.e-datavisualization-chart')) {
+                overlayElem = closest(e.target, '.e-datavisualization-chart');
+                this.currentWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
+                this.currenHeight = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('height').replace('px', ''));
+            }
         }
         this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
         this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop
@@ -37879,8 +38178,6 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      */
     function Spreadsheet(options, element) {
         var _this = _super.call(this, options) || this;
-        /** @hidden */
-        _this.isEdit = false;
         /** @hidden */
         _this.viewport = {
             rowCount: 0, colCount: 0, height: 0, topIndex: 0, leftIndex: 0, width: 0,
@@ -38013,27 +38310,27 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * By default, Spreadsheet shows the spinner for all its actions. To manually show spinner you this method at your needed time.
-     * @return {void}
      * {% codeBlock src='spreadsheet/showSpinner/index.md' %}{% endcodeBlock %}
+     * @return {void}
      */
     Spreadsheet.prototype.showSpinner = function () {
         showSpinner(this.element);
     };
     /**
      * To hide showed spinner manually.
-     * @return {void}
      * {% codeBlock src='spreadsheet/hideSpinner/index.md' %}{% endcodeBlock %}
+     * @return {void}
      */
     Spreadsheet.prototype.hideSpinner = function () {
         hideSpinner(this.element);
     };
     /**
      * To protect the particular sheet.
+     * {% codeBlock src='spreadsheet/protectSheet/index.md' %}{% endcodeBlock %}
      * @param {number | string} sheet - Specifies the sheet to protect.
      * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
      * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
      * @return {void}
-     * {% codeBlock src='spreadsheet/protectSheet/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.protectSheet = function (sheet, protectSettings) {
         if (typeof (sheet) === 'string') {
@@ -38049,9 +38346,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To unprotect the particular sheet.
+     * {% codeBlock src='spreadsheet/unprotectSheet/index.md' %}{% endcodeBlock %}
      * @param {number | string} sheet - Specifies the sheet to Unprotect.
      * @return {void}
-     * {% codeBlock src='spreadsheet/unprotectSheet/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.unprotectSheet = function (sheet) {
         if (typeof (sheet) === 'string') {
@@ -38067,6 +38364,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To find the specified cell value.
+     * {% codeBlock src='spreadsheet/find/index.md' %}{% endcodeBlock %}
      * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
      * @param {string} args.value - Specifies the value to be find.
      * @param {FindModeType} args.mode - Specifies the value to be find within sheet or workbook.
@@ -38077,19 +38375,18 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @param {number} args.sheetIndex - Specifies the current sheet to find.
      * @default { mode: 'Sheet', searchBy: 'By Row', isCSen: 'false', isEMatch:'false' }
      * @return {void}
-     * {% codeBlock src='spreadsheet/find/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.find = function (args) {
         _super.prototype.findHandler.call(this, args);
     };
     /**
      * To replace the specified cell value.
+     * {% codeBlock src='spreadsheet/replace/index.md' %}{% endcodeBlock %}
      * @param {FindOptions} args - Specifies the replace value with find args to replace specified cell value.
      * @param {string} args.replaceValue - Specifies the replacing value.
      * @param {string} args.replaceBy - Specifies the value to be replaced for one or all.
      * @param {string} args.value - Specifies the value to be replaced
      * @return {void}
-     * {% codeBlock src='spreadsheet/replace/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.replace = function (args) {
         args = {
@@ -38102,13 +38399,13 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To Find All the Match values Address within Sheet or Workbook.
+     * {% codeBlock src='spreadsheet/findAll/index.md' %}{% endcodeBlock %}
      * @param {string} value - Specifies the value to find.
      * @param {FindModeType} mode - Specifies the value to be find within Sheet/Workbook.
      * @param {boolean} isCSen - Specifies the find match with case sensitive or not.
      * @param {boolean} isEMatch - Specifies the find match with entire match or not.
      * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      * @return {string[]}
-     * {% codeBlock src='spreadsheet/findAll/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.findAll = function (value, mode, isCSen, isEMatch, sheetIndex) {
         mode = mode ? mode : 'Sheet';
@@ -38125,12 +38422,12 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to navigate to cell address within workbook.
+     * {% codeBlock src='spreadsheet/goTo/index.md' %}{% endcodeBlock %}
      * @param {string} address - Specifies the cell address you need to navigate.
      * You can specify the address in two formats,
      * `{sheet name}!{cell address}` - Switch to specified sheet and navigate to specified cell address.
      * `{cell address}` - Navigate to specified cell address with in the active sheet.
      * @return {void}
-     * {% codeBlock src='spreadsheet/goTo/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.goTo = function (address) {
         if (address.includes('!')) {
@@ -38246,8 +38543,8 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To cut the specified cell or cells properties such as value, format, style etc...
-     * @param {string} address - Specifies the range address to cut.
      * {% codeBlock src='spreadsheet/cut/index.md' %}{% endcodeBlock %}
+     * @param {string} address - Specifies the range address to cut.
      */
     Spreadsheet.prototype.cut = function (address) {
         var promise = new Promise(function (resolve, reject) { resolve((function () { })()); });
@@ -38260,8 +38557,8 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To copy the specified cell or cells properties such as value, format, style etc...
-     * @param {string} address - Specifies the range address.
      * {% codeBlock src='spreadsheet/copy/index.md' %}{% endcodeBlock %}
+     * @param {string} address - Specifies the range address.
      */
     Spreadsheet.prototype.copy = function (address) {
         var activeAddress = this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
@@ -38276,9 +38573,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * This method is used to paste the cut or copied cells in to specified address.
+     * {% codeBlock src='spreadsheet/paste/index.md' %}{% endcodeBlock %}
      * @param {string} address - Specifies the cell or range address.
      * @param {PasteSpecialType} type - Specifies the type of paste.
-     * {% codeBlock src='spreadsheet/paste/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.paste = function (address, type) {
         this.notify(paste, {
@@ -38288,10 +38585,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To update the action which need to perform.
+     * {% codeBlock src='spreadsheet/updateAction/index.md' %}{% endcodeBlock %}
      * @param {string} options - It describes an action and event args to perform.
      * @param {string} options.action - specifies an action.
      * @param {string} options.eventArgs - specifies an args to perform an action.
-     * {% codeBlock src='spreadsheet/updateAction/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.updateAction = function (options) {
         updateAction(options, this);
@@ -38310,10 +38607,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Set the width of column.
+     * {% codeBlock src='spreadsheet/setColWidth/index.md' %}{% endcodeBlock %}
      * @param {number} width
      * @param {number} colIndex
      * @param {number} sheetIndex
-     * {% codeBlock src='spreadsheet/setColWidth/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.setColWidth = function (width, colIndex, sheetIndex) {
         if (width === void 0) { width = 64; }
@@ -38361,10 +38658,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Set the height of row.
+     * {% codeBlock src='spreadsheet/setRowHeight/index.md' %}{% endcodeBlock %}
      * @param {number} height? - Specifies height needs to be updated. If not specified, it will set the default height 20.
      * @param {number} rowIndex? - Specifies the row index. If not specified, it will consider the first row.
      * @param {number} sheetIndex? - Specifies the sheetIndex. If not specified, it will consider the active sheet.
-     * {% codeBlock src='spreadsheet/setRowHeight/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.setRowHeight = function (height, rowIndex, sheetIndex, edited) {
         if (height === void 0) { height = 20; }
@@ -38415,6 +38712,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * This method is used to autofit the range of rows or columns
+     * {% codeBlock src='spreadsheet/autoFit/index.md' %}{% endcodeBlock %}
      * @param {string} range - range that needs to be autofit.
      *
      * ```html
@@ -38429,7 +38727,6 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * Spreadsheet.autoFit('1:4'); // Auto fit from 1 to 4 rows
      *
      * ```
-     * {% codeBlock src='spreadsheet/autoFit/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.autoFit = function (range) {
         var values = this.getIndexes(range);
@@ -38497,17 +38794,17 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add the hyperlink in the cell
+     * {% codeBlock src='spreadsheet/addHyperlink/index.md' %}{% endcodeBlock %}
      * @param {string | HyperlinkModel} hyperlink
      * @param {string} address
-     * {% codeBlock src='spreadsheet/addHyperlink/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.addHyperlink = function (hyperlink, address) {
         this.insertHyperlink(hyperlink, address, '', true);
     };
     /**
      * To remove the hyperlink in the cell
-     * @param {string} range
      * {% codeBlock src='spreadsheet/removeHyperlink/index.md' %}{% endcodeBlock %}
+     * @param {string} range
      */
     Spreadsheet.prototype.removeHyperlink = function (range) {
         var rangeArr;
@@ -38611,39 +38908,40 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * This method is used to add data validation.
+     * {% codeBlock src='spreadsheet/addDataValidation/index.md' %}{% endcodeBlock %}
      * @param {ValidationModel} rules - specifies the validation rules.
      * @param {string} range - range that needs to be add validation.
-     * {% codeBlock src='spreadsheet/addDataValidation/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.addDataValidation = function (rules, range) {
         _super.prototype.addDataValidation.call(this, rules, range);
     };
     /**
      * This method is used for remove validation.
-     * @param {string} range - range that needs to be remove validation.
      * {% codeBlock src='spreadsheet/removeDataValidation/index.md' %}{% endcodeBlock %}
+     * @param {string} range - range that needs to be remove validation.
      */
     Spreadsheet.prototype.removeDataValidation = function (range) {
         _super.prototype.removeDataValidation.call(this, range);
     };
     /**
      * This method is used to highlight the invalid data.
-     * @param {string} range - range that needs to be highlight the invalid data.
      * {% codeBlock src='spreadsheet/addInvalidHighlight/index.md' %}{% endcodeBlock %}
+     * @param {string} range - range that needs to be highlight the invalid data.
      */
     Spreadsheet.prototype.addInvalidHighlight = function (range) {
         _super.prototype.addInvalidHighlight.call(this, range);
     };
     /**
      * This method is used for remove highlight from invalid data.
-     * @param {string} range - range that needs to be remove invalid highlight.
      * {% codeBlock src='spreadsheet/removeInvalidHighlight/index.md' %}{% endcodeBlock %}
+     * @param {string} range - range that needs to be remove invalid highlight.
      */
     Spreadsheet.prototype.removeInvalidHighlight = function (range) {
         _super.prototype.removeInvalidHighlight.call(this, range);
     };
     /**
      * This method is used to add conditional formatting.
+     * {% codeBlock src='spreadsheet/conditionalFormat/index.md' %}{% endcodeBlock %}
      * @param  {string} type - Conditional formatting HighlightCell, TopBottom, DataBar, ColorScale, IconSet Type.
      * HighlightCell- 'GreaterThan' | 'LessThan' | 'Between' | 'EqualTo' | 'ContainsText' | 'DateOccur' | 'Duplicate' | 'Unique',
      * TopBottom - 'Top10Items' | 'Bottom10Items' | 'Top10Percentage' | 'Bottom10Percentage' | 'BelowAverage' | 'AboveAverage',
@@ -38657,15 +38955,14 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * CFColor - 'RedFT' | 'YellowFT' | 'GreenFT' | 'RedF' | 'RedT'.
      * @param  {string} value - Pass the value to set the conditional formatting.
      * @param  {string} range - Pass the range to set the conditional formatting.
-     * {% codeBlock src='spreadsheet/conditionalFormat/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.conditionalFormat = function (conditionalFormat) {
         _super.prototype.conditionalFormat.call(this, conditionalFormat);
     };
     /**
      * This method is used for remove conditional formatting.
-     * @param {string} range - range that needs to be remove conditional formatting.
      * {% codeBlock src='spreadsheet/clearConditionalFormat/index.md' %}{% endcodeBlock %}
+     * @param {string} range - range that needs to be remove conditional formatting.
      */
     Spreadsheet.prototype.clearConditionalFormat = function (range) {
         range = range || this.getActiveSheet().selectedRange;
@@ -38680,8 +38977,8 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Opens the Excel file.
-     * @param {OpenOptions} options - Options for opening the excel file.
      * {% codeBlock src='spreadsheet/open/index.md' %}{% endcodeBlock %}
+     * @param {OpenOptions} options - Options for opening the excel file.
      */
     Spreadsheet.prototype.open = function (options) {
         this.isOpen = true;
@@ -38714,17 +39011,17 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * This method is used to Clear contents, formats and hyperlinks in spreadsheet.
-     *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.
      * {% codeBlock src='spreadsheet/clear/index.md' %}{% endcodeBlock %}
+     *    * @param {ClearOptions} options - Options for clearing the content, formats and hyperlinks in spreadsheet.
      */
     Spreadsheet.prototype.clear = function (options) {
         this.notify(clearViewer, { options: options, isPublic: true });
     };
     /**
      * Used to refresh the spreadsheet.
+     * {% codeBlock src='spreadsheet/refresh/index.md' %}{% endcodeBlock %}
      * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
      * @returns void
-     * {% codeBlock src='spreadsheet/refresh/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.refresh = function (isNew) {
         if (this[isReact]) {
@@ -38734,6 +39031,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to set the image in spreadsheet.
+     * {% codeBlock src='spreadsheet/insertImage/index.md' %}{% endcodeBlock %}
      * @param {ImageModel} images - Specifies the options to insert image in spreadsheet.
      * @param {string} range - Specifies the range in spreadsheet.
      * @returns void
@@ -38749,6 +39047,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Used to delete the image in spreadsheet.
+     * {% codeBlock src='spreadsheet/deleteImage/index.md' %}{% endcodeBlock %}
      * @param {string} id - Specifies the id of the image element to be deleted.
      * @param {string} range - Specifies the range in spreadsheet.
      * @returns void
@@ -38824,6 +39123,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To update a cell properties.
+     * {% codeBlock src='spreadsheet/updateCell/index.md' %}{% endcodeBlock %}
      * @param {CellModel} cell - Cell properties.
      * @param {string} address - Address to update.
      */
@@ -38835,9 +39135,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Sorts the range of cells in the active sheet.
+     * {% codeBlock src='spreadsheet/sort/index.md' %}{% endcodeBlock %}
      * @param sortOptions - options for sorting.
      * @param range - address of the data range.
-     * {% codeBlock src='spreadsheet/sort/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.sort = function (sortOptions, range) {
         var _this = this;
@@ -38969,27 +39269,6 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         });
         indicator.style.display = '';
     };
-    /** @hidden */
-    Spreadsheet.prototype.skipHiddenSheets = function (index, initIdx, hiddenCount) {
-        if (hiddenCount === void 0) { hiddenCount = 0; }
-        if (this.sheets[index] && this.sheets[index].state !== 'Visible') {
-            if (initIdx === undefined) {
-                initIdx = index;
-            }
-            if (index && index + 1 === this.sheets.length) {
-                index = initIdx - 1;
-            }
-            else {
-                index < initIdx ? index-- : index++;
-            }
-            index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
-        }
-        if (hiddenCount === this.sheets.length) {
-            this.setSheetPropertyOnMute(this.sheets[0], 'state', 'Visible');
-            return 0;
-        }
-        return index;
-    };
     /**
      * To perform the undo operation in spreadsheet.
      * {% codeBlock src='spreadsheet/undo/index.md' %}{% endcodeBlock %}
@@ -39006,14 +39285,15 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To update the undo redo collection in spreadsheet.
-     * @param {object} args - options for undo redo.
      * {% codeBlock src='spreadsheet/updateUndoRedoCollection/index.md' %}{% endcodeBlock %}
+     * @param {object} args - options for undo redo.
      */
     Spreadsheet.prototype.updateUndoRedoCollection = function (args) {
         this.notify(updateUndoRedoCollection, { args: args, isPublic: true });
     };
     /**
      * Adds the defined name to the Spreadsheet.
+     * {% codeBlock src='spreadsheet/addDefinedName/index.md' %}{% endcodeBlock %}
      * @param {DefineNameModel} definedName - Specifies the name.
      * @return {boolean} - Return the added status of the defined name.
      */
@@ -39028,6 +39308,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Removes the defined name from the Spreadsheet.
+     * {% codeBlock src='spreadsheet/removeDefinedName/index.md' %}{% endcodeBlock %}
      * @param {string} definedName - Specifies the name.
      * @param {string} scope - Specifies the scope of the defined name.
      * @return {boolean} - Return the removed status of the defined name.
@@ -39094,12 +39375,12 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add context menu items.
+     * {% codeBlock src='spreadsheet/addContextMenu/index.md' %}{% endcodeBlock %}
      * @param {MenuItemModel[]} items - Items that needs to be added.
      * @param {string} text - Item before / after that the element to be inserted.
      * @param {boolean} insertAfter - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
-     * {% codeBlock src='spreadsheet/addContextMenu/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.addContextMenuItems = function (items, text, insertAfter, isUniqueId) {
         if (insertAfter === void 0) { insertAfter = true; }
@@ -39107,19 +39388,19 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To remove existing context menu items.
+     * {% codeBlock src='spreadsheet/removeContextMenuItems/index.md' %}{% endcodeBlock %}
      * @param {string[]} items - Items that needs to be removed.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
-     * {% codeBlock src='spreadsheet/removeContextMenuItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.removeContextMenuItems = function (items, isUniqueId) {
         this.notify(removeContextMenuItems, { items: items, isUniqueId: isUniqueId });
     };
     /**
      * To enable / disable context menu items.
+     * {% codeBlock src='spreadsheet/enableContextMenuItems/index.md' %}{% endcodeBlock %}
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
-     * {% codeBlock src='spreadsheet/enableContextMenuItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.enableContextMenuItems = function (items, enable, isUniqueId) {
         if (enable === void 0) { enable = true; }
@@ -39127,11 +39408,11 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To enable / disable file menu items.
+     * {% codeBlock src='spreadsheet/enableFileMenuItems/index.md' %}{% endcodeBlock %}
      * @param {string[]} items - Items that needs to be enabled / disabled.
      * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
-     * {% codeBlock src='spreadsheet/enableFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.enableFileMenuItems = function (items, enable, isUniqueId) {
         if (enable === void 0) { enable = true; }
@@ -39139,11 +39420,11 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To show/hide the file menu items in Spreadsheet ribbon.
+     * {% codeBlock src='spreadsheet/hideFileMenuItems/index.md' %}{% endcodeBlock %}
      * @param {string[]} items - Specifies the file menu items text which is to be show/hide.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
-     * {% codeBlock src='spreadsheet/hideFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.hideFileMenuItems = function (items, hide, isUniqueId) {
         if (hide === void 0) { hide = true; }
@@ -39151,13 +39432,13 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add custom file menu items.
+     * {% codeBlock src='spreadsheet/addFileMenuItems/index.md' %}{% endcodeBlock %}
      * @param {MenuItemModel[]} items - Specifies the ribbon file menu items to be inserted.
      * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
      * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
      * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
-     * {% codeBlock src='spreadsheet/addFileMenuItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.addFileMenuItems = function (items, text, insertAfter, isUniqueId) {
         if (insertAfter === void 0) { insertAfter = true; }
@@ -39165,10 +39446,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To show/hide the existing ribbon tabs.
+     * {% codeBlock src='spreadsheet/hideRibbonTabs/index.md' %}{% endcodeBlock %}
      * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
      * @returns void.
-     * {% codeBlock src='spreadsheet/hideRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.hideRibbonTabs = function (tabs, hide) {
         if (hide === void 0) { hide = true; }
@@ -39176,10 +39457,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To enable / disable the existing ribbon tabs.
+     * {% codeBlock src='spreadsheet/enableRibbonTabs/index.md' %}{% endcodeBlock %}
      * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
      * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
      * @returns void.
-     * {% codeBlock src='spreadsheet/enableRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.enableRibbonTabs = function (tabs, enable) {
         if (enable === void 0) { enable = true; }
@@ -39187,34 +39468,34 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add custom ribbon tabs.
+     * {% codeBlock src='spreadsheet/addRibbonTabs/index.md' %}{% endcodeBlock %}
      * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
      * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
      * @returns void.
-     * {% codeBlock src='spreadsheet/addRibbonTabs/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.addRibbonTabs = function (items, insertBefore) {
         this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
     };
     /**
      * Enables or disables the specified ribbon toolbar items or all ribbon items.
+     * {% codeBlock src='spreadsheet/enableToolbarItems/index.md' %}{% endcodeBlock %}
      * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
      * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
      * If it is not specified the entire toolbar items will be enabled / disabled.
      * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
      * @returns void.
-     * {% codeBlock src='spreadsheet/enableToolbarItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.enableToolbarItems = function (tab, items, enable) {
         this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable }]);
     };
     /**
      * To show/hide the existing Spreadsheet ribbon toolbar items.
+     * {% codeBlock src='spreadsheet/hideToolbarItems/index.md' %}{% endcodeBlock %}
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items needs to be hidden / shown.
      * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
      * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
      * @returns void.
-     * {% codeBlock src='spreadsheet/hideToolbarItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.hideToolbarItems = function (tab, indexes, hide) {
         if (hide === void 0) { hide = true; }
@@ -39222,44 +39503,44 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add the custom items in Spreadsheet ribbon toolbar.
+     * {% codeBlock src='spreadsheet/addToolbarItems/index.md' %}{% endcodeBlock %}
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
      * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
      * @param {number} index? - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      * @returns void.
-     * * {% codeBlock src='spreadsheet/addToolbarItems/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.addToolbarItems = function (tab, items, index) {
         this.notify(addToolbarItems, { tab: tab, items: items, index: index });
     };
     /**
      * Selects the cell / range of cells with specified address.
-     * @param {string} address - Specifies the range address.
      * {% codeBlock src='spreadsheet/selectRange/index.md' %}{% endcodeBlock %}
+     * @param {string} address - Specifies the range address.
      */
     Spreadsheet.prototype.selectRange = function (address) {
         this.notify(selectRange, { indexes: getRangeIndexes(address) });
     };
     /**
      * Start edit the active cell.
-     * @return {void}
      * {% codeBlock src='spreadsheet/startEdit/index.md' %}{% endcodeBlock %}
+     * @return {void}
      */
     Spreadsheet.prototype.startEdit = function () {
         this.notify(editOperation, { action: 'startEdit', isNewValueEdit: false });
     };
     /**
      * Cancels the edited state, this will not update any value in the cell.
-     * @return {void}
      * {% codeBlock src='spreadsheet/closeEdit/index.md' %}{% endcodeBlock %}
+     * @return {void}
      */
     Spreadsheet.prototype.closeEdit = function () {
         this.notify(editOperation, { action: 'cancelEdit' });
     };
     /**
      * If Spreadsheet is in editable state, you can save the cell by invoking endEdit.
-     * @return {void}
      * {% codeBlock src='spreadsheet/endEdit/index.md' %}{% endcodeBlock %}
+     * @return {void}
      */
     Spreadsheet.prototype.endEdit = function () {
         this.notify(editOperation, { action: 'endEdit' });
@@ -39388,14 +39669,15 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Appends the control within the given HTML Div element.
-     * @param {string | HTMLElement} selector - Target element where control needs to be appended.
      * {% codeBlock src='spreadsheet/appendTo/index.md' %}{% endcodeBlock %}
+     * @param {string | HTMLElement} selector - Target element where control needs to be appended.
      */
     Spreadsheet.prototype.appendTo = function (selector) {
         _super.prototype.appendTo.call(this, selector);
     };
     /**
      * Filters the range of cells in the sheet.
+     * @hidden
      */
     Spreadsheet.prototype.filter = function (filterOptions, range) {
         if (!this.allowFiltering) {
@@ -39406,6 +39688,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Clears the filter changes of the sheet.
+     * {% codeBlock src='spreadsheet/clearFilter/index.md' %}{% endcodeBlock %}
      */
     Spreadsheet.prototype.clearFilter = function (field) {
         if (field) {
@@ -39424,6 +39707,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add custom library function.
+     *  {% codeBlock src='spreadsheet/addCustomFunction/index.md' %}{% endcodeBlock %}
      * @param {string} functionHandler - Custom function handler name
      * @param {string} functionName - Custom function name
      */
@@ -39564,5 +39848,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, FilterCollection, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, getFilteredCollection, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, checkIsFormula, isCellReference, isChar, inRange, isLocked, isValidCellReference, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, chartRangeSelection, isReact, renderReactTemplates, clearTemplate, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, FilterCollection, DefineName, ProtectSettings, Hyperlink, Validation, Format, ConditionalFormat, Chart$1 as Chart, Image, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, dataChanged, workbookOpen, beginSave, getFilteredCollection, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, unprotectsheetHandler, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, setCFRule, cFInitialCheck, clearCFRule, initiateClearCFRule, cFRender, cFDelete, clear, clearCF, clearCells, setImage, setChart, initiateChart, refreshRibbonIcons, refreshChart, refreshChartSize, updateChart, deleteChartColl, initiateChartModel, focusChartBorder, saveError, checkIsFormula, isCellReference, isChar, inRange, isLocked, isValidCellReference, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookImage, WorkbookChart, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, WorkbookConditionalFormat, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, isFormulaBarEdit, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, unprotectSheet, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, showAggregate, initiateConditionalFormat, checkConditionalFormat, setCF, clearViewer, initiateFormulaReference, initiateCur, clearCellRef, editValue, addressHandle, initiateEdit, forRefSelRender, blankWorkbook, insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY, getColIdxFromClientX, createImageElement, deleteImage, deleteChart, refreshChartCellObj, refreshImagePosition, updateTableWidth, focusBorder, clearChartBorder, insertChart, chartRangeSelection, isReact, renderReactTemplates, clearTemplate, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, overlay, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, ConditionalFormatting, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, SpreadsheetImage, SpreadsheetChart, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getSkeletonVal, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

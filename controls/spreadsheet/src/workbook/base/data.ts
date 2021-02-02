@@ -43,9 +43,7 @@ export function getData(
                                 cells[key] = row ? getCell(sRow, i, sheet) : null;
                             }
                             if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
-                            if (cells[key]) {
-                                data[index.toString()] = cells;
-                            }
+                            data[index.toString()] = cells;
                         } else {
                             let cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
                             if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {

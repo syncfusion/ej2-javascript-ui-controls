@@ -630,10 +630,17 @@
   display: block;
   line-height: $ddl-select-all-height;
   overflow: hidden;
+  padding-right: $ddl-list-padding-right;
   position: relative;
   text-indent: $ddl-check-right;
   white-space: nowrap;
   width: 100%;
+}
+
+.e-rtl .e-multi-select-list-wrapper .e-selectall-parent,
+.e-multi-select-list-wrapper.e-rtl .e-selectall-parent {
+  padding-left: $ddl-list-rtl-padding-left;
+  padding-right: $ddl-list-rtl-padding-right;
 }
 
 .e-multi-select-list-wrapper .e-selectall-parent .e-all-text {

@@ -2649,13 +2649,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
+                        if (!isNullOrUndefined(this.savedDataSourceSettings) && (this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
+                            PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
+                            this.savedDataSourceSettings = undefined;
+                        }
                         if ((newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0) {
                             this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
                             this.setProperties({ dataSourceSettings: { rows: [] } }, true);
                             this.setProperties({ dataSourceSettings: { columns: [] } }, true);
                             this.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            this.pivotValues = [];
+                            this.setProperties({ dataSourceSettings: { filters: [] } }, true);
                         }
+                        this.pivotValues = [];
                         this.engineModule.fieldList = null;
                         if (this.dataSourceSettings.groupSettings.length > 0) {
                             this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
@@ -2689,7 +2694,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                 this.loadData();
                             } else {
                                 if (newProp.dataSourceSettings && 'dataSource' in newProp.dataSourceSettings) {
+                                    if ((newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0) {
+                                        this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
+                                        this.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                                        this.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                                        this.setProperties({ dataSourceSettings: { values: [] } }, true);
+                                        this.setProperties({ dataSourceSettings: { filters: [] } }, true);
+                                    }
                                     this.engineModule.fieldList = null;
+                                    this.pivotValues = [];
                                 }
                                 this.notify(events.initialLoad, {});
                             }
@@ -3572,10 +3585,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /* tslint:enable */
 
     private onContentReady(): void {
-        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
-            PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
-            this.savedDataSourceSettings = undefined;
-        }
         if (this.currentView !== 'Table') {
             /* tslint:disable-next-line */
             if (this.cellTemplate && isBlazor()) {
@@ -3736,7 +3745,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private setToolTip(args: TooltipEventArgs): void {
         let colIndex: number = Number(args.target.getAttribute('aria-colindex'));
         let rowIndex: number = Number(args.target.getAttribute('index'));
-        let cell: IAxisSet = (this.pivotValues && this.pivotValues[rowIndex] && this.pivotValues[rowIndex][colIndex]) ?
+        let cell: IAxisSet = (this.dataSourceSettings.values.length > 0 && this.pivotValues && this.pivotValues[rowIndex] && this.pivotValues[rowIndex][colIndex]) ?
             (this.pivotValues[rowIndex][colIndex] as IAxisSet) : undefined;
         this.tooltip.content = '';
         let aggregateType: string; let caption: string;

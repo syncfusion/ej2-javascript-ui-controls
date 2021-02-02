@@ -636,9 +636,9 @@ describe('Uploader Control', () => {
             uploadObj.appendTo(document.getElementById('upload1'));
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toBe('Or drop files here');
         });
-        it('drag hover ', () => {
+        it('drag enter ', () => {
             let dragEventArgs: any = { preventDefault: (): void => {}, action: null, target: null, stopPropagation: (): void => {}, };
-            uploadObj.dragHover(dragEventArgs);
+            uploadObj.onDragEnter(dragEventArgs);
             expect(uploadObj.dropZoneElement.classList.contains('e-upload-drag-hover')).toBe(true);
         })
         it('drag leave ', () => {
@@ -1373,9 +1373,9 @@ describe('Uploader Control', () => {
             uploadObj.removeFiles(removeEventArgs);
             expect(uploadObj.listParent.querySelectorAll('li').length).toEqual(1);
         })
-        it('Control Disable with drag hover', () => {
+        it('Control Disable with drag enter', () => {
             let dragEventArgs: any = { preventDefault: (): void => {}, action: null, target: null, stopPropagation: (): void => {}, };
-            uploadObj.dragHover(dragEventArgs);
+            uploadObj.onDragEnter(dragEventArgs);
             expect(uploadObj.dropZoneElement.classList.contains('e-upload-drag-hover')).toBe(false);
         })
     })
@@ -4543,7 +4543,7 @@ describe('Uploader Control', () => {
             expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
             expect(uploadObj.dropArea).toEqual(uploadObj.uploadWrapper);
         });
         it('No dropArea value is given while rendering as well as render with localization', function () {
@@ -4556,7 +4556,7 @@ describe('Uploader Control', () => {
             expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
             expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
             expect(uploadObj.dropArea).toEqual(uploadObj.uploadWrapper);
         });
         it('No dropArea value is given while rendering and give localization as dynamic', function () {
@@ -4570,7 +4570,7 @@ describe('Uploader Control', () => {
             expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
             expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
             expect(uploadObj.dropArea).toEqual(uploadObj.uploadWrapper);
         });
         it('dropArea value is  given as custom-HTMLElement while rendering', function () {
@@ -4582,7 +4582,7 @@ describe('Uploader Control', () => {
             uploadObj.appendTo('#uploader');
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is  given as custom-HTMLElement while rendering as well as render with localization', function () {
             let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
@@ -4595,7 +4595,7 @@ describe('Uploader Control', () => {
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
             expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is  given as custom-HTMLElement while rendering and enter localization as dynamic', function () {
             let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
@@ -4609,7 +4609,7 @@ describe('Uploader Control', () => {
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
             expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is given as null while rendering', function () {
             uploadObj = new Uploader({
@@ -4648,7 +4648,7 @@ describe('Uploader Control', () => {
             expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is  given as default uploader while rendering as well as with localization', function () {
             uploadObj = new Uploader({
@@ -4661,7 +4661,7 @@ describe('Uploader Control', () => {
             expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
             expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is  given as default uploader while rendering and enter localization as dynamic', function () {
             uploadObj = new Uploader({
@@ -4675,7 +4675,7 @@ describe('Uploader Control', () => {
             expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
             expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is given as custom-HTMLelement after rendering as dynamic', function () {
             uploadObj = new Uploader({});
@@ -4686,7 +4686,7 @@ describe('Uploader Control', () => {
             uploadObj.dataBind();
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is given as custom-HTMLelement after rendering and give localization also as dynamic', function () {
             uploadObj = new Uploader({});
@@ -4699,7 +4699,7 @@ describe('Uploader Control', () => {
             expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
             expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
             expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
-            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(5);
         });
         it('dropArea value is  given as default uploader as dynamic', function () {
             uploadObj = new Uploader({});

@@ -1036,7 +1036,8 @@ export function createTemplate(
     try {
         let blazor: string = 'Blazor';
         let tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        let elementData: Element[] = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
+        let templateId: string = dataLabelId ? dataLabelId + '_template' : 'template';
+        let elementData: Element[] = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#304194` - This issue "Straight line segments are not moved while dragging " has been fixed.
+- `#309543` - This issue "overview's preview is not updated when update the diagram's size " has been fixed.
+- `#311751` - This issue "when drag and drop from the palette the symbol preview not disappear " has been fixed.
+
+#### New Features
+
+- `#285393` - Support to avoid connector overlapping with complex hierarchical layout has been added.
+
+#### Bug Fixes
+
 ## 18.4.39 (2021-01-28)
 
 ### Diagram

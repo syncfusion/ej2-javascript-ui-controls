@@ -143,6 +143,6 @@ export class WorkbookEdit {
     }
 
     private parseIntValue(value: string): string | number {
-        return /^\d*\.?\d*$/.test(value) ? parseFloat(value) : value;
+        return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
     }
 }

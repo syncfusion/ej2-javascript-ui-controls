@@ -234,6 +234,7 @@ export class Legend extends BaseLegend {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
+            chart.rotatedDataLabelCollections = [];
             blazorTemplatesReset(chart);
             removeElement(
                 getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]

@@ -6,8 +6,8 @@ window.sfBlazor.Kanban = (function () {
  * Kanban Constants
  */
 var ROOT_CLASS = 'e-kanban';
-
-
+var DEVICE_CLASS = 'e-device';
+var ICON_CLASS = 'e-icons';
 var CARD_CLASS = 'e-card';
 var HEADER_CLASS = 'e-kanban-header';
 var CONTENT_CLASS = 'e-kanban-content';
@@ -34,10 +34,10 @@ var MULTI_CARD_CONTAINER_CLASS = 'e-multi-card-container';
 var LIMITS_CLASS = 'e-limits';
 var SHOW_ADD_FOCUS = 'e-show-add-focus';
 
-
+var POPUP_HEADER_CLASS = 'e-popup-header';
 var POPUP_CONTENT_CLASS = 'e-popup-content';
-
-
+var CLOSE_CLASS = 'e-close';
+var CLOSE_ICON_CLASS = 'e-close-icon';
 
 var bottomSpace = 25;
 var DRAGGABLE_CLASS = 'e-draggable';
@@ -53,6 +53,7 @@ var SWIMLANE_RESOURCE_CLASS = 'e-swimlane-resource';
 
 var WINDOW_WIDTH = 'WindowWidth';
 var TOOLTIP_TEXT_CLASS = 'e-tooltip-text';
+var POPUP_WRAPPER_CLASS = 'e-mobile-popup-wrapper';
 
 /**
  * Drag and Drop module
@@ -754,7 +755,6 @@ var KanbanTouch = /** @class */ (function () {
     function KanbanTouch(parent) {
         this.parent = parent;
         this.tabHold = false;
-        this.wireTouchEvents();
     }
     KanbanTouch.prototype.wireTouchEvents = function () {
         this.element = this.parent.element.querySelector('.' + CONTENT_CLASS);
@@ -763,12 +763,53 @@ var KanbanTouch = /** @class */ (function () {
     KanbanTouch.prototype.tapHoldHandler = function (e) {
         this.tabHold = true;
         var target = sf.base.closest(e.originalEvent.target, '.' + CARD_CLASS);
+        if (target && this.parent.cardSettings.selectionType === 'Multiple') {
+            if (!this.mobilePopup) {
+                this.renderMobilePopup();
+                this.mobilePopup.show();
+            }
+            this.updatePopupContent();
+        }
+    };
+    KanbanTouch.prototype.renderMobilePopup = function () {
+        if (this.parent.cardSettings.selectionType === 'Multiple') {
+            var mobilePopupWrapper = sf.base.createElement('div', {
+                className: POPUP_WRAPPER_CLASS + ' e-popup-close',
+                innerHTML: "<div class=\"" + POPUP_HEADER_CLASS + "\"><button class=\"e-btn " + CLOSE_CLASS + " e-flat e-round e-small\">" +
+                    ("<span class=\"" + ICON_CLASS + " " + CLOSE_ICON_CLASS + "\"></span></button></div>") +
+                    ("<div class=\"" + POPUP_CONTENT_CLASS + "\"></div>")
+            });
+            document.body.appendChild(mobilePopupWrapper);
+            sf.base.addClass([mobilePopupWrapper], DEVICE_CLASS);
+            this.mobilePopup = new sf.popups.Popup(mobilePopupWrapper, {
+                targetType: 'container',
+                enableRtl: this.parent.enableRtl,
+                hideAnimation: { name: 'ZoomOut' },
+                showAnimation: { name: 'ZoomIn' },
+                collision: { X: 'fit', Y: 'fit' },
+                position: { X: 'left', Y: 'top' },
+                viewPortElement: document.body,
+                zIndex: 1004,
+                close: this.popupClose.bind(this)
+            });
+            var closeIcon = this.mobilePopup.element.querySelector('.' + CLOSE_CLASS);
+            sf.base.EventHandler.add(closeIcon, 'click', this.closeClick, this);
+        }
+    };
+    KanbanTouch.prototype.closeClick = function () {
+        this.mobilePopup.hide();
+    };
+    KanbanTouch.prototype.popupClose = function () {
+        this.popupDestroy();
     };
     KanbanTouch.prototype.getPopupContent = function () {
         var popupContent;
         var selectedCards = this.parent.getSelectedCards();
         if (selectedCards.length > 1) {
             popupContent = '(' + selectedCards.length + ') Cards Selected';
+        }
+        else if (selectedCards.length === 1) {
+            popupContent = ' ' + selectedCards[0].getAttribute('data-id');
         }
         return popupContent;
     };
@@ -848,6 +889,19 @@ var SfKanban = /** @class */ (function () {
     };
     SfKanban.prototype.getSelectedCards = function () {
         return [].slice.call(this.element.querySelectorAll('.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS));
+    };
+    SfKanban.prototype.documentClick = function (args) {
+        if (args.target.classList.contains(SWIMLANE_OVERLAY_CLASS) &&
+            this.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
+            this.treePopup.hide();
+            sf.base.removeClass([this.popupOverlay], 'e-enable');
+        }
+        if (sf.base.closest(args.target, "." + ROOT_CLASS)) {
+            return;
+        }
+        var cards = [].slice.call(this.element.querySelectorAll("." + CARD_CLASS + "." + CARD_SELECTION_CLASS));
+        sf.base.removeClass(cards, CARD_SELECTION_CLASS);
+        this.disableAttributeSelection(cards);
     };
     SfKanban.prototype.disableAttributeSelection = function (cards) {
         if (cards instanceof Element) {
@@ -1032,6 +1086,7 @@ var SfKanban = /** @class */ (function () {
         var _this = this;
         var content = this.element.querySelector('.' + CONTENT_CLASS);
         sf.base.EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        sf.base.EventHandler.add(document, sf.base.Browser.touchStartEvent, this.documentClick, this);
         var cardContainer = [].slice.call(this.element.querySelectorAll('.' + CARD_CONTAINER_CLASS));
         cardContainer.forEach(function (container) {
             if (container.offsetParent) {
@@ -1039,17 +1094,22 @@ var SfKanban = /** @class */ (function () {
             }
             sf.base.EventHandler.add(container, 'scroll', _this.onColumnScroll, _this);
         });
+        if (this.isAdaptive) {
+            this.touchModule.wireTouchEvents();
+        }
         this.wireDragEvent();
     };
     SfKanban.prototype.unWireEvents = function () {
         var _this = this;
         var content = this.element.querySelector('.' + CONTENT_CLASS);
         sf.base.EventHandler.remove(content, 'scroll', this.onContentScroll);
+        sf.base.EventHandler.remove(document, sf.base.Browser.touchStartEvent, this.documentClick);
         var cardContainer = [].slice.call(this.element.querySelectorAll('.' + CARD_CONTAINER_CLASS));
         cardContainer.forEach(function (container) { sf.base.EventHandler.remove(container, 'scroll', _this.onColumnScroll); });
         if (this.isAdaptive) {
             var cardContainers = [].slice.call(this.element.querySelectorAll('.' + CONTENT_CELLS_CLASS));
             cardContainers.forEach(function (cell) { sf.base.EventHandler.remove(cell, 'touchmove', _this.onAdaptiveScroll); });
+            this.touchModule.unWireTouchEvents();
         }
     };
     SfKanban.prototype.onCardClick = function (target, e) {

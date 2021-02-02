@@ -419,7 +419,10 @@ export class WorkbookFormula {
             if (formula.split('(').length === 2 && formula.indexOf(')') < 0) {
                 formula += ')';
             }
-            formula = formula.indexOf('=') === 0 ? formula.slice(1) : formula;
+            let isEqual: boolean;
+            if (formula.indexOf('=') === 0) {
+                formula = formula.slice(1); isEqual = true;
+            }
             let lessEq: RegExpMatchArray = formula.match(/</g);
             let greaterEq: RegExpMatchArray = formula.match(/>/g);
             let equal: RegExpMatchArray = formula.match(/=/g);
@@ -444,7 +447,7 @@ export class WorkbookFormula {
                 }
                 formula = formula.split(equalOp).join('=');
             }
-            formula = '=' + formula;
+            formula = isEqual ? '=' + formula : formula;
             if (lessEq || greaterEq || equal) {
                 getCell(rowIdx, colIdx, this.parent.getActiveSheet()).formula = formula;
             }

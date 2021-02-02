@@ -3,13 +3,14 @@ window.sfBlazor.InPlaceEditor = (function () {
 'use strict';
 
 var ROOT = 'e-inplaceeditor';
+var ROOT_TIP = 'e-inplaceeditor-tip';
 var OPEN = 'e-editable-open';
 var DISABLE = 'e-disable';
 var RTL = 'e-rtl';
 var EDITABLE_VALUE_ELEMENT = 'e-editable-value-element';
 var CLEAR_ICON = 'e-clear-icon';
 var EDITABLE_COMPONENT = 'e-editable-component';
-var CLS_POPUP = 'e-popup';
+var EDITABLE_ELEMENT = 'e-editable-elements';
 var CREATED = 'Created';
 var CANCEL_ACTION = 'CancelAction';
 var SAVE_ACTION = 'SaveAction';
@@ -150,7 +151,14 @@ var SfInPlaceEditor = /** @class */ (function () {
         return this.element.querySelector('.validation-message') ? true : false;
     };
     SfInPlaceEditor.prototype.docClickHandler = function (e) {
-        if (this.isClearTarget || sf.base.closest(e.target, '.' + CLS_POPUP)) {
+        var relateRoot = sf.base.closest(e.target, '.' + ROOT);
+        var relateTipRoot = sf.base.closest(e.target, '.' + ROOT_TIP);
+        var relateElements = sf.base.closest(e.target, '.' + EDITABLE_ELEMENT);
+        var relateRTEElements = sf.base.closest(e.target, '.' + '.e-rte-elements');
+        if (this.isClearTarget || ((!sf.base.isNullOrUndefined(relateRoot) && relateRoot.isEqualNode(this.element)) ||
+            (!sf.base.isNullOrUndefined(relateTipRoot) && this.popupConent && relateTipRoot.id.indexOf('tooltip') > -1)) ||
+            !sf.base.isNullOrUndefined(relateElements) || !sf.base.isNullOrUndefined(relateRTEElements) ||
+            e.target.classList.contains('e-chips-close')) {
             this.isClearTarget = false;
             return;
         }

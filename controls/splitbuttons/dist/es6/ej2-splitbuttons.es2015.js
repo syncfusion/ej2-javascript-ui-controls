@@ -394,10 +394,12 @@ let DropDownButton = class DropDownButton extends Component {
                 this.element.removeAttribute(key);
             });
             this.dropDown.destroy();
-            let popupEle = document.getElementById(this.getPopUpElement().id);
-            if (popupEle) {
-                removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
-                detach(popupEle);
+            if (this.getPopUpElement()) {
+                let popupEle = document.getElementById(this.getPopUpElement().id);
+                if (popupEle) {
+                    removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
+                    detach(popupEle);
+                }
             }
             if (!this.disabled) {
                 this.unWireEvents();
@@ -869,26 +871,27 @@ let SplitButton = class SplitButton extends DropDownButton {
     }
     destroy() {
         let classList$$1 = [RTL];
-        let element = document.getElementById(this.element.id);
         if (this.cssClass) {
             classList$$1 = classList$$1.concat(this.cssClass.split(' '));
         }
-        if (element && element.parentElement === this.wrapper) {
-            if (this.wrapper.tagName === TAGNAME) {
-                this.wrapper.innerHTML = '';
-                removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
-                removeClass([this.wrapper], this.cssClass.split(' '));
+        if (this.element) {
+            let element = document.getElementById(this.element.id);
+            if (element && element.parentElement === this.wrapper) {
+                if (this.wrapper.tagName === TAGNAME) {
+                    this.wrapper.innerHTML = '';
+                    removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
+                    removeClass([this.wrapper], this.cssClass.split(' '));
+                }
+                else {
+                    removeClass([this.element], classList$$1);
+                    ['aria-label', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type'].forEach((key) => {
+                        this.element.removeAttribute(key);
+                    });
+                    this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
+                    remove(this.wrapper);
+                }
+                this.unWireEvents();
             }
-            else {
-                removeClass([this.element], classList$$1);
-                ['aria-label', 'aria-haspopup', 'aria-expanded',
-                    'aria-owns', 'type'].forEach((key) => {
-                    this.element.removeAttribute(key);
-                });
-                this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
-                remove(this.wrapper);
-            }
-            this.unWireEvents();
         }
         this.primaryBtnObj.destroy();
         this.secondaryBtnObj.destroy();

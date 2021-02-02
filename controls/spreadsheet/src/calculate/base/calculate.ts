@@ -721,7 +721,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             col = parseInt((col / 26).toString(), 10);
             n++;
         }
-        return arrCol.join('');
+        let arr: string[] = [];
+        for (let i: number = 0; i < n; i++) {
+            arr[n - i - 1] = arrCol[i];
+        }
+        return arr.join('');
     }
 
     /** @hidden */
@@ -1260,7 +1264,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     continue;
                 } else if (this.isDigit(pFormula[i])) {
                     let s: string = this.emptyString;
-                    while (i < pFormula.length && this.isDigit(pFormula[i])) {
+                    while (i < pFormula.length && (this.isDigit(pFormula[i]) || pFormula[i] === this.parseDecimalSeparator)) {
                         s = s + pFormula[i];
                         i = i + 1;
                     }
@@ -1394,6 +1398,21 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                         || pFormula[i] === this.getParseDecimalSeparator()) {
                                         s = s + pFormula[i];
                                         i = i + 1;
+                                    }
+                                    if (i < pFormula.length && pFormula[i] === '%') {
+                                        i = i + 1;
+                                        if (s === '') {
+                                            if (stack.length > 0) {
+                                                let stackValue: string = stack[0];
+                                                let value: number = this.parseFloat(stackValue);
+                                                if (!this.isNaN(value)) {
+                                                    stack.pop();
+                                                    stack.push((value / 100).toString());
+                                                }
+                                            }
+                                        } else {
+                                            s = (this.parseFloat(s) / 100).toString();
+                                        }
                                     }
                                 }
                                 stack.push(s);

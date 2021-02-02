@@ -3040,4 +3040,84 @@ describe('TextBox ', () => {
             inputObject.destroy();
         });
     });
+    describe('EJ2CORE-495 - The rows attribute not added to the textarea element.', function () {
+        let inputObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('htmlAttribute addition inspection in multiline input', () => {
+            inputObj = new TextBox({
+                 htmlAttributes:{rows : '5', maxlength : '10', minlength : '5', required : 'true'},
+                 multiline : true,
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textarea.hasAttribute('rows')).toBe(true);
+            expect(inputObj.textarea.getAttribute('rows')).toBe('5');
+            expect(inputObj.element.hasAttribute('rows')).toBe(false);
+            expect(inputObj.textarea.hasAttribute('maxlength')).toBe(true);
+            expect(inputObj.textarea.getAttribute('maxlength')).toBe('10');
+            expect(inputObj.element.hasAttribute('maxlength')).toBe(false);
+            expect(inputObj.textarea.hasAttribute('minlength')).toBe(true);
+            expect(inputObj.textarea.getAttribute('minlength')).toBe('5');
+            expect(inputObj.element.hasAttribute('minlength')).toBe(false);
+            expect(inputObj.textarea.hasAttribute('required')).toBe(true);
+            expect(inputObj.textarea.getAttribute('required')).toBe('true');
+            expect(inputObj.element.hasAttribute('required')).toBe(false);
+        });
+        it('htmlAttribute addition inspection in multiline input for disabled, readonly and placeholder attributes', () => {
+            inputObj = new TextBox({
+                 htmlAttributes:{placeholder : 'Enter your address', disabled : 'true',  readonly : 'true'},
+                 multiline : true,
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textarea.hasAttribute('disabled')).toBe(true);
+            expect(inputObj.textarea.getAttribute('disabled')).toBe('disabled');
+            expect(inputObj.element.hasAttribute('disabled')).toBe(true);
+            expect(inputObj.textarea.hasAttribute('readonly')).toBe(true);
+            expect(inputObj.element.hasAttribute('readonly')).toBe(true);
+            expect(inputObj.textarea.hasAttribute('placeholder')).toBe(true);
+            expect(inputObj.textarea.getAttribute('placeholder')).toBe('Enter your address');
+            expect(inputObj.element.hasAttribute('placeholder')).toBe(true);
+        });
+        it('htmlAttribute addition inspection in multiline input for style and class', () => {
+            inputObj = new TextBox({
+                placeholder : 'Enter your address',
+                floatLabelType : 'Auto',
+                htmlAttributes:{ class : 'custom-class' , style : 'color : red'},
+                multiline : true,
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textarea.hasAttribute('class')).toBe(false);
+            expect(inputObj.textarea.hasAttribute('style')).toBe(false);
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class')).toBe(true);
+            expect(inputObj.textboxWrapper.container.style.color).toBe('red');
+        });
+        it('htmlAttribute addition inspection without using htmlAttributes API', () => {
+            let element: HTMLElement = createElement('input', { id: 'multiline' });
+            document.body.appendChild(element);
+            element.setAttribute('maxlength', '10');
+            element.setAttribute('rows', '5');
+            element.setAttribute('placeholder', 'Enter your address');
+            inputObj = new TextBox({
+                multiline : true,
+            });
+            inputObj.appendTo('#multiline');
+            expect(inputObj.textarea.hasAttribute('rows')).toBe(true);
+            expect(inputObj.textarea.getAttribute('rows')).toBe('5');
+            expect(inputObj.element.hasAttribute('rows')).toBe(false);
+            expect(inputObj.textarea.hasAttribute('maxlength')).toBe(true);
+            expect(inputObj.textarea.getAttribute('maxlength')).toBe('10');
+            expect(inputObj.element.hasAttribute('maxlength')).toBe(false);
+            expect(inputObj.textarea.hasAttribute('placeholder')).toBe(true);
+            expect(inputObj.textarea.getAttribute('placeholder')).toBe('Enter your address');
+            expect(inputObj.element.hasAttribute('placeholder')).toBe(true);
+        });
+    });
 })

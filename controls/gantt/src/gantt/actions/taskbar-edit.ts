@@ -54,6 +54,7 @@ export class TaskbarEdit extends DateProcessor {
     private elementOffsetWidth: number = 0;
     private elementOffsetHeight: number = 0;
     public segmentIndex: number = -1;
+    private targetElement: Element;
 
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
@@ -514,6 +515,7 @@ export class TaskbarEdit extends DateProcessor {
             args.cancel = false;
             args.previousData = this.previousItem;
             this.roundOffDuration = args.roundOffDuration;
+            this.targetElement = args.target = closest((e.target as Element), '.e-gantt-child-taskbar');
             this.updateMouseMoveProperties(e);
             if (this.taskBarEditAction === 'ProgressResizing') {
                 this.performProgressResize(e);
@@ -1521,6 +1523,7 @@ export class TaskbarEdit extends DateProcessor {
                     args.taskBarEditAction = this.taskBarEditAction;
                     args.action = 'TaskbarEditing';
                     args.roundOffDuration = this.roundOffDuration;
+                    args.target = this.targetElement;
                     this.taskbarEditedArgs = args;
                     this.taskbarEdited(args);
                 }

@@ -90,7 +90,7 @@ var ComboBox = /** @class */ (function (_super) {
         }
     };
     ComboBox.prototype.onBlur = function (e) {
-        var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        var inputValue = this.inputElement && this.inputElement.value === '' ? null : this.inputElement && this.inputElement.value;
         if (!sf.base.isNullOrUndefined(this.listData) && !sf.base.isNullOrUndefined(inputValue) && inputValue !== this.text) {
             this.customValue(e);
         }
@@ -160,7 +160,7 @@ var ComboBox = /** @class */ (function (_super) {
     };
     ComboBox.prototype.updateIconState = function () {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '' && !this.readonly) {
+            if (this.inputElement && this.inputElement.value !== '' && !this.readonly) {
                 sf.base.removeClass([this.inputWrapper.clearButton], sf.dropdowns.dropDownListClasses.clearIconHide);
             }
             else {
@@ -421,12 +421,14 @@ var ComboBox = /** @class */ (function (_super) {
         if (!sf.base.isNullOrUndefined(this.inputWrapper.buttons[0])) {
             sf.base.EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.dropDownClick);
         }
-        sf.base.EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
-        if (!this.readonly) {
-            sf.base.EventHandler.remove(this.inputElement, 'input', this.onInput);
-            sf.base.EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
-            sf.base.EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
-            sf.base.EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+        if (this.inputElement) {
+            sf.base.EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
+            if (!this.readonly) {
+                sf.base.EventHandler.remove(this.inputElement, 'input', this.onInput);
+                sf.base.EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
+                sf.base.EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+                sf.base.EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+            }
         }
         this.unBindCommonEvent();
     };
@@ -645,7 +647,8 @@ var ComboBox = /** @class */ (function (_super) {
      * @deprecated
      */
     ComboBox.prototype.hidePopup = function (e) {
-        var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        var inputValue = this.inputElement && this.inputElement.value === '' ? null
+            : this.inputElement && this.inputElement.value;
         if (!sf.base.isNullOrUndefined(this.listData)) {
             var isEscape = this.isEscapeKey;
             if (this.isEscapeKey) {
@@ -657,7 +660,7 @@ var ComboBox = /** @class */ (function (_super) {
             }
             var dataItem = this.isSelectCustom ? { text: '' } : this.getItemData();
             var selected = this.list.querySelector('.' + sf.dropdowns.dropDownListClasses.selected);
-            if (dataItem.text === this.inputElement.value && !sf.base.isNullOrUndefined(selected)) {
+            if (this.inputElement && dataItem.text === this.inputElement.value && !sf.base.isNullOrUndefined(selected)) {
                 if (this.isSelected) {
                     this.onChangeEvent(e);
                     this.isSelectCustom = false;

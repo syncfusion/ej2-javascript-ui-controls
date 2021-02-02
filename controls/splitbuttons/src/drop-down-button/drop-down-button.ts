@@ -389,10 +389,12 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 this.element.removeAttribute(key);
             });
             this.dropDown.destroy();
-            let popupEle: HTMLElement = document.getElementById(this.getPopUpElement().id);
-            if (popupEle) {
-                removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
-                detach(popupEle);
+            if (this.getPopUpElement()) {
+                let popupEle: HTMLElement = document.getElementById(this.getPopUpElement().id);
+                if (popupEle) {
+                    removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
+                    detach(popupEle);
+                }
             }
             if (!this.disabled) {
                 this.unWireEvents();

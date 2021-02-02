@@ -4164,12 +4164,17 @@ var EventHandler = /** @__PURE__ @class */ (function () {
     }
     // to get the event data based on element
     EventHandler.addOrGetEventData = function (element) {
-        if ('__eventList' in element) {
-            return element.__eventList.events;
+        if (element) {
+            if ('__eventList' in element) {
+                return element.__eventList.events;
+            }
+            else {
+                element.__eventList = {};
+                return element.__eventList.events = [];
+            }
         }
         else {
-            element.__eventList = {};
-            return element.__eventList.events = [];
+            return [];
         }
     };
     /**
@@ -4363,7 +4368,7 @@ function evalExp(str, nameSpace, helper) {
             else if (IF_STMT.test(cnt)) {
                 //handling if condition
                 cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, function (strs) {
-                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys, true);
                 })) + '{ \n str = str + "';
             }
             else if (FOR_STMT.test(cnt)) {
@@ -4435,7 +4440,11 @@ function evalExp(str, nameSpace, helper) {
         return cnt;
     });
 }
-function addNameSpace(str, addNS, nameSpace, ignoreList) {
+function addNameSpace(str, addNS, nameSpace, ignoreList, emptyStrCheck) {
+    /* istanbul ignore next */
+    if (emptyStrCheck && str === '') {
+        return str;
+    }
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
 }
 function NameSpaceArrObj(str, addNS, nameSpace, ignoreList) {
@@ -4462,7 +4471,7 @@ function SlashReplace(tempStr) {
     }
     return tempStr;
 }
-function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
+function HandleSpecialCharArrObj(str, nameSpaceNew, keys, emptyStrCheck) {
     str = str.trim();
     var windowFunc = /\window\./gm;
     if (!windowFunc.test(str)) {
@@ -4475,7 +4484,7 @@ function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
             return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
         }
         else {
-            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys, emptyStrCheck);
         }
     }
     else {
@@ -5104,20 +5113,22 @@ function addClass(elements, classes) {
     var classList = getClassList(classes);
     for (var _i = 0, _a = elements; _i < _a.length; _i++) {
         var ele = _a[_i];
-        for (var _b = 0, classList_1 = classList; _b < classList_1.length; _b++) {
-            var className = classList_1[_b];
-            if (isObject(ele)) {
-                var curClass = getValue('attributes.className', ele);
-                if (isNullOrUndefined(curClass)) {
-                    setValue('attributes.className', className, ele);
+        if (ele && classList) {
+            for (var _b = 0, classList_1 = classList; _b < classList_1.length; _b++) {
+                var className = classList_1[_b];
+                if (isObject(ele)) {
+                    var curClass = getValue('attributes.className', ele);
+                    if (isNullOrUndefined(curClass)) {
+                        setValue('attributes.className', className, ele);
+                    }
+                    else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
+                        setValue('attributes.className', curClass + ' ' + className, ele);
+                    }
                 }
-                else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
-                    setValue('attributes.className', curClass + ' ' + className, ele);
-                }
-            }
-            else {
-                if (!ele.classList.contains(className)) {
-                    ele.classList.add(className);
+                else {
+                    if (!ele.classList.contains(className)) {
+                        ele.classList.add(className);
+                    }
                 }
             }
         }
@@ -5134,22 +5145,24 @@ function removeClass(elements, classes) {
     var classList = getClassList(classes);
     for (var _i = 0, _a = elements; _i < _a.length; _i++) {
         var ele = _a[_i];
-        var flag = isObject(ele);
-        var canRemove = flag ? getValue('attributes.className', ele) : ele.className !== '';
-        if (canRemove) {
-            for (var _b = 0, classList_2 = classList; _b < classList_2.length; _b++) {
-                var className = classList_2[_b];
-                if (flag) {
-                    var classes_1 = getValue('attributes.className', ele);
-                    var classArr = classes_1.split(' ');
-                    var index = classArr.indexOf(className);
-                    if (index !== -1) {
-                        classArr.splice(index, 1);
+        if (ele && classList) {
+            var flag = isObject(ele);
+            var canRemove = flag ? getValue('attributes.className', ele) : ele.className !== '';
+            if (canRemove) {
+                for (var _b = 0, classList_2 = classList; _b < classList_2.length; _b++) {
+                    var className = classList_2[_b];
+                    if (flag) {
+                        var classes_1 = getValue('attributes.className', ele);
+                        var classArr = classes_1.split(' ');
+                        var index = classArr.indexOf(className);
+                        if (index !== -1) {
+                            classArr.splice(index, 1);
+                        }
+                        setValue('attributes.className', classArr.join(' '), ele);
                     }
-                    setValue('attributes.className', classArr.join(' '), ele);
-                }
-                else {
-                    ele.classList.remove(className);
+                    else {
+                        ele.classList.remove(className);
+                    }
                 }
             }
         }
@@ -5276,17 +5289,19 @@ function remove(element) {
 function attributes(element, attributes) {
     var keys = Object.keys(attributes);
     var ele = element;
-    for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-        var key = keys_1[_i];
-        if (isObject(ele)) {
-            var iKey = key;
-            if (key === 'tabindex') {
-                iKey = 'tabIndex';
+    if (ele) {
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+            var key = keys_1[_i];
+            if (isObject(ele)) {
+                var iKey = key;
+                if (key === 'tabindex') {
+                    iKey = 'tabIndex';
+                }
+                ele.attributes[iKey] = attributes[key];
             }
-            ele.attributes[iKey] = attributes[key];
-        }
-        else {
-            ele.setAttribute(key, attributes[key]);
+            else {
+                ele.setAttribute(key, attributes[key]);
+            }
         }
     }
     return ele;
@@ -5328,7 +5343,8 @@ function selectAll(selector, context, needsVDOM) {
     }
 }
 function querySelectId(selector) {
-    if (selector.match(/#[0-9]/g)) {
+    var charRegex = /(!|"|\$|%|&|'|\(|\)|\*|\/|:|;|<|=|\?|@|\]|\^|`|{|}|\||\+|~)/g;
+    if (selector.match(/#[0-9]/g) || selector.match(charRegex)) {
         var idList = selector.split(',');
         for (var i = 0; i < idList.length; i++) {
             var list = idList[i].split(' ');
@@ -5336,7 +5352,7 @@ function querySelectId(selector) {
                 if (list[j].indexOf('#') > -1) {
                     if (!list[j].match(/\[.*\]/)) {
                         var splitId = list[j].split('#');
-                        if (splitId[1].match(/^\d/)) {
+                        if (splitId[1].match(/^\d/) || splitId[1].match(charRegex)) {
                             var setId = list[j].split('.');
                             setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
                             list[j] = setId.join('.');
@@ -6971,6 +6987,7 @@ var versionBasedStatePersistence = false;
  * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
  * @returns {void}
  */
+/* istanbul ignore next */
 function enableVersionBasedPersistence(status) {
     versionBasedStatePersistence = status;
 }
@@ -7045,6 +7062,7 @@ var Component = /** @__PURE__ @class */ (function (_super) {
         this.render();
         this.refreshing = false;
     };
+    /* istanbul ignore next */
     Component.prototype.accessMount = function () {
         if (this.mount && !this.isReactHybrid) {
             this.mount();
@@ -7053,6 +7071,7 @@ var Component = /** @__PURE__ @class */ (function (_super) {
     /**
      * Returns the route element of the component
      */
+    /* istanbul ignore next */
     Component.prototype.getRootElement = function () {
         if (this.isReactHybrid) {
             return this.actualElement;
@@ -7064,6 +7083,7 @@ var Component = /** @__PURE__ @class */ (function (_super) {
     /**
      * Returns the persistence data for component
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     Component.prototype.getLocalData = function () {
         var eleId = this.getModuleName() + this.element.id;
@@ -7209,6 +7229,7 @@ var Component = /** @__PURE__ @class */ (function (_super) {
      * This is a instance method to create an element.
      * @private
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     Component.prototype.createElement = function (tagName, prop, isVDOM) {
         if (isVDOM && this.isReactHybrid) {
@@ -7228,6 +7249,7 @@ var Component = /** @__PURE__ @class */ (function (_super) {
      * @param argument - Arguments to be passed to caller.
      * @private
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     Component.prototype.triggerStateChange = function (handler, argument) {
         if (this.isReactHybrid) {

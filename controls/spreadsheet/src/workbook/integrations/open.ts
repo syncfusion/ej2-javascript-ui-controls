@@ -3,9 +3,9 @@
  */
 import { isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
-import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation } from '../common/index';
-import { sheetCreated, protectSheetWorkBook } from '../common/index';
-import { WorkbookModel, Workbook, initSheet } from '../base/index';
+import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
+import { sheetCreated, protectSheetWorkBook, getRangeAddress } from '../common/index';
+import { WorkbookModel, Workbook, initSheet, SheetModel } from '../base/index';
 import { beginAction } from '../../spreadsheet/common/event';
 
 export class WorkbookOpen {
@@ -98,6 +98,7 @@ export class WorkbookOpen {
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
         workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || 0;
+        this.setSelectAllRange(workbookModel.sheets);
         this.parent.setProperties(
             {
                 'sheets': workbookModel.sheets,
@@ -111,6 +112,29 @@ export class WorkbookOpen {
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
         this.parent.notify(protectSheetWorkBook, null);
+    }
+
+    private setSelectAllRange(sheets: SheetModel[]): void {
+        sheets.forEach((sheet: SheetModel) => {
+            if (sheet.selectedRange) {
+                let selectedIndex: number[] = getRangeIndexes(sheet.selectedRange);
+                let rowCount: number = (isUndefined(sheet.rowCount) ? 100 : sheet.rowCount) - 1;
+                let colCount: number = (isUndefined(sheet.colCount) ? 100 : sheet.colCount) - 1;
+                if (selectedIndex[2] === 65535) {
+                    selectedIndex[2] = rowCount;
+                }
+                if (selectedIndex[3] === 255) {
+                    selectedIndex[3] = colCount;
+                }
+                if (selectedIndex[0] === 65535) {
+                    selectedIndex[0] = rowCount;
+                }
+                if (selectedIndex[1] === 255) {
+                    selectedIndex[1] = colCount;
+                }
+                sheet.selectedRange = getRangeAddress(selectedIndex);
+            }
+        });
     }
 
     /**

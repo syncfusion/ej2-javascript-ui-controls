@@ -72,6 +72,8 @@ export class WorkbookChart {
                     chart[i].id = 'e_spreadsheet_chart_' + this.parent.chartCount;
                     idAvailable = false;
                 }
+                chart[i].height = chart[i].height || 290;
+                chart[i].width = chart[i].width || 480;
                 this.parent.notify(initiateChart, {
                     option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, isUndoRedo: args.isUndoRedo,
                     dataSheetIdx: args.dataSheetIdx, range: args.range

@@ -1509,10 +1509,12 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Refresh the height of the list item.
+     * Refresh the height of the list item only on enabling the virtualization property.
      */
     ListView.prototype.refreshItemHeight = function () {
-        this.virtualizationModule.refreshItemHeight();
+        if (this.virtualizationModule) {
+            this.virtualizationModule.refreshItemHeight();
+        }
     };
     ListView.prototype.clickHandler = function (e) {
         var target = e.target;

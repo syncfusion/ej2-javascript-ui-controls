@@ -244,6 +244,12 @@ export interface LayoutModel {
     enableAnimation?: boolean;
 
     /**
+     * Enable / Disable connector routing for the layout
+     * @default false
+     */
+    enableRouting?: boolean;
+
+    /**
      * Defines the root of the hierarchical tree layout
      * @default ''
      */

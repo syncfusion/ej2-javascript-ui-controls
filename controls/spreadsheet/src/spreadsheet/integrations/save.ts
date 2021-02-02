@@ -1,5 +1,6 @@
-import { Spreadsheet } from '../index';
-import { beginSave, saveCompleted } from '../../workbook/common/event';
+import { dialog, Spreadsheet } from '../index';
+import { beginSave, saveCompleted, saveError } from '../../workbook/common/event';
+import { Dialog } from '../services/index';
 
 
 /**
@@ -31,12 +32,14 @@ export class Save {
     private addEventListener(): void {
         this.parent.on(beginSave, this.initiateSave, this);
         this.parent.on(saveCompleted, this.saveCompleted, this);
+        this.parent.on(saveError, this.showErrorDialog, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(beginSave, this.initiateSave);
             this.parent.off(saveCompleted, this.saveCompleted);
+            this.parent.off(saveError, this.showErrorDialog);
         }
     }
 
@@ -63,5 +66,13 @@ export class Save {
      */
     private saveCompleted(args: { [key: string]: Object }): void {
         this.parent.hideSpinner();
+    }
+
+    private showErrorDialog(args: { content: string }): void {
+        let dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+        dialogInst.show({
+            target: this.parent.element, isModal: true, showCloseIcon: true, height: 180, width: 400, content: args.content,
+            beforeOpen: (): void => this.parent.element.focus()
+        });
     }
 }

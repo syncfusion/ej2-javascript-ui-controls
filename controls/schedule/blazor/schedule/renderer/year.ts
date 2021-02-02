@@ -42,6 +42,7 @@ export class Year extends ViewBase implements IRenderer {
         if (scrollTopElement) {
             scrollTopElement.scrollTop = target.scrollTop;
         }
+        this.parent.setPersistence();
     }
 
     public onScrollUiUpdate(args: NotifyEventArgs): void {
@@ -72,6 +73,7 @@ export class Year extends ViewBase implements IRenderer {
             // tslint:enable:no-any
         }
         this.setColWidth(this.getContentAreaElement());
+        this.retainScrollPosition();
     }
 
     public onDataReady(): void {

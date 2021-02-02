@@ -7601,6 +7601,7 @@ let Uploader = class Uploader extends Component {
         this.fileStreams = [];
         this.newFileRef = 0;
         this.isFirstFileOnSelection = false;
+        this.dragCounter = 0;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -8317,6 +8318,7 @@ let Uploader = class Uploader extends Component {
             EventHandler.add(this.dropZoneElement, 'dragover', this.dragHover, this);
             EventHandler.add(this.dropZoneElement, 'dragleave', this.onDragLeave, this);
             EventHandler.add(this.dropZoneElement, 'paste', this.onPasteFile, this);
+            EventHandler.add(this.dropZoneElement, 'dragenter', this.onDragEnter, this);
         }
     }
     unBindDropEvents() {
@@ -8324,16 +8326,31 @@ let Uploader = class Uploader extends Component {
             EventHandler.remove(this.dropZoneElement, 'drop', this.dropElement);
             EventHandler.remove(this.dropZoneElement, 'dragover', this.dragHover);
             EventHandler.remove(this.dropZoneElement, 'dragleave', this.onDragLeave);
+            EventHandler.remove(this.dropZoneElement, 'dragenter', this.onDragEnter);
         }
     }
+    onDragEnter(e) {
+        if (!this.enabled) {
+            return;
+        }
+        this.dropZoneElement.classList.add(DRAG_HOVER);
+        this.dragCounter = this.dragCounter + 1;
+        e.preventDefault();
+        e.stopPropagation();
+    }
     onDragLeave(e) {
-        this.dropZoneElement.classList.remove(DRAG_HOVER);
+        if (!this.enabled) {
+            return;
+        }
+        this.dragCounter = this.dragCounter - 1;
+        if (!this.dragCounter) {
+            this.dropZoneElement.classList.remove(DRAG_HOVER);
+        }
     }
     dragHover(e) {
         if (!this.enabled) {
             return;
         }
-        this.dropZoneElement.classList.add(DRAG_HOVER);
         if (this.dropEffect !== 'Default') {
             e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
         }
@@ -8342,6 +8359,7 @@ let Uploader = class Uploader extends Component {
     }
     /* istanbul ignore next */
     dropElement(e) {
+        this.dragCounter = 0;
         this.dropZoneElement.classList.remove(DRAG_HOVER);
         this.onSelectFiles(e);
         e.preventDefault();
@@ -9950,7 +9968,9 @@ let Uploader = class Uploader extends Component {
                     this.raiseSuccessEvent(e, metaData.file);
                     return;
                 }
-                this.sendNextRequest(metaData);
+                if (metaData.file.statusCode !== '4') {
+                    this.sendNextRequest(metaData);
+                }
             }
         }
         else {
@@ -9999,8 +10019,10 @@ let Uploader = class Uploader extends Component {
         this.abortUpload(metaData, custom, eventArgs);
     }
     abortUpload(metaData, custom, eventArgs) {
-        metaData.request.emitError = false;
-        metaData.request.httpRequest.abort();
+        if (metaData.file.statusCode !== '4') {
+            metaData.request.emitError = false;
+            metaData.request.httpRequest.abort();
+        }
         let liElement = this.getLiElement(metaData.file);
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom)) {
             let targetElement = liElement.querySelector('.' + PAUSE_UPLOAD);
@@ -12952,12 +12974,16 @@ let TextBox = class TextBox extends Component {
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
                 this.textarea.setAttribute('id', getUniqueID('textarea'));
-                let attribute = ['required', 'minlength', 'maxlength'];
-                for (let i = 0; i < attribute.length; i++) {
-                    if (this.element.hasAttribute(attribute[i])) {
-                        let attr = this.element.getAttribute(attribute[i]);
-                        this.textarea.setAttribute(attribute[i], attr);
-                        this.element.removeAttribute(attribute[i]);
+                let attrs = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
+                for (let i = 0; i < this.element.attributes.length; i++) {
+                    let attributeName = this.element.attributes[i].nodeName;
+                    if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
+                        !(attributeName === 'id' || attributeName === 'type')) {
+                        this.textarea.setAttribute(attributeName, this.element.attributes[i].nodeValue);
+                        if (attrs.indexOf(attributeName) < 0) {
+                            this.element.removeAttribute(attributeName);
+                            i--;
+                        }
                     }
                 }
             }

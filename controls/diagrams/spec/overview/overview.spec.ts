@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../src/diagram/diagram';
 import { ConnectorModel } from '../../src/diagram/objects/connector-model';
-import { NodeModel } from '../../src/diagram/objects/node-model';
+import { BasicShapeModel, NodeModel } from '../../src/diagram/objects/node-model';
 import { DiagramScroller } from '../../src/diagram/interaction/scroller';
 import { MouseEvents } from '../../spec/diagram/interaction/mouseevents.spec';
 import { Overview } from '../../src/overview/overview';
@@ -9,7 +9,7 @@ import { OverviewModel } from '../../src/overview/overview-model';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
-    RadialTree, DataBinding
+    RadialTree, DataBinding, DiagramTools
 } from '../../src/diagram/index';
 Diagram.Inject(RadialTree, DataBinding);
 
@@ -1128,7 +1128,95 @@ describe('Overview', () => {
             console.log(htmlOverView.style.transform);
                 console.log("Overview - For window resize")
             expect(overviewstyle==="position: relative; height: 150px; width: 100%; touch-action: none;" ).toBe(true);
-            expect(htmlOverView.style.transform === "scale(0.0821449) translate(731.609px, 790.805px)" || htmlOverView.style.transform === "scale(0.0821449) translate(734.139px, 797.163px)").toBe(true);
+            expect(htmlOverView.style.transform === "scale(0.0662188) translate(731.609px, 790.805px)" || htmlOverView.style.transform === "scale(0.0821449) translate(734.139px, 797.163px)").toBe(true);
+            done();
+        });
+
+
+
+
+    });
+
+
+
+
+    describe('Overview Not updated during zoom ', () => {
+        let newdiagram: Diagram;
+        let overview: Overview;
+        let Diagramelement: HTMLElement;
+        let parentelement: HTMLElement;
+        let parentelement1: HTMLElement;
+        let overViewElement: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+
+
+        beforeAll((): void => {
+            let shape: BasicShapeModel = { type: 'Basic' };
+            let node: NodeModel =
+            {
+                shape: shape
+
+            };
+            parentelement = createElement('div', { id: 'overviewdiagram', styles: "width: 100%;height: 500px;" });
+            document.body.appendChild(parentelement)
+            parentelement1 = createElement('div', { id: 'parentelement1', styles: "width:74%;height: 500px; float:left;" });
+            parentelement.appendChild(parentelement1);
+            Diagramelement = createElement('div', { id: 'diagram' });
+            parentelement1.appendChild(Diagramelement);
+            overViewElement = createElement('div', { id: 'overview', styles: "width:25%;height:200px;float:left; border-color:lightgray;border-style:solid;" });
+            parentelement.appendChild(overViewElement);
+            newdiagram = new Diagram({
+                width: "100%",
+                height: "500px",
+                scrollSettings: { minZoom: 0.0 },
+                drawingObject: node,
+                pageSettings: {
+                    width: 1024,
+                    height: 768,
+                    showPageBreaks: true
+                    //boundaryConstraints: "Page"
+                },
+                tool: DiagramTools.DrawOnce,
+                rulerSettings: { showRulers: true }
+
+            });
+            newdiagram.appendTo('#diagram');
+            newdiagram.fitToPage()
+            let options: OverviewModel = {};
+            options.height = '150px';
+            options.width = '100%';
+            options.sourceID = 'diagram';
+            overview = new Overview(options);
+            overview.appendTo('#overview');
+
+        });
+
+        afterAll((): void => {
+            overview.destroy();
+            newdiagram.destroy();
+            Diagramelement.remove();
+            overViewElement.remove();
+            parentelement1.remove();
+            parentelement.remove();
+        });
+
+        it('Overview Not updated during zoom', (done: Function) => {
+            console.log("Overview Not updated during zoom")
+            debugger
+            newdiagram.pageSettings.width = 5000;
+            newdiagram.pageSettings.height = 5000;
+            newdiagram.dataBind();
+            newdiagram.zoom(0.02788656582264943)
+            newdiagram.dataBind();
+            newdiagram.zoom(0.02788656582264943)
+            newdiagram.dataBind();
+            var node: NodeModel = {id:"newnode",width:100,height:100,offsetX:400,offsetY:400};
+            newdiagram.add(node);
+            console.log(overview.contentHeight)
+            expect(overview.contentHeight > 5000).toBe(true);
+
             done();
         });
 

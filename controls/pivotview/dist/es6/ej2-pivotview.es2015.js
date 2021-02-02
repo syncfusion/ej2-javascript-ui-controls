@@ -6381,10 +6381,17 @@ class AggregateMenu {
             let text = (field.caption ? field.caption : field.name);
             fieldDataSource.push({ value: value, text: text });
         }
-        /* tslint:disable-next-line:max-line-length */
-        baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value);
-        fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
-            baseField : fieldDataSource[0].value)].formattedMembers);
+        if (Object.keys(fieldDataSource).length === 0) {
+            fieldDataSource.push({ value: '', text: '' });
+            baseField = '';
+            fieldItemDataSource = [];
+        }
+        else {
+            /* tslint:disable-next-line:max-line-length */
+            baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value);
+            fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
+                baseField : fieldDataSource[0].value)].formattedMembers);
+        }
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
         let mainDiv = createElement('div', {
             className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
@@ -22392,13 +22399,18 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
+                        if (!isNullOrUndefined(this.savedDataSourceSettings) && this.dataSourceSettings.dataSource.length > 0) {
+                            PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
+                            this.savedDataSourceSettings = undefined;
+                        }
                         if (newProp.dataSourceSettings.dataSource.length === 0) {
                             this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
                             this.setProperties({ dataSourceSettings: { rows: [] } }, true);
                             this.setProperties({ dataSourceSettings: { columns: [] } }, true);
                             this.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            this.pivotValues = [];
+                            this.setProperties({ dataSourceSettings: { filters: [] } }, true);
                         }
+                        this.pivotValues = [];
                         this.engineModule.fieldList = null;
                         if (this.dataSourceSettings.groupSettings.length > 0) {
                             this.clonedDataSet = newProp.dataSourceSettings.dataSource;
@@ -22435,7 +22447,15 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             }
                             else {
                                 if (newProp.dataSourceSettings && 'dataSource' in newProp.dataSourceSettings) {
+                                    if (newProp.dataSourceSettings.dataSource.length === 0) {
+                                        this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
+                                        this.setProperties({ dataSourceSettings: { rows: [] } }, true);
+                                        this.setProperties({ dataSourceSettings: { columns: [] } }, true);
+                                        this.setProperties({ dataSourceSettings: { values: [] } }, true);
+                                        this.setProperties({ dataSourceSettings: { filters: [] } }, true);
+                                    }
                                     this.engineModule.fieldList = null;
+                                    this.pivotValues = [];
                                 }
                                 this.notify(initialLoad, {});
                             }
@@ -23332,10 +23352,6 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     }
     /* tslint:enable */
     onContentReady() {
-        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
-            PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
-            this.savedDataSourceSettings = undefined;
-        }
         if (this.currentView !== 'Table') {
             /* tslint:disable-next-line */
             if (this.cellTemplate && isBlazor()) {
@@ -23485,7 +23501,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     setToolTip(args) {
         let colIndex = Number(args.target.getAttribute('aria-colindex'));
         let rowIndex = Number(args.target.getAttribute('index'));
-        let cell = (this.pivotValues && this.pivotValues[rowIndex] && this.pivotValues[rowIndex][colIndex]) ?
+        let cell = (this.dataSourceSettings.values.length > 0 && this.pivotValues && this.pivotValues[rowIndex] && this.pivotValues[rowIndex][colIndex]) ?
             this.pivotValues[rowIndex][colIndex] : undefined;
         this.tooltip.content = '';
         let aggregateType;
@@ -28957,19 +28973,22 @@ let PivotFieldList = class PivotFieldList extends Component {
                     break;
                 case 'dataSourceSettings':
                     if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+                        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
+                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
+                            this.savedDataSourceSettings = undefined;
+                        }
                         if (newProp.dataSourceSettings.dataSource.length === 0 && !isNullOrUndefined(this.staticPivotGridModule)) {
                             this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            this.engineModule.fieldList = {};
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { filters: [] } }, true);
+                        }
+                        this.engineModule.fieldList = null;
+                        if (!isNullOrUndefined(this.staticPivotGridModule)) {
                             this.staticPivotGridModule.pivotValues = [];
                         }
                         this.initEngine();
-                        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
-                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
-                            this.savedDataSourceSettings = undefined;
-                        }
                     }
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                         if (this.isPopupView && this.pivotGridModule &&

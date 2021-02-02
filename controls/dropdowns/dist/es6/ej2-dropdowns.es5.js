@@ -1866,8 +1866,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.unBindCommonEvent = function () {
-        EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
-        var formElement = closest(this.inputElement, 'form');
+        if (this.targetElement()) {
+            EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
+        }
+        var formElement = this.inputElement && closest(this.inputElement, 'form');
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
@@ -4070,7 +4072,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.closePopup();
         var dataItem = this.getItemData();
         var isSelectVal = this.isServerBlazor ? !isNullOrUndefined(this.value) : !isNullOrUndefined(this.selectedLI);
-        if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
+        if (this.inputElement && this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);
@@ -4110,7 +4112,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
         this.isTyped = true;
         this.hidePopup(e);
-        this.targetElement().blur();
+        if (this.targetElement()) {
+            this.targetElement().blur();
+        }
         removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
     };
     /**
@@ -4140,16 +4144,18 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             if (this.element && !this.element.classList.contains('e-' + this.getModuleName())) {
                 return;
             }
-            var attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
-                'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
-                'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            for (var i = 0; i < attrArray.length; i++) {
-                this.inputElement.removeAttribute(attrArray[i]);
+            if (this.inputElement) {
+                var attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
+                    'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
+                    'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
+                    'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
+                for (var i = 0; i < attrArray.length; i++) {
+                    this.inputElement.removeAttribute(attrArray[i]);
+                }
+                this.inputElement.setAttribute('tabindex', this.tabIndex);
+                this.inputElement.classList.remove('e-input');
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             }
-            this.inputElement.setAttribute('tabindex', this.tabIndex);
-            this.inputElement.classList.remove('e-input');
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             this.element.style.display = 'block';
             if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
                 detach(this.inputWrapper.container);
@@ -7331,7 +7337,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ComboBox.prototype.onBlur = function (e) {
-        var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        var inputValue = this.inputElement && this.inputElement.value === '' ? null : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
             this.customValue(e);
         }
@@ -7401,7 +7407,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
     };
     ComboBox.prototype.updateIconState = function () {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '' && !this.readonly) {
+            if (this.inputElement && this.inputElement.value !== '' && !this.readonly) {
                 removeClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
             }
             else {
@@ -7662,12 +7668,14 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.inputWrapper.buttons[0])) {
             EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.dropDownClick);
         }
-        EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
-        if (!this.readonly) {
-            EventHandler.remove(this.inputElement, 'input', this.onInput);
-            EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
-            EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
-            EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+        if (this.inputElement) {
+            EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
+            if (!this.readonly) {
+                EventHandler.remove(this.inputElement, 'input', this.onInput);
+                EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
+                EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+                EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+            }
         }
         this.unBindCommonEvent();
     };
@@ -7886,7 +7894,8 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
      * @deprecated
      */
     ComboBox.prototype.hidePopup = function (e) {
-        var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
+        var inputValue = this.inputElement && this.inputElement.value === '' ? null
+            : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData)) {
             var isEscape = this.isEscapeKey;
             if (this.isEscapeKey) {
@@ -7898,7 +7907,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             }
             var dataItem = this.isSelectCustom ? { text: '' } : this.getItemData();
             var selected = this.list.querySelector('.' + dropDownListClasses.selected);
-            if (dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
+            if (this.inputElement && dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
                     this.onChangeEvent(e);
                     this.isSelectCustom = false;
@@ -11039,6 +11048,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var text = this.getTextByValue(value);
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
             var temp_1 = li.cloneNode(true);
+            var fieldValue = this.fields.value ? this.fields.value : 'value';
+            if (this.allowCustomValue && this.mainData.length && typeof getValue(fieldValue, this.mainData[0]) === 'number') {
+                value = !isNaN(parseFloat(value.toString())) ? parseFloat(value.toString()) : value;
+            }
             var data_1 = this.getDataByValue(value);
             var eventArgs = {
                 newData: data_1,

@@ -37,7 +37,7 @@ export class HeaderRenderer {
         this.parent.off(events.documentClick, this.closeHeaderPopup);
     }
     private closeHeaderPopup(e: { event: Event }): void {
-        let closestEle: Element = closest(e.event.target as HTMLElement, '.e-date-range,.e-header-popup,.e-day,.e-selected');
+        let closestEle: Element = closest(e.event.target as HTMLElement, '.e-date-range,.e-header-popup,.e-selected');
         if (!isNullOrUndefined(closestEle)) {
             return;
         }
@@ -332,7 +332,9 @@ export class HeaderRenderer {
             });
             let todayEle: HTMLElement = this.parent.element.querySelector('.e-cell.e-today');
             todayEle.classList.remove('e-today');
-            addClass([selectAppointments[this.parent.activeCellsData.startTime.getDate() - 1]], 'e-today');
+            let timeZoneName: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+            let todayDate: Date = this.parent.tzModule.convert(new Date(), this.parent.tzModule.getLocalTimezoneName(), timeZoneName);
+            addClass([selectAppointments[todayDate.getDate() - 1]], 'e-today');
         }
     }
     private calendarChange(args: ChangedEventArgs & NavigatedEventArgs): void {
@@ -340,6 +342,7 @@ export class HeaderRenderer {
             let calendarDate: Date = util.resetTime(new Date(args.value));
             this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
+        this.updateTodayDate();
         this.headerPopup.hide();
     }
     private calculateViewIndex(args: ClickEventArgs): number {
@@ -361,6 +364,7 @@ export class HeaderRenderer {
                     this.headerPopup.hide();
                 } else {
                     this.headerPopup.show();
+                    this.updateTodayDate();
                 }
                 break;
             case 'e-day':

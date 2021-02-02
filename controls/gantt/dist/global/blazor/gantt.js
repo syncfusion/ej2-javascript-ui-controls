@@ -15685,6 +15685,7 @@ var TaskbarEdit = /** @class */ (function (_super) {
             args.cancel = false;
             args.previousData = this.previousItem;
             this.roundOffDuration = args.roundOffDuration;
+            this.targetElement = args.target = sf.base.closest(e.target, '.e-gantt-child-taskbar');
             this.updateMouseMoveProperties(e);
             if (this.taskBarEditAction === 'ProgressResizing') {
                 this.performProgressResize(e);
@@ -16668,6 +16669,7 @@ var TaskbarEdit = /** @class */ (function (_super) {
                     args.taskBarEditAction = this.taskBarEditAction;
                     args.action = 'TaskbarEditing';
                     args.roundOffDuration = this.roundOffDuration;
+                    args.target = this.targetElement;
                     this.taskbarEditedArgs = args;
                     this.taskbarEdited(args);
                 }
@@ -20292,10 +20294,10 @@ var Edit$2 = /** @class */ (function () {
         var isScheduleValueUpdated = false;
         for (var _i = 0, _a = Object.keys(data); _i < _a.length; _i++) {
             var key = _a[_i];
-            if (sf.base.isNullOrUndefined(key) || (sf.base.isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks)) {
-                continue;
-            }
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
+                if (sf.base.isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks) {
+                    continue;
+                }
                 if (isFromDialog) {
                     if (tasks.duration === key) {
                         ganttObj.dataOperation.updateDurationValue(data[key], ganttData.ganttProperties);
@@ -20945,6 +20947,9 @@ var Edit$2 = /** @class */ (function () {
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
+        if (!sf.base.isNullOrUndefined(args.target)) {
+            eventArgs.target = args.target;
+        }
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, true);
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';
@@ -26222,8 +26227,9 @@ var RowDD$1 = /** @class */ (function () {
                     if (dataSource.length > 0) {
                         dataSource.splice(idx, 1);
                     }
-                    this.treeGridData.splice(idx, 1);
-                    this.parent.ids.splice(idx, 1);
+                    var tempIndex = this.treeGridData.indexOf(deletedRow);
+                    this.treeGridData.splice(tempIndex, 1);
+                    this.parent.ids.splice(tempIndex, 1);
                     if (this.parent.treeGrid.parentData.indexOf(deletedRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(deletedRow), 1);
                     }
@@ -26273,8 +26279,9 @@ var RowDD$1 = /** @class */ (function () {
                 if (ganttData.length > 0) {
                     ganttData.splice(idx, 1);
                 }
-                this.treeGridData.splice(idx, 1);
-                this.parent.ids.splice(idx, 1);
+                var tempIndex = this.treeGridData.indexOf(currentRecord);
+                this.treeGridData.splice(tempIndex, 1);
+                this.parent.ids.splice(tempIndex, 1);
                 if (this.parent.viewType === 'ResourceView') {
                     this.parent.getTaskIds().splice(idx, 1);
                 }

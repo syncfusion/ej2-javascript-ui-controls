@@ -810,7 +810,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             if (isRedo) {
                 let chartOptions: ChartModel[] = [{
                     type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                    range: eventArgs.range, id: eventArgs.id
+                    range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
                 }];
                 spreadsheet.notify(setChart, {
                     chart: chartOptions, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange
@@ -825,7 +825,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             } else {
                 let chartOpts: ChartModel[] = [{
                     type: eventArgs.type, theme: eventArgs.theme, isSeriesInRows: eventArgs.isSeriesInRows,
-                    range: eventArgs.range, id: eventArgs.id
+                    range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width
                 }];
                 spreadsheet.notify(setChart, {
                     chart: chartOpts, isInitCell: eventArgs.isInitCell, isUndoRedo: false, range: eventArgs.posRange

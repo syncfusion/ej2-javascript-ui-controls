@@ -2574,6 +2574,10 @@ var MultiSelect = /** @class */ (function (_super) {
         var text = this.getTextByValue(value);
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
             var temp_1 = li.cloneNode(true);
+            var fieldValue = this.fields.value ? this.fields.value : 'value';
+            if (this.allowCustomValue && this.mainData.length && typeof sf.base.getValue(fieldValue, this.mainData[0]) === 'number') {
+                value = !isNaN(parseFloat(value.toString())) ? parseFloat(value.toString()) : value;
+            }
             var data_1 = this.getDataByValue(value);
             var eventArgs = {
                 newData: data_1,

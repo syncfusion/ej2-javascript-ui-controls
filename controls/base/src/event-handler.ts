@@ -25,11 +25,15 @@ export class EventHandler {
 
     // to get the event data based on element
     private static addOrGetEventData(element: Element | HTMLElement | Document): EventOptions[] {
-        if ('__eventList' in element) {
-            return (<EventData>element).__eventList.events;
+        if (element) {
+            if ('__eventList' in element) {
+                return (<EventData>element).__eventList.events;
+            } else {
+                (<EventData>element).__eventList = {};
+                return (<EventData>element).__eventList.events = [];
+            }
         } else {
-            (<EventData>element).__eventList = {};
-            return (<EventData>element).__eventList.events = [];
+            return [];
         }
     }
 

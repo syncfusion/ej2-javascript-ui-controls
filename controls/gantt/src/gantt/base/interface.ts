@@ -358,6 +358,8 @@ export interface IActionBeginEventArgs {
     cancel?: boolean;
     taskBarEditAction?: string;
     action?: string;
+    /** Defines the target element. */
+    target?: Element;
 }
 
 export interface IValidateLinkedTaskArgs {

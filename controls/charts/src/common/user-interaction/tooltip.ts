@@ -404,9 +404,11 @@ export class BaseTooltip extends ChartData {
 
     public removeTooltip(duration: number): void {
         let tooltipElement: HTMLElement =  this.getElement(this.element.id + '_tooltip');
+        let tooltipTemplate: HTMLElement = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
+        let isTemplateRendered: boolean = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        if ((this.chart as any).isReact) { (this.chart as any).clearTemplate(); }
+        if ((this.chart as any).isReact && isTemplateRendered) { (this.chart as any).clearTemplate([tooltipTemplate.id], [0]); }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(
                 (): void => {

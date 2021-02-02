@@ -3183,7 +3183,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         var blazor = 'Blazor';
         var tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        var elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
+        var templateId = dataLabelId ? dataLabelId + '_template' : 'template';
+        var elementData = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -8665,6 +8666,8 @@ var Chart = /** @class */ (function (_super) {
      */
     function Chart(options, element) {
         var _this = _super.call(this, options, element) || this;
+        /** @private */
+        _this.rotatedDataLabelCollections = [];
         /** @public */
         _this.animated = false;
         /** @private */
@@ -9576,6 +9579,7 @@ var Chart = /** @class */ (function (_super) {
         this.verticalAxes = [];
         this.visibleSeries = [];
         this.axisCollections = [];
+        this.rotatedDataLabelCollections = [];
         this.seriesElements = null;
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
@@ -9758,6 +9762,7 @@ var Chart = /** @class */ (function (_super) {
                 }
                 _this.createChartSvg();
                 arg.currentSize = _this.availableSize;
+                _this.rotatedDataLabelCollections = [];
                 _this.trigger(resized, arg);
                 _this.refreshAxis();
                 _this.refreshBound();
@@ -10048,7 +10053,7 @@ var Chart = /** @class */ (function (_super) {
         if (this.dataEditingModule) {
             this.dataEditingModule.pointMouseUp();
         }
-        if (!this.enableCanvas) {
+        if (!this.enableCanvas && this.seriesElements) {
             this.seriesElements.removeAttribute('clip-path');
         }
         this.notify(sf.base.Browser.touchEndEvent, e);
@@ -19826,10 +19831,12 @@ var BaseTooltip = /** @class */ (function (_super) {
     BaseTooltip.prototype.removeTooltip = function (duration) {
         var _this = this;
         var tooltipElement = this.getElement(this.element.id + '_tooltip');
+        var tooltipTemplate = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
+        var isTemplateRendered = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        if (this.chart.isReact) {
-            this.chart.clearTemplate();
+        if (this.chart.isReact && isTemplateRendered) {
+            this.chart.clearTemplate([tooltipTemplate.id], [0]);
         }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(function () {
@@ -23746,6 +23753,8 @@ var DataLabel = /** @class */ (function () {
         this.inverted = chart.requireInvertedAxis;
         this.yAxisInversed = series.yAxis.isInversed;
         var redraw = chart.redraw;
+        var isDataLabelOverlap = false;
+        var coordinatesAfterRotation = [];
         var templateId = chart.element.id + '_Series_' +
             (series.index === undefined ? series.category : series.index) + '_DataLabelCollections';
         var element = sf.base.createElement('div', {
@@ -23753,6 +23762,8 @@ var DataLabel = /** @class */ (function () {
         });
         var visiblePoints = getVisiblePoints(series);
         var point;
+        var rectCenterX;
+        var rectCenterY;
         // Data label point iteration started
         for (var i = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
@@ -23769,6 +23780,7 @@ var DataLabel = /** @class */ (function () {
             var isRender = true;
             var clip = series.clipRect;
             var shapeRect = void 0;
+            isDataLabelOverlap = false;
             angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             var argsFont = (sf.base.extend({}, sf.base.getValue('properties', dataLabel.font), null, true));
@@ -23805,27 +23817,31 @@ var DataLabel = /** @class */ (function () {
                                 }
                             }
                             var actualRect = new sf.svgbase.Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
-                            var notOverlapping = void 0;
-                            var rectPoints = [];
-                            if (dataLabel.enableRotation && angle !== 0) {
-                                var rectCoordinates = this.getRectanglePoints(actualRect);
-                                var rectCenterX = actualRect.x + actualRect.width * 0.5;
-                                var rectCenterY = (actualRect.y - (actualRect.height / 2));
-                                rectPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
-                                notOverlapping = true;
-                                for (var index = i_1; index > 0; index--) {
-                                    if (rectPoints[i_1] && rectPoints[index - 1] &&
-                                        isRotatedRectIntersect(rectPoints[i_1], rectPoints[index - 1])) {
-                                        notOverlapping = false;
-                                        rectPoints[i_1] = null;
-                                        break;
+                            //let notOverlapping: boolean;
+                            if (dataLabel.enableRotation) {
+                                var rectCoordinates = this.getRectanglePoints(rect);
+                                rectCenterX = rect.x + (rect.width / 2);
+                                rectCenterY = (rect.y + (rect.height / 2));
+                                coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
+                                isDataLabelOverlap = this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
+                                if (!isDataLabelOverlap) {
+                                    this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
+                                    var currentPointIndex = this.chart.rotatedDataLabelCollections.length - 1;
+                                    for (var index = currentPointIndex; index >= 0; index--) {
+                                        if (this.chart.rotatedDataLabelCollections[currentPointIndex] &&
+                                            this.chart.rotatedDataLabelCollections[index - 1] &&
+                                            isRotatedRectIntersect(this.chart.rotatedDataLabelCollections[currentPointIndex], this.chart.rotatedDataLabelCollections[index - 1])) {
+                                            isDataLabelOverlap = true;
+                                            this.chart.rotatedDataLabelCollections[currentPointIndex] = null;
+                                            break;
+                                        }
                                     }
                                 }
                             }
                             else {
-                                notOverlapping = !isCollide(rect, chart.dataLabelCollections, clip);
+                                isDataLabelOverlap = isCollide(rect, chart.dataLabelCollections, clip);
                             }
-                            if ((notOverlapping || dataLabel.labelIntersectAction === 'None') && isRender) {
+                            if ((!isDataLabelOverlap || dataLabel.labelIntersectAction === 'None') && isRender) {
                                 chart.dataLabelCollections.push(actualRect);
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + point.index + '_TextShape_' + i_1, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -23840,9 +23856,11 @@ var DataLabel = /** @class */ (function () {
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
-                                    xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
-                                    yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
-                                        (dataLabel.margin.bottom) / 2;
+                                    // xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
+                                    xValue = rectCenterX;
+                                    //yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
+                                    // (dataLabel.margin.bottom) / 2;
+                                    yValue = rectCenterY;
                                     degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
                                 }
                                 else {
@@ -23878,6 +23896,14 @@ var DataLabel = /** @class */ (function () {
         var loc3 = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
         var loc4 = new ChartLocation(rect.x, rect.y + rect.height);
         return [loc1, loc2, loc3, loc4];
+    };
+    DataLabel.prototype.isDataLabelOverlapWithChartBound = function (rectCoordinates, chart, clip) {
+        for (var index = 0; index < rectCoordinates.length; index++) {
+            if (!withInBounds(rectCoordinates[index].x + clip.x, rectCoordinates[index].y + clip.y, chart.initialClipRect)) {
+                return true;
+            }
+        }
+        return false;
     };
     /**
      * Render the data label template.
@@ -24957,6 +24983,7 @@ var Legend = /** @class */ (function (_super) {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
+            chart.rotatedDataLabelCollections = [];
             blazorTemplatesReset(chart);
             removeElement(sf.svgbase.getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
             this.redrawSeriesElements(series, chart);

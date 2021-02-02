@@ -295,7 +295,7 @@ export class ComboBox extends DropDownList {
     }
 
     protected onBlur(e: MouseEvent): void {
-        let inputValue: string = this.inputElement.value === '' ? null : this.inputElement.value;
+        let inputValue: string = this.inputElement && this.inputElement.value === '' ? null : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
             this.customValue(e);
         }
@@ -363,7 +363,7 @@ export class ComboBox extends DropDownList {
 
     protected updateIconState(): void {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '' && !this.readonly) {
+            if (this.inputElement && this.inputElement.value !== '' && !this.readonly) {
                 removeClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
             } else {
                 addClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
@@ -628,12 +628,14 @@ export class ComboBox extends DropDownList {
         if (!isNullOrUndefined(this.inputWrapper.buttons[0])) {
             EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.dropDownClick);
         }
-        EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
-        if (!this.readonly) {
-            EventHandler.remove(this.inputElement, 'input', this.onInput);
-            EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
-            EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
-            EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+        if (this.inputElement) {
+            EventHandler.remove(this.inputElement, 'focus', this.targetFocus);
+            if (!this.readonly) {
+                EventHandler.remove(this.inputElement, 'input', this.onInput);
+                EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
+                EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+                EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
+            }
         }
         this.unBindCommonEvent();
     }
@@ -850,7 +852,8 @@ export class ComboBox extends DropDownList {
      * @deprecated
      */
     public hidePopup(e?: MouseEvent | KeyboardEventArgs): void {
-        let inputValue: string | Object = this.inputElement.value === '' ? null : this.inputElement.value;
+        let inputValue: string | Object = this.inputElement && this.inputElement.value === '' ? null
+        : this.inputElement && this.inputElement.value;
         if (!isNullOrUndefined(this.listData)) {
             let isEscape: boolean = this.isEscapeKey;
             if (this.isEscapeKey) {
@@ -862,7 +865,7 @@ export class ComboBox extends DropDownList {
             }
             let dataItem: { [key: string]: string } = this.isSelectCustom ? { text: '' } : this.getItemData();
             let selected: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected);
-            if (dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
+            if (this.inputElement && dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
                     this.onChangeEvent(e);
                     this.isSelectCustom = false;

@@ -2765,7 +2765,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         var classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         var attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
-        if (this.element.classList.contains(FULLSCREEN)) {
+        if (!isNullOrUndefined(this.element) && this.element.classList.contains(FULLSCREEN)) {
             removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
         }
         if (this.isModal) {
@@ -2780,7 +2780,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.dragObj)) {
             this.dragObj.destroy();
         }
-        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+        if (!isNullOrUndefined(this.popupObj.element) && this.popupObj.element.classList.contains(POPUP_ROOT)) {
             this.popupObj.destroy();
         }
         removeClass([this.element], classArray);
@@ -3908,6 +3908,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.openDelay > 0) {
                 var show = function () {
+                    if (_this.mouseTrail) {
+                        EventHandler.add(target, 'mousemove touchstart mouseenter', _this.onMouseMove, _this);
+                    }
                     if (_this.popupObj) {
                         _this.popupObj.show(openAnimation_1, target);
                     }
@@ -4286,7 +4289,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                     EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
                 }
             }
-            if (this.mouseTrail) {
+            if (this.mouseTrail && this.openDelay === 0) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
             }
         }

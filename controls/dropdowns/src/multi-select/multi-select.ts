@@ -4,7 +4,7 @@ import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { attributes, setValue, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';
 import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, prepend, isBlazor, Complex } from '@syncfusion/ej2-base';
@@ -2927,6 +2927,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         let text: string = this.getTextByValue(value);
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
             let temp: HTMLElement = <HTMLElement>li.cloneNode(true);
+            let fieldValue: string = this.fields.value ? this.fields.value : 'value';
+            if (this.allowCustomValue && this.mainData.length && typeof getValue(fieldValue, this.mainData[0]) === 'number') {
+                value = !isNaN(parseFloat(value.toString())) ? parseFloat(value.toString()) : value;
+            }
             let data: Object = this.getDataByValue(value);
             let eventArgs: CustomValueEventArgs = {
                 newData: data,

@@ -13067,7 +13067,8 @@ var ShowHide = /** @class */ (function () {
             if (isGroupAdaptive(_this.parent)) {
                 _this.parent.contentModule.emptyVcRows();
             }
-            if (_this.parent.allowSelection && _this.parent.getSelectedRecords().length) {
+            if (_this.parent.allowSelection && _this.parent.getSelectedRecords().length &&
+                !_this.parent.selectionSettings.persistSelection) {
                 _this.parent.clearSelection();
             }
             if (_this.parent.enableColumnVirtualization) {
@@ -13791,11 +13792,12 @@ var Clipboard = /** @class */ (function () {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    var cells = [].slice.call(rows[selectedIndexes[i]].querySelectorAll('.e-rowcell'));
+                    var cells = [].slice.call(rows[selectedIndexes[i]].
+                        querySelectorAll('.e-rowcell:not(.e-hide)'));
                     if (isFrozen) {
-                        cells.push.apply(cells, [].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                        cells.push.apply(cells, [].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         if (frRows) {
-                            cells.push.apply(cells, [].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                            cells.push.apply(cells, [].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);
@@ -16252,9 +16254,11 @@ var Grid = /** @class */ (function (_super) {
      * Refreshes the Grid header and content.
      */
     Grid.prototype.refresh = function () {
-        this.headerModule.refreshUI();
-        this.updateStackedFilter();
-        this.renderModule.refresh();
+        if (!this.isDestroyed) {
+            this.headerModule.refreshUI();
+            this.updateStackedFilter();
+            this.renderModule.refresh();
+        }
     };
     /**
      * Refreshes the Grid header.
@@ -18288,9 +18292,15 @@ var Grid = /** @class */ (function (_super) {
         var queries = state.data;
         var gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
             'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.filterSettings.columns = JSON.parse(queries).where;
         gridModel.columns.forEach(function (e) {
-            if (grid.getColumnByUid(e.uid)) {
-                e.headerText = grid.getColumnByUid(e.uid).headerText;
+            var column = grid.getColumnByUid(e.uid);
+            if (column) {
+                e.headerText = column.headerText;
+                if (!sf.base.isNullOrUndefined(column.template)) {
+                    e.template = "true";
+                }
+                
                 if (e.format) {
                     var format = typeof (e.format) === 'object' ? e.format.format : e.format;
                     e.format = getNumberFormat(format, e.type);
@@ -18302,13 +18312,10 @@ var Grid = /** @class */ (function (_super) {
         });
         var form = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
         var gridInput = this.createElement('input', { id: 'gridInput', attrs: { name: "gridModel" } });
-        var queryInput = this.createElement('input', { id: 'queryInput', attrs: { name: "requestModel" } });
         gridInput.value = JSON.stringify(gridModel);
-        queryInput.value = queries;
         form.method = "POST";
         form.action = url;
         form.appendChild(gridInput);
-        form.appendChild(queryInput);
         document.body.appendChild(form);
         form.submit();
         form.remove();
@@ -18318,7 +18325,12 @@ var Grid = /** @class */ (function (_super) {
      */
     Grid.prototype.setHeaderText = function (columns) {
         for (var i = 0; i < columns.length; i++) {
-            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            var column = this.getColumnByUid(columns[i].uid);
+            columns[i].headerText = column.headerText;
+            if (!sf.base.isNullOrUndefined(column.template)) {
+                columns[i].template = "true";
+            }
+            
             if (columns[i].format) {
                 var e = columns[i];
                 var format = typeof (e.format) === 'object' ? e.format.format : e.format;
@@ -20174,15 +20186,15 @@ function getColumnLevelFreezeTableName(gObj, index) {
 /** @hidden */
 
 /** @hidden */
-function gridActionHandler(gObj, callBack, rows, force) {
+function gridActionHandler(gObj, callBack, rows, force, rowObj) {
     if (rows[0].length || force) {
-        callBack('frozen-left', rows[0]);
+        rowObj ? callBack('frozen-left', rows[0], rowObj[0]) : callBack('frozen-left', rows[0]);
     }
     if (gObj.isFrozenGrid() && (rows[1].length || force)) {
-        callBack('movable', rows[1]);
+        rowObj ? callBack('movable', rows[1], rowObj[1]) : callBack('movable', rows[1]);
     }
     if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
-        callBack('frozen-right', rows[2]);
+        rowObj ? callBack('frozen-right', rows[2], rowObj[2]) : callBack('frozen-right', rows[2]);
     }
 }
 /** @hidden */

@@ -957,7 +957,7 @@ export class Layout {
             if (isFitted) {
                 this.viewer.clientActiveArea.height -= height;
                 this.footnoteHeight += height;
-               // this.footHeight += height;
+                // this.footHeight += height;
             }
             this.viewer.clientArea = clientArea;
             // footnote.childWidgets.push(foot);
@@ -2486,7 +2486,7 @@ export class Layout {
                 let levelNumber: number = keys[i];
                 let levelKey: string = '%' + (levelNumber + 1).toString();
                 let listLevel: WListLevel = this.getListLevel(listAdv, levelNumber);
-                if (listText.match(levelKey)) {
+                if (listText.match(levelKey) && listText.match((listLevelNumber + 1).toString())) {
                     if (levelNumber > listLevelNumber) {
                         return '';
                     } else if (levels.containsKey(levelNumber) && !isNullOrUndefined(listLevel)) {
@@ -2494,6 +2494,9 @@ export class Layout {
                     } else {
                         listText = listText.replace(levelKey, '0');
                     }
+                } else if (listLevelNumber > 0) {
+                    listLevel = this.getListLevel(listAdv, keys[listLevelNumber]);
+                    return this.getListTextListLevel(listLevel, levels.get(listLevelNumber)) + '.';
                 }
             }
         }
@@ -2673,7 +2676,9 @@ export class Layout {
         let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            clientActiveX = clientActiveX + firstLineIndent;
+            if (!isList) {
+                clientActiveX = clientActiveX + firstLineIndent;
+            }
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
@@ -5248,8 +5253,9 @@ export class Layout {
                             break;
                         } else {
                             this.footHeight = 0;
-                        }}
                         }
+                    }
+                }
             }
         }
         this.updateWidgetToRow(cell);

@@ -7768,6 +7768,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.fileStreams = [];
         _this.newFileRef = 0;
         _this.isFirstFileOnSelection = false;
+        _this.dragCounter = 0;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -8490,6 +8491,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.dropZoneElement, 'dragover', this.dragHover, this);
             EventHandler.add(this.dropZoneElement, 'dragleave', this.onDragLeave, this);
             EventHandler.add(this.dropZoneElement, 'paste', this.onPasteFile, this);
+            EventHandler.add(this.dropZoneElement, 'dragenter', this.onDragEnter, this);
         }
     };
     Uploader.prototype.unBindDropEvents = function () {
@@ -8497,16 +8499,31 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             EventHandler.remove(this.dropZoneElement, 'drop', this.dropElement);
             EventHandler.remove(this.dropZoneElement, 'dragover', this.dragHover);
             EventHandler.remove(this.dropZoneElement, 'dragleave', this.onDragLeave);
+            EventHandler.remove(this.dropZoneElement, 'dragenter', this.onDragEnter);
         }
     };
+    Uploader.prototype.onDragEnter = function (e) {
+        if (!this.enabled) {
+            return;
+        }
+        this.dropZoneElement.classList.add(DRAG_HOVER);
+        this.dragCounter = this.dragCounter + 1;
+        e.preventDefault();
+        e.stopPropagation();
+    };
     Uploader.prototype.onDragLeave = function (e) {
-        this.dropZoneElement.classList.remove(DRAG_HOVER);
+        if (!this.enabled) {
+            return;
+        }
+        this.dragCounter = this.dragCounter - 1;
+        if (!this.dragCounter) {
+            this.dropZoneElement.classList.remove(DRAG_HOVER);
+        }
     };
     Uploader.prototype.dragHover = function (e) {
         if (!this.enabled) {
             return;
         }
-        this.dropZoneElement.classList.add(DRAG_HOVER);
         if (this.dropEffect !== 'Default') {
             e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
         }
@@ -8515,6 +8532,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     /* istanbul ignore next */
     Uploader.prototype.dropElement = function (e) {
+        this.dragCounter = 0;
         this.dropZoneElement.classList.remove(DRAG_HOVER);
         this.onSelectFiles(e);
         e.preventDefault();
@@ -10161,7 +10179,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     this.raiseSuccessEvent(e, metaData.file);
                     return;
                 }
-                this.sendNextRequest(metaData);
+                if (metaData.file.statusCode !== '4') {
+                    this.sendNextRequest(metaData);
+                }
             }
         }
         else {
@@ -10210,8 +10230,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.abortUpload(metaData, custom, eventArgs);
     };
     Uploader.prototype.abortUpload = function (metaData, custom, eventArgs) {
-        metaData.request.emitError = false;
-        metaData.request.httpRequest.abort();
+        if (metaData.file.statusCode !== '4') {
+            metaData.request.emitError = false;
+            metaData.request.httpRequest.abort();
+        }
         var liElement = this.getLiElement(metaData.file);
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom)) {
             var targetElement = liElement.querySelector('.' + PAUSE_UPLOAD);
@@ -13231,12 +13253,16 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
                 this.textarea.setAttribute('id', getUniqueID('textarea'));
-                var attribute = ['required', 'minlength', 'maxlength'];
-                for (var i = 0; i < attribute.length; i++) {
-                    if (this.element.hasAttribute(attribute[i])) {
-                        var attr = this.element.getAttribute(attribute[i]);
-                        this.textarea.setAttribute(attribute[i], attr);
-                        this.element.removeAttribute(attribute[i]);
+                var attrs = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
+                for (var i = 0; i < this.element.attributes.length; i++) {
+                    var attributeName = this.element.attributes[i].nodeName;
+                    if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
+                        !(attributeName === 'id' || attributeName === 'type')) {
+                        this.textarea.setAttribute(attributeName, this.element.attributes[i].nodeValue);
+                        if (attrs.indexOf(attributeName) < 0) {
+                            this.element.removeAttribute(attributeName);
+                            i--;
+                        }
                     }
                 }
             }

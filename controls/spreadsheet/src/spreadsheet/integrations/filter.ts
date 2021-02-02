@@ -2,7 +2,7 @@ import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilte
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, getCellPosition } from '../index';
 import { filterRangeAlert, filterComplete, beforeFilter, clearAllFilter, getFilteredCollection } from '../../workbook/common/event';
-import { FilterCollectionModel } from '../../workbook/index';
+import { FilterCollectionModel, getRangeIndexes } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getColumnHeaderText, CellModel} from '../../workbook/index';
 import { getData, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet } from '../../workbook/index';
 import { FilterOptions, BeforeFilterEventArgs, FilterEventArgs } from '../../workbook/common/interface';
@@ -14,6 +14,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { Query, DataManager, Predicate } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { beginAction, completeAction } from '../../spreadsheet/index';
 
 /**
  * `Filter` module is used to handle the filter action in Spreadsheet.
@@ -169,6 +170,21 @@ export class Filter {
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
         }
+        let selectedRange: string = sheet.selectedRange;
+        let rangeIdx: number[] = getRangeIndexes(selectedRange);
+        if (rangeIdx[0] === rangeIdx[2] && rangeIdx[1] === rangeIdx[3]) {
+            rangeIdx[0] = 0; rangeIdx[1] = 1;
+            rangeIdx[2] = sheet.usedRange.rowIndex;
+            rangeIdx[3] = sheet.usedRange.colIndex;
+            selectedRange = getRangeAddress(rangeIdx);
+        }
+        let eventArgs: BeforeFilterEventArgs = {
+            range: args.range ? args.range : selectedRange,
+            filterOptions: { predicates: args.predicates as Predicate[] }, cancel: false
+        };
+        if (!args.isCut) {
+            this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
+        }
         this.processRange(sheet, sheetIdx, args ? args.range : null);
 
         if (predicates) {
@@ -178,7 +194,7 @@ export class Filter {
             getData(this.parent, `${sheet.name}!${getRangeAddress(range)}`, true, true).then((jsonData: { [key: string]: CellModel }[]) => {
                 this.filterSuccessHandler(
                     new DataManager(jsonData), {
-                        action: 'filtering',
+                    action: 'filtering',
                     filterCollection: predicates, field: predicates[0].field, sIdx: args.sIdx
                 });
                 predicates.forEach((predicate: PredicateModel) => {
@@ -189,6 +205,9 @@ export class Filter {
                 });
                 this.refreshFilterRange(null, false, args.sIdx);
             });
+        }
+        if (!args.isCut) {
+            this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
         }
     }
 

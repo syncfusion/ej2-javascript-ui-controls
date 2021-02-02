@@ -197,6 +197,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         let changeEventArgs: ChangeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
+        event.stopPropagation();
     }
 
     /**

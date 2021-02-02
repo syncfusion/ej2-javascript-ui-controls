@@ -15242,6 +15242,7 @@ class TaskbarEdit extends DateProcessor {
             args.cancel = false;
             args.previousData = this.previousItem;
             this.roundOffDuration = args.roundOffDuration;
+            this.targetElement = args.target = closest(e.target, '.e-gantt-child-taskbar');
             this.updateMouseMoveProperties(e);
             if (this.taskBarEditAction === 'ProgressResizing') {
                 this.performProgressResize(e);
@@ -16224,6 +16225,7 @@ class TaskbarEdit extends DateProcessor {
                     args.taskBarEditAction = this.taskBarEditAction;
                     args.action = 'TaskbarEditing';
                     args.roundOffDuration = this.roundOffDuration;
+                    args.target = this.targetElement;
                     this.taskbarEditedArgs = args;
                     this.taskbarEdited(args);
                 }
@@ -19787,10 +19789,10 @@ class Edit$2 {
         let scheduleFieldNames = [];
         let isScheduleValueUpdated = false;
         for (let key of Object.keys(data)) {
-            if (isNullOrUndefined(key) || (isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks)) {
-                continue;
-            }
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
+                if (isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks) {
+                    continue;
+                }
                 if (isFromDialog) {
                     if (tasks.duration === key) {
                         ganttObj.dataOperation.updateDurationValue(data[key], ganttData.ganttProperties);
@@ -20440,6 +20442,9 @@ class Edit$2 {
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
+        if (!isNullOrUndefined(args.target)) {
+            eventArgs.target = args.target;
+        }
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, true);
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';
@@ -25676,8 +25681,9 @@ class RowDD$1 {
                     if (dataSource.length > 0) {
                         dataSource.splice(idx, 1);
                     }
-                    this.treeGridData.splice(idx, 1);
-                    this.parent.ids.splice(idx, 1);
+                    let tempIndex = this.treeGridData.indexOf(deletedRow);
+                    this.treeGridData.splice(tempIndex, 1);
+                    this.parent.ids.splice(tempIndex, 1);
                     if (this.parent.treeGrid.parentData.indexOf(deletedRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(deletedRow), 1);
                     }
@@ -25727,8 +25733,9 @@ class RowDD$1 {
                 if (ganttData.length > 0) {
                     ganttData.splice(idx, 1);
                 }
-                this.treeGridData.splice(idx, 1);
-                this.parent.ids.splice(idx, 1);
+                let tempIndex = this.treeGridData.indexOf(currentRecord);
+                this.treeGridData.splice(tempIndex, 1);
+                this.parent.ids.splice(tempIndex, 1);
                 if (this.parent.viewType === 'ResourceView') {
                     this.parent.getTaskIds().splice(idx, 1);
                 }

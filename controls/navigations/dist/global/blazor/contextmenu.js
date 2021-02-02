@@ -947,12 +947,12 @@ function addScrolling(createElement$$1, container, content, scrollType, enableRt
     var containerOffset;
     var contentOffset;
     if (scrollType === 'vscroll') {
-        containerOffset = offset || container.offsetHeight;
-        contentOffset = content.offsetHeight;
+        containerOffset = offset || container.getBoundingClientRect().height;
+        contentOffset = content.getBoundingClientRect().height;
     }
     else {
-        containerOffset = container.offsetWidth;
-        contentOffset = content.offsetWidth;
+        containerOffset = container.getBoundingClientRect().width;
+        contentOffset = content.getBoundingClientRect().width;
     }
     if (containerOffset < contentOffset) {
         var scrollEle = createElement$$1('div', { className: 'e-menu-' + scrollType });

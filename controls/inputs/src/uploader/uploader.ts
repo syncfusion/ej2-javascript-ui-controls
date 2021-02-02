@@ -575,6 +575,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private fileStreams: FileInfo[] = [];
     private newFileRef: number = 0;
     private isFirstFileOnSelection: boolean = false;
+    private dragCounter : number = 0;
     /**
      * Get the file item(li) which are shown in file list.
      * @private
@@ -1761,6 +1762,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             EventHandler.add(this.dropZoneElement, 'dragover', this.dragHover, this);
             EventHandler.add(this.dropZoneElement, 'dragleave', this.onDragLeave, this);
             EventHandler.add(this.dropZoneElement, 'paste', this.onPasteFile, this);
+            EventHandler.add(this.dropZoneElement, 'dragenter', this.onDragEnter, this);
         }
     }
 
@@ -1769,16 +1771,27 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             EventHandler.remove(this.dropZoneElement, 'drop', this.dropElement);
             EventHandler.remove(this.dropZoneElement, 'dragover', this.dragHover);
             EventHandler.remove(this.dropZoneElement, 'dragleave', this.onDragLeave);
+            EventHandler.remove(this.dropZoneElement, 'dragenter', this.onDragEnter);
         }
     }
 
+    private onDragEnter( e : DragEvent) : void {
+        if (!this.enabled) { return; }
+        this.dropZoneElement.classList.add(DRAG_HOVER);
+        this.dragCounter = this.dragCounter + 1;
+        e.preventDefault();
+        e.stopPropagation();
+    }
     private onDragLeave(e: DragEvent): void {
-        this.dropZoneElement.classList.remove(DRAG_HOVER);
+        if (!this.enabled) { return; }
+        this.dragCounter = this.dragCounter - 1;
+        if (!this.dragCounter) {
+            this.dropZoneElement.classList.remove(DRAG_HOVER);
+        }
     }
 
     private dragHover(e: DragEvent): void {
         if (!this.enabled) { return; }
-        this.dropZoneElement.classList.add(DRAG_HOVER);
         if (this.dropEffect !== 'Default') {
             e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
         }
@@ -1788,6 +1801,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /* istanbul ignore next */
     private dropElement(e: DragEvent): void {
+        this.dragCounter = 0;
         this.dropZoneElement.classList.remove(DRAG_HOVER);
         this.onSelectFiles(e);
         e.preventDefault();
@@ -3386,7 +3400,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.raiseSuccessEvent(e, metaData.file);
                     return;
                 }
-                this.sendNextRequest(metaData);
+                if (metaData.file.statusCode !== '4') {
+                    this.sendNextRequest(metaData);
+                }
             }
         } else {
             this.chunkUploadFailed(e, metaData);
@@ -3438,8 +3454,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private abortUpload(metaData: MetaData, custom: boolean, eventArgs?: PauseResumeEventArgs): void {
-        metaData.request.emitError = false;
-        metaData.request.httpRequest.abort();
+        if (metaData.file.statusCode !== '4') {
+            metaData.request.emitError = false;
+            metaData.request.httpRequest.abort();
+        }
         let liElement: HTMLElement = this.getLiElement(metaData.file);
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom) ) {
             let targetElement: HTMLElement = liElement.querySelector('.' + PAUSE_UPLOAD) as HTMLElement;

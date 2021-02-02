@@ -974,4 +974,31 @@ describe('ComboBox', () => {
             buttonEle.click();
         });
     });
+    describe('EJ2-45854- Null exception when destroy the component', () => {
+        let data: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' }
+        ];
+        let comboObj: any;
+        beforeAll(() => {
+            let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox' });
+            document.body.appendChild(comboEle);
+            comboObj = new ComboBox({
+                dataSource: data,
+                fields: { text: "text", value: "id" },
+            });
+            comboObj.appendTo('#ComboBox');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('Select item from list of calling refresh method', () => {
+            comboObj.inputElement = undefined;
+            comboObj.destroy();
+            expect(document.getElementsByClassName(comboObj.inputWrapper.container.className).length == 0).toBe(true)
+        });
+    });
 });

@@ -4208,9 +4208,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Refreshes the Grid header and content.
      */
     public refresh(): void {
+        if (!this.isDestroyed) {
         this.headerModule.refreshUI();
         this.updateStackedFilter();
-        this.renderModule.refresh();
+        this.renderModule.refresh(); }
     }
 
     /**
@@ -6331,9 +6332,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
         let gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
             'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.filterSettings.columns = JSON.parse(queries).where;
         gridModel.columns.forEach((e: Column) => {
-            if (grid.getColumnByUid(e.uid)) {
-                e.headerText = grid.getColumnByUid(e.uid).headerText;
+            let column: Column = grid.getColumnByUid(e.uid);
+            if (column) {
+                e.headerText = column.headerText;
+                if (!isNullOrUndefined(column.template)) {
+                    e.template = "true";
+                };
                 if (e.format) {
                     let format: string = typeof (e.format) === 'object' ? e.format.format : e.format;
                     e.format = getNumberFormat(format, e.type);
@@ -6345,13 +6351,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         });
         let form: HTMLFormElement = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
         let gridInput: HTMLInputElement = this.createElement('input', { id: 'gridInput', attrs:{name:"gridModel"} });
-        let queryInput: HTMLInputElement = this.createElement('input', { id: 'queryInput', attrs:{name:"requestModel"} });
         gridInput.value = JSON.stringify(gridModel);
-        queryInput.value = queries;
         form.method = "POST";
         form.action = url;  
         form.appendChild(gridInput);
-        form.appendChild(queryInput);
         document.body.appendChild(form);
         form.submit();
         form.remove();
@@ -6362,7 +6365,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public setHeaderText(columns: Column[]) {
         for (var i = 0; i < columns.length; i++) {
-            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            let column: Column = this.getColumnByUid(columns[i].uid);
+            columns[i].headerText = column.headerText;
+            if (!isNullOrUndefined(column.template)) {
+                columns[i].template = "true";
+            };
             if (columns[i].format) {
                 let e: Column = columns[i];
                 let format: string = typeof (e.format) === 'object' ? e.format.format : e.format;

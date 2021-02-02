@@ -3638,6 +3638,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         else {
             this.clearSelection();
         }
+        if (!isNullOrUndefined(item)) {
+            this.updateType(item);
+        }
     };
     LargeIconsView.prototype.dblClickHandler = function (e) {
         this.parent.activeModule = 'largeiconsview';

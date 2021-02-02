@@ -211,7 +211,7 @@ export class DataValidation {
     private listValueChange(value: string): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let cellIdx: number[] = getIndexesFromAddress(sheet.activeCell);
-        let cellObj: CellModel = getCell(cellIdx[0], cellIdx[1], sheet);
+        let cellObj: CellModel = Object.assign({}, getCell(cellIdx[0], cellIdx[1], sheet));
         if (sheet.isProtected && isLocked(cellObj, getColumn(sheet, cellIdx[1]))) {
             this.parent.notify(editAlert, null);
         } else {
@@ -219,6 +219,10 @@ export class DataValidation {
                 workbookEditOperation,
                 { action: 'updateCellValue', address: sheet.activeCell, value: value });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(cellIdx);
+            this.parent.trigger('cellSave', {
+                value: value, oldValue: cellObj && cellObj.value, address: sheet.name + '!' + sheet.activeCell,
+                displayText: this.parent.getDisplayText(getCell(cellIdx[0], cellIdx[1], sheet))
+            });
         }
     }
 

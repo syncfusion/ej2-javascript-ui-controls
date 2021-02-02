@@ -56,8 +56,13 @@ export class WrapText {
                     if (ele) {
                         args.wrap ? ele.classList.add(WRAPTEXT) : ele.classList.remove(WRAPTEXT);
                         if (isCustomHgt) {
-                            ele.innerHTML
-                                = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                            if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
+                                ele.innerHTML
+                                    = this.parent.createElement('span', {
+                                        className: 'e-wrap-content',
+                                        innerHTML: ele.innerHTML
+                                    }).outerHTML;
+                            }
                         }
                     }
                     if (Browser.isIE) {
@@ -150,7 +155,12 @@ export class WrapText {
                 let cell: CellModel = getCell(args.rowIdx, i, sheet);
                 if (cell && cell.wrap) {
                     let ele: Element = this.parent.getCell(args.rowIdx, i);
-                    ele.innerHTML = this.parent.createElement('span', { className: 'e-wrap-content', innerHTML: ele.innerHTML }).outerHTML;
+                    if (ele.children.length === 0 || !ele.querySelector('.e-wrap-content')) {
+                        ele.innerHTML = this.parent.createElement('span', {
+                            className: 'e-wrap-content',
+                            innerHTML: ele.innerHTML
+                        }).outerHTML;
+                    }
                 }
             }
         }

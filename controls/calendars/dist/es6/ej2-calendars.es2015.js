@@ -1357,15 +1357,15 @@ let CalendarBase = class CalendarBase extends Component {
      * @returns void
      */
     destroy() {
-        if (this.getModuleName() === 'calendar') {
+        if (this.getModuleName() === 'calendar' && this.element) {
             removeClass([this.element], [ROOT]);
         }
         else {
-            if (this.calendarElement) {
+            if (this.calendarElement && this.element) {
                 removeClass([this.element], [ROOT]);
             }
         }
-        if (this.getModuleName() === 'calendar') {
+        if (this.getModuleName() === 'calendar' && this.element) {
             EventHandler.remove(this.headerTitleElement, 'click', this.navigateTitle);
             if (this.todayElement) {
                 EventHandler.remove(this.todayElement, 'click', this.todayButtonClick);
@@ -1377,7 +1377,9 @@ let CalendarBase = class CalendarBase extends Component {
             (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) ?
                 this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         }
-        this.element.innerHTML = '';
+        if (this.element) {
+            this.element.innerHTML = '';
+        }
         super.destroy();
     }
     title(e) {
@@ -1874,6 +1876,12 @@ __decorate([
     Property(new Date(1900, 0, 1))
 ], CalendarBase.prototype, "min", void 0);
 __decorate([
+    Property(true)
+], CalendarBase.prototype, "enabled", void 0);
+__decorate([
+    Property(null)
+], CalendarBase.prototype, "cssClass", void 0);
+__decorate([
     Property(new Date(2099, 11, 31))
 ], CalendarBase.prototype, "max", void 0);
 __decorate([
@@ -1982,6 +1990,10 @@ let Calendar = class Calendar extends CalendarBase {
         }
         this.validateDate();
         this.minMaxUpdate();
+        this.setEnable(this.enabled);
+        if (this.getModuleName() === 'calendar') {
+            this.setClass(this.cssClass);
+        }
         super.render();
         if (this.getModuleName() === 'calendar') {
             let form = closest(this.element, 'form');
@@ -1991,6 +2003,28 @@ let Calendar = class Calendar extends CalendarBase {
             this.setTimeZone(this.serverTimezoneOffset);
         }
         this.renderComplete();
+    }
+    setEnable(enable) {
+        if (!enable) {
+            addClass([this.element], DISABLED);
+        }
+        else {
+            removeClass([this.element], DISABLED);
+        }
+    }
+    setClass(newCssClass, oldCssClass) {
+        if (!isNullOrUndefined(oldCssClass)) {
+            oldCssClass = (oldCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            newCssClass = (newCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(oldCssClass) && oldCssClass !== '') {
+            removeClass([this.element], oldCssClass.split(' '));
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            addClass([this.element], newCssClass.split(' '));
+        }
     }
     isDayLightSaving() {
         let secondOffset = new Date(this.value.getFullYear(), 6, 1).getTimezoneOffset();
@@ -2230,6 +2264,14 @@ let Calendar = class Calendar extends CalendarBase {
                     if (this.isDateSelected) {
                         this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
                         this.update();
+                    }
+                    break;
+                case 'enabled':
+                    this.setEnable(this.enabled);
+                    break;
+                case 'cssClass':
+                    if (this.getModuleName() === 'calendar') {
+                        this.setClass(newProp.cssClass, oldProp.cssClass);
                     }
                     break;
                 default:

@@ -11760,7 +11760,8 @@ var ShowHide = /** @class */ (function () {
             if (isGroupAdaptive(_this.parent)) {
                 _this.parent.contentModule.emptyVcRows();
             }
-            if (_this.parent.allowSelection && _this.parent.getSelectedRecords().length) {
+            if (_this.parent.allowSelection && _this.parent.getSelectedRecords().length &&
+                !_this.parent.selectionSettings.persistSelection) {
                 _this.parent.clearSelection();
             }
             if (_this.parent.enableColumnVirtualization) {
@@ -12484,11 +12485,12 @@ var Clipboard = /** @class */ (function () {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    var cells = [].slice.call(rows[selectedIndexes[i]].querySelectorAll('.e-rowcell'));
+                    var cells = [].slice.call(rows[selectedIndexes[i]].
+                        querySelectorAll('.e-rowcell:not(.e-hide)'));
                     if (isFrozen) {
-                        cells.push.apply(cells, [].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                        cells.push.apply(cells, [].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         if (frRows) {
-                            cells.push.apply(cells, [].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                            cells.push.apply(cells, [].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);
@@ -15322,9 +15324,11 @@ var Grid = /** @class */ (function (_super) {
      * Refreshes the Grid header and content.
      */
     Grid.prototype.refresh = function () {
-        this.headerModule.refreshUI();
-        this.updateStackedFilter();
-        this.renderModule.refresh();
+        if (!this.isDestroyed) {
+            this.headerModule.refreshUI();
+            this.updateStackedFilter();
+            this.renderModule.refresh();
+        }
     };
     /**
      * Refreshes the Grid header.
@@ -17358,9 +17362,15 @@ var Grid = /** @class */ (function (_super) {
         var queries = state.data;
         var gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
             'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.filterSettings.columns = JSON.parse(queries).where;
         gridModel.columns.forEach(function (e) {
-            if (grid.getColumnByUid(e.uid)) {
-                e.headerText = grid.getColumnByUid(e.uid).headerText;
+            var column = grid.getColumnByUid(e.uid);
+            if (column) {
+                e.headerText = column.headerText;
+                if (!sf.base.isNullOrUndefined(column.template)) {
+                    e.template = "true";
+                }
+                
                 if (e.format) {
                     var format = typeof (e.format) === 'object' ? e.format.format : e.format;
                     e.format = getNumberFormat(format, e.type);
@@ -17372,13 +17382,10 @@ var Grid = /** @class */ (function (_super) {
         });
         var form = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
         var gridInput = this.createElement('input', { id: 'gridInput', attrs: { name: "gridModel" } });
-        var queryInput = this.createElement('input', { id: 'queryInput', attrs: { name: "requestModel" } });
         gridInput.value = JSON.stringify(gridModel);
-        queryInput.value = queries;
         form.method = "POST";
         form.action = url;
         form.appendChild(gridInput);
-        form.appendChild(queryInput);
         document.body.appendChild(form);
         form.submit();
         form.remove();
@@ -17388,7 +17395,12 @@ var Grid = /** @class */ (function (_super) {
      */
     Grid.prototype.setHeaderText = function (columns) {
         for (var i = 0; i < columns.length; i++) {
-            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            var column = this.getColumnByUid(columns[i].uid);
+            columns[i].headerText = column.headerText;
+            if (!sf.base.isNullOrUndefined(column.template)) {
+                columns[i].template = "true";
+            }
+            
             if (columns[i].format) {
                 var e = columns[i];
                 var format = typeof (e.format) === 'object' ? e.format.format : e.format;
@@ -19511,15 +19523,15 @@ function splitFrozenRowObjectCells(gObj, cells, tableName) {
     return cells;
 }
 /** @hidden */
-function gridActionHandler(gObj, callBack, rows, force) {
+function gridActionHandler(gObj, callBack, rows, force, rowObj) {
     if (rows[0].length || force) {
-        callBack('frozen-left', rows[0]);
+        rowObj ? callBack('frozen-left', rows[0], rowObj[0]) : callBack('frozen-left', rows[0]);
     }
     if (gObj.isFrozenGrid() && (rows[1].length || force)) {
-        callBack('movable', rows[1]);
+        rowObj ? callBack('movable', rows[1], rowObj[1]) : callBack('movable', rows[1]);
     }
     if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
-        callBack('frozen-right', rows[2]);
+        rowObj ? callBack('frozen-right', rows[2], rowObj[2]) : callBack('frozen-right', rows[2]);
     }
 }
 /** @hidden */
@@ -24419,6 +24431,13 @@ var Filter = /** @class */ (function () {
             this.render();
         }
     };
+    Filter.prototype.refreshFilterValue = function () {
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
+            !this.parent.getCurrentViewRecords().length && this.parent.enablePersistence) {
+            this.initialEnd();
+            this.parent.removeEventListener(beforeDataBound, this.refreshFilterValue);
+        }
+    };
     Filter.prototype.initialEnd = function () {
         this.parent.off(contentReady, this.initialEnd);
         if (this.parent.getColumns().length && this.filterSettings.columns.length) {
@@ -24454,6 +24473,7 @@ var Filter = /** @class */ (function () {
         this.parent.on(click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
         this.parent.on(closeFilterDialog, this.clickHandler, this);
+        this.parent.addEventListener(beforeDataBound, this.refreshFilterValue.bind(this));
     };
     /**
      * @hidden
@@ -33891,17 +33911,20 @@ var BatchEdit = /** @class */ (function () {
         var gObj = this.parent;
         var rows = gObj.getAllDataRows(true);
         var dataRows = getGridRowElements(this.parent);
+        var dataObjects = getGridRowObjects(this.parent);
         var _loop_2 = function (i, j, len) {
             if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
-                gridActionHandler(this_2.parent, function (tableName, rowElements) {
+                gridActionHandler(this_2.parent, function (tableName, rowElements, rowObjects) {
                     rowElements[i].setAttribute('aria-rowindex', j.toString());
-                }, dataRows);
+                    rowObjects[i].index = j;
+                }, dataRows, null, dataObjects);
                 j++;
             }
             else {
-                gridActionHandler(this_2.parent, function (tableName, rowElements) {
+                gridActionHandler(this_2.parent, function (tableName, rowElements, rowObjects) {
                     rowElements[i].removeAttribute('aria-rowindex');
-                }, dataRows);
+                    rowObjects[i].index = -1;
+                }, dataRows, null, dataObjects);
             }
             out_j_1 = j;
         };
@@ -37130,6 +37153,7 @@ var ExcelExport = /** @class */ (function () {
             }
             if (!sf.base.isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
                 this.processGroupedRows(gObj, item.items, headerRow, item.items.level, startIndex, excelExportProperties, excelRows, helper);
+                this.processAggregates(gObj, item, excelRows, undefined, (level) + dataSource.childLevels, true);
             }
             else {
                 startIndex = this.processRecordRows(gObj, item.items, headerRow, (level), startIndex, excelExportProperties, excelRows, helper);
@@ -37281,6 +37305,7 @@ var ExcelExport = /** @class */ (function () {
         for (var _i = 0, rows_2 = rows; _i < rows_2.length; _i++) {
             var row = rows_2[_i];
             var cells = [];
+            var isEmpty = true;
             var index = 0;
             for (var _a = 0, _b = row.cells; _a < _b.length; _a++) {
                 var cell = _b[_a];
@@ -37292,6 +37317,7 @@ var ExcelExport = /** @class */ (function () {
                 if ((cell.visible || this.includeHiddenColumn)) {
                     index++;
                     if (cell.isDataCell) {
+                        isEmpty = false;
                         var footerTemplate = !sf.base.isNullOrUndefined(cell.column.footerTemplate);
                         var groupFooterTemplate = !sf.base.isNullOrUndefined(cell.column.groupFooterTemplate);
                         var groupCaptionTemplate = !sf.base.isNullOrUndefined(cell.column.groupCaptionTemplate);
@@ -37374,7 +37400,9 @@ var ExcelExport = /** @class */ (function () {
                 else {
                     row_1 = { index: this.rowLength++, cells: cells };
                 }
-                excelRows.push(row_1);
+                if (!isEmpty) {
+                    excelRows.push(row_1);
+                }
             }
         }
         return excelRows;
@@ -37632,7 +37660,7 @@ var ExcelExport = /** @class */ (function () {
             style.name = gObj.element.id + 'column' + index;
             this.styles.push(style);
         }
-        if (!sf.base.isNullOrUndefined(col.width)) {
+        if (!sf.base.isNullOrUndefined(col.width) && col.width !== 'auto') {
             this.columns.push({ index: index + gObj.childGridLevel, width: typeof col.width === 'number' ?
                     col.width : this.helper.getConvertedWidth(col.width) });
         }

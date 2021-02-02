@@ -423,7 +423,7 @@ export class VirtualContentRenderer {
             if (!this.parent.options.enableVirtualMaskRow) {
                 this.virtualEle.adjustTable(x, Math.min(y, this.offsets[this.maxBlock]));
             } else if (this.offsets[this.maxBlock] > y) {
-                this.virtualEle.adjustTable(x, Math.min(direction == "right" || direction == "left" ? this.translateMaskY : y, this.offsets[this.maxBlock]));
+                this.virtualEle.adjustTable(x, Math.min(direction == "right" || direction == "left" || direction == "down" ? this.translateMaskY : y, this.offsets[this.maxBlock]));
             }
             if (xAxis) {
                 this.setColVTableWidthAndTranslate({refresh: true});

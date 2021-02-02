@@ -2662,7 +2662,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         var blazor = 'Blazor';
         var tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        var elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
+        var templateId = dataLabelId ? dataLabelId + '_template' : 'template';
+        var elementData = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);

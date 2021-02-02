@@ -7,6 +7,7 @@ import { Touch, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TooltipModel, Tooltip, TooltipLocation, ITooltipAnimationCompleteArgs } from '@syncfusion/ej2-svg-base';
 // tslint:disable
 let throttle: Function = window['_'].throttle;
+
 class ChartLocation {
     public x: number;
     public y: number;
@@ -16,11 +17,234 @@ class ChartLocation {
         this.y = y;
     }
 }
-let AccumulationChart: object = {
+
+class SfAccumulationChart
+{
+    public id: string;
+    public element: BlazorAccChartElement;
+    public dotnetref: BlazorDotnetObject;
+    public chartOnMouseDownRef: any = null;
+    public mouseMoveRef: any = null;
+    public mouseEndRef: any = null;
+    public chartOnMouseClickRef: any = null;
+    public chartRightClickRef: any = null;
+    public mouseLeaveRef: any = null;
+    public chartMouseWheelRef: any = null;
+    public domMouseMoveRef: any = null;
+    public domMouseUpRef: any = null;
+    public longPressBound: any = null;
+    public touchObject: any = null;  
+    public mouseY: number = 0;
+    public mouseX: number = 0;
+    public isTouch: boolean;
+    public eventInterval: number = 80; 
+    public tooltip: Tooltip;
+    constructor(id: string, element: BlazorAccChartElement, dotnetRef: BlazorDotnetObject) {
+        this.id = id;
+        this.element = element;
+        this.dotnetref = dotnetRef;
+        this.element.blazor__instance = this;
+    }
+    public render(): void {
+        this.unWireEvents();
+        this.wireEvents();
+    }
+    public destroy(): void {
+        this.unWireEvents();
+    }
+    private wireEvents(): void {
+        let element: HTMLElement = document.getElementById(this.id);
+        if (!element) {
+            return;
+        }
+        AccumulationChart.dotnetrefCollection.push({id: this.id, dotnetref: this.dotnetref});
+        /*! Find the Events type */
+        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+
+        this.chartOnMouseDownRef = this.chartOnMouseDown.bind(this, this.dotnetref, this.id);
+        this.mouseMoveRef = this.mouseMove.bind(this, this.dotnetref, this.id);
+        this.mouseEndRef = this.mouseEnd.bind(this, this.dotnetref, this.id);
+        this.chartOnMouseClickRef = this.chartOnMouseClick.bind(this, this.dotnetref, this.id);
+        this.chartRightClickRef = this.chartRightClick.bind(this, this.dotnetref, this.id);
+        this.mouseLeaveRef = this.mouseLeave.bind(this, this.dotnetref, this.id);
+
+        /*! Bind the Event handler */
+        element.addEventListener('mousemove', throttle((e: PointerEvent) => {
+            this.mouseMoveRef(e);
+          }, this.eventInterval));
+        element.addEventListener('touchmove', throttle((e: TouchEvent) => {
+            this.mouseMoveRef(e);
+          }, this.eventInterval));
+        EventHandler.add(element, Browser.touchEndEvent, this.mouseEndRef);
+        EventHandler.add(element, 'click', this.chartOnMouseClickRef);
+        EventHandler.add(element, 'contextmenu', this.chartRightClickRef);
+        EventHandler.add(element, cancelEvent, this.mouseLeaveRef);
+        AccumulationChart.resizeBound = AccumulationChart.chartResize.bind(this, AccumulationChart.dotnetrefCollection);
+        let resize: string = (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' :
+        'resize';
+        EventHandler.add(window as any, resize, AccumulationChart.resizeBound);
+        this.longPressBound = this.longPress.bind(this, this.dotnetref, this.id);
+        this.touchObject = new Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
+        /*! Apply the style for chart */
+    }
+    private unWireEvents(): void {
+        let element: HTMLElement = document.getElementById(this.id);
+        if (!element) {
+            return;
+        }
+        AccumulationChart.dotnetrefCollection = AccumulationChart.dotnetrefCollection.filter((item: {id: string, dotnetref: BlazorDotnetObject}): boolean  => {
+            return item.id !== this.id;
+          });
+        /*! Find the Events type */
+        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! Bind the Event handler */
+        EventHandler.remove(element, Browser.touchStartEvent, this.chartOnMouseDownRef);
+        element.removeEventListener('mousemove', this.mouseMoveRef);
+        element.removeEventListener('touchmove', this.mouseMoveRef);
+        EventHandler.remove(element, Browser.touchEndEvent, this.mouseEndRef);
+        EventHandler.remove(element, 'click', this.chartOnMouseClickRef);
+        EventHandler.remove(element, 'contextmenu', this.chartRightClickRef);
+        EventHandler.remove(element, cancelEvent, this.mouseLeaveRef);
+        let resize: string = Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
+        EventHandler.remove(window as any, resize, AccumulationChart.resizeBound);
+        if (this.touchObject) {
+            this.touchObject.destroy();
+            this.touchObject = null;
+        }
+        /*! Apply the style for chart */
+    }
+    private getEventArgs(e: PointerEvent | TouchEvent): object {
+        return {
+            type: e.type,
+            clientX: (e as PointerEvent).clientX,
+            clientY: (e as PointerEvent).clientY,
+            mouseX: this.mouseX,
+            mouseY: this.mouseY,
+            pointerType: (e as PointerEvent).pointerType,
+            target: (e.target as Element).id,
+            changedTouches: {
+                clientX: (e as TouchEvent).changedTouches ? (e as TouchEvent).changedTouches[0].clientX : 0,
+                clientY: (e as TouchEvent).changedTouches ? (e as TouchEvent).changedTouches[0].clientY : 0
+            }
+        };
+    }
+    private setMouseXY(pageX: number, pageY: number): void {
+        let svgRect: ClientRect = document.getElementById(this.id + '_svg').getBoundingClientRect();
+        let rect: ClientRect = document.getElementById(this.id).getBoundingClientRect();
+        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+    }
+    private chartOnMouseDown(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseDown', this.getEventArgs(e));
+        return false;
+    }
+    private mouseMove(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        let pageX: number;
+        let pageY: number;
+        let touchArg: TouchEvent;
+        if (e.type === 'touchmove') {
+            this.isTouch = true;
+            touchArg = e as TouchEvent;
+            pageX = touchArg.changedTouches[0].clientX;
+            pageY = touchArg.changedTouches[0].clientY;
+        } else {
+            this.isTouch = (e as PointerEvent).pointerType === 'touch' || (e as PointerEvent).pointerType === '2' || this.isTouch;
+            pageX = (e as PointerEvent).clientX;
+            pageY = (e as PointerEvent).clientY;
+        }
+        if (document.getElementById(this.id + '_svg')) {
+            this.setMouseXY(pageX, pageY);
+            this.dotnetref.invokeMethodAsync('OnChartMouseMove', this.getEventArgs(e));
+        }
+        return false;
+    }
+    private mouseEnd(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseEnd', this.getEventArgs(e));
+        return false;
+    }
+    private chartOnMouseClick(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseClick', this.getEventArgs(e));
+        return false;
+    }
+    private chartRightClick(dotnetref: BlazorDotnetObject, id: string, event: PointerEvent | TouchEvent): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartRightClick', this.getEventArgs(event));
+        return false;
+    }
+    private mouseLeave(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e));
+        return false;
+    }
+
+    private longPress(dotnetref: BlazorDotnetObject, id: string, e: TapEventArgs): boolean {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartLongPress', e);
+        return false;
+    }
+}
+
+interface IAccumulationChartoptions {
+    initialize: Function;
+    destroy: Function;
+    getElementBoundsById: Function;
+    measureText: Function;
+    getCharSizeByFontKeys: Function;
+    getCharSizeByCharKey: Function;
+    performAnimation: Function;
+    setElementTransform: Function;
+    chartResize: Function;
+    linear: Function;
+    setElementAttribute: Function;
+    getElementAttribute: Function;
+    createStyleElement: Function;
+    renderTooltip: Function;
+    animateRedrawElement: Function;
+    doAnimation: Function;
+    getPathArc: Function;
+    getPiePath: Function;
+    getDoughnutPath: Function;
+    degreeToLocation: Function;
+    ChangePiePath: Function;
+    GetPathOption: Function;
+    ChangePointPath: Function;
+    getAllCharacters: Function;
+    fadeOut: Function;
+    resizeBound: any;
+    resize: any; 
+    dotnetref: object;
+    dotnetrefCollection: {id: string, dotnetref: BlazorDotnetObject}[];
+    charCollection: string[];
+    id: string;
+}
+
+interface BlazorAccChartElement extends HTMLElement {
+    blazor__instance: SfAccumulationChart;
+}
+
+let AccumulationChart: IAccumulationChartoptions = {
+    initialize(element: BlazorAccChartElement, dotnetRef: BlazorDotnetObject): void {
+        let instance: SfAccumulationChart = new SfAccumulationChart(element.id, element, dotnetRef);
+        this.getAllCharacters();
+        instance.render();
+    },
+    destroy(element: BlazorAccChartElement): void {
+        if (!isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.destroy();
+        }
+    },
     id: '',
-    mouseY: 0,
-    mouseX: 0,
-    eventInterval: 80,
     getElementBoundsById(id: string, isSetId: boolean = true):
     { width: number, height: number, left: number, top: number, right: number, bottom: number } {
         if (isSetId) {
@@ -41,12 +265,13 @@ let AccumulationChart: object = {
         }
         return { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0 };
     },
-    charCollection: [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '"', '#', '$', '%', '&', '\\', '(', ')', '*', '+', ',', '-', '.', '/', ':',
-        ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ',
-    ],
+    charCollection:[],
+    getAllCharacters() : void {
+        this.charCollection = [];
+        for (var i = 33; i < 591; i++) {
+            this.charCollection.push(String.fromCharCode(i));
+        }
+    },
     measureText(text: string, size: string, fontWeight: string, fontStyle: string, fontFamily: string): { Width: number, Height: number } {
         let textObject: HTMLElement = document.getElementById('chartmeasuretext');
         if (textObject === null) {
@@ -95,161 +320,27 @@ let AccumulationChart: object = {
         let fontWeight: string = fontValues[2]; let fontStyle: string = fontValues[3]; let fontFamily: string = fontValues[4];
         return this.measureText(char, size, fontWeight, fontStyle, fontFamily);
     },
-    resizeTo: {},
-    resizeBound: [],
     dotnetref: {},
     dotnetrefCollection: [],
-    wireEvents(id: string, dotnetref: BlazorDotnetObject): void {
-        let element: HTMLElement = document.getElementById(id);
-        if (!element) {
-            return;
+    resizeBound : {},
+    resize: {},
+    chartResize(dotnetrefCollection: {id: string, dotnetref: BlazorDotnetObject}[], e: Event): boolean {
+        if (this.resize) {
+            clearTimeout(this.resize);
         }
-        this.dotnetref = dotnetref;
-        this.dotnetrefCollection.push({id: id, dotnetref: dotnetref});
-        /*! Find the Events type */
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-
-        this.chartOnMouseDownRef = this.chartOnMouseDown.bind(this, dotnetref, id);
-        this.mouseMoveRef = this.mouseMove.bind(this, dotnetref, id);
-        this.mouseEndRef = this.mouseEnd.bind(this, dotnetref, id);
-        this.chartOnMouseClickRef = this.chartOnMouseClick.bind(this, dotnetref, id);
-        this.chartRightClickRef = this.chartRightClick.bind(this, dotnetref, id);
-        this.mouseLeaveRef = this.mouseLeave.bind(this, dotnetref, id);
-
-        /*! Bind the Event handler */
-        element.addEventListener('mousemove', throttle((e: PointerEvent) => {
-            this.mouseMoveRef(e);
-          }, this.eventInterval));
-        element.addEventListener('touchmove', throttle((e: TouchEvent) => {
-            this.mouseMoveRef(e);
-          }, this.eventInterval));
-        EventHandler.add(element, Browser.touchEndEvent, this.mouseEndRef);
-        EventHandler.add(element, 'click', this.chartOnMouseClickRef);
-        EventHandler.add(element, 'contextmenu', this.chartRightClickRef);
-        EventHandler.add(element, cancelEvent, this.mouseLeaveRef);
-        this.resizeBound[id] = this.chartResize.bind(this, dotnetref, id);
-        let resize: string = (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' :
-        'resize';
-        EventHandler.add(window as any, resize, this.resizeBound[id]);
-        this.longPressBound = this.longPress.bind(this, dotnetref, id);
-        this.touchObject = new Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
-        /*! Apply the style for chart */
-    },
-
-    unWireEvents(id: string, dotnetref: BlazorDotnetObject): void {
-        let element: HTMLElement = document.getElementById(id);
-        if (!element) {
-            return;
-        }
-        this.dotnetref = dotnetref;
-        this.dotnetrefCollection = this.dotnetrefCollection.filter((item: {id: string, dotnetref: BlazorDotnetObject}): boolean  => {
-            return item.id !== id;
-          });
-        /*! Find the Events type */
-        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! Bind the Event handler */
-        EventHandler.remove(element, Browser.touchStartEvent, this.chartOnMouseDownRef);
-        element.removeEventListener('mousemove', this.mouseMoveRef);
-        element.removeEventListener('touchmove', this.mouseMoveRef);
-        EventHandler.remove(element, Browser.touchEndEvent, this.mouseEndRef);
-        EventHandler.remove(element, 'click', this.chartOnMouseClickRef);
-        EventHandler.remove(element, 'contextmenu', this.chartRightClickRef);
-        EventHandler.remove(element, cancelEvent, this.mouseLeaveRef);
-        let resize: string = Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.remove(window as any, resize, this.resizeBound[id]);
-        if (this.touchObject) {
-            this.touchObject.destroy();
-            this.touchObject = null;
-        }
-        /*! Apply the style for chart */
-    },
-    getEventArgs(e: PointerEvent | TouchEvent, id: string): object {
-        return {
-            type: e.type,
-            clientX: (e as PointerEvent).clientX,
-            clientY: (e as PointerEvent).clientY,
-            mouseX: this.mouseX,
-            mouseY: this.mouseY,
-            pointerType: (e as PointerEvent).pointerType,
-            target: (e.target as Element).id,
-            changedTouches: {
-                clientX: (e as TouchEvent).changedTouches ? (e as TouchEvent).changedTouches[0].clientX : 0,
-                clientY: (e as TouchEvent).changedTouches ? (e as TouchEvent).changedTouches[0].clientY : 0
+        this.resize = setTimeout(() => {
+            let count: number = dotnetrefCollection.length;
+            let tempDotnetref: BlazorDotnetObject;
+            for (let i: number = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('RemoveElements');
             }
-        };
-    },
-    setMouseXY(pageX: number, pageY: number): void {
-        let svgRect: ClientRect = document.getElementById(this.id + '_svg').getBoundingClientRect();
-        let rect: ClientRect = document.getElementById(this.id).getBoundingClientRect();
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-    },
-    chartOnMouseDown(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseDown', this.getEventArgs(e));
-        return false;
-    },
-    mouseMove(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        let pageX: number;
-        let pageY: number;
-        let touchArg: TouchEvent;
-        if (e.type === 'touchmove') {
-            this.isTouch = true;
-            touchArg = e as TouchEvent;
-            pageX = touchArg.changedTouches[0].clientX;
-            pageY = touchArg.changedTouches[0].clientY;
-        } else {
-            this.isTouch = (e as PointerEvent).pointerType === 'touch' || (e as PointerEvent).pointerType === '2' || this.isTouch;
-            pageX = (e as PointerEvent).clientX;
-            pageY = (e as PointerEvent).clientY;
-        }
-        if (document.getElementById(this.id + '_svg')) {
-            this.setMouseXY(pageX, pageY);
-            this.dotnetref.invokeMethodAsync('OnChartMouseMove', this.getEventArgs(e));
-        }
-        return false;
-    },
-    mouseEnd(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseEnd', this.getEventArgs(e));
-        return false;
-    },
-    chartOnMouseClick(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseClick', this.getEventArgs(e));
-        return false;
-    },
-    chartRightClick(dotnetref: BlazorDotnetObject, id: string, event: PointerEvent | TouchEvent): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartRightClick', this.getEventArgs(event));
-        return false;
-    },
-    mouseLeave(dotnetref: BlazorDotnetObject, id: string, e: PointerEvent | TouchEvent): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e));
-        return false;
-    },
-    chartResize(dotnetref: BlazorDotnetObject, id: string, e: Event): boolean {
-        if (this.resizeTo[id]) {
-            clearTimeout(this.resizeTo[id]);
-        }
-
-        this.resizeTo[id] = setTimeout(() => {
-            dotnetref.invokeMethodAsync('OnChartResize', e);
+            for (let i: number = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('OnChartResize', e);
+            }
+            clearTimeout(this.resize);
         }, 500);
-        return false;
-    },
-    longPress(dotnetref: BlazorDotnetObject, id: string, e: TapEventArgs): boolean {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartLongPress', e);
         return false;
     },
     performAnimation(
@@ -309,42 +400,49 @@ let AccumulationChart: object = {
     createStyleElement(styleId: string, styleInnerHTML: string): void {
         document.body.appendChild(createElement('style', { id: styleId, innerHTML: styleInnerHTML }));
     },
-    tooltip: {},
-    renderTooltip(tooltipOptions: string, elementId: string, tooltipModule: any) {
+    renderTooltip(tooltipOptions: string, elementId: string, tooltipModule: any, element: BlazorAccChartElement) {
         let svgElement: Element = document.getElementById(elementId + '_svg');
         let firstRender: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0) ? false : true;
-        let options: TooltipModel = JSON.parse(tooltipOptions);
-        if (firstRender) {
-            this.tooltip = new Tooltip(options);
-            this.tooltip.tooltipRender = () => {
+        let options: TooltipModel = JSON.parse(tooltipOptions);       
+        let currentInstance: SfAccumulationChart = element.blazor__instance;
+        if (firstRender && !isNullOrUndefined(currentInstance)) {
+            currentInstance.tooltip = new Tooltip(options);
+            currentInstance.tooltip.tooltipRender = () => {
                 tooltipModule.invokeMethodAsync('TooltipRender');
             };
-            this.tooltip.animationComplete = (args: ITooltipAnimationCompleteArgs) => {
+            currentInstance.tooltip.animationComplete = (args: ITooltipAnimationCompleteArgs) => {
                 if (args.tooltip.fadeOuted) {
                     tooltipModule.invokeMethodAsync('TooltipAnimationComplete');
                 }
             };
-            this.tooltip.appendTo('#' + elementId);
-        } else {
-            this.tooltip.location = new TooltipLocation(options.location.x, options.location.y);
-            this.tooltip.content = options.content;
-            this.tooltip.header = options.header;
-            this.tooltip.offset = options.offset;
-            this.tooltip.palette = options.palette;
-            this.tooltip.shapes = options.shapes;
-            this.tooltip.data = options.data;
-            this.tooltip.template = options.template;
-            this.tooltip.textStyle.color = options.textStyle.color || this.tooltip.textStyle.color;
-            this.tooltip.textStyle.fontFamily = options.textStyle.fontFamily || this.tooltip.textStyle.fontFamily;
-            this.tooltip.textStyle.fontStyle = options.textStyle.fontStyle || this.tooltip.textStyle.fontStyle;
-            this.tooltip.textStyle.fontWeight = options.textStyle.fontWeight || this.tooltip.textStyle.fontWeight;
-            this.tooltip.textStyle.opacity = options.textStyle.opacity || this.tooltip.textStyle.opacity;
-            this.tooltip.textStyle.size = options.textStyle.size || this.tooltip.textStyle.size;
-            this.tooltip.isNegative = options.isNegative;
-            this.tooltip.clipBounds = new TooltipLocation(options.clipBounds.x, options.clipBounds.y);
-            this.tooltip.arrowPadding = options.arrowPadding;
-            this.tooltip.dataBind();
+            currentInstance.tooltip.appendTo('#' + elementId);
+        } else if (!isNullOrUndefined(currentInstance.tooltip)) {
+            currentInstance.tooltip.location = new TooltipLocation(options.location.x, options.location.y);
+            currentInstance.tooltip.content = options.content;
+            currentInstance.tooltip.header = options.header;
+            currentInstance.tooltip.offset = options.offset;
+            currentInstance.tooltip.palette = options.palette;
+            currentInstance.tooltip.shapes = options.shapes;
+            currentInstance.tooltip.data = options.data;
+            currentInstance.tooltip.template = options.template;
+            currentInstance.tooltip.textStyle.color = options.textStyle.color || this.tooltip.textStyle.color;
+            currentInstance.tooltip.textStyle.fontFamily = options.textStyle.fontFamily || this.tooltip.textStyle.fontFamily;
+            currentInstance.tooltip.textStyle.fontStyle = options.textStyle.fontStyle || this.tooltip.textStyle.fontStyle;
+            currentInstance.tooltip.textStyle.fontWeight = options.textStyle.fontWeight || this.tooltip.textStyle.fontWeight;
+            currentInstance.tooltip.textStyle.opacity = options.textStyle.opacity || this.tooltip.textStyle.opacity;
+            currentInstance.tooltip.textStyle.size = options.textStyle.size || this.tooltip.textStyle.size;
+            currentInstance.tooltip.isNegative = options.isNegative;
+            currentInstance.tooltip.clipBounds = new TooltipLocation(options.clipBounds.x, options.clipBounds.y);
+            currentInstance.tooltip.arrowPadding = options.arrowPadding;
+            currentInstance.tooltip.dataBind();
         }
+    }, 
+    fadeOut(element: BlazorAccChartElement): void {
+        if (isNullOrUndefined(element.blazor__instance) ||
+        (!isNullOrUndefined(element.blazor__instance) && isNullOrUndefined(element.blazor__instance.tooltip))) {
+            return;
+        }
+        element.blazor__instance.tooltip.fadeOut();
     },
     animateRedrawElement(
         elementId: string, duration: number, startX: number, startY: number,

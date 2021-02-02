@@ -130,7 +130,6 @@ var Data = /** @__PURE__ @class */ (function () {
         }
         this.parent.trigger(dataBinding, e, function (args) {
             var resultData = extend([], args.result, null, true);
-            _this.kanbanData.saveChanges({ addedRecords: resultData, changedRecords: [], deletedRecords: [] });
             _this.parent.kanbanData = resultData;
             _this.parent.notify(dataReady, { processedData: resultData });
             _this.parent.trigger(dataBound, null, function () { return _this.parent.hideSpinner(); });
@@ -1064,7 +1063,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                 var modifiedData = [];
                 if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    modifiedData = _this.priorityOrder(modifiedData, addArgs);
+                    modifiedData = _this.priorityOrder(modifiedData);
                 }
                 var addedRecords = (cardData instanceof Array) ? cardData : [cardData];
                 var changedRecords = (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') ? modifiedData : [];
@@ -1085,7 +1084,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                 if (_this.parent.sortSettings.field && _this.parent.sortSettings.sortBy === 'Index') {
                     var modifiedData = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    cardData = _this.priorityOrder(modifiedData, updateArgs, index);
+                    cardData = _this.priorityOrder(modifiedData, index);
                 }
                 var editParms = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
@@ -1117,7 +1116,7 @@ var Crud = /** @__PURE__ @class */ (function () {
             }
         });
     };
-    Crud.prototype.priorityOrder = function (cardData, args, index) {
+    Crud.prototype.priorityOrder = function (cardData, cardIndex) {
         var _this = this;
         var cardsId = cardData.map(function (obj) { return obj[_this.parent.cardSettings.headerField]; });
         var num = cardData[cardData.length - 1][this.parent.sortSettings.field];
@@ -1125,6 +1124,7 @@ var Crud = /** @__PURE__ @class */ (function () {
         var modifiedKey = allModifiedKeys.filter(function (key, index) { return allModifiedKeys.indexOf(key) === index; }).sort();
         var columnAllDatas;
         var finalData = [];
+        var originalIndex = [];
         var _loop_1 = function (columnKey) {
             var keyData = cardData.filter(function (cardObj) {
                 return cardObj[_this.parent.keyField] === columnKey;
@@ -1138,9 +1138,22 @@ var Crud = /** @__PURE__ @class */ (function () {
                 }
             }
             keyData.forEach(function (key) { return finalData.push(key); });
-            if (!isNullOrUndefined(index)) {
+            if (!isNullOrUndefined(cardIndex)) {
+                var _loop_2 = function (j) {
+                    columnAllDatas.filter(function (data, index) {
+                        if (data[_this.parent.cardSettings.headerField] === cardsId[j] && index <= cardIndex) {
+                            originalIndex.push(index);
+                        }
+                    });
+                };
+                for (var j = 0; j < cardsId.length; j++) {
+                    _loop_2(j);
+                }
+                if (originalIndex.length > 0) {
+                    cardIndex = cardIndex + originalIndex.length;
+                }
                 if (this_1.parent.sortSettings.direction === 'Ascending') {
-                    for (var i = index; i < columnAllDatas.length; i++) {
+                    for (var i = cardIndex; i < columnAllDatas.length; i++) {
                         if (cardsId.indexOf(columnAllDatas[i][this_1.parent.cardSettings.headerField]) === -1) {
                             columnAllDatas[i][this_1.parent.sortSettings.field] = ++num;
                             finalData.push(columnAllDatas[i]);
@@ -1148,7 +1161,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else {
-                    for (var i = index - 1; i >= 0; i--) {
+                    for (var i = cardIndex - 1; i >= 0; i--) {
                         if (cardsId.indexOf(columnAllDatas[i][this_1.parent.cardSettings.headerField]) === -1) {
                             columnAllDatas[i][this_1.parent.sortSettings.field] = ++num;
                             finalData.push(columnAllDatas[i]);

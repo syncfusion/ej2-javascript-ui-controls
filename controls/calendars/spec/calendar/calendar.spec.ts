@@ -1396,6 +1396,24 @@ describe('Calendar', () => {
                 toBe(new Date("1/1/2017").toDateString());
             expect(calendar.value.toDateString()).toBe(new Date("5/3/2017").toDateString());
         });
+        it('enabled test case ', function () {
+            calendar = new Calendar({
+                enabled: false
+            });
+            calendar.appendTo('#calendar');
+            expect(calendar.enabled).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-disabled')).toBe(true);
+            calendar.enabled = true;
+            calendar.dataBind();
+        });
+        it('cssClass test case ', function () {
+            calendar = new Calendar({
+                cssClass: "e-testClass"
+            });
+            calendar.appendTo('#calendar');
+            expect(calendar.cssClass).toBe("e-testClass");
+            expect(document.getElementById('calendar').classList.contains('e-testClass')).toBe(true);
+        });
 
         /**
          * start and depth test case 
@@ -2001,6 +2019,59 @@ describe('Calendar', () => {
             calendar.enableRtl = false;
             calendar.dataBind();
             expect(!document.getElementById('calendar').classList.contains('e-rtl')).toEqual(true);
+        });
+        it('enabled property dynamic test case', () => {
+            calendar = new Calendar({
+                enabled: false
+            });
+            calendar.appendTo('#calendar');
+            expect(calendar.enabled).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-disabled')).toBe(true);
+            calendar.enabled = true;
+            calendar.dataBind();
+            expect(calendar.enabled).toBe(true);
+            expect(document.getElementById('calendar').classList.contains('e-disabled')).toBe(false);
+        });
+        it('multiple cssClass  test case', () => {
+            calendar = new Calendar({
+                cssClass: 'e-custom e-secondary-class'
+            });
+            calendar.appendTo('#calendar');
+            expect(document.getElementById('calendar').classList.contains('e-custom')).toBe(true);
+            expect(document.getElementById('calendar').classList.contains('e-secondary-class')).toBe(true);
+            calendar.cssClass = "e-ternary e-cssClass";
+            calendar.dataBind();
+            expect(document.getElementById('calendar').classList.contains('e-custom')).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-secondary-class')).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-ternary')).toBe(true);
+            expect(document.getElementById('calendar').classList.contains('e-cssClass')).toBe(true);
+        });
+        it('multiple cssClass with additional space test case', () => {
+            calendar = new Calendar({
+                cssClass: 'e-custom e-secondary-class '
+            });
+            calendar.appendTo('#calendar');
+            expect(document.getElementById('calendar').classList.contains('e-custom')).toBe(true);
+            expect(document.getElementById('calendar').classList.contains('e-secondary-class')).toBe(true);
+            calendar.cssClass = "e-ternary e-cssClass";
+            calendar.dataBind();
+            expect(document.getElementById('calendar').classList.contains('e-custom')).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-secondary-class')).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-ternary')).toBe(true);
+            expect(document.getElementById('calendar').classList.contains('e-cssClass')).toBe(true);
+        });
+        it('cssClass property dynamic test case', () => {
+            calendar = new Calendar({
+                cssClass: 'e-testClass'
+            });
+            calendar.appendTo('#calendar');
+            expect(calendar.cssClass).toBe("e-testClass");
+            expect(document.getElementById('calendar').classList.contains('e-testClass')).toBe(true);
+            calendar.cssClass = 'e-testSecondClass';
+            calendar.dataBind();
+            expect(calendar.cssClass).toBe('e-testSecondClass');
+            expect(document.getElementById('calendar').classList.contains('e-testClass')).toBe(false);
+            expect(document.getElementById('calendar').classList.contains('e-testSecondClass')).toBe(true);
         });
     });
     describe('events', () => {

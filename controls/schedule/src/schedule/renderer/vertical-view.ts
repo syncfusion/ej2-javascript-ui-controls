@@ -54,6 +54,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (!isNullOrUndefined(this.parent.quickPopup)) {
             this.parent.quickPopup.quickPopupHide();
         }
+        this.setPersistence();
     }
     private onApaptiveMove(e: Event): void {
         if (this.parent.uiStateValues.action) {
@@ -105,6 +106,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
+        this.retainScrollPosition();
     }
     public setContentHeight(element: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
         if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {

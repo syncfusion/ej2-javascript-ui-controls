@@ -200,3 +200,5 @@ export const deleteChartColl: string = 'deleteChartColl';
 export const initiateChartModel: string = 'initiateChartModel';
 /** @hidden */
 export const focusChartBorder: string = 'focusChartBorder';
+/** @hidden */
+export const saveError: string = 'saveError';

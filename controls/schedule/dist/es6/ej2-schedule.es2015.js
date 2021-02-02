@@ -748,7 +748,7 @@ class HeaderRenderer {
         this.parent.off(documentClick, this.closeHeaderPopup);
     }
     closeHeaderPopup(e) {
-        let closestEle = closest(e.event.target, '.e-date-range,.e-header-popup,.e-day,.e-selected');
+        let closestEle = closest(e.event.target, '.e-date-range,.e-header-popup,.e-selected');
         if (!isNullOrUndefined(closestEle)) {
             return;
         }
@@ -1045,7 +1045,9 @@ class HeaderRenderer {
             });
             let todayEle = this.parent.element.querySelector('.e-cell.e-today');
             todayEle.classList.remove('e-today');
-            addClass([selectAppointments[this.parent.activeCellsData.startTime.getDate() - 1]], 'e-today');
+            let timeZoneName = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+            let todayDate = this.parent.tzModule.convert(new Date(), this.parent.tzModule.getLocalTimezoneName(), timeZoneName);
+            addClass([selectAppointments[todayDate.getDate() - 1]], 'e-today');
         }
     }
     calendarChange(args) {
@@ -1053,6 +1055,7 @@ class HeaderRenderer {
             let calendarDate = resetTime(new Date(args.value));
             this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
+        this.updateTodayDate();
         this.headerPopup.hide();
     }
     calculateViewIndex(args) {
@@ -1075,6 +1078,7 @@ class HeaderRenderer {
                 }
                 else {
                     this.headerPopup.show();
+                    this.updateTodayDate();
                 }
                 break;
             case 'e-day':
@@ -14795,7 +14799,7 @@ let Schedule = class Schedule extends Component {
      * @private
      */
     getPersistData() {
-        return this.addOnPersist(['currentView', 'selectedDate']);
+        return this.addOnPersist(['currentView', 'selectedDate', 'scrollTop', 'scrollLeft']);
     }
     /**
      * Called internally, if any of the property value changed.
@@ -18738,6 +18742,24 @@ class ViewBase {
         }
         return weekNumber;
     }
+    setPersistence() {
+        if (this.parent.enablePersistence) {
+            let contentWrap = this.element.querySelector('.e-content-wrap');
+            if (!isNullOrUndefined(contentWrap)) {
+                this.parent.scrollLeft = contentWrap.scrollLeft;
+                this.parent.scrollTop = contentWrap.scrollTop;
+            }
+        }
+    }
+    retainScrollPosition() {
+        if (this.parent.enablePersistence) {
+            let conWrap = this.parent.element.querySelector('.e-content-wrap');
+            if (!isNullOrUndefined(conWrap) && !isNullOrUndefined(this.parent.scrollLeft) && !isNullOrUndefined(this.parent.scrollTop)) {
+                conWrap.scrollTop = this.parent.scrollTop;
+                conWrap.scrollLeft = this.parent.scrollLeft;
+            }
+        }
+    }
 }
 
 /**
@@ -18785,6 +18807,7 @@ class VerticalView extends ViewBase {
         if (!isNullOrUndefined(this.parent.quickPopup)) {
             this.parent.quickPopup.quickPopupHide();
         }
+        this.setPersistence();
     }
     onApaptiveMove(e) {
         if (this.parent.uiStateValues.action) {
@@ -18838,6 +18861,7 @@ class VerticalView extends ViewBase {
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
+        this.retainScrollPosition();
     }
     setContentHeight(element, leftPanelElement, height) {
         if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
@@ -19615,6 +19639,7 @@ class Month extends ViewBase {
         this.parent.notify(virtualScroll, e);
         this.scrollTopPanel(e.target);
         this.scrollLeftPanel(e.target);
+        this.setPersistence();
     }
     scrollLeftPanel(target) {
         let leftPanel = this.getLeftPanelElement();
@@ -19658,6 +19683,7 @@ class Month extends ViewBase {
                 + this.parent.getMsFromDate(this.parent.selectedDate) + '"]');
             content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
+        this.retainScrollPosition();
     }
     setContentHeight(content, leftPanelElement, height) {
         content.style.height = 'auto';
@@ -20253,7 +20279,7 @@ class Year extends ViewBase {
         cTd.appendChild(calendarWrapper);
         let monthCollection = Array.apply(null, { length: 12 }).map((value, index) => index);
         for (let month of monthCollection) {
-            let currentMonth = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            let currentMonth = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             let calendarElement = createElement('div', {
                 className: 'e-month-calendar e-calendar',
                 attrs: { 'data-role': 'calendar' }
@@ -20415,6 +20441,7 @@ class Year extends ViewBase {
         if (scrollTopElement) {
             scrollTopElement.scrollTop = target.scrollTop;
         }
+        this.setPersistence();
     }
     onScrollUiUpdate(args) {
         let height = this.parent.element.offsetHeight - this.getHeaderBarHeight();
@@ -20445,6 +20472,7 @@ class Year extends ViewBase {
             // tslint:enable:no-any
         }
         this.setColWidth(this.getContentAreaElement());
+        this.retainScrollPosition();
     }
     startDate() {
         let startDate = new Date(this.parent.selectedDate.getFullYear(), 0, 1);
@@ -20944,6 +20972,9 @@ class Agenda extends ViewBase {
         let contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
         this.parent.notify(eventsLoaded, {});
+        if (!this.parent.activeViewOptions.allowVirtualScrolling) {
+            this.retainScrollPosition();
+        }
     }
     refreshEvent(refreshDate) {
         let processedData = [];
@@ -21067,6 +21098,9 @@ class Agenda extends ViewBase {
         this.parent.quickPopup.quickPopupHide();
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             this.virtualScrolling(event);
+        }
+        if (!this.parent.activeViewOptions.allowVirtualScrolling) {
+            this.setPersistence();
         }
     }
     virtualScrolling(event) {

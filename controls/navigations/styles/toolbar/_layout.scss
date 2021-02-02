@@ -1234,7 +1234,7 @@
         width: auto;
 
         &:not(.e-separator) {
-          height: 100%;
+          height: inherit;
           min-width: $tbar-item-nrml-minwidth;
           padding: $tbar-item-nrml-padding;
         }

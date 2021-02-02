@@ -142,6 +142,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public timeFormat: string;
     public calendarUtil: CalendarUtil;
     public allowExcelExport: boolean;
+    public scrollTop: number;
+    public scrollLeft: number;
 
     // Schedule Options
     /**
@@ -1646,7 +1648,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     protected getPersistData(): string {
-        return this.addOnPersist(['currentView', 'selectedDate']);
+        return this.addOnPersist(['currentView', 'selectedDate', 'scrollTop', 'scrollLeft']);
     }
     /**
      * Called internally, if any of the property value changed.

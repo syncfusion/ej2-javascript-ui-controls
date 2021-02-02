@@ -27,11 +27,11 @@ export class SfKanban {
     private selectedCardsElement: Element[];
     private selectedCardsData: Object[];
     public hideColumnKeys: string[];
-    private touchModule: KanbanTouch;
+    public touchModule: KanbanTouch;
     public scrollPosition: ScrollPosition;
     private allowDragAndDrop: boolean;
     private allowKeyboard: boolean;
-    private enableRtl: boolean;
+    public enableRtl: boolean;
     private height: string;
     private width: string;
     public popupOverlay: HTMLElement;
@@ -81,6 +81,20 @@ export class SfKanban {
 
     public getSelectedCards(): HTMLElement[] {
         return [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS));
+    }
+
+    private documentClick(args: Event): void {
+        if ((args.target as HTMLElement).classList.contains(cls.SWIMLANE_OVERLAY_CLASS) &&
+            this.element.querySelector('.' + cls.SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
+            this.treePopup.hide();
+            removeClass([this.popupOverlay], 'e-enable');
+        }
+        if (closest(args.target as HTMLElement, `.${cls.ROOT_CLASS}`)) {
+            return;
+        }
+        let cards: HTMLElement[] = [].slice.call(this.element.querySelectorAll(`.${cls.CARD_CLASS}.${cls.CARD_SELECTION_CLASS}`));
+        removeClass(cards, cls.CARD_SELECTION_CLASS);
+        this.disableAttributeSelection(cards);
     }
 
     public disableAttributeSelection(cards: HTMLElement[] | Element): void {
@@ -263,6 +277,7 @@ export class SfKanban {
     private wireEvents(): void {
         let content: HTMLElement = this.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         EventHandler.add(content, 'scroll', this.onContentScroll, this);
+        EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
         let cardContainer: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CONTAINER_CLASS));
         cardContainer.forEach((container: HTMLElement) => {
             if (container.offsetParent) {
@@ -270,17 +285,22 @@ export class SfKanban {
             }
             EventHandler.add(container, 'scroll', this.onColumnScroll, this);
         });
+        if (this.isAdaptive) {
+            this.touchModule.wireTouchEvents();
+        }
         this.wireDragEvent();
     }
 
     private unWireEvents(): void {
         let content: HTMLElement = this.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         EventHandler.remove(content, 'scroll', this.onContentScroll);
+        EventHandler.remove(document, Browser.touchStartEvent, this.documentClick);
         let cardContainer: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CARD_CONTAINER_CLASS));
         cardContainer.forEach((container: HTMLElement) => { EventHandler.remove(container, 'scroll', this.onColumnScroll); });
         if (this.isAdaptive) {
             let cardContainers: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS));
             cardContainers.forEach((cell: HTMLElement) => { EventHandler.remove(cell, 'touchmove', this.onAdaptiveScroll); });
+            this.touchModule.unWireTouchEvents();
         }
     }
     public onCardClick(target: Element, e: MouseEventArgs): void {

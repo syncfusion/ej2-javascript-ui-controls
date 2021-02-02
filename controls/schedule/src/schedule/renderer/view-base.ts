@@ -485,4 +485,22 @@ export class ViewBase {
         return weekNumber;
     }
 
+    public setPersistence(): void {
+        if (this.parent.enablePersistence) {
+            let contentWrap: HTMLElement = this.element.querySelector('.e-content-wrap') as HTMLElement;
+            if (!isNullOrUndefined(contentWrap)) {
+                this.parent.scrollLeft = contentWrap.scrollLeft;
+                this.parent.scrollTop = contentWrap.scrollTop;
+            }
+        }
+    }
+    public retainScrollPosition(): void {
+        if (this.parent.enablePersistence) {
+            let conWrap: HTMLElement = this.parent.element.querySelector('.e-content-wrap') as HTMLElement;
+            if (!isNullOrUndefined(conWrap) && !isNullOrUndefined(this.parent.scrollLeft) && !isNullOrUndefined(this.parent.scrollTop)) {
+                conWrap.scrollTop = this.parent.scrollTop;
+                conWrap.scrollLeft = this.parent.scrollLeft;
+            }
+        }
+    }
 }

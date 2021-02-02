@@ -24,6 +24,7 @@ describe('Spreadsheet sorting module ->', () => {
             };
             helper.initializeSpreadsheet(model, done);
             instance = helper.getInstance();
+            instance.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         });
 
         afterAll(() => {

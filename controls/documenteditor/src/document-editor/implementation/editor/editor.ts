@@ -5111,7 +5111,7 @@ export class Editor {
         rows = rows || 1;
         columns = columns || 1;
         let table: TableWidget = this.createTable(rows, columns);
-        let clientWidth: number = startPos.paragraph.getContainerWidth();
+        let clientWidth: number = startPos.paragraph.getContainerWidth() - table.tableFormat.leftIndent;
         table.splitWidthToTableCells(clientWidth);
         let prevBlock: Widget = startPos.paragraph.previousWidget;
         if (startPos.currentWidget.isFirstLine() && startPos.offset === 0 && prevBlock instanceof TableWidget) {
@@ -5477,6 +5477,7 @@ export class Editor {
         let table: TableWidget = new TableWidget();
         table.tableFormat = new WTableFormat(table);
         table.tableFormat.preferredWidthType = 'Auto';
+        table.tableFormat.leftIndent = this.selection.start.paragraph.leftIndent;
         table.tableFormat.initializeTableBorders();
         let index: number = 0;
         while (index < rows) {
@@ -5509,6 +5510,7 @@ export class Editor {
         let tableCell: TableCellWidget = new TableCellWidget();
         let para: ParagraphWidget = new ParagraphWidget();
         para.paragraphFormat.copyFormat(paragraph.paragraphFormat);
+        para.paragraphFormat.leftIndent = 0;
         para.characterFormat.copyFormat(paragraph.characterFormat);
         para.containerWidget = tableCell;
         tableCell.childWidgets.push(para);
@@ -10915,8 +10917,10 @@ export class Editor {
                 listLevel.characterFormat.fontFamily = fontFamily;
             } else {
                 listLevel.listLevelPattern = listLevelPattern;
-                let currentFormat: string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
-                if (format.substring(format.length - 1) !== listLevel.numberFormat.substring(listLevel.numberFormat.length - 1)) {
+                let currentFormat : string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
+                if (listLevel.numberFormat.length !== format.length && levelNumber > 0) {
+                    listLevel.numberFormat = format;
+                } else if (format.substring(format.length - 1) !== listLevel.numberFormat.substring(listLevel.numberFormat.length - 1)) {
                     listLevel.numberFormat = listLevel.numberFormat.replace(currentFormat, format.substring(format.length - 1));
                 }
             }

@@ -1134,7 +1134,7 @@ var Dialog = /** @class */ (function (_super) {
         var classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         var attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         sf.base.removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
-        if (this.element.classList.contains(FULLSCREEN)) {
+        if (!sf.base.isNullOrUndefined(this.element) && this.element.classList.contains(FULLSCREEN)) {
             sf.base.removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
         }
         if (this.isModal) {
@@ -1149,7 +1149,7 @@ var Dialog = /** @class */ (function (_super) {
         if (!sf.base.isNullOrUndefined(this.dragObj)) {
             this.dragObj.destroy();
         }
-        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+        if (!sf.base.isNullOrUndefined(this.popupObj.element) && this.popupObj.element.classList.contains(POPUP_ROOT)) {
             this.popupObj.destroy();
         }
         sf.base.removeClass([this.element], classArray);

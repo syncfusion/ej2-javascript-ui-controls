@@ -11355,7 +11355,8 @@ class ShowHide {
             if (isGroupAdaptive(this.parent)) {
                 this.parent.contentModule.emptyVcRows();
             }
-            if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
+            if (this.parent.allowSelection && this.parent.getSelectedRecords().length &&
+                !this.parent.selectionSettings.persistSelection) {
                 this.parent.clearSelection();
             }
             if (this.parent.enableColumnVirtualization) {
@@ -12048,11 +12049,12 @@ class Clipboard {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    let cells = [].slice.call(rows[selectedIndexes[i]].querySelectorAll('.e-rowcell'));
+                    let cells = [].slice.call(rows[selectedIndexes[i]].
+                        querySelectorAll('.e-rowcell:not(.e-hide)'));
                     if (isFrozen) {
-                        cells.push(...[].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                        cells.push(...[].slice.call(mRows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         if (frRows) {
-                            cells.push(...[].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell')));
+                            cells.push(...[].slice.call(frRows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);
@@ -14792,9 +14794,11 @@ let Grid = Grid_1 = class Grid extends Component {
      * Refreshes the Grid header and content.
      */
     refresh() {
-        this.headerModule.refreshUI();
-        this.updateStackedFilter();
-        this.renderModule.refresh();
+        if (!this.isDestroyed) {
+            this.headerModule.refreshUI();
+            this.updateStackedFilter();
+            this.renderModule.refresh();
+        }
     }
     /**
      * Refreshes the Grid header.
@@ -16811,9 +16815,15 @@ let Grid = Grid_1 = class Grid extends Component {
         let queries = state.data;
         let gridModel = JSON.parse(this.addOnPersist(['allowGrouping', 'allowPaging', 'pageSettings', 'sortSettings', 'allowPdfExport', 'allowExcelExport', 'aggregates',
             'filterSettings', 'groupSettings', 'columns', 'locale', 'searchSettings']));
+        gridModel.filterSettings.columns = JSON.parse(queries).where;
         gridModel.columns.forEach((e) => {
-            if (grid.getColumnByUid(e.uid)) {
-                e.headerText = grid.getColumnByUid(e.uid).headerText;
+            let column = grid.getColumnByUid(e.uid);
+            if (column) {
+                e.headerText = column.headerText;
+                if (!isNullOrUndefined(column.template)) {
+                    e.template = "true";
+                }
+                
                 if (e.format) {
                     let format = typeof (e.format) === 'object' ? e.format.format : e.format;
                     e.format = getNumberFormat(format, e.type);
@@ -16825,13 +16835,10 @@ let Grid = Grid_1 = class Grid extends Component {
         });
         let form = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
         let gridInput = this.createElement('input', { id: 'gridInput', attrs: { name: "gridModel" } });
-        let queryInput = this.createElement('input', { id: 'queryInput', attrs: { name: "requestModel" } });
         gridInput.value = JSON.stringify(gridModel);
-        queryInput.value = queries;
         form.method = "POST";
         form.action = url;
         form.appendChild(gridInput);
-        form.appendChild(queryInput);
         document.body.appendChild(form);
         form.submit();
         form.remove();
@@ -16841,7 +16848,12 @@ let Grid = Grid_1 = class Grid extends Component {
      */
     setHeaderText(columns) {
         for (var i = 0; i < columns.length; i++) {
-            columns[i].headerText = this.getColumnByUid(columns[i].uid).headerText;
+            let column = this.getColumnByUid(columns[i].uid);
+            columns[i].headerText = column.headerText;
+            if (!isNullOrUndefined(column.template)) {
+                columns[i].template = "true";
+            }
+            
             if (columns[i].format) {
                 let e = columns[i];
                 let format = typeof (e.format) === 'object' ? e.format.format : e.format;
@@ -18933,15 +18945,15 @@ function splitFrozenRowObjectCells(gObj, cells, tableName) {
     return cells;
 }
 /** @hidden */
-function gridActionHandler(gObj, callBack, rows, force) {
+function gridActionHandler(gObj, callBack, rows, force, rowObj) {
     if (rows[0].length || force) {
-        callBack('frozen-left', rows[0]);
+        rowObj ? callBack('frozen-left', rows[0], rowObj[0]) : callBack('frozen-left', rows[0]);
     }
     if (gObj.isFrozenGrid() && (rows[1].length || force)) {
-        callBack('movable', rows[1]);
+        rowObj ? callBack('movable', rows[1], rowObj[1]) : callBack('movable', rows[1]);
     }
     if ((gObj.getFrozenMode() === 'Left-Right' || gObj.getFrozenMode() === 'Right') && (rows[2].length || force)) {
-        callBack('frozen-right', rows[2]);
+        rowObj ? callBack('frozen-right', rows[2], rowObj[2]) : callBack('frozen-right', rows[2]);
     }
 }
 /** @hidden */
@@ -23741,6 +23753,13 @@ class Filter {
             this.render();
         }
     }
+    refreshFilterValue() {
+        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
+            !this.parent.getCurrentViewRecords().length && this.parent.enablePersistence) {
+            this.initialEnd();
+            this.parent.removeEventListener(beforeDataBound, this.refreshFilterValue);
+        }
+    }
     initialEnd() {
         this.parent.off(contentReady, this.initialEnd);
         if (this.parent.getColumns().length && this.filterSettings.columns.length) {
@@ -23775,6 +23794,7 @@ class Filter {
         this.parent.on(click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
         this.parent.on(closeFilterDialog, this.clickHandler, this);
+        this.parent.addEventListener(beforeDataBound, this.refreshFilterValue.bind(this));
     }
     /**
      * @hidden
@@ -33026,17 +33046,20 @@ class BatchEdit {
         let gObj = this.parent;
         let rows = gObj.getAllDataRows(true);
         let dataRows = getGridRowElements(this.parent);
+        let dataObjects = getGridRowObjects(this.parent);
         for (let i = 0, j = 0, len = rows.length; i < len; i++) {
             if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
-                gridActionHandler(this.parent, (tableName, rowElements) => {
+                gridActionHandler(this.parent, (tableName, rowElements, rowObjects) => {
                     rowElements[i].setAttribute('aria-rowindex', j.toString());
-                }, dataRows);
+                    rowObjects[i].index = j;
+                }, dataRows, null, dataObjects);
                 j++;
             }
             else {
-                gridActionHandler(this.parent, (tableName, rowElements) => {
+                gridActionHandler(this.parent, (tableName, rowElements, rowObjects) => {
                     rowElements[i].removeAttribute('aria-rowindex');
-                }, dataRows);
+                    rowObjects[i].index = -1;
+                }, dataRows, null, dataObjects);
             }
         }
     }
@@ -36209,6 +36232,7 @@ class ExcelExport {
             }
             if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
                 this.processGroupedRows(gObj, item.items, headerRow, item.items.level, startIndex, excelExportProperties, excelRows, helper);
+                this.processAggregates(gObj, item, excelRows, undefined, (level) + dataSource.childLevels, true);
             }
             else {
                 startIndex = this.processRecordRows(gObj, item.items, headerRow, (level), startIndex, excelExportProperties, excelRows, helper);
@@ -36357,6 +36381,7 @@ class ExcelExport {
     fillAggregates(gObj, rows, indent, excelRows, customIndex) {
         for (let row of rows) {
             let cells = [];
+            let isEmpty = true;
             let index = 0;
             for (let cell of row.cells) {
                 /* tslint:disable-next-line:no-any */
@@ -36367,6 +36392,7 @@ class ExcelExport {
                 if ((cell.visible || this.includeHiddenColumn)) {
                     index++;
                     if (cell.isDataCell) {
+                        isEmpty = false;
                         let footerTemplate = !isNullOrUndefined(cell.column.footerTemplate);
                         let groupFooterTemplate = !isNullOrUndefined(cell.column.groupFooterTemplate);
                         let groupCaptionTemplate = !isNullOrUndefined(cell.column.groupCaptionTemplate);
@@ -36448,7 +36474,9 @@ class ExcelExport {
                 else {
                     row = { index: this.rowLength++, cells: cells };
                 }
-                excelRows.push(row);
+                if (!isEmpty) {
+                    excelRows.push(row);
+                }
             }
         }
         return excelRows;
@@ -36704,7 +36732,7 @@ class ExcelExport {
             style.name = gObj.element.id + 'column' + index;
             this.styles.push(style);
         }
-        if (!isNullOrUndefined(col.width)) {
+        if (!isNullOrUndefined(col.width) && col.width !== 'auto') {
             this.columns.push({ index: index + gObj.childGridLevel, width: typeof col.width === 'number' ?
                     col.width : this.helper.getConvertedWidth(col.width) });
         }

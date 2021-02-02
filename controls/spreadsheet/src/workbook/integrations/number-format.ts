@@ -183,7 +183,8 @@ export class WorkbookNumberFormat {
         if (!isNullOrUndefined(options.fResult)) {
             let res: string = options.fResult.toString();
             if (res.indexOf('%') > -1 && res.split('%')[0] !== '' && res.split('%')[1].trim() === '' &&
-                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN') {
+                Number(res.split('%')[0].split(this.groupSep).join('')).toString() !== 'NaN' &&
+                !this.parent.isEdit) {
                 options.args.value = Number(res.split('%')[0].split(this.groupSep).join(''));
                 options.cell.format = options.args.format = getFormatFromType('Percentage');
                 options.fResult = this.percentageFormat(options.args, options.intl);
@@ -191,7 +192,8 @@ export class WorkbookNumberFormat {
                 setCell(options.rowIdx, options.colIdx, this.parent.getActiveSheet(), options.cell, true);
                 options.isRightAlign = true;
             } else if (res.indexOf(options.currencySymbol) > -1 && res.split(options.currencySymbol)[1] !== '' &&
-                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN') {
+                Number(res.split(options.currencySymbol)[1].split(this.groupSep).join('')).toString() !== 'NaN' &&
+                !this.parent.isEdit) {
                 options.args.value = Number(res.split(options.currencySymbol)[1].split(this.groupSep).join(''));
                 options.cell.format = options.args.format = getFormatFromType('Currency');
                 options.fResult = this.currencyFormat(options.args, options.intl);

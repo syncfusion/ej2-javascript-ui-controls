@@ -7,7 +7,7 @@ import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, w
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, getColumnHeaderText, FilterCollectionModel } from '../../workbook/index';
 import { addClass, L10n } from '@syncfusion/ej2-base';
-import { getFilteredCollection } from '../../workbook/index';
+import { getFilteredCollection, CellStyleModel, TextDecoration, setCellFormat } from '../../workbook/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
  */
@@ -327,6 +327,7 @@ export class UndoRedo {
             eventArgs.address.split('!')
             : eventArgs.range.split('!');
         let range: number[] = getRangeIndexes(address[1]);
+        let indexes: number[] = range;
         let sheetIndex: number = getSheetIndex(this.parent, address[0]);
         let sheet: SheetModel = getSheet(this.parent, sheetIndex);
         let actionData: BeforeActionData = eventArgs.beforeActionData;
@@ -337,7 +338,65 @@ export class UndoRedo {
             let hgt: number = getMaxHgt(sheet, range[0]);
             setRowEleHeight(this.parent, sheet, hgt, range[0]);
         } else {
-            updateAction(args, this.parent);
+            /* tslint:disable-next-line:no-any */
+            let argsEventArgs: any = args.eventArgs;
+            let activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
+            let cellValue: TextDecoration = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration;
+            if (argsEventArgs && argsEventArgs.style && (argsEventArgs.style as CellStyleModel).textDecoration ) {
+                let value: TextDecoration = (argsEventArgs.style as CellStyleModel).textDecoration;
+                let changedValue: TextDecoration = value;
+                let changedStyle: CellStyleModel;
+                let removeProp: boolean = false;
+                if (cellValue === 'underline') {
+                    changedValue = value === 'underline' ? 'none' : 'underline line-through';
+                } else if (cellValue === 'line-through') {
+                    changedValue = value === 'line-through' ? 'none' : 'underline line-through';
+                } else if (cellValue === 'underline line-through') {
+                    changedValue = value === 'underline' ? 'line-through' : 'underline'; removeProp = true;
+                }
+                if (changedValue === 'none') { removeProp = true; }
+                (argsEventArgs.style as CellStyleModel).textDecoration = changedValue;
+                args.eventArgs = argsEventArgs as UndoRedoEventArgs;
+                this.parent.notify(setCellFormat, {
+                    style: { textDecoration: changedValue } , range: activeCellIndexes, refreshRibbon: true,
+                    onActionUpdate: true
+                });
+                for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                    for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                        if (i === activeCellIndexes[0] && j === activeCellIndexes[1]) { continue; }
+                        changedStyle = {};
+                        cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration;
+                        if (cellValue === 'none') {
+                            if (removeProp) { continue; }
+                            changedStyle.textDecoration = value;
+                        } else if (cellValue === 'underline' || cellValue === 'line-through') {
+                            if (removeProp) {
+                                if (value === cellValue) {
+                                    changedStyle.textDecoration = 'none';
+                                } else {
+                                    continue;
+                                }
+                            } else {
+                                changedStyle.textDecoration = value !== cellValue ? 'underline line-through' : value;
+                            }
+                        } else if (cellValue === 'underline line-through') {
+                            if (removeProp) {
+                                changedStyle.textDecoration = value === 'underline' ? 'line-through' : 'underline';
+                            } else {
+                                continue;
+                            }
+                        }
+                        this.parent.notify(setCellFormat, {
+                            style: { textDecoration: changedStyle.textDecoration }, range: [i, j, i, j], refreshRibbon: true,
+                            onActionUpdate: true
+                        });
+                    }
+                }
+                (argsEventArgs.style as CellStyleModel).textDecoration = value;
+                args.eventArgs = argsEventArgs as UndoRedoEventArgs;
+            } else {
+                updateAction(args, this.parent);
+            }
         }
         if (isRefresh) {
             this.parent.notify(selectRange, { indexes: range });

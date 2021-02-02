@@ -860,4 +860,64 @@ describe('Table with Footnote Layout validation', () => {
         //editor.editor.insertText("thanver");
         expect(editor.documentHelper.layout.footHeight).toBeGreaterThan(0);
     });
+});
+describe('List update validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('List update validation', () => {
+        editor.editorModule.insertText('hello');
+        editor.selection.selectAll();
+        editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
+        editor.selection.selectAll();
+        editor.editorModule.applyBulletOrNumbering('%1.', 'UpLetter', 'Verdana');
+        expect((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any).childWidgets[0] as any).children[0] as any).text).toBe('A.');
+    });    
+});
+describe('Tab after list element width calculation validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });   
+    it('Tab after list element width calculation validation', () => {
+        editor.editor.insertText('check');
+        editor.selection.selectAll();
+        editor.editor.applyNumbering('%1.', 'UpLetter');
+        expect(Math.round((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as any).width)).toBe(10);
+    });
 })

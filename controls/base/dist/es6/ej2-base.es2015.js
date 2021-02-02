@@ -4044,12 +4044,17 @@ Browser.uA = typeof navigator !== 'undefined' ? navigator.userAgent : '';
 class EventHandler {
     // to get the event data based on element
     static addOrGetEventData(element) {
-        if ('__eventList' in element) {
-            return element.__eventList.events;
+        if (element) {
+            if ('__eventList' in element) {
+                return element.__eventList.events;
+            }
+            else {
+                element.__eventList = {};
+                return element.__eventList.events = [];
+            }
         }
         else {
-            element.__eventList = {};
-            return element.__eventList.events = [];
+            return [];
         }
     }
     /**
@@ -4238,7 +4243,7 @@ function evalExp(str, nameSpace, helper) {
             else if (IF_STMT.test(cnt)) {
                 //handling if condition
                 cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs) => {
-                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                    return HandleSpecialCharArrObj(strs, nameSpace, localKeys, true);
                 })) + '{ \n str = str + "';
             }
             else if (FOR_STMT.test(cnt)) {
@@ -4310,7 +4315,11 @@ function evalExp(str, nameSpace, helper) {
         return cnt;
     });
 }
-function addNameSpace(str, addNS, nameSpace, ignoreList) {
+function addNameSpace(str, addNS, nameSpace, ignoreList, emptyStrCheck) {
+    /* istanbul ignore next */
+    if (emptyStrCheck && str === '') {
+        return str;
+    }
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
 }
 function NameSpaceArrObj(str, addNS, nameSpace, ignoreList) {
@@ -4337,7 +4346,7 @@ function SlashReplace(tempStr) {
     }
     return tempStr;
 }
-function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
+function HandleSpecialCharArrObj(str, nameSpaceNew, keys, emptyStrCheck) {
     str = str.trim();
     let windowFunc = /\window\./gm;
     if (!windowFunc.test(str)) {
@@ -4350,7 +4359,7 @@ function HandleSpecialCharArrObj(str, nameSpaceNew, keys) {
             return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
         }
         else {
-            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys, emptyStrCheck);
         }
     }
     else {
@@ -4963,19 +4972,21 @@ function createElement(tagName, properties) {
 function addClass(elements, classes) {
     let classList = getClassList(classes);
     for (let ele of elements) {
-        for (let className of classList) {
-            if (isObject(ele)) {
-                let curClass = getValue('attributes.className', ele);
-                if (isNullOrUndefined(curClass)) {
-                    setValue('attributes.className', className, ele);
+        if (ele && classList) {
+            for (let className of classList) {
+                if (isObject(ele)) {
+                    let curClass = getValue('attributes.className', ele);
+                    if (isNullOrUndefined(curClass)) {
+                        setValue('attributes.className', className, ele);
+                    }
+                    else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
+                        setValue('attributes.className', curClass + ' ' + className, ele);
+                    }
                 }
-                else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
-                    setValue('attributes.className', curClass + ' ' + className, ele);
-                }
-            }
-            else {
-                if (!ele.classList.contains(className)) {
-                    ele.classList.add(className);
+                else {
+                    if (!ele.classList.contains(className)) {
+                        ele.classList.add(className);
+                    }
                 }
             }
         }
@@ -4991,21 +5002,23 @@ function addClass(elements, classes) {
 function removeClass(elements, classes) {
     let classList = getClassList(classes);
     for (let ele of elements) {
-        let flag = isObject(ele);
-        let canRemove = flag ? getValue('attributes.className', ele) : ele.className !== '';
-        if (canRemove) {
-            for (let className of classList) {
-                if (flag) {
-                    let classes = getValue('attributes.className', ele);
-                    let classArr = classes.split(' ');
-                    let index = classArr.indexOf(className);
-                    if (index !== -1) {
-                        classArr.splice(index, 1);
+        if (ele && classList) {
+            let flag = isObject(ele);
+            let canRemove = flag ? getValue('attributes.className', ele) : ele.className !== '';
+            if (canRemove) {
+                for (let className of classList) {
+                    if (flag) {
+                        let classes = getValue('attributes.className', ele);
+                        let classArr = classes.split(' ');
+                        let index = classArr.indexOf(className);
+                        if (index !== -1) {
+                            classArr.splice(index, 1);
+                        }
+                        setValue('attributes.className', classArr.join(' '), ele);
                     }
-                    setValue('attributes.className', classArr.join(' '), ele);
-                }
-                else {
-                    ele.classList.remove(className);
+                    else {
+                        ele.classList.remove(className);
+                    }
                 }
             }
         }
@@ -5130,16 +5143,18 @@ function remove(element) {
 function attributes(element, attributes) {
     let keys = Object.keys(attributes);
     let ele = element;
-    for (let key of keys) {
-        if (isObject(ele)) {
-            let iKey = key;
-            if (key === 'tabindex') {
-                iKey = 'tabIndex';
+    if (ele) {
+        for (let key of keys) {
+            if (isObject(ele)) {
+                let iKey = key;
+                if (key === 'tabindex') {
+                    iKey = 'tabIndex';
+                }
+                ele.attributes[iKey] = attributes[key];
             }
-            ele.attributes[iKey] = attributes[key];
-        }
-        else {
-            ele.setAttribute(key, attributes[key]);
+            else {
+                ele.setAttribute(key, attributes[key]);
+            }
         }
     }
     return ele;
@@ -5179,7 +5194,8 @@ function selectAll(selector, context = document, needsVDOM) {
     }
 }
 function querySelectId(selector) {
-    if (selector.match(/#[0-9]/g)) {
+    const charRegex = /(!|"|\$|%|&|'|\(|\)|\*|\/|:|;|<|=|\?|@|\]|\^|`|{|}|\||\+|~)/g;
+    if (selector.match(/#[0-9]/g) || selector.match(charRegex)) {
         let idList = selector.split(',');
         for (let i = 0; i < idList.length; i++) {
             let list = idList[i].split(' ');
@@ -5187,7 +5203,7 @@ function querySelectId(selector) {
                 if (list[j].indexOf('#') > -1) {
                     if (!list[j].match(/\[.*\]/)) {
                         let splitId = list[j].split('#');
-                        if (splitId[1].match(/^\d/)) {
+                        if (splitId[1].match(/^\d/) || splitId[1].match(charRegex)) {
                             let setId = list[j].split('.');
                             setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
                             list[j] = setId.join('.');
@@ -6767,6 +6783,7 @@ let versionBasedStatePersistence = false;
  * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
  * @returns {void}
  */
+/* istanbul ignore next */
 function enableVersionBasedPersistence(status) {
     versionBasedStatePersistence = status;
 }
@@ -6839,6 +6856,7 @@ let Component = class Component extends Base {
         this.render();
         this.refreshing = false;
     }
+    /* istanbul ignore next */
     accessMount() {
         if (this.mount && !this.isReactHybrid) {
             this.mount();
@@ -6847,6 +6865,7 @@ let Component = class Component extends Base {
     /**
      * Returns the route element of the component
      */
+    /* istanbul ignore next */
     getRootElement() {
         if (this.isReactHybrid) {
             return this.actualElement;
@@ -6858,6 +6877,7 @@ let Component = class Component extends Base {
     /**
      * Returns the persistence data for component
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     getLocalData() {
         let eleId = this.getModuleName() + this.element.id;
@@ -6997,6 +7017,7 @@ let Component = class Component extends Base {
      * This is a instance method to create an element.
      * @private
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     createElement(tagName, prop, isVDOM) {
         if (isVDOM && this.isReactHybrid) {
@@ -7016,6 +7037,7 @@ let Component = class Component extends Base {
      * @param argument - Arguments to be passed to caller.
      * @private
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     triggerStateChange(handler, argument) {
         if (this.isReactHybrid) {

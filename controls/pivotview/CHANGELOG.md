@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#298311` - CSS issue of calculated field dialog in dark theme has been fixed.
+
 ## 18.4.39 (2021-01-28)
 
 ### Pivot Table

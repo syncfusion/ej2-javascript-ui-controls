@@ -684,8 +684,9 @@ export class RowDD {
                     if ((dataSource as IGanttData[]).length > 0) {
                         (dataSource as IGanttData[]).splice(idx, 1);
                     }
-                    this.treeGridData.splice(idx, 1);
-                    this.parent.ids.splice(idx, 1);
+                    let tempIndex: number = this.treeGridData.indexOf(deletedRow);
+                    this.treeGridData.splice(tempIndex, 1);
+                    this.parent.ids.splice(tempIndex, 1);
                     if (this.parent.treeGrid.parentData.indexOf(deletedRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(deletedRow), 1);
                     }
@@ -734,8 +735,9 @@ export class RowDD {
                 if ((ganttData as IGanttData[]).length > 0) {
                     (ganttData as IGanttData[]).splice(idx, 1);
                 }
-                this.treeGridData.splice(idx, 1);
-                this.parent.ids.splice(idx, 1);
+                let tempIndex: number = this.treeGridData.indexOf(currentRecord);
+                this.treeGridData.splice(tempIndex, 1);
+                this.parent.ids.splice(tempIndex, 1);
                 if (this.parent.viewType === 'ResourceView') {
                     this.parent.getTaskIds().splice(idx, 1);
                 }

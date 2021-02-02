@@ -4429,7 +4429,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
         if (isBlazor()) {
-            //this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
+            this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
             this.viewerBase.blazorUIAdaptor.loadDocument();
         }
     }

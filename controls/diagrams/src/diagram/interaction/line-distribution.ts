@@ -6,7 +6,7 @@ import { NodeModel } from '../objects/node-model';
 import { Node } from '../objects/node';
 import { Rect } from '../primitives/rect';
 import { Direction } from '../enum/enum';
-import { findDistance, findPort, intersect2 } from '../utility/diagram-util';
+import { findDistance, findPort, getConnectorDirection, intersect2 } from '../utility/diagram-util';
 import { randomId } from '../utility/base-util';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { Layout, INode } from '../layout/layout-base';
@@ -65,7 +65,7 @@ export class LineDistribution {
     public initLineDistribution(graph: Layout, diagram: Diagram): void {
         let srcDirection: string = 'Bottom';
         this.diagram = diagram;
-        if (diagram.layout.connectionPointOrigin === 'DifferentPoint') {
+        if (diagram.layout.connectionPointOrigin === 'DifferentPoint' || diagram.layout.enableRouting) {
             let tarDirection: string = 'Top';
 
             if (graph.orientation === 'BottomToTop') {
@@ -88,15 +88,8 @@ export class LineDistribution {
         }
     }
 
-    private getConnectorDirection(src: PointModel, tar: PointModel): string {
-        if (Math.abs(tar.x - src.x) > Math.abs(tar.y - src.y)) {
-            return src.x < tar.x ? 'Right' : 'Left';
-        } else {
-            return src.y < tar.y ? 'Bottom' : 'Top';
-        }
-    }
     private ObstacleSegment(options: ObstacleSegmentValues): ObstacleSegmentValues {
-        options.direction = this.getConnectorDirection(options.startpt, options.endpt);
+        options.direction = getConnectorDirection(options.startpt, options.endpt);
         options.distance = Point.findLength(options.startpt, options.endpt);
         options.orientation = options.direction === 'Left' || options.direction === 'Right' ? 'horizontal' : 'vertical';
         options.id = options.id;
@@ -451,7 +444,7 @@ export class LineDistribution {
     private resetConnectorPoints(edge: ConnectorModel, diagram: Diagram): void {
         let obstacleCollection: string = 'obstaclePointCollection';
         if ((edge.segments[0] as OrthogonalSegment).points
-            && (edge.segments[0] as OrthogonalSegment).points.length > 0) {
+            && (edge.segments[0] as OrthogonalSegment).points.length > 0 && edge[obstacleCollection]) {
             let connector: ConnectorModel = edge;
             connector.sourcePoint = (edge as Connector)[obstacleCollection][0];
             connector.targetPoint = (edge as Connector)[obstacleCollection][(edge as Connector)[obstacleCollection].length - 1];
@@ -461,7 +454,7 @@ export class LineDistribution {
                 let point1: Point = (edge as Connector)[obstacleCollection][i];
                 let point2: Point = (edge as Connector)[obstacleCollection][i + 1];
                 let length: number = findDistance(point1, point2);
-                let direction: string = this.getConnectorDirection(point1, point2);
+                let direction: string = getConnectorDirection(point1, point2);
                 if (i === (edge as Connector)[obstacleCollection].length - 2) {
                     if ((diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
                         || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
@@ -576,7 +569,7 @@ export class LineDistribution {
         this.initPort(outConnectors, diagram, node, sourceDirection, false);
         this.initPort(inConnectors, diagram, node, targetDirection, true);
     }
-/* tslint:disable */
+    /* tslint:disable */
     private initPort(connectors: string[], diagram: Diagram, node: Node | NodeModel, targetDirection: string, inConnectors: boolean) {
         let obstacleCollection: string = 'obstaclePointCollection';
         for (let i: number = 0; i <= connectors.length - 1; i++) {
@@ -726,6 +719,320 @@ export class LineDistribution {
             cell.visitedParents.push(parent);
         }
     }
+    private getFixedTerminalPoint(): PointModel {
+        let pt: PointModel = null;
+        return pt;
+    }
+    private setAbsoluteTerminalPoint(point: PointModel, isSource: boolean, edge: Connector): void {
+        let absolutePoints: string = 'absolutePoints';
+        if (isSource) {
+            if (edge[absolutePoints] == null) {
+                edge[absolutePoints] = [];
+            }
+
+            if (edge[absolutePoints].length === 0) {
+                edge[absolutePoints].push(point);
+            } else {
+                edge[absolutePoints][0] = point;
+            }
+        } else {
+            if (edge[absolutePoints] == null) {
+                edge[absolutePoints] = [];
+                edge[absolutePoints].push(null);
+                edge[absolutePoints].push(point);
+            } else if (edge[absolutePoints].length === 1) {
+                edge[absolutePoints].push(point);
+            } else {
+                edge[absolutePoints][edge[absolutePoints].length - 1] = point;
+            }
+        }
+    }
+    private updateFixedTerminalPoint(edge: Connector, source: boolean): void {
+        this.setAbsoluteTerminalPoint(this.getFixedTerminalPoint(), source, edge);
+    }
+
+
+    private updateFixedTerminalPoints(connectors: Connector, diagram: Diagram): void {
+        this.updateFixedTerminalPoint(connectors, true);
+        this.updateFixedTerminalPoint(connectors, false);
+    }
+    private updatePoints(edge: Connector, points: PointModel[]): void {
+        let absolutePoints: string = 'absolutePoints';
+        if (edge != null) {
+            let pts: PointModel[] = [];
+            pts.push(edge[absolutePoints][0]);
+            for (let i: number = 0; i < points.length; i++) {
+                if (points[i] != null) {
+                    let pt: PointModel = points[i];
+                    pts.push(pt);
+                }
+            }
+            let tmp: PointModel[] = edge[absolutePoints];
+            pts.push(tmp[tmp.length - 1]);
+
+            edge[absolutePoints] = pts;
+        }
+    }
+    private updateFloatingTerminalPoint(edge: Connector, start: Node, end: Node, source: boolean): void {
+        this.setAbsoluteTerminalPoint(this.getFloatingTerminalPoint(edge, start, end, source), source, edge);
+    }
+
+    private getNextPoint(edge: Connector, opposite: Node, source: boolean): PointModel {
+        let absolutePoints: string = 'absolutePoints';
+        let pts: PointModel[] = edge[absolutePoints];
+        let point: PointModel = null;
+
+        if (pts != null && pts.length >= 2) {
+            let count: number = pts.length;
+            point = pts[(source) ? Math.min(1, count - 1) : Math.max(0, count - 2)];
+        }
+        return point;
+    }
+
+    private getCenterX(start: Rect | Node): number {
+        if ((start as Node).offsetX) {
+            return (start as Node).offsetX + start.width;
+        } else {
+            return (start as Rect).x + start.width;
+        }
+    }
+    private getCenterY(start: Rect | Node): number {
+        if ((start as Node).offsetY) {
+            return (start as Node).offsetY + start.height;
+        } else {
+            return (start as Rect).y + start.height;
+        }
+    }
+    private getPerimeterBounds(border: Node): Rect {
+        let newBounds: Rect;
+        newBounds = border.wrapper.outerBounds;
+        return newBounds;
+    }
+
+    private getPerimeterFunction(bounds: Rect, next: PointModel, orthogonal: number): PointModel {
+
+        let cx: number = this.getCenterX(bounds);
+        let cy: number = this.getCenterY(bounds);
+        let dx: number = next.x - cx;
+        let dy: number = next.y - cy;
+        let alpha: number = Math.atan2(dy, dx);
+        let point: PointModel = this.getPointvalue(0, 0);
+        let pi: number = Math.PI;
+        let pi2: number = Math.PI / 2;
+        let beta: number = pi2 - alpha;
+        let t: number = Math.atan2(bounds.height, bounds.width);
+
+        if (alpha < -pi + t || alpha > pi - t) {
+            // Left edge
+            (point as Point).x = bounds.x;
+            (point as Point).y = cy - bounds.width * Math.tan(alpha) / 2;
+        } else if (alpha < -t) {
+            // Top Edge
+            (point as Point).y = bounds.y;
+            (point as Point).x = cx - bounds.height * Math.tan(beta) / 2;
+        } else if (alpha < t) {
+            // Right Edge
+            (point as Point).x = bounds.x + bounds.width;
+            (point as Point).y = cy + bounds.width * Math.tan(alpha) / 2;
+        } else {
+            // Bottom Edge
+            (point as Point).y = bounds.y + bounds.height;
+            (point as Point).x = cx + bounds.height * Math.tan(beta) / 2;
+        }
+
+        if (orthogonal) {
+            if (next.x >= bounds.x &&
+                next.x <= bounds.x + bounds.width) {
+                (point as Point).x = next.x;
+            } else if (next.y >= bounds.y &&
+                next.y <= bounds.y + bounds.height) {
+                (point as Point).y = next.y;
+            }
+            if (next.x < bounds.x) {
+                (point as Point).x = bounds.x;
+            } else if (next.x > bounds.x + bounds.width) {
+                (point as Point).x = bounds.x + bounds.width;
+            }
+            if (next.y < bounds.y) {
+                (point as Point).y = bounds.y;
+            } else if (next.y > bounds.y + bounds.height) {
+                (point as Point).y = bounds.y + bounds.height;
+            }
+        }
+
+        return point;
+    }
+    private getPerimeterPoint(terminal: Node, next: PointModel, orthogonal: number): PointModel {
+        let point: PointModel = null;
+        if (terminal != null) {
+            if (next != null) {
+                let bounds: Rect = this.getPerimeterBounds(terminal);
+
+                if (bounds.width > 0 || bounds.height > 0) {
+                    point = this.getPointvalue(next.x, next.y);
+                    point = this.getPerimeterFunction(bounds, point, orthogonal);
+                }
+            }
+        }
+        return point;
+    }
+    private getFloatingTerminalPoint(edge: Connector, start: Node, end: Node, source: boolean): PointModel {
+        start = start;
+        let next: PointModel = this.getNextPoint(edge, end, source);
+        let orth: number = 1;
+        let alpha: number = 0;
+        let pt: PointModel = this.getPerimeterPoint(start, next, alpha === 0 && orth);
+        return pt;
+    }
+    private updateFloatingTerminalPoints(state: Connector, source: Node, target: Node): void {
+        let absolutePoints: string = 'absolutePoints';
+        let pts: PointModel[] = state[absolutePoints];
+        let p0: PointModel = pts[0];
+        let pe: PointModel = pts[pts.length - 1];
+
+        if (pe == null && target != null) {
+            this.updateFloatingTerminalPoint(state, target, source, false);
+        }
+
+        if (p0 == null && source != null) {
+            this.updateFloatingTerminalPoint(state, source, target, true);
+        }
+    }
+    private getConnectorPoints(connectors: Connector, diagram: Diagram): void {
+        let absolutePoints: string = 'absolutePoints';
+        let geometry: string = 'geometry';
+        this.updateFixedTerminalPoints(connectors, diagram);
+        this.updatePoints(connectors, connectors[geometry].points);
+        this.updateFloatingTerminalPoints(connectors, diagram.nameTable[connectors.sourceID], diagram.nameTable[connectors.targetID]);
+        connectors[absolutePoints][0].y = connectors.sourcePoint.y;
+        connectors[absolutePoints][connectors[absolutePoints].length - 1].y = connectors.targetPoint.y;
+    }
+    private adjustSegmentPoints(temppoints: PointModel[], points: PointModel[], diagram: Diagram): void {
+
+        if (diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop') {
+            temppoints[0].x = points[0].x;
+            temppoints[1].x = points[1].x;
+            temppoints[temppoints.length - 1].x = points[points.length - 1].x;
+            temppoints[temppoints.length - 2].x = points[points.length - 2].x;
+
+            if (diagram.layout.orientation === 'TopToBottom') {
+                temppoints[temppoints.length - 2].y = temppoints[temppoints.length - 1].y - diagram.layout.verticalSpacing / 2;
+                temppoints[1].y = temppoints[0].y + diagram.layout.verticalSpacing / 2;
+            } else {
+                temppoints[1].y = temppoints[0].y - diagram.layout.verticalSpacing / 2;
+                temppoints[temppoints.length - 2].y = temppoints[temppoints.length - 1].y + diagram.layout.verticalSpacing / 2;
+            }
+
+            temppoints[2].y = temppoints[1].y;
+
+            temppoints[temppoints.length - 3].y = temppoints[temppoints.length - 2].y;
+        }
+        if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
+            temppoints[0] = points[0];
+            temppoints[1] = points[1];
+            temppoints[temppoints.length - 1] = points[points.length - 1];
+            temppoints[temppoints.length - 2] = points[points.length - 2];
+            if (diagram.layout.orientation === 'RightToLeft') {
+                temppoints[1].x = temppoints[0].x - diagram.layout.verticalSpacing / 2;
+            }
+            if (diagram.layout.orientation === 'LeftToRight') {
+                temppoints[1].x = temppoints[0].x + diagram.layout.verticalSpacing / 2;
+            }
+            temppoints[2].x = temppoints[1].x;
+            if (diagram.layout.orientation === 'RightToLeft') {
+                temppoints[temppoints.length - 2].x = temppoints[temppoints.length - 1].x + diagram.layout.verticalSpacing / 2;
+            }
+            if (diagram.layout.orientation === 'LeftToRight') {
+
+                temppoints[temppoints.length - 2].x = temppoints[temppoints.length - 1].x - diagram.layout.verticalSpacing / 2;
+            }
+            temppoints[temppoints.length - 3].x = temppoints[temppoints.length - 2].x;
+
+        }
+
+    }
+    private updateConnectorSegmentPoints(temppoints: PointModel[], diagram: Diagram): void {
+        if (temppoints.length > 1) {
+            if ((diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop')) {
+                for (let i: number = 1; i < temppoints.length - 1; i = i + 2) {
+                    if (temppoints[i].y !== temppoints[i + 1].y && (diagram.layout.orientation === 'TopToBottom'
+                        || diagram.layout.orientation === 'BottomToTop')) {
+                        temppoints[i + 1].y = temppoints[i].y;
+                    }
+                }
+            } else {
+                let check: boolean = false;
+                for (let i: number = temppoints.length - 1; i > 1; i = i = i - 2) {
+                    if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
+                        if (!check) {
+                            temppoints[i - 1].x = temppoints[i - 2].x;
+                            check = true;
+                        } else {
+                            temppoints[i - 2].x = temppoints[i - 1].x;
+                            check = false;
+                        }
+                    } else {
+                        temppoints[i + 1].x = temppoints[i].x;
+                    }
+                }
+            }
+        }
+    }
+
+    private updateConnectorSegmentPoint(connector: Connector, diagram: Diagram): void {
+        let absolutePoints: string = 'absolutePoints';
+        let segments: OrthogonalSegment[] = [];
+        for (let i: number = 0; i < connector[absolutePoints].length - 1; i++) {
+            let point1: PointModel[] = connector[absolutePoints][i];
+            let point2: PointModel[] = connector[absolutePoints][i + 1];
+            let length: number = findDistance(point1, point2);
+            let direction: string = getConnectorDirection(point1, point2);
+            if (i === connector[absolutePoints].length - 2) {
+                if ((diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
+                    || (diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
+                    || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
+                    || (diagram.layout.orientation === 'BottomToTop' && direction === 'Top')) {
+                    length = length / 2;
+                }
+
+            }
+
+            let tempSegment: OrthogonalSegment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            tempSegment.length = length;
+            tempSegment.direction = direction as Direction;
+            segments.push(tempSegment);
+        }
+        connector.segments = segments;
+
+        connector.type = 'Orthogonal';
+        diagram.connectorPropertyChange(connector as Connector, {} as Connector, {
+            type: 'Orthogonal',
+            segments: connector.segments
+        } as Connector);
+    }
+    /** @private */
+    public resetConnectorSegments(connector: Connector): void {
+        let segements: OrthogonalSegment[] = connector.segments as OrthogonalSegment[];
+
+        for (let i: number = segements.length; i > 1; i--) {
+            segements.splice(i - 1, 1);
+        }
+
+    }
+    /* tslint:disable */
+    /** @private */
+    public resetRoutingSegments(connector: Connector, diagram: Diagram, points: PointModel[]): void {
+        if (connector['levelSkip']) {
+            let absolutePoints: string = 'absolutePoints';
+            let temppoints: PointModel[];
+            this.getConnectorPoints(connector, diagram);
+            temppoints = (connector as Connector)[absolutePoints];
+            this.updateConnectorSegmentPoints(temppoints, diagram);
+            this.adjustSegmentPoints(temppoints, points, diagram);
+            this.updateConnectorSegmentPoint(connector, diagram);
+        }
+    }
+    /* tslint:enable */
 
     /** @private */
     public arrangeElements(matrixModel: MatrixModelObject, layout: Layout): void {
@@ -899,7 +1206,7 @@ export class LineDistribution {
     }
 
     /** @private */
-    public  setEdgeMapper(value: EdgeMapperObject): void {
+    public setEdgeMapper(value: EdgeMapperObject): void {
         this.edgeMapper.push(value);
     }
 

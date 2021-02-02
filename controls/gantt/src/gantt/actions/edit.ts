@@ -419,10 +419,10 @@ export class Edit {
         let scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
         for (let key of Object.keys(data)) {
-            if (isNullOrUndefined(key) || (isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks)) {
-                continue;
-            }
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
+                if (isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks) {
+                    continue;
+                }
                 if (isFromDialog) {
                     if (tasks.duration === key) {
                         ganttObj.dataOperation.updateDurationValue(data[key], ganttData.ganttProperties);
@@ -1090,6 +1090,9 @@ export class Edit {
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
+        if (!isNullOrUndefined(args.target)) {
+            eventArgs.target = args.target;
+        }
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, true);
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';

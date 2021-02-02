@@ -9063,7 +9063,7 @@ var Annotation = /** @class */ (function () {
             var leaderLengthElement = document.querySelector('#' + this.pdfViewer.element.id + '_properties_leader_length');
             if (lineStartElement && lineEndElement) {
                 lineStartElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].sourceDecoraterShapes);
-                lineStartElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].taregetDecoraterShapes);
+                lineEndElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].taregetDecoraterShapes);
             }
             thicknessElement.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeWidth;
             fillColorElement.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill;
@@ -9373,9 +9373,9 @@ var Annotation = /** @class */ (function () {
             endArrow = this.getArrowTypeFromDropDown(lineEndElement.value, true);
             // tslint:disable-next-line
             thickness = parseInt(thicknessElement.value);
-            strokeColor = strokeColorElement.value;
+            strokeColor = this.getValue(strokeColorElement.children[0].style.borderBottomColor, 'hex');
             strokeColor = (strokeColor === '') ? '#ffffff00' : strokeColor;
-            fillColor = fillColorElement.value;
+            fillColor = this.getValue(fillColorElement.children[0].style.borderBottomColor, 'hex');
             fillColor = (fillColor === '') ? '#ffffff00' : fillColor;
             opacity = opacityElement.value / 100;
             if (lineStyleElement.value) {
@@ -44429,7 +44429,7 @@ var PdfViewer = /** @class */ (function (_super) {
         var eventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
         if (sf.base.isBlazor()) {
-            //this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
+            this._dotnetInstance.invokeMethodAsync('LoadDocument', null);
             this.viewerBase.blazorUIAdaptor.loadDocument();
         }
     };

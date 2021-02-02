@@ -17,6 +17,19 @@ export interface CalendarBaseModel extends ComponentModel{
     min?: Date;
 
     /**
+     * Specifies the component to be disabled or not.
+     * @default true
+     */
+    enabled?: boolean;
+
+    /**
+     * Specifies the root CSS class of the Calendar that allows to
+     * customize the appearance by overriding the styles.
+     * @default null
+     */
+    cssClass?: string;
+
+    /**
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)

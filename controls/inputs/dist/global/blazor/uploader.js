@@ -152,6 +152,7 @@ var Uploader = /** @class */ (function (_super) {
         _this.fileStreams = [];
         _this.newFileRef = 0;
         _this.isFirstFileOnSelection = false;
+        _this.dragCounter = 0;
         /**
          * Get the file item(li) which are shown in file list.
          * @private
@@ -874,6 +875,7 @@ var Uploader = /** @class */ (function (_super) {
             sf.base.EventHandler.add(this.dropZoneElement, 'dragover', this.dragHover, this);
             sf.base.EventHandler.add(this.dropZoneElement, 'dragleave', this.onDragLeave, this);
             sf.base.EventHandler.add(this.dropZoneElement, 'paste', this.onPasteFile, this);
+            sf.base.EventHandler.add(this.dropZoneElement, 'dragenter', this.onDragEnter, this);
         }
     };
     Uploader.prototype.unBindDropEvents = function () {
@@ -881,16 +883,31 @@ var Uploader = /** @class */ (function (_super) {
             sf.base.EventHandler.remove(this.dropZoneElement, 'drop', this.dropElement);
             sf.base.EventHandler.remove(this.dropZoneElement, 'dragover', this.dragHover);
             sf.base.EventHandler.remove(this.dropZoneElement, 'dragleave', this.onDragLeave);
+            sf.base.EventHandler.remove(this.dropZoneElement, 'dragenter', this.onDragEnter);
         }
     };
+    Uploader.prototype.onDragEnter = function (e) {
+        if (!this.enabled) {
+            return;
+        }
+        this.dropZoneElement.classList.add(DRAG_HOVER);
+        this.dragCounter = this.dragCounter + 1;
+        e.preventDefault();
+        e.stopPropagation();
+    };
     Uploader.prototype.onDragLeave = function (e) {
-        this.dropZoneElement.classList.remove(DRAG_HOVER);
+        if (!this.enabled) {
+            return;
+        }
+        this.dragCounter = this.dragCounter - 1;
+        if (!this.dragCounter) {
+            this.dropZoneElement.classList.remove(DRAG_HOVER);
+        }
     };
     Uploader.prototype.dragHover = function (e) {
         if (!this.enabled) {
             return;
         }
-        this.dropZoneElement.classList.add(DRAG_HOVER);
         if (this.dropEffect !== 'Default') {
             e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
         }
@@ -899,6 +916,7 @@ var Uploader = /** @class */ (function (_super) {
     };
     /* istanbul ignore next */
     Uploader.prototype.dropElement = function (e) {
+        this.dragCounter = 0;
         this.dropZoneElement.classList.remove(DRAG_HOVER);
         this.onSelectFiles(e);
         e.preventDefault();
@@ -2545,7 +2563,9 @@ var Uploader = /** @class */ (function (_super) {
                     this.raiseSuccessEvent(e, metaData.file);
                     return;
                 }
-                this.sendNextRequest(metaData);
+                if (metaData.file.statusCode !== '4') {
+                    this.sendNextRequest(metaData);
+                }
             }
         }
         else {
@@ -2594,8 +2614,10 @@ var Uploader = /** @class */ (function (_super) {
         this.abortUpload(metaData, custom, eventArgs);
     };
     Uploader.prototype.abortUpload = function (metaData, custom, eventArgs) {
-        metaData.request.emitError = false;
-        metaData.request.httpRequest.abort();
+        if (metaData.file.statusCode !== '4') {
+            metaData.request.emitError = false;
+            metaData.request.httpRequest.abort();
+        }
         var liElement = this.getLiElement(metaData.file);
         if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) || !custom)) {
             var targetElement = liElement.querySelector('.' + PAUSE_UPLOAD);

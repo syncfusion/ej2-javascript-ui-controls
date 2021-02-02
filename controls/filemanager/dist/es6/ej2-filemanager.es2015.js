@@ -3489,6 +3489,9 @@ class LargeIconsView {
         else {
             this.clearSelection();
         }
+        if (!isNullOrUndefined(item)) {
+            this.updateType(item);
+        }
     }
     dblClickHandler(e) {
         this.parent.activeModule = 'largeiconsview';

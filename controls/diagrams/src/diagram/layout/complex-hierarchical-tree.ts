@@ -2,6 +2,7 @@ import { INode, IConnector, Layout, Bounds } from './layout-base';
 import { PointModel } from '../primitives/point-model';
 import { Connector } from '../objects/connector';
 import { LineDistribution, MatrixCellGroupObject } from '../interaction/line-distribution';
+import { LayoutOrientation } from '../enum/enum';
 
 /**
  * Connects diagram objects with layout algorithm
@@ -71,6 +72,46 @@ class HierarchicalLayoutUtil {
     private vertices: Vertex[];
 
     private crossReduction: CrossReduction = new CrossReduction();
+    /**
+     * The preferred vertical offset between edges exiting a vertex Default is 2.
+     */
+    private previousEdgeOffset: number = 6;
+
+    /**
+     * The preferred horizontal distance between edges exiting a vertex Default is 5.
+     */
+    private previousEdgeDistance: number = 5;
+
+
+    /**
+     * Holds the collection vertices, that are equivalent to nodes to be arranged
+     */
+    private jettyPositions: object = {};
+
+    /**
+     * Internal cache of bottom-most value of Y for each rank
+     */
+    private rankBottomY: number[] = null;
+
+    /**
+     * Internal cache of bottom-most value of X for each rank
+     */
+    private limitX: number = null;
+
+    /**
+     * Internal cache of top-most values of Y for each rank
+     */
+    private rankTopY: number[] = null;
+
+    /**
+     * The minimum parallelEdgeSpacing value is 12.
+     */
+    private parallelEdgeSpacing: number = 10;
+
+    /**
+     * The minimum distance for an edge jetty from a vertex Default is 12.
+     */
+    private minEdgeJetty: number = 12;
     /**
      * Defines a vertex that is equivalent to a node object
      */
@@ -236,6 +277,7 @@ class HierarchicalLayoutUtil {
         }
         return rect1;
     }
+    /* tslint:disable */
 
     /**
      * Initializes the layouting process
@@ -243,10 +285,13 @@ class HierarchicalLayoutUtil {
      */
     public doLayout(nodes: INode[], nameTable: {}, layoutProp: Layout, viewPort: PointModel, lineDistribution: LineDistribution): void {
         this.nameTable = nameTable;
+        let canEnableRouting: boolean = layoutProp.enableRouting;
         let layout: LayoutProp = {
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
-            orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top
+            orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top,
+            enableLayoutRouting: canEnableRouting
         };
+        let model: MultiParentModel;
         if (lineDistribution) {
             lineDistribution.edgeMapper = [];
         }
@@ -280,22 +325,23 @@ class HierarchicalLayoutUtil {
         let limit: Margin = { marginX: 0, marginY: 0 };
         let tmp: Vertex[] = [];
         let checkLinear: boolean = false;
+        let matrixModel: MatrixModelObject;
         for (let i: number = 0; i < hierarchyVertices.length; i++) {
             let vertexSet: {} = hierarchyVertices[i];
 
             for (let key of Object.keys(vertexSet)) {
                 tmp.push(vertexSet[key]);
             }
-            if (layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) {
+            if ((layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) || canEnableRouting) {
                 checkLinear = true;
             }
-            let model: MultiParentModel = new MultiParentModel(this, tmp, candidateRoots, layout);
+            model = new MultiParentModel(this, tmp, candidateRoots, layout);
             this.cycleStage(model);
             this.layeringStage(model);
 
 
             if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
-                let matrixModel: MatrixModelObject = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
+                matrixModel = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
                 lineDistribution.arrangeElements(matrixModel, layoutProp);
             } else {
                 if (layoutProp.arrangement === 'Nonlinear') {
@@ -318,6 +364,9 @@ class HierarchicalLayoutUtil {
                 let dy: number = (clnode.geometry.y - (dnode.offsetY - (dnode.actualSize.height / 2))) + layout.marginY;
                 let x: number = dx; let y: number = dy;
                 if (layout.orientation === 'BottomToTop') {
+                    if (canEnableRouting) {
+                        clnode.geometry.y = modelBounds.height - dy - dnode.actualSize.height / 2;
+                    }
                     y = modelBounds.height - dy;
                 } else if (layout.orientation === 'RightToLeft') {
                     x = modelBounds.width - dx;
@@ -332,8 +381,620 @@ class HierarchicalLayoutUtil {
                 this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
             }
         }
-        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint')) {
+        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || canEnableRouting) {
             lineDistribution.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
+        }
+        if (canEnableRouting) {
+            let vertices: object = {};
+            let matrixrow1: MatrixCellGroupObject[];
+            for (let p: number = 0; p < matrixModel.matrix.length; p++) {
+                matrixrow1 = matrixModel.matrix[p].value;
+                for (let q: number = 0; q < matrixrow1.length; q++) {
+                    let matrixCell: MatrixCellGroupObject = matrixrow1[q];
+                    for (let r: number = 0; r < (matrixCell.cells as MatrixCellGroupObject[]).length; r++) {
+                        let cell: IVertex = matrixCell.cells[r];
+                        let type: string = this.getType(cell.type);
+                        if (type === 'internalVertex') {
+                            let internalVertex: IVertex = cell;
+                            vertices[internalVertex.id] = internalVertex;
+
+                        }
+                    }
+                }
+            }
+            this.updateRankValuess(model);
+            for (let i: number = 0, a: string[] = Object.keys(vertices); i < a.length; i++) {
+                let key: string = a[i];
+                this.setVertexLocationValue(vertices[key], layoutProp.orientation, modelBounds);
+            }
+            this.localEdgeProcessing(model, vertices);
+            this.assignRankOffset(model);
+            this.updateEdgeSetXYValue(model);
+            let edges: IEdge[] = this.getValues(model.edgeMapper);
+
+            for (let i: number = 0; i < edges.length; i++) {
+                if ((edges[i]).x.length > 0) {
+                    for (let j: number = 0; j < (edges[i]).x.length; j++) {
+                        if (layoutProp.orientation !== 'RightToLeft' && layoutProp.orientation !== 'LeftToRight') {
+                            (edges[i]).x[j] = (edges[i]).x[j] + layout.marginX;
+                        } else if (layoutProp.orientation === 'LeftToRight') {
+                            (edges[i]).x[j] = (edges[i]).x[j] + layoutProp.verticalSpacing / 2;
+                        } else {
+                            (edges[i]).x[j] = (edges[i]).x[j] + layoutProp.verticalSpacing / 2;
+                        }
+                    }
+                }
+                this.setEdgePosition(edges[i], model, layout);
+            }
+            for (let p: number = 0; p < this.vertices.length; p++) {
+                let clnode: Vertex = this.vertices[p];
+                if (clnode.outEdges.length > 1) {
+                    this.updateMultiOutEdgesPoints(clnode);
+                }
+            }
+        }
+    }
+    
+    private setEdgeXY(ranks: IVertex[][], node: IVertex, spacing: number, layer: number): void {
+        if (ranks && node.source.id) {
+            let targetValue: number;
+            let sourceValue: number;
+
+            for (let i: number = 0; i < ranks.length; i++) {
+                for (let k: number = 0; k < ranks[i].length; k++) {
+                    if (ranks[i][k].id === node.target.id || ranks[i][k].id === node.source.id) {
+
+                        if (ranks[i][k].id === node.target.id && targetValue === undefined) {
+                            targetValue = i;
+                        }
+                        if (ranks[i][k].id === node.source.id && sourceValue === undefined) {
+                            sourceValue = i;
+                        }
+                    }
+                }
+            }
+            let rankOffsetValue: number;
+            for (let m: number = targetValue; m <= sourceValue; m++) {
+
+                if (rankOffsetValue === undefined) {
+                    rankOffsetValue = this[m + '_RankOffset'];
+                }
+                if (rankOffsetValue !== undefined && rankOffsetValue < this[m + '_RankOffset']) {
+                    rankOffsetValue = this[m + '_RankOffset'];
+                }
+
+
+            }
+            if (this['edges'] === undefined) {
+                this['edges'] = {};
+            }
+            this['edges'][(node).ids[0]] = { x: node.x, y: 0 };
+            let value: number = this.resetOffsetXValue(rankOffsetValue, spacing / 10);
+            node.x[layer - node.minRank - 1] = value;
+            for (let k: number = 0; k < (node).edges.length; k++) {
+                (node).edges[k]['levelSkip'] = true;
+            }
+        }
+    }
+    
+    private resetOffsetXValue(value: number, spacing: number): number {
+        for (let i: number = 0, a: string[] = Object.keys(this['edges']); i < a.length; i++) {
+            let key: string = a[i];
+            let length: number[] = this['edges'][key].x;
+            for (let j: number = 0; j < length.length; j++) {
+                let offsetValue: number;
+                if (this['edges'][key].x[j] === value) {
+                    offsetValue = value + spacing;
+                    offsetValue = this.resetOffsetXValue(offsetValue, spacing);
+                    return offsetValue;
+                }
+            }
+
+        }
+        return value;
+    }
+
+
+    private setEdgePosition(cell: IEdge, model: MultiParentModel, layout: LayoutProp): void {
+        // For parallel edges we need to seperate out the points a
+        // little
+        let offsetX: number = 0;
+        // Only set the edge control points once
+
+        if (cell.temp[0] !== 101207) {
+            if (cell.maxRank === undefined) {
+                cell.maxRank = -1;
+            }
+            if (cell.minRank === undefined) {
+                cell.minRank = -1;
+            }
+            let maxRank: number = cell.maxRank;
+            let minRank: number = cell.minRank;
+
+            if (maxRank === minRank) {
+                maxRank = cell.source.maxRank;
+                minRank = cell.target.minRank;
+            }
+
+            let parallelEdgeCount: number = 0;
+            let jettys: object = this.jettyPositions[cell.ids[0]];
+            if (cell.isReversed === undefined) {
+                cell.isReversed = false;
+            } else {
+                cell.isReversed = true;
+            }
+
+            let source: Vertex = cell.isReversed ? cell.target.cell : cell.source.cell;
+            let layoutReversed: boolean = false;
+            if (model.layout.orientation === 'TopToBottom' || model.layout.orientation === 'LeftToRight') {
+                if (model.layout.orientation === 'TopToBottom') {
+                    layoutReversed = false;
+                }
+                if (model.layout.orientation === 'LeftToRight') {
+                    if (!cell.isReversed) {
+                        layoutReversed = false;
+                    } else {
+                        layoutReversed = false;
+                    }
+                }
+            } else {
+                if (!cell.isReversed) {
+                    layoutReversed = true;
+                }
+            }
+
+            for (let i: number = 0; i < cell.edges.length; i++) {
+                let realEdge: IConnector = cell.edges[i];
+                let realSource: Vertex = this.getVisibleTerminal(realEdge, true);
+
+                //List oldPoints = graph.getPoints(realEdge);
+                let newPoints: PointModel[] = [];
+
+                // Single length reversed edges end up with the jettys in the wrong
+                // places. Since single length edges only have jettys, not segment
+                // control points, we just say the edge isn't reversed in this section
+                let reversed: boolean = cell.isReversed;
+                // if(cell.isReversed===undefined){
+                //     reversed = false
+                // }else{
+                //     reversed =cell.isReversed
+                // }
+
+                if (realSource !== source) {
+                    // The real edges include all core model edges and these can go
+                    // in both directions. If the source of the hierarchical model edge
+                    // isn't the source of the specific real edge in this iteration
+                    // treat if as reversed
+                    reversed = !reversed;
+                }
+
+                // First jetty of edge
+                if (jettys != null) {
+                    let arrayOffset: number = reversed ? 2 : 0;
+                    let y: number = reversed ?
+                        (layoutReversed ? this.rankBottomY[minRank] : this.rankTopY[minRank]) :
+                        (layoutReversed ? this.rankTopY[maxRank] : this.rankBottomY[maxRank]);
+                    let jetty: number = jettys[parallelEdgeCount * 4 + 1 + arrayOffset];
+
+                    if (reversed !== layoutReversed) {
+                        jetty = -jetty;
+                    }
+
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        y += jetty;
+                    }
+                    let x: number = jettys[parallelEdgeCount * 4 + arrayOffset];
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        newPoints.push(this.getPointvalue(x, y + layout.marginY));
+                    } else {
+                        if (layout.orientation === 'LeftToRight') {
+                            newPoints.push(this.getPointvalue(y + jetty, x + layout.marginY));
+                        } else {
+                            newPoints.push(this.getPointvalue(y, x + layout.marginY));
+                        }
+                    }
+
+
+                }
+
+                let loopStart: number = cell.x.length - 1;
+                let loopLimit: number = -1;
+                let loopDelta: number = -1;
+                let currentRank: number = cell.maxRank - 1;
+
+                if (reversed) {
+                    loopStart = 0;
+                    loopLimit = cell.x.length;
+                    loopDelta = 1;
+                    currentRank = cell.minRank + 1;
+                }
+                // Reversed edges need the points inserted in
+                // reverse order
+                for (let j: number = loopStart; (cell.maxRank !== cell.minRank) && j !== loopLimit; j += loopDelta) {
+                    // The horizontal position in a vertical layout
+                    let positionX: number = cell.x[j] + offsetX;
+                    // This cell.x determines the deviated points of the connectors and jetty positions 
+                    //determine the src and targetgeo points .
+
+                    // Work out the vertical positions in a vertical layout
+                    // in the edge buffer channels above and below this rank
+                    let topChannelY: number = (this.rankTopY[currentRank] + this.rankBottomY[currentRank + 1]) / 2.0;
+                    let bottomChannelY: number = (this.rankTopY[currentRank - 1] + this.rankBottomY[currentRank]) / 2.0;
+
+                    if (reversed) {
+                        let tmp: number = topChannelY;
+                        topChannelY = bottomChannelY;
+                        bottomChannelY = tmp;
+                    }
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        newPoints.push(this.getPointvalue(positionX, topChannelY + layout.marginY));
+                        newPoints.push(this.getPointvalue(positionX, bottomChannelY + layout.marginY));
+                    } else {
+                        newPoints.push(this.getPointvalue(topChannelY, positionX + layout.marginY));
+                        newPoints.push(this.getPointvalue(bottomChannelY, positionX + layout.marginY));
+                    }
+
+
+                    this.limitX = Math.max(this.limitX, positionX);
+                    currentRank += loopDelta;
+                }
+
+                // Second jetty of edge
+                if (jettys != null) {
+                    let arrayOffset: number = reversed ? 2 : 0;
+                    let rankY: number = reversed ?
+                        (layoutReversed ? this.rankTopY[maxRank] : this.rankBottomY[maxRank]) :
+                        (layoutReversed ? this.rankBottomY[minRank] : this.rankTopY[minRank]);
+                    let jetty: number = jettys[parallelEdgeCount * 4 + 3 - arrayOffset];
+
+                    if (reversed !== layoutReversed) {
+                        jetty = -jetty;
+                    }
+                    let y: number = rankY - jetty;
+                    let x: number = jettys[parallelEdgeCount * 4 + 2 - arrayOffset];
+
+
+
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        newPoints.push(this.getPointvalue(x, y + layout.marginY));
+                    } else {
+                        newPoints.push(this.getPointvalue(y, x + layout.marginY));
+                    }
+                }
+
+
+
+                this.setEdgePoints(realEdge, newPoints, model);
+
+                // Increase offset so next edge is drawn next to
+                // this one
+                if (offsetX === 0.0) {
+                    offsetX = this.parallelEdgeSpacing;
+                } else if (offsetX > 0) {
+                    offsetX = -offsetX;
+                } else {
+                    offsetX = -offsetX + this.parallelEdgeSpacing;
+                }
+
+                parallelEdgeCount++;
+            }
+
+            cell.temp[0] = 101207;
+        }
+    }
+    /* tslint:enable */
+
+    private getPointvalue(x: number, y: number): object {
+        return { 'x': Number(x) || 0, 'y': Number(y) || 0 };
+    }
+    private updateEdgeSetXYValue(model: MultiParentModel): void {
+        if (model.layout.enableLayoutRouting) {
+            let isHorizontal: boolean = false;
+            if (model.layout.orientation === 'LeftToRight' || model.layout.orientation === 'RightToLeft') {
+                isHorizontal = true;
+            }
+            for (let i: number = 0; i < model.ranks.length; i++) {
+                let rank: IVertex[] = model.ranks[i];
+                for (let k: number = 0; k < rank.length; k++) {
+                    let cell: IVertex = rank[k];
+                    if ((cell).edges && (cell).edges.length > 0) {
+                        let spacing: number = model.layout.horizontalSpacing > 0 ? (model.layout.horizontalSpacing / 2) : 15;
+                        let check: boolean = true;
+                        if (!(cell.minRank === i - 1 || cell.maxRank === i - 1)) {
+                            check = false;
+                        }
+                        if (check) {
+                            this.setXY(cell, i, undefined, isHorizontal ? true : false, model.ranks, spacing);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private getPreviousLayerConnectedCells(layer: number, cell: IEdge): IVertex[] {
+        if (cell.previousLayerConnectedCells == null) {
+            cell.previousLayerConnectedCells = [];
+            cell.previousLayerConnectedCells[0] = [];
+
+            for (let i: number = 0; i < (cell as IVertex).connectsAsSource.length; i++) {
+                let edge: IEdge = (cell as IVertex).connectsAsSource[i];
+
+                if (edge.minRank === -1 || edge.minRank === layer - 1) {
+                    // No dummy nodes in edge, add node of other side of edge
+                    cell.previousLayerConnectedCells[0].push(edge.target);
+                } else {
+                    // Edge spans at least two layers, add edge
+                    cell.previousLayerConnectedCells[0].push(edge);
+                }
+            }
+        }
+
+        return cell.previousLayerConnectedCells[0];
+    }
+    private compare(a: WeightedCellSorter, b: WeightedCellSorter): number {
+        if (a != null && b != null) {
+            if (b.weightedValue > a.weightedValue) {
+                return -1;
+            } else if (b.weightedValue < a.weightedValue) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+    /* tslint:disable */
+    private localEdgeProcessing(model: MultiParentModel, vertices: object): void {
+        // Iterate through each vertex, look at the edges connected in
+        // both directions.
+        for (let rankIndex: number = 0; rankIndex < model.ranks.length; rankIndex++) {
+            let rank: IVertex[] = model.ranks[rankIndex];
+
+            for (let cellIndex: number = 0; cellIndex < rank.length; cellIndex++) {
+                let cell: IVertex = rank[cellIndex];
+
+                if (this.crossReduction.isVertex(cell)) {
+                    let currentCells: IVertex[] = this.getPreviousLayerConnectedCells(rankIndex, cell);
+
+                    let currentRank: number = rankIndex - 1;
+
+                    // Two loops, last connected cells, and next
+                    for (let k: number = 0; k < 2; k++) {
+                        if (currentRank > -1
+                            && currentRank < model.ranks.length
+                            && currentCells != null
+                            && currentCells.length > 0) {
+                            let sortedCells: WeightedCellSorter[] = [];
+
+                            for (let j: number = 0; j < currentCells.length; j++) {
+
+                                let sorter: WeightedCellSorter = this.weightedCellSorter(
+                                    currentCells[j], this.getX(currentRank, currentCells[j]));
+                                sortedCells.push(sorter);
+                            }
+
+                            sortedCells.sort(this.compare);
+
+                            cell.width = vertices[cell.id].cell.geometry.width;
+                            cell.height = vertices[cell.id].cell.geometry.height;
+                            let leftLimit: number;
+                            if (model.layout.orientation === 'TopToBottom' || model.layout.orientation === 'BottomToTop') {
+                                cell.x[0] = vertices[cell.id].cell.geometry.x + vertices[cell.id].cell.geometry.width / 2;
+                                leftLimit = cell.x[0] - cell.width / 2 + vertices[cell.id].cell.geometry.height / 2;
+                            } else {
+                                cell.x[0] = vertices[cell.id].cell.geometry.y;
+                                leftLimit = cell.x[0];
+                            }
+                            let rightLimit: number = leftLimit + cell.width;
+
+                            // Connected edge count starts at 1 to allow for buffer
+                            // with edge of vertex
+                            let connectedEdgeCount: number = 0;
+                            let connectedEdgeGroupCount: number = 0;
+                            let connectedEdges: IVertex[] = [];
+                            // Calculate width requirements for all connected edges
+                            for (let j: number = 0; j < sortedCells.length; j++) {
+                                let innerCell: IVertex = sortedCells[j].cell;
+                                let connections: IEdge[];
+
+                                if (this.crossReduction.isVertex(innerCell)) {
+                                    // Get the connecting edge
+                                    if (k === 0) {
+                                        connections = cell.connectsAsSource;
+
+                                    } else {
+                                        connections = cell.connectsAsTarget;
+                                    }
+
+                                    for (let connIndex: number = 0; connIndex < connections.length; connIndex++) {
+                                        if (connections[connIndex].source === innerCell
+                                            || connections[connIndex].target === innerCell) {
+                                            connectedEdgeCount += connections[connIndex].edges
+                                                .length;
+                                            connectedEdgeGroupCount++;
+
+                                            connectedEdges.push(connections[connIndex]);
+                                        }
+                                    }
+                                } else {
+                                    connectedEdgeCount += innerCell.edges.length;
+                                    connectedEdgeGroupCount++;
+                                    connectedEdges.push(innerCell);
+                                }
+                            }
+
+                            let requiredWidth: number = (connectedEdgeCount + 1)
+                                * this.previousEdgeDistance;
+
+                            // Add a buffer on the edges of the vertex if the edge count allows
+                            if (cell.width > requiredWidth
+                                + (2 * this.previousEdgeDistance)) {
+                                leftLimit += this.previousEdgeDistance;
+                                rightLimit -= this.previousEdgeDistance;
+                            }
+
+                            let availableWidth: number = rightLimit - leftLimit;
+                            let edgeSpacing: number = availableWidth / connectedEdgeCount;
+
+                            let currentX: number = leftLimit + edgeSpacing / 2.0;
+
+                            let currentYOffset: number = this.minEdgeJetty - this.previousEdgeOffset;
+                            let maxYOffset: number = 0;
+
+                            for (let j: number = 0; j < connectedEdges.length; j++) {
+                                let numActualEdges: number = connectedEdges[j].edges
+                                    .length;
+                                if (this.jettyPositions === undefined) {
+                                    this.jettyPositions = {};
+                                }
+                                let pos: object = this.jettyPositions[connectedEdges[j].ids[0]];
+
+                                if (pos == null) {
+                                    pos = [];
+                                    this.jettyPositions[(connectedEdges[j] as IVertex).ids[0]] = pos;
+                                }
+
+                                if (j < connectedEdgeCount / 2) {
+                                    currentYOffset += this.previousEdgeOffset;
+                                } else if (j > connectedEdgeCount / 2) {
+                                    currentYOffset -= this.previousEdgeOffset;
+                                }
+                                // Ignore the case if equals, this means the second of 2
+                                // jettys with the same y (even number of edges)
+
+                                for (let m: number = 0; m < numActualEdges; m++) {
+                                    pos[m * 4 + k * 2] = currentX;
+                                    currentX += edgeSpacing;
+                                    pos[m * 4 + k * 2 + 1] = currentYOffset;
+                                }
+
+                                maxYOffset = Math.max(maxYOffset, currentYOffset);
+                            }
+                        }
+
+                        currentCells = this.getNextLayerConnectedCells(rankIndex, cell);
+
+                        currentRank = rankIndex + 1;
+                    }
+                }
+            }
+        }
+    }
+    /* tslint:enable */
+    private updateMultiOutEdgesPoints(clnode: Vertex): void {
+        for (let i: number = 0; i < clnode.outEdges.length / 2; i++) {
+            let connector1: Connector = this.nameTable[clnode.outEdges[i]];
+            let connector2: Connector = this.nameTable[clnode.outEdges[clnode.outEdges.length - (i + 1)]];
+            let geometry: string = 'geometry';
+            connector2[geometry].points[0].y = connector1[geometry].points[0].y;
+        }
+    }
+    private getNextLayerConnectedCells(layer: number, cell: IEdge): IVertex[] {
+        if (cell.nextLayerConnectedCells == null) {
+            cell.nextLayerConnectedCells = [];
+            cell.nextLayerConnectedCells[0] = [];
+
+            for (let i: number = 0; i < (cell as IVertex).connectsAsTarget.length; i++) {
+                let edge: IEdge = (cell as IVertex).connectsAsTarget[i];
+
+                if (edge.maxRank === -1 || edge.maxRank === layer + 1) {
+                    // Either edge is not in any rank or
+                    // no dummy nodes in edge, add node of other side of edge
+                    cell.nextLayerConnectedCells[0].push(edge.source);
+                } else {
+                    // Edge spans at least two layers, add edge
+                    cell.nextLayerConnectedCells[0].push(edge);
+                }
+            }
+        }
+
+        return cell.nextLayerConnectedCells[0];
+    }
+    private getX(layer: number, cell: IVertex): number {
+        if (this.crossReduction.isVertex(cell)) {
+            return cell.x[0];
+        } else if (!this.crossReduction.isVertex(cell)) {
+            return cell.x[layer - cell.minRank - 1] || cell.temp[layer - cell.minRank - 1];
+        }
+
+        return 0.0;
+    }
+    private getGeometry(edge: IConnector): Geometry {
+        let geometry: string = 'geometry';
+        return edge[geometry];
+    }
+    private setEdgePoints(edge: IConnector, points: PointModel[], model: MultiParentModel): void {
+        if (edge != null) {
+            let geometryValue: string = 'geometry';
+            let geometry: Geometry = this.getGeometry(edge);
+
+            if (points != null) {
+                for (let i: number = 0; i < points.length; i++) {
+                    points[i].x = points[i].x;
+                    points[i].y = points[i].y;
+                }
+            }
+
+            (geometry as Geometry).points = points;
+            edge[geometryValue] = geometry;
+        }
+
+    }
+    private assignRankOffset(model: MultiParentModel): void {
+        if (model) {
+            for (let i: number = 0; i < model.ranks.length; i++) {
+                this.rankCoordinatesAssigment(i, model);
+            }
+        }
+    }
+    private rankCoordinatesAssigment(rankValue: number, model: MultiParentModel): void {
+        let rank: IVertex[] = model.ranks[rankValue];
+        let spacing: number = model.layout.horizontalSpacing;
+        let localOffset: number;
+        for (let i: number = 0; i < rank.length; i++) {
+            if (this[rankValue + '_' + 'RankOffset'] === undefined) {
+                this[rankValue + '_' + 'RankOffset'] = 0;
+            }
+            localOffset = rank[i].x[0];
+            if (this[rankValue + '_' + 'RankOffset'] < localOffset) {
+                this[rankValue + '_' + 'RankOffset'] = localOffset + rank[i].width / 2 + spacing;
+            }
+        }
+    }
+
+    private getType(type: string): string {
+        if (type === 'internalVertex') {
+            return 'internalVertex';
+        } else {
+            return 'internalEdge';
+        }
+    }
+    private updateRankValuess(model: MultiParentModel): void {
+        this.rankTopY = [];
+        this.rankBottomY = [];
+
+        for (let i: number = 0; i < model.ranks.length; i++) {
+            this.rankTopY[i] = Number.MAX_VALUE;
+            this.rankBottomY[i] = -Number.MAX_VALUE;
+        }
+    }
+    private setVertexLocationValue(cell: IVertex, orientation: LayoutOrientation, modelBounds: Rect): void {
+        let cellGeomtry: Rect = cell.cell.geometry;
+        let positionX: number;
+        let positionY: number;
+        if (orientation === 'TopToBottom' || orientation === 'BottomToTop') {
+            positionX = cellGeomtry.x;
+            positionY = cellGeomtry.y;
+        } else {
+            positionX = cellGeomtry.y;
+            positionY = cellGeomtry.x;
+        }
+        if (orientation === 'RightToLeft') {
+            positionX = cellGeomtry.y;
+            positionY = modelBounds.width - cellGeomtry.x - cellGeomtry.height;
+            this.rankBottomY[cell.minRank] = Math.max(this.rankBottomY[cell.minRank], positionY);
+            this.rankTopY[cell.minRank] = Math.min(this.rankTopY[cell.minRank], positionY + cellGeomtry.height);
+        } else {
+            this.rankTopY[cell.minRank] = Math.min(this.rankTopY[cell.minRank], positionY);
+            this.rankBottomY[cell.minRank] = Math.max(this.rankBottomY[cell.minRank], positionY + cellGeomtry.height);
         }
     }
     private matrixModel(options: MatrixModelObject): MatrixModelObject {
@@ -575,7 +1236,7 @@ class HierarchicalLayoutUtil {
      * Sets the position of the vertex
      * @private
      */
-    public setXY(node: IVertex, layer: number, value: number, isY: boolean): void {
+    public setXY(node: IVertex, layer: number, value: number, isY: boolean, ranks?: IVertex[][], spacing?: number): void {
         if (node && node.cell) {
             if (node.cell.inEdges || node.cell.outEdges) {
                 if (isY) {
@@ -590,6 +1251,9 @@ class HierarchicalLayoutUtil {
                     node.x[layer - node.minRank - 1] = value;
                 }
             }
+        } else {
+            this.setEdgeXY(ranks, node, spacing, layer);
+
         }
     }
 
@@ -1091,6 +1755,8 @@ class MultiParentModel {
     /** @private */
     public vertexMapper: VertexMapper;
     /** @private */
+    public edgeMapper: VertexMapper;
+    /** @private */
     public layout: LayoutProp;
     /** @private */
     public maxRank: number;
@@ -1109,8 +1775,9 @@ class MultiParentModel {
         let internalVertices: IVertex[] = [];
         this.layout = dlayout;
         this.maxRank = 100000000;
+        this.edgeMapper = {map: {}};
         this.hierarchicalLayout = layout;
-        this.createInternalCells(layout, vertices, internalVertices);
+        this.createInternalCells(layout, vertices, internalVertices, dlayout);
         for (let i: number = 0; i < vertices.length; i++) {
             let edges: IEdge[] = internalVertices[i].connectsAsSource;
             for (let j: number = 0; j < edges.length; j++) {
@@ -1138,11 +1805,18 @@ class MultiParentModel {
             internalVertices[i].temp[0] = 1;
         }
     }
-
+    /* tslint:disable */
+    private resetEdge(edge: IConnector): IConnector {
+        let geometry: Geometry = { x: 0, y: 0, width: 0, height: 0, relative: true };
+        let geo: object = geometry;
+        edge['geometry'] = geo;
+        return edge;
+    }
+    
     /**
      * used to create the duplicate of the edges on the layout model
      */
-    private createInternalCells(layout: HierarchicalLayoutUtil, vertices: Vertex[], internalVertices: IVertex[]): void {
+    private createInternalCells(layout: HierarchicalLayoutUtil, vertices: Vertex[], internalVertices: IVertex[], dlayout: LayoutProp): void {
         for (let i: number = 0; i < vertices.length; i++) {
             internalVertices[i] = {
                 x: [], y: [], temp: [], cell: vertices[i],
@@ -1158,6 +1832,16 @@ class MultiParentModel {
                     let directedEdges: IConnector[] = layout.getEdgesBetween(vertices[i], cell, true);
                     if (undirectedEdges != null && undirectedEdges.length > 0 && directedEdges.length * 2 >= undirectedEdges.length) {
                         let internalEdge: IEdge = { x: [], y: [], temp: [], edges: undirectedEdges, ids: [] };
+                        if (dlayout.enableLayoutRouting) {
+                            for (let k: number = 0; k < undirectedEdges.length; k++) {
+                                let edge: IConnector = undirectedEdges[k];
+                                this.setDictionary(this.edgeMapper, undefined, internalEdge, edge.id);
+                                // Resets all point on the edge and disables the edge style
+                                // without deleting it from the cell style
+                                this.resetEdge(edge);
+                            }
+                        }
+                        internalEdge.source = internalVertices[i];
                         for (let m: number = 0; m < undirectedEdges.length; m++) {
                             internalEdge.ids.push(undirectedEdges[m].id);
                         }
@@ -1174,6 +1858,7 @@ class MultiParentModel {
             internalVertices[i].temp[0] = 0;
         }
     }
+    /* tslint:enable */
 
     /**
      * used to set the optimum value of each vertex on the layout
@@ -1240,14 +1925,17 @@ class MultiParentModel {
     /**
      * used to store the value of th given key on the object
      */
-    private setDictionary(dic: VertexMapper, key: Vertex, value: IVertex): IVertex {
-        let id: string = key.name;
-        if (!id) {
-            //  id = this._getDictionary(dic, key);
+    private setDictionary(dic: VertexMapper, key: Vertex, value: IVertex, edgeId?: string): IVertex {
+        if (!edgeId) {
+            let id: string = key.name;
+            let previous: IVertex = dic.map[id];
+            dic.map[id] = value;
+            return previous;
+        } else {
+            let previous: IVertex = dic.map[edgeId];
+            dic.map[edgeId] = value;
+            return previous;
         }
-        let previous: IVertex = dic.map[id];
-        dic.map[id] = value;
-        return previous;
     }
 
     /**
@@ -1869,8 +2557,8 @@ export interface IEdge {
     maxRank?: number;
     minRank?: number;
     isReversed?: boolean;
-    previousLayerConnectedCells?: IVertex[];
-    nextLayerConnectedCells?: IVertex[];
+    previousLayerConnectedCells?: IVertex[][];
+    nextLayerConnectedCells?: IVertex[][];
     width?: number;
     height?: number;
 }
@@ -1883,6 +2571,7 @@ export interface IVertex {
     x?: number[]; y?: number[];
     temp?: number[];
     cell?: Vertex;
+    edges?: IConnector[];
     id?: string;
     connectsAsTarget?: IEdge[];
     connectsAsSource?: IEdge[];
@@ -1895,6 +2584,7 @@ export interface IVertex {
     source?: IVertex;
     target?: IVertex;
     layoutObjectId?: string;
+    ids?: string[];
     type?: string;
     identicalSibiling?: string[];
 }
@@ -1944,6 +2634,7 @@ export interface LayoutProp {
     verticalSpacing?: number;
     marginX: number;
     marginY: number;
+    enableLayoutRouting: boolean;
 }
 
 
@@ -1956,4 +2647,17 @@ interface Rect {
     right?: number;
     bottom?: number;
     left?: number;
+}
+
+/**
+ * Defines the geometry objects for the connectors
+ * @private
+ */
+interface Geometry {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    relative: boolean;
+    points?: PointModel[];
 }

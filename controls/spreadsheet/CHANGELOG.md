@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I311925` - Event `cellSave` is not triggered when list value changes issue has been fixed.
+
 ## 18.4.39 (2021-01-28)
 
 ### Spreadsheet

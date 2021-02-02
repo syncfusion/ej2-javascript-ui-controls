@@ -1679,7 +1679,7 @@ let Tooltip = class Tooltip extends Component {
         }
         if (!argsData.cancel) {
             let elem = createElement('div', { id: this.element.id + 'parent_template' });
-            let templateElement = this.templateFn(this.data, this.controlInstance, 'template', elem.id + '_blazorTemplate', '');
+            let templateElement = this.templateFn(this.data, this.controlInstance, elem.id, elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
                 if (isBlazor() || templateElement.length === 1) {
                     elem.appendChild(templateElement[0]);

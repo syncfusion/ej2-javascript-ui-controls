@@ -524,6 +524,7 @@ let CheckBox = class CheckBox extends Component {
         }
         let changeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
+        event.stopPropagation();
     }
     /**
      * Destroys the widget.

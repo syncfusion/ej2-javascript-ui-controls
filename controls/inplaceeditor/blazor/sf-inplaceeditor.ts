@@ -2,12 +2,14 @@ import { BlazorDotnetObject } from '@syncfusion/ej2-base';
 import { removeClass, closest, detach, extend, Browser, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 const ROOT: string = 'e-inplaceeditor';
+const ROOT_TIP: string = 'e-inplaceeditor-tip';
 const OPEN: string = 'e-editable-open';
 const DISABLE: string = 'e-disable';
 const RTL: string = 'e-rtl';
 const EDITABLE_VALUE_ELEMENT: string = 'e-editable-value-element';
 const CLEAR_ICON: string = 'e-clear-icon';
 const EDITABLE_COMPONENT: string = 'e-editable-component';
+const EDITABLE_ELEMENT: string = 'e-editable-elements';
 const CLS_POPUP: string = 'e-popup';
 
 const CREATED: string = 'Created';
@@ -175,7 +177,14 @@ class SfInPlaceEditor {
     }
 
     private docClickHandler(e: MouseEvent): void {
-        if (this.isClearTarget || closest((e.target as HTMLElement), '.' + CLS_POPUP)) {
+        let relateRoot: Element = closest((e.target as HTMLElement), '.' + ROOT);
+        let relateTipRoot: Element = closest((e.target as HTMLElement), '.' + ROOT_TIP);
+        let relateElements: Element = closest((e.target as HTMLElement), '.' + EDITABLE_ELEMENT);
+        let relateRTEElements: Element = closest((e.target as HTMLElement), '.' + '.e-rte-elements');
+        if (this.isClearTarget || ((!isNullOrUndefined(relateRoot) && relateRoot.isEqualNode(this.element)) ||
+        (!isNullOrUndefined(relateTipRoot) && this.popupConent && relateTipRoot.id.indexOf('tooltip') > -1)) ||
+        !isNullOrUndefined(relateElements) || !isNullOrUndefined(relateRTEElements) ||
+        (e.target as HTMLElement).classList.contains('e-chips-close')) {
             this.isClearTarget = false;
             return;
         }

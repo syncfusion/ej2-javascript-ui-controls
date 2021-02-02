@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### Menu
+
+#### Bug Fixes
+
+- `291781` - The issue with caret icon alignment is fixed.
+
 ## 18.4.39 (2021-01-28)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#303821` - An issue with toolbar content is not aligned properly in IOS devices has been fixed.
 
 ### TreeView
 

@@ -126,7 +126,8 @@ export class Cell extends ChildProperty<RowModel> {
 /**
  * @hidden
  */
-export function getCell(rowIndex: number, colIndex: number, sheet: SheetModel, isInitRow?: boolean): CellModel {
+export function getCell(
+    rowIndex: number, colIndex: number, sheet: SheetModel, isInitRow?: boolean, returnEmptyObjIfNull?: boolean): CellModel {
     let row: RowModel = getRow(sheet, rowIndex);
     if (!row || !row.cells) {
         if (isInitRow) {
@@ -136,10 +137,10 @@ export function getCell(rowIndex: number, colIndex: number, sheet: SheetModel, i
                 sheet.rows[rowIndex].cells = [];
             }
         } else {
-            return null;
+            return returnEmptyObjIfNull ? {} : null;
         }
     }
-    return sheet.rows[rowIndex].cells[colIndex] || null;
+    return sheet.rows[rowIndex].cells[colIndex] || (returnEmptyObjIfNull ? {} : null);
 }
 
 /**

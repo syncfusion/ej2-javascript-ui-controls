@@ -24,7 +24,6 @@ export class Clipboard {
     private cutInfo: boolean;
     private externalMerge: boolean = false;
     private externalMergeRow: number;
-    private isFilterCut: boolean;
     private copiedInfo: { range: number[], sId: number, isCut: boolean };
     private copiedShapeInfo: {
         pictureElem: HTMLElement, sId: number, sheetIdx: number, isCut: boolean,
@@ -351,7 +350,7 @@ export class Clipboard {
                     this.clearCopiedInfo();
                     this.cutInfo = isCut;
                 }
-                if (isExternal && this.copiedInfo) {
+                if ((isExternal || inRange) && this.copiedInfo) {
                     this.clearCopiedInfo();
                 }
                 if (isExternal || (args && args.isAction)) {
@@ -373,7 +372,7 @@ export class Clipboard {
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
                 }
                 if (isCut) {
-                    this.updateFilter(copyInfo);
+                    this.updateFilter(copyInfo, rfshRange);
                     setMaxHgt(prevSheet, cIdx[0], cIdx[1], 20);
                     let hgt: number = getMaxHgt(prevSheet, cIdx[0]);
                     setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
@@ -384,23 +383,27 @@ export class Clipboard {
         }
     }
 
-    private updateFilter(copyInfo: { range: number[], sId: number, isCut: boolean }): void {
-        if (!this.isFilterCut) {
-            this.parent.notify(getFilteredCollection, null);
-            for (let i: number = 0; i < this.parent.sheets.length; i++) {
-                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
-                    this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
-                    let range: number[] = copyInfo.range;
-                    let fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
-                    let endCol: string = getColumnHeaderText(range[3]);
-                    let fEndCol: string = getColumnHeaderText(fRange[3]);
-                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
-                        this.isFilterCut = true;
-                    }
+    private updateFilter(copyInfo: { range: number[], sId: number, isCut: boolean }, pastedRange: number[]): void {
+        let isFilterCut: boolean;
+        this.parent.notify(getFilteredCollection, null);
+        for (let i: number = 0; i < this.parent.sheets.length; i++) {
+            if (this.parent.filterCollection && this.parent.filterCollection[i] &&
+                this.parent.filterCollection[i].sheetIdx === getSheetIndexFromId(this.parent, copyInfo.sId)) {
+                let range: number[] = copyInfo.range;
+                let fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
+                let endCol: string = getColumnHeaderText(range[3]);
+                let fEndCol: string = getColumnHeaderText(fRange[3]);
+                if ((fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) ||
+                    (fRange[0] === range[2] && fRange[1] === range[3] && endCol === fEndCol)) {
+                    isFilterCut = true;
                 }
             }
         }
-        if (this.isFilterCut) {
+        let cell: HTMLElement = this.parent.getCell(copyInfo.range[0], copyInfo.range[1]);
+        cell = cell.querySelector('.e-filter-icon') ? cell : this.parent.getCell(copyInfo.range[2], copyInfo.range[3]);
+        let asc: HTMLElement = cell.querySelector('.e-sortasc-filter');
+        let desc: HTMLElement = cell.querySelector('.e-sortdesc-filter');
+        if (isFilterCut) {
             for (let n: number = 0; n < this.parent.filterCollection.length; n++) {
                 let filterCol: FilterCollectionModel = this.parent.filterCollection[n];
                 let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
@@ -408,9 +411,19 @@ export class Clipboard {
                 if (filterCol.sheetIdx === sheetIndex) {
                     this.parent.notify(initiateFilterUI, { predicates: null, range: filterCol.filterRange, sIdx: sheetIndex, isCut: true });
                 }
+                if (filterCol.sheetIdx === sheetIndex && sheetIndex === this.parent.activeSheetIndex) {
+                    this.parent.notify(initiateFilterUI, { predicates: null, range: null, sIdx: null, isCut: true });
+                    if (copyInfo.range[3] === copyInfo.range[1]) { // To update sorted icon after pasting.
+                        let filteredCell: HTMLElement = this.parent.getCell(pastedRange[0], pastedRange[1]);
+                        if (asc && filteredCell) {
+                            filteredCell.querySelector('.e-filter-icon').classList.add('e-sortasc-filter');
+                        }
+                        if (desc && filteredCell) {
+                            filteredCell.querySelector('.e-filter-icon').classList.add('e-sortdesc-filter');
+                        }
+                    }
+                }
             }
-            this.parent.notify(initiateFilterUI, { predicates: null, range: null, sIdx: null, isCut: true });
-            this.isFilterCut = false;
         }
     }
 
@@ -541,27 +554,13 @@ export class Clipboard {
     }
 
     private setCopiedInfo(args?: SetClipboardInfo & ClipboardEvent, isCut?: boolean): void {
-        if (this.parent.isEdit || this.isFilterCut) {
+        if (this.parent.isEdit) {
             return;
         }
         let deferred: Deferred = new Deferred();
         args.promise = deferred.promise;
         let sheet: ExtendedSheet = this.parent.getActiveSheet() as Sheet;
         let range: number[] = (args && args.range) || getRangeIndexes(sheet.selectedRange);
-        if (isCut) {
-            this.parent.notify(getFilteredCollection, null);
-            for (let i: number = 0; i < this.parent.sheets.length; i++) {
-                if (this.parent.filterCollection && this.parent.filterCollection[i] &&
-                    this.parent.filterCollection[i].sheetIdx === this.parent.activeSheetIndex) {
-                    let fRange: number[] = getRangeIndexes(this.parent.filterCollection[i].filterRange);
-                    let endCol: string = getColumnHeaderText(range[3]);
-                    let fEndCol: string = getColumnHeaderText(fRange[3]);
-                    if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
-                        this.isFilterCut = true;
-                    }
-                }
-            }
-        }
         let option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
             sheet: sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], promise:
                 new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
@@ -704,8 +703,8 @@ export class Clipboard {
         for (let i: number = range[0]; i <= range[2]; i++) {
             data += '<tr>';
             for (let j: number = range[1]; j <= range[3]; j++) {
-                data += '<td style="white-space:nowrap;vertical-align:bottom;';
                 cell = getCell(i, j, sheet);
+                data += '<td style="white-space:' + ((cell && cell.wrap) ? 'normal' : 'nowrap') + ';vertical-align:bottom;';
                 if (cell && cell.style) {
                     Object.keys(cell.style).forEach((style: string) => {
                         let regex: RegExpMatchArray = style.match(/[A-Z]/);
@@ -769,7 +768,11 @@ export class Clipboard {
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                         let cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
                         let rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
-                        cells[j] = { value: td.textContent, style: this.getStyle(td, ele), colSpan: cSpan, rowSpan: rSpan };
+                        cellStyle = this.getStyle(td, ele);
+                        cells[j] = { value: td.textContent, style: cellStyle, colSpan: cSpan, rowSpan: rSpan };
+                        if ((cellStyle as { whiteSpace: string }).whiteSpace) {
+                            cells[j].wrap = true;
+                        }
                     });
                     (rows as RowModel[]).push({ cells: cells });
                     cells = [];
@@ -786,6 +789,9 @@ export class Clipboard {
             text.trim().split('\n').forEach((row: string) => {
                 row.split('\t').forEach((col: string, j: number) => {
                     cells[j] = { style: cellStyle };
+                    if ((cellStyle as { whiteSpace: string }).whiteSpace) {
+                        cells[j].wrap = true;
+                    }
                     if (checkIsFormula(col)) {
                         cells[j].formula = col;
                     } else {
@@ -817,7 +823,7 @@ export class Clipboard {
                     let char: string = style.split(':')[0].trim();
                     if (['font-family', 'vertical-align', 'text-align', 'text-indent', 'color', 'background', 'font-weight', 'font-style',
                         'font-size', 'text-decoration', 'border-bottom', 'border-top', 'border-right', 'border-left',
-                        'border'].indexOf(char) > -1) {
+                        'border', 'white-space'].indexOf(char) > -1) {
                         char = char === 'background' ? 'backgroundColor' : char;
                         let regex: RegExpMatchArray = char.match(/-[a-z]/);
                         cellStyle[regex ? char.replace(regex[0], regex[0].charAt(1).toUpperCase()) : char] = style.split(':')[1];

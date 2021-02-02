@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
-import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula } from '../../workbook/index';
+import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula, getCell } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel } from '../../workbook/index';
 import { ComboBox, ChangeEventArgs, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -226,7 +226,13 @@ export class FormulaBar {
                         checkIsFormula(eventArgs.editedValue);
                     let formulaInp: HTMLTextAreaElement =
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
-                    formulaInp.value = value;
+                    let addressRange: number[] = getRangeIndexes(address);
+                    let cellEle: HTMLElement = this.parent.getCell(addressRange[0], addressRange[1]);
+                    if (cell && !cell.formula && cellEle) {
+                        formulaInp.value = cellEle.textContent;
+                    } else {
+                        formulaInp.value = value;
+                    }
                     if (!isNullOrUndefined(value) && !isFormulaEdit) {
                         this.parent.notify(
                             editOperation, { action: 'refreshEditor', value: formulaInp.value, refreshEditorElem: true });

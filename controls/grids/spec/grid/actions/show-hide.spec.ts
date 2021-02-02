@@ -747,4 +747,30 @@ describe('ShowHide module testing', () => {
         });
 
     });
+    describe('EJ2-45608 - Checkbox selection not persisting when show/hide columns is performed', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    selectionSettings: { type: 'multiple', persistSelection: true },
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name', width: '170' },
+                    ]
+                }, done);
+        });
+        it('checking the row select with persistSelection', () => {
+            gridObj.selectRow(2, true);
+            gridObj.hideColumns(['Order ID']);
+            expect(gridObj.getSelectedRecords().length).toBe(1);
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

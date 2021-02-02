@@ -992,10 +992,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Refresh the height of the list item.
+     * Refresh the height of the list item only on enabling the virtualization property.
      */
     public refreshItemHeight(): void {
-        this.virtualizationModule.refreshItemHeight();
+        if (this.virtualizationModule) {
+            this.virtualizationModule.refreshItemHeight();
+        }
     }
 
     private clickHandler(e: MouseEvent): void {

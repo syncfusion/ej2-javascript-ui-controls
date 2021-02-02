@@ -58,17 +58,19 @@ export function createElement(tagName: string, properties?: ElementProperties): 
 export function addClass(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
     let classList: string[] = getClassList(classes);
     for (let ele of (elements as Element[])) {
-        for (let className of classList) {
-            if (isObject(ele)) {
-                let curClass: string = getValue('attributes.className', ele);
-                if (isNullOrUndefined(curClass)) {
-                    setValue('attributes.className', className, ele);
-                } else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
-                    setValue('attributes.className', curClass + ' ' + className, ele);
-                }
-            } else {
-                if (!ele.classList.contains(className)) {
-                    ele.classList.add(className);
+        if (ele && classList) {
+            for (let className of classList) {
+                if (isObject(ele)) {
+                    let curClass: string = getValue('attributes.className', ele);
+                    if (isNullOrUndefined(curClass)) {
+                        setValue('attributes.className', className, ele);
+                    } else if (!new RegExp('\\b' + className + '\\b', 'i').test(curClass)) {
+                        setValue('attributes.className', curClass + ' ' + className, ele);
+                    }
+                } else {
+                    if (!ele.classList.contains(className)) {
+                        ele.classList.add(className);
+                    }
                 }
             }
         }
@@ -84,20 +86,22 @@ export function addClass(elements: Element[] | NodeList, classes: string | strin
 export function removeClass(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
     let classList: string[] = getClassList(classes);
     for (let ele of (elements as Element[])) {
-        let flag: boolean = isObject(ele);
-        let canRemove: boolean = flag ? getValue('attributes.className', ele) : ele.className !== '';
-        if (canRemove) {
-            for (let className of classList) {
-                if (flag) {
-                    let classes: string = getValue('attributes.className', ele);
-                    let classArr: string[] = classes.split(' ');
-                    let index: number = classArr.indexOf(className);
-                    if (index !== -1) {
-                        classArr.splice(index, 1);
+        if (ele && classList) {
+            let flag: boolean = isObject(ele);
+            let canRemove: boolean = flag ? getValue('attributes.className', ele) : ele.className !== '';
+            if (canRemove) {
+                for (let className of classList) {
+                    if (flag) {
+                        let classes: string = getValue('attributes.className', ele);
+                        let classArr: string[] = classes.split(' ');
+                        let index: number = classArr.indexOf(className);
+                        if (index !== -1) {
+                            classArr.splice(index, 1);
+                        }
+                        setValue('attributes.className', classArr.join(' '), ele);
+                    } else {
+                        ele.classList.remove(className);
                     }
-                    setValue('attributes.className', classArr.join(' '), ele);
-                } else {
-                    ele.classList.remove(className);
                 }
             }
         }
@@ -226,17 +230,20 @@ export function remove(element: Element | Node | HTMLElement): void {
 export function attributes(element: Element | Node | any, attributes: { [key: string]: string }): Element {
     let keys: string[] = Object.keys(attributes);
     let ele: Element = <Element>element;
-    for (let key of keys) {
-        if (isObject(ele)) {
-            let iKey: string = key;
-            if (key === 'tabindex') {
-                iKey = 'tabIndex';
+    if (ele) {
+        for (let key of keys) {
+            if (isObject(ele)) {
+                let iKey: string = key;
+                if (key === 'tabindex') {
+                    iKey = 'tabIndex';
+                }
+                ele.attributes[iKey] = attributes[key];
+            } else {
+                ele.setAttribute(key, attributes[key]);
             }
-            ele.attributes[iKey] = attributes[key];
-        } else {
-            ele.setAttribute(key, attributes[key]);
         }
     }
+
     return ele;
 }
 
@@ -275,7 +282,8 @@ export function selectAll(selector: string, context: Document | Element = docume
 }
 
 function querySelectId(selector: string): string {
-    if (selector.match(/#[0-9]/g)) {
+    const charRegex: RegExp = /(!|"|\$|%|&|'|\(|\)|\*|\/|:|;|<|=|\?|@|\]|\^|`|{|}|\||\+|~)/g;
+    if (selector.match(/#[0-9]/g) || selector.match(charRegex)) {
         let idList: string[] = selector.split(',');
         for (let i: number = 0; i < idList.length; i++) {
             let list: string[] = idList[i].split(' ');
@@ -283,7 +291,7 @@ function querySelectId(selector: string): string {
                 if (list[j].indexOf('#') > -1) {
                     if (!list[j].match(/\[.*\]/)) {
                         let splitId: string[] = list[j].split('#');
-                        if (splitId[1].match(/^\d/)) {
+                        if (splitId[1].match(/^\d/) || splitId[1].match(charRegex)) {
                             let setId: string[] = list[j].split('.');
                             setId[0] = setId[0].replace(/#/, '[id=\'') + '\']';
                             list[j] = setId.join('.');

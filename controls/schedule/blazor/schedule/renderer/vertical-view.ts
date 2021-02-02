@@ -45,6 +45,7 @@ export class VerticalViews extends ViewBase implements IRenderer {
         if (!isNullOrUndefined(this.parent.quickPopup)) {
             this.parent.quickPopup.hide();
         }
+        this.parent.setPersistence();
     }
     private onApaptiveMove(e: Event): void {
         if (this.parent.uiStateValues.action) {
@@ -92,6 +93,7 @@ export class VerticalViews extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
+        this.retainScrollPosition();
     }
     public setContentHeight(element: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
         if (!isNullOrUndefined(leftPanelElement)) {
@@ -139,7 +141,9 @@ export class VerticalViews extends ViewBase implements IRenderer {
         if (this.parent.options.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             let currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
             let timeCellsWrap: Element = this.getLeftPanelElement();
-            removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
+            if (!isNullOrUndefined(timeCellsWrap)) {
+                removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
+            }
             if (currentDateIndex.length > 0) {
                 let workCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
                 if (workCells.length > 0) {
@@ -202,6 +206,9 @@ export class VerticalViews extends ViewBase implements IRenderer {
             styles: 'top:' + topInPx
         });
         let timeCellsWrap: Element = this.getLeftPanelElement();
+        if (isNullOrUndefined(timeCellsWrap)) {
+            return;
+        }
         let timeTrs: HTMLElement[] = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
         if (rowIndex <= timeTrs.length) {
             removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);

@@ -15466,6 +15466,15 @@ let findPath = (sourcePoint, targetPoint) => {
     return [path, transferpt];
 };
 /** @private */
+let getConnectorDirection = (src, tar) => {
+    if (Math.abs(tar.x - src.x) > Math.abs(tar.y - src.y)) {
+        return src.x < tar.x ? 'Right' : 'Left';
+    }
+    else {
+        return src.y < tar.y ? 'Bottom' : 'Top';
+    }
+};
+/** @private */
 let findDistance = (point1, point2) => {
     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 };
@@ -22052,6 +22061,9 @@ __decorate$22([
 __decorate$22([
     Property(true)
 ], Layout.prototype, "enableAnimation", void 0);
+__decorate$22([
+    Property(false)
+], Layout.prototype, "enableRouting", void 0);
 __decorate$22([
     Property('')
 ], Layout.prototype, "root", void 0);
@@ -30717,7 +30729,13 @@ class CommandHandler {
                 else {
                     hasEnds = true;
                 }
-                if (!hasEnds) {
+                let canDragPoints = false;
+                for (let i = 0; i < this.diagram.selectedItems.connectors.length; i++) {
+                    if (this.diagram.selectedItems.connectors[i].id === obj.id) {
+                        canDragPoints = true;
+                    }
+                }
+                if (!hasEnds || canDragPoints) {
                     this.dragControlPoint(connector, tx, ty, true);
                     let conn = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
                     this.diagram.connectorPropertyChange(connector, oldValues, conn);
@@ -34303,7 +34321,8 @@ class Diagram extends Component {
                 }
             }
             if (refreshLayout && !refereshColelction) {
-                if (oldProp.layout && oldProp.layout.connectionPointOrigin === "DifferentPoint" && newProp.layout.connectionPointOrigin === "SamePoint") {
+                if (oldProp.layout && oldProp.layout.connectionPointOrigin === "DifferentPoint" && newProp.layout.connectionPointOrigin === "SamePoint"
+                    || (oldProp.layout && newProp.layout && !newProp.layout.enableRouting && oldProp.layout.enableRouting)) {
                     for (let i = 0; i < this.nodes.length; i++) {
                         let node = this.nodes[i];
                         if ((node.ports && node.ports.length > 0)) {
@@ -34823,7 +34842,7 @@ class Diagram extends Component {
                 args: []
             });
         }
-        if ((this.layout && this.layout.connectionPointOrigin === "DifferentPoint") || (this.layout.arrangement === "Linear")) {
+        if ((this.layout && this.layout.connectionPointOrigin === "DifferentPoint") || (this.layout.arrangement === "Linear" || (this.layout.enableRouting))) {
             modules.push({
                 member: 'LineDistribution',
                 args: []
@@ -37215,9 +37234,10 @@ class Diagram extends Component {
         let propChange = this.isProtectedOnChange;
         this.protectPropertyChange(true);
         let nodes = this.removeChildrenFromLayout(this.nodes);
+        var canEnableRouting$$1 = this.layout.enableRouting && this.layout.type == "ComplexHierarchicalTree";
         let viewPort = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
-            if ((this.layout.connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) || this.layout.arrangement === "Linear") {
+            if (canEnableRouting$$1 || (this.layout.connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) || this.layout.arrangement === "Linear") {
                 this.lineDistributionModule.initLineDistribution(this.layout, this);
             }
             if (this.organizationalChartModule) {
@@ -37284,8 +37304,14 @@ class Diagram extends Component {
                     }
                 }
                 for (let conn of Object.keys(connectors)) {
+                    if (canEnableRouting$$1) {
+                        this.lineDistributionModule.resetConnectorSegments(this.nameTable[conn]);
+                    }
                     let connector = connectors[conn];
                     let points = this.getPoints(connector);
+                    if (canEnableRouting$$1) {
+                        this.lineDistributionModule.resetRoutingSegments(connector, this, points);
+                    }
                     updateConnector(connector, points);
                     if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
                         this.commandHandler.updatePathElementOffset(connector);
@@ -37297,7 +37323,7 @@ class Diagram extends Component {
                     this.updateQuad(connector);
                     this.updateDiagramObject(connector, true);
                 }
-                if (this.layout.connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) {
+                if (canEnableRouting$$1 || this.layout.connectionPointOrigin === "DifferentPoint" && this.lineDistributionModule && canDoOverlap) {
                     this.lineDistributionModule.distributeLines(this.layout, this);
                 }
                 this.preventDiagramUpdate = false;
@@ -42223,8 +42249,14 @@ class Diagram extends Component {
                 
             }
             let selectedSymbols = 'selectedSymbols';
-            if (this.droppable[selectedSymbols]) {
+            if (this.droppable[selectedSymbols] && this.droppable[selectedSymbols].parentNode) {
                 remove(this.droppable[selectedSymbols]);
+            }
+            else {
+                let draggableElement = document.getElementsByClassName("e-dragclone");
+                for (let i = 0; i < draggableElement.length; i++) {
+                    draggableElement[i].remove();
+                }
             }
             this.allowServerDataBinding = true;
         });
@@ -50570,7 +50602,7 @@ class LineDistribution {
     initLineDistribution(graph, diagram) {
         let srcDirection = 'Bottom';
         this.diagram = diagram;
-        if (diagram.layout.connectionPointOrigin === 'DifferentPoint') {
+        if (diagram.layout.connectionPointOrigin === 'DifferentPoint' || diagram.layout.enableRouting) {
             let tarDirection = 'Top';
             if (graph.orientation === 'BottomToTop') {
                 srcDirection = 'Top';
@@ -50593,16 +50625,8 @@ class LineDistribution {
             }
         }
     }
-    getConnectorDirection(src, tar) {
-        if (Math.abs(tar.x - src.x) > Math.abs(tar.y - src.y)) {
-            return src.x < tar.x ? 'Right' : 'Left';
-        }
-        else {
-            return src.y < tar.y ? 'Bottom' : 'Top';
-        }
-    }
     ObstacleSegment(options) {
-        options.direction = this.getConnectorDirection(options.startpt, options.endpt);
+        options.direction = getConnectorDirection(options.startpt, options.endpt);
         options.distance = Point.findLength(options.startpt, options.endpt);
         options.orientation = options.direction === 'Left' || options.direction === 'Right' ? 'horizontal' : 'vertical';
         options.id = options.id;
@@ -50916,7 +50940,7 @@ class LineDistribution {
     resetConnectorPoints(edge, diagram) {
         let obstacleCollection = 'obstaclePointCollection';
         if (edge.segments[0].points
-            && edge.segments[0].points.length > 0) {
+            && edge.segments[0].points.length > 0 && edge[obstacleCollection]) {
             let connector = edge;
             connector.sourcePoint = edge[obstacleCollection][0];
             connector.targetPoint = edge[obstacleCollection][edge[obstacleCollection].length - 1];
@@ -50926,7 +50950,7 @@ class LineDistribution {
                 let point1 = edge[obstacleCollection][i];
                 let point2 = edge[obstacleCollection][i + 1];
                 let length = findDistance(point1, point2);
-                let direction = this.getConnectorDirection(point1, point2);
+                let direction = getConnectorDirection(point1, point2);
                 if (i === edge[obstacleCollection].length - 2) {
                     if ((diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
                         || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
@@ -51145,6 +51169,308 @@ class LineDistribution {
             cell.visitedParents.push(parent);
         }
     }
+    getFixedTerminalPoint() {
+        let pt = null;
+        return pt;
+    }
+    setAbsoluteTerminalPoint(point, isSource, edge) {
+        let absolutePoints = 'absolutePoints';
+        if (isSource) {
+            if (edge[absolutePoints] == null) {
+                edge[absolutePoints] = [];
+            }
+            if (edge[absolutePoints].length === 0) {
+                edge[absolutePoints].push(point);
+            }
+            else {
+                edge[absolutePoints][0] = point;
+            }
+        }
+        else {
+            if (edge[absolutePoints] == null) {
+                edge[absolutePoints] = [];
+                edge[absolutePoints].push(null);
+                edge[absolutePoints].push(point);
+            }
+            else if (edge[absolutePoints].length === 1) {
+                edge[absolutePoints].push(point);
+            }
+            else {
+                edge[absolutePoints][edge[absolutePoints].length - 1] = point;
+            }
+        }
+    }
+    updateFixedTerminalPoint(edge, source) {
+        this.setAbsoluteTerminalPoint(this.getFixedTerminalPoint(), source, edge);
+    }
+    updateFixedTerminalPoints(connectors, diagram) {
+        this.updateFixedTerminalPoint(connectors, true);
+        this.updateFixedTerminalPoint(connectors, false);
+    }
+    updatePoints(edge, points) {
+        let absolutePoints = 'absolutePoints';
+        if (edge != null) {
+            let pts = [];
+            pts.push(edge[absolutePoints][0]);
+            for (let i = 0; i < points.length; i++) {
+                if (points[i] != null) {
+                    let pt = points[i];
+                    pts.push(pt);
+                }
+            }
+            let tmp = edge[absolutePoints];
+            pts.push(tmp[tmp.length - 1]);
+            edge[absolutePoints] = pts;
+        }
+    }
+    updateFloatingTerminalPoint(edge, start, end, source) {
+        this.setAbsoluteTerminalPoint(this.getFloatingTerminalPoint(edge, start, end, source), source, edge);
+    }
+    getNextPoint(edge, opposite, source) {
+        let absolutePoints = 'absolutePoints';
+        let pts = edge[absolutePoints];
+        let point = null;
+        if (pts != null && pts.length >= 2) {
+            let count = pts.length;
+            point = pts[(source) ? Math.min(1, count - 1) : Math.max(0, count - 2)];
+        }
+        return point;
+    }
+    getCenterX(start) {
+        if (start.offsetX) {
+            return start.offsetX + start.width;
+        }
+        else {
+            return start.x + start.width;
+        }
+    }
+    getCenterY(start) {
+        if (start.offsetY) {
+            return start.offsetY + start.height;
+        }
+        else {
+            return start.y + start.height;
+        }
+    }
+    getPerimeterBounds(border) {
+        let newBounds;
+        newBounds = border.wrapper.outerBounds;
+        return newBounds;
+    }
+    getPerimeterFunction(bounds, next, orthogonal) {
+        let cx = this.getCenterX(bounds);
+        let cy = this.getCenterY(bounds);
+        let dx = next.x - cx;
+        let dy = next.y - cy;
+        let alpha = Math.atan2(dy, dx);
+        let point = this.getPointvalue(0, 0);
+        let pi = Math.PI;
+        let pi2 = Math.PI / 2;
+        let beta = pi2 - alpha;
+        let t = Math.atan2(bounds.height, bounds.width);
+        if (alpha < -pi + t || alpha > pi - t) {
+            // Left edge
+            point.x = bounds.x;
+            point.y = cy - bounds.width * Math.tan(alpha) / 2;
+        }
+        else if (alpha < -t) {
+            // Top Edge
+            point.y = bounds.y;
+            point.x = cx - bounds.height * Math.tan(beta) / 2;
+        }
+        else if (alpha < t) {
+            // Right Edge
+            point.x = bounds.x + bounds.width;
+            point.y = cy + bounds.width * Math.tan(alpha) / 2;
+        }
+        else {
+            // Bottom Edge
+            point.y = bounds.y + bounds.height;
+            point.x = cx + bounds.height * Math.tan(beta) / 2;
+        }
+        if (orthogonal) {
+            if (next.x >= bounds.x &&
+                next.x <= bounds.x + bounds.width) {
+                point.x = next.x;
+            }
+            else if (next.y >= bounds.y &&
+                next.y <= bounds.y + bounds.height) {
+                point.y = next.y;
+            }
+            if (next.x < bounds.x) {
+                point.x = bounds.x;
+            }
+            else if (next.x > bounds.x + bounds.width) {
+                point.x = bounds.x + bounds.width;
+            }
+            if (next.y < bounds.y) {
+                point.y = bounds.y;
+            }
+            else if (next.y > bounds.y + bounds.height) {
+                point.y = bounds.y + bounds.height;
+            }
+        }
+        return point;
+    }
+    getPerimeterPoint(terminal, next, orthogonal) {
+        let point = null;
+        if (terminal != null) {
+            if (next != null) {
+                let bounds = this.getPerimeterBounds(terminal);
+                if (bounds.width > 0 || bounds.height > 0) {
+                    point = this.getPointvalue(next.x, next.y);
+                    point = this.getPerimeterFunction(bounds, point, orthogonal);
+                }
+            }
+        }
+        return point;
+    }
+    getFloatingTerminalPoint(edge, start, end, source) {
+        start = start;
+        let next = this.getNextPoint(edge, end, source);
+        let orth = 1;
+        let alpha = 0;
+        let pt = this.getPerimeterPoint(start, next, alpha === 0 && orth);
+        return pt;
+    }
+    updateFloatingTerminalPoints(state, source, target) {
+        let absolutePoints = 'absolutePoints';
+        let pts = state[absolutePoints];
+        let p0 = pts[0];
+        let pe = pts[pts.length - 1];
+        if (pe == null && target != null) {
+            this.updateFloatingTerminalPoint(state, target, source, false);
+        }
+        if (p0 == null && source != null) {
+            this.updateFloatingTerminalPoint(state, source, target, true);
+        }
+    }
+    getConnectorPoints(connectors, diagram) {
+        let absolutePoints = 'absolutePoints';
+        let geometry = 'geometry';
+        this.updateFixedTerminalPoints(connectors, diagram);
+        this.updatePoints(connectors, connectors[geometry].points);
+        this.updateFloatingTerminalPoints(connectors, diagram.nameTable[connectors.sourceID], diagram.nameTable[connectors.targetID]);
+        connectors[absolutePoints][0].y = connectors.sourcePoint.y;
+        connectors[absolutePoints][connectors[absolutePoints].length - 1].y = connectors.targetPoint.y;
+    }
+    adjustSegmentPoints(temppoints, points, diagram) {
+        if (diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop') {
+            temppoints[0].x = points[0].x;
+            temppoints[1].x = points[1].x;
+            temppoints[temppoints.length - 1].x = points[points.length - 1].x;
+            temppoints[temppoints.length - 2].x = points[points.length - 2].x;
+            if (diagram.layout.orientation === 'TopToBottom') {
+                temppoints[temppoints.length - 2].y = temppoints[temppoints.length - 1].y - diagram.layout.verticalSpacing / 2;
+                temppoints[1].y = temppoints[0].y + diagram.layout.verticalSpacing / 2;
+            }
+            else {
+                temppoints[1].y = temppoints[0].y - diagram.layout.verticalSpacing / 2;
+                temppoints[temppoints.length - 2].y = temppoints[temppoints.length - 1].y + diagram.layout.verticalSpacing / 2;
+            }
+            temppoints[2].y = temppoints[1].y;
+            temppoints[temppoints.length - 3].y = temppoints[temppoints.length - 2].y;
+        }
+        if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
+            temppoints[0] = points[0];
+            temppoints[1] = points[1];
+            temppoints[temppoints.length - 1] = points[points.length - 1];
+            temppoints[temppoints.length - 2] = points[points.length - 2];
+            if (diagram.layout.orientation === 'RightToLeft') {
+                temppoints[1].x = temppoints[0].x - diagram.layout.verticalSpacing / 2;
+            }
+            if (diagram.layout.orientation === 'LeftToRight') {
+                temppoints[1].x = temppoints[0].x + diagram.layout.verticalSpacing / 2;
+            }
+            temppoints[2].x = temppoints[1].x;
+            if (diagram.layout.orientation === 'RightToLeft') {
+                temppoints[temppoints.length - 2].x = temppoints[temppoints.length - 1].x + diagram.layout.verticalSpacing / 2;
+            }
+            if (diagram.layout.orientation === 'LeftToRight') {
+                temppoints[temppoints.length - 2].x = temppoints[temppoints.length - 1].x - diagram.layout.verticalSpacing / 2;
+            }
+            temppoints[temppoints.length - 3].x = temppoints[temppoints.length - 2].x;
+        }
+    }
+    updateConnectorSegmentPoints(temppoints, diagram) {
+        if (temppoints.length > 1) {
+            if ((diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop')) {
+                for (let i = 1; i < temppoints.length - 1; i = i + 2) {
+                    if (temppoints[i].y !== temppoints[i + 1].y && (diagram.layout.orientation === 'TopToBottom'
+                        || diagram.layout.orientation === 'BottomToTop')) {
+                        temppoints[i + 1].y = temppoints[i].y;
+                    }
+                }
+            }
+            else {
+                let check = false;
+                for (let i = temppoints.length - 1; i > 1; i = i = i - 2) {
+                    if (diagram.layout.orientation === 'RightToLeft' || diagram.layout.orientation === 'LeftToRight') {
+                        if (!check) {
+                            temppoints[i - 1].x = temppoints[i - 2].x;
+                            check = true;
+                        }
+                        else {
+                            temppoints[i - 2].x = temppoints[i - 1].x;
+                            check = false;
+                        }
+                    }
+                    else {
+                        temppoints[i + 1].x = temppoints[i].x;
+                    }
+                }
+            }
+        }
+    }
+    updateConnectorSegmentPoint(connector, diagram) {
+        let absolutePoints = 'absolutePoints';
+        let segments = [];
+        for (let i = 0; i < connector[absolutePoints].length - 1; i++) {
+            let point1 = connector[absolutePoints][i];
+            let point2 = connector[absolutePoints][i + 1];
+            let length = findDistance(point1, point2);
+            let direction = getConnectorDirection(point1, point2);
+            if (i === connector[absolutePoints].length - 2) {
+                if ((diagram.layout.orientation === 'TopToBottom' && direction === 'Bottom')
+                    || (diagram.layout.orientation === 'RightToLeft' && direction === 'Left')
+                    || (diagram.layout.orientation === 'LeftToRight' && direction === 'Right')
+                    || (diagram.layout.orientation === 'BottomToTop' && direction === 'Top')) {
+                    length = length / 2;
+                }
+            }
+            let tempSegment = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
+            tempSegment.length = length;
+            tempSegment.direction = direction;
+            segments.push(tempSegment);
+        }
+        connector.segments = segments;
+        connector.type = 'Orthogonal';
+        diagram.connectorPropertyChange(connector, {}, {
+            type: 'Orthogonal',
+            segments: connector.segments
+        });
+    }
+    /** @private */
+    resetConnectorSegments(connector) {
+        let segements = connector.segments;
+        for (let i = segements.length; i > 1; i--) {
+            segements.splice(i - 1, 1);
+        }
+    }
+    /* tslint:disable */
+    /** @private */
+    resetRoutingSegments(connector, diagram, points) {
+        if (connector['levelSkip']) {
+            let absolutePoints = 'absolutePoints';
+            let temppoints;
+            this.getConnectorPoints(connector, diagram);
+            temppoints = connector[absolutePoints];
+            this.updateConnectorSegmentPoints(temppoints, diagram);
+            this.adjustSegmentPoints(temppoints, points, diagram);
+            this.updateConnectorSegmentPoint(connector, diagram);
+        }
+    }
+    /* tslint:enable */
     /** @private */
     arrangeElements(matrixModel, layout) {
         let layoutSettings = matrixModel.model.layout;
@@ -54468,6 +54794,38 @@ class HierarchicalLayoutUtil {
     constructor() {
         this.nameTable = {};
         this.crossReduction = new CrossReduction();
+        /**
+         * The preferred vertical offset between edges exiting a vertex Default is 2.
+         */
+        this.previousEdgeOffset = 6;
+        /**
+         * The preferred horizontal distance between edges exiting a vertex Default is 5.
+         */
+        this.previousEdgeDistance = 5;
+        /**
+         * Holds the collection vertices, that are equivalent to nodes to be arranged
+         */
+        this.jettyPositions = {};
+        /**
+         * Internal cache of bottom-most value of Y for each rank
+         */
+        this.rankBottomY = null;
+        /**
+         * Internal cache of bottom-most value of X for each rank
+         */
+        this.limitX = null;
+        /**
+         * Internal cache of top-most values of Y for each rank
+         */
+        this.rankTopY = null;
+        /**
+         * The minimum parallelEdgeSpacing value is 12.
+         */
+        this.parallelEdgeSpacing = 10;
+        /**
+         * The minimum distance for an edge jetty from a vertex Default is 12.
+         */
+        this.minEdgeJetty = 12;
     }
     /**
      * Defines a vertex that is equivalent to a node object
@@ -54635,16 +54993,20 @@ class HierarchicalLayoutUtil {
         }
         return rect1;
     }
+    /* tslint:disable */
     /**
      * Initializes the layouting process
      * @private
      */
     doLayout(nodes, nameTable, layoutProp, viewPort, lineDistribution) {
         this.nameTable = nameTable;
+        let canEnableRouting = layoutProp.enableRouting;
         let layout = {
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
-            orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top
+            orientation: layoutProp.orientation, marginX: layoutProp.margin.left, marginY: layoutProp.margin.top,
+            enableLayoutRouting: canEnableRouting
         };
+        let model;
         if (lineDistribution) {
             lineDistribution.edgeMapper = [];
         }
@@ -54677,19 +55039,20 @@ class HierarchicalLayoutUtil {
         let limit = { marginX: 0, marginY: 0 };
         let tmp = [];
         let checkLinear = false;
+        let matrixModel;
         for (let i = 0; i < hierarchyVertices.length; i++) {
             let vertexSet = hierarchyVertices[i];
             for (let key of Object.keys(vertexSet)) {
                 tmp.push(vertexSet[key]);
             }
-            if (layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) {
+            if ((layoutProp.arrangement === 'Linear' && i === hierarchyVertices.length - 1) || canEnableRouting) {
                 checkLinear = true;
             }
-            let model = new MultiParentModel(this, tmp, candidateRoots, layout);
+            model = new MultiParentModel(this, tmp, candidateRoots, layout);
             this.cycleStage(model);
             this.layeringStage(model);
             if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
-                let matrixModel = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
+                matrixModel = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
                 lineDistribution.arrangeElements(matrixModel, layoutProp);
             }
             else {
@@ -54714,6 +55077,9 @@ class HierarchicalLayoutUtil {
                 let x = dx;
                 let y = dy;
                 if (layout.orientation === 'BottomToTop') {
+                    if (canEnableRouting) {
+                        clnode.geometry.y = modelBounds.height - dy - dnode.actualSize.height / 2;
+                    }
                     y = modelBounds.height - dy;
                 }
                 else if (layout.orientation === 'RightToLeft') {
@@ -54728,8 +55094,557 @@ class HierarchicalLayoutUtil {
                 this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
             }
         }
-        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint')) {
+        if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || canEnableRouting) {
             lineDistribution.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
+        }
+        if (canEnableRouting) {
+            let vertices = {};
+            let matrixrow1;
+            for (let p = 0; p < matrixModel.matrix.length; p++) {
+                matrixrow1 = matrixModel.matrix[p].value;
+                for (let q = 0; q < matrixrow1.length; q++) {
+                    let matrixCell = matrixrow1[q];
+                    for (let r = 0; r < matrixCell.cells.length; r++) {
+                        let cell = matrixCell.cells[r];
+                        let type = this.getType(cell.type);
+                        if (type === 'internalVertex') {
+                            let internalVertex = cell;
+                            vertices[internalVertex.id] = internalVertex;
+                        }
+                    }
+                }
+            }
+            this.updateRankValuess(model);
+            for (let i = 0, a = Object.keys(vertices); i < a.length; i++) {
+                let key = a[i];
+                this.setVertexLocationValue(vertices[key], layoutProp.orientation, modelBounds);
+            }
+            this.localEdgeProcessing(model, vertices);
+            this.assignRankOffset(model);
+            this.updateEdgeSetXYValue(model);
+            let edges = this.getValues(model.edgeMapper);
+            for (let i = 0; i < edges.length; i++) {
+                if ((edges[i]).x.length > 0) {
+                    for (let j = 0; j < (edges[i]).x.length; j++) {
+                        if (layoutProp.orientation !== 'RightToLeft' && layoutProp.orientation !== 'LeftToRight') {
+                            (edges[i]).x[j] = (edges[i]).x[j] + layout.marginX;
+                        }
+                        else if (layoutProp.orientation === 'LeftToRight') {
+                            (edges[i]).x[j] = (edges[i]).x[j] + layoutProp.verticalSpacing / 2;
+                        }
+                        else {
+                            (edges[i]).x[j] = (edges[i]).x[j] + layoutProp.verticalSpacing / 2;
+                        }
+                    }
+                }
+                this.setEdgePosition(edges[i], model, layout);
+            }
+            for (let p = 0; p < this.vertices.length; p++) {
+                let clnode = this.vertices[p];
+                if (clnode.outEdges.length > 1) {
+                    this.updateMultiOutEdgesPoints(clnode);
+                }
+            }
+        }
+    }
+    setEdgeXY(ranks, node, spacing, layer) {
+        if (ranks && node.source.id) {
+            let targetValue;
+            let sourceValue;
+            for (let i = 0; i < ranks.length; i++) {
+                for (let k = 0; k < ranks[i].length; k++) {
+                    if (ranks[i][k].id === node.target.id || ranks[i][k].id === node.source.id) {
+                        if (ranks[i][k].id === node.target.id && targetValue === undefined) {
+                            targetValue = i;
+                        }
+                        if (ranks[i][k].id === node.source.id && sourceValue === undefined) {
+                            sourceValue = i;
+                        }
+                    }
+                }
+            }
+            let rankOffsetValue;
+            for (let m = targetValue; m <= sourceValue; m++) {
+                if (rankOffsetValue === undefined) {
+                    rankOffsetValue = this[m + '_RankOffset'];
+                }
+                if (rankOffsetValue !== undefined && rankOffsetValue < this[m + '_RankOffset']) {
+                    rankOffsetValue = this[m + '_RankOffset'];
+                }
+            }
+            if (this['edges'] === undefined) {
+                this['edges'] = {};
+            }
+            this['edges'][(node).ids[0]] = { x: node.x, y: 0 };
+            let value = this.resetOffsetXValue(rankOffsetValue, spacing / 10);
+            node.x[layer - node.minRank - 1] = value;
+            for (let k = 0; k < (node).edges.length; k++) {
+                (node).edges[k]['levelSkip'] = true;
+            }
+        }
+    }
+    resetOffsetXValue(value, spacing) {
+        for (let i = 0, a = Object.keys(this['edges']); i < a.length; i++) {
+            let key = a[i];
+            let length = this['edges'][key].x;
+            for (let j = 0; j < length.length; j++) {
+                let offsetValue;
+                if (this['edges'][key].x[j] === value) {
+                    offsetValue = value + spacing;
+                    offsetValue = this.resetOffsetXValue(offsetValue, spacing);
+                    return offsetValue;
+                }
+            }
+        }
+        return value;
+    }
+    setEdgePosition(cell, model, layout) {
+        // For parallel edges we need to seperate out the points a
+        // little
+        let offsetX = 0;
+        // Only set the edge control points once
+        if (cell.temp[0] !== 101207) {
+            if (cell.maxRank === undefined) {
+                cell.maxRank = -1;
+            }
+            if (cell.minRank === undefined) {
+                cell.minRank = -1;
+            }
+            let maxRank = cell.maxRank;
+            let minRank = cell.minRank;
+            if (maxRank === minRank) {
+                maxRank = cell.source.maxRank;
+                minRank = cell.target.minRank;
+            }
+            let parallelEdgeCount = 0;
+            let jettys = this.jettyPositions[cell.ids[0]];
+            if (cell.isReversed === undefined) {
+                cell.isReversed = false;
+            }
+            else {
+                cell.isReversed = true;
+            }
+            let source = cell.isReversed ? cell.target.cell : cell.source.cell;
+            let layoutReversed = false;
+            if (model.layout.orientation === 'TopToBottom' || model.layout.orientation === 'LeftToRight') {
+                if (model.layout.orientation === 'TopToBottom') {
+                    layoutReversed = false;
+                }
+                if (model.layout.orientation === 'LeftToRight') {
+                    if (!cell.isReversed) {
+                        layoutReversed = false;
+                    }
+                    else {
+                        layoutReversed = false;
+                    }
+                }
+            }
+            else {
+                if (!cell.isReversed) {
+                    layoutReversed = true;
+                }
+            }
+            for (let i = 0; i < cell.edges.length; i++) {
+                let realEdge = cell.edges[i];
+                let realSource = this.getVisibleTerminal(realEdge, true);
+                //List oldPoints = graph.getPoints(realEdge);
+                let newPoints = [];
+                // Single length reversed edges end up with the jettys in the wrong
+                // places. Since single length edges only have jettys, not segment
+                // control points, we just say the edge isn't reversed in this section
+                let reversed = cell.isReversed;
+                // if(cell.isReversed===undefined){
+                //     reversed = false
+                // }else{
+                //     reversed =cell.isReversed
+                // }
+                if (realSource !== source) {
+                    // The real edges include all core model edges and these can go
+                    // in both directions. If the source of the hierarchical model edge
+                    // isn't the source of the specific real edge in this iteration
+                    // treat if as reversed
+                    reversed = !reversed;
+                }
+                // First jetty of edge
+                if (jettys != null) {
+                    let arrayOffset = reversed ? 2 : 0;
+                    let y = reversed ?
+                        (layoutReversed ? this.rankBottomY[minRank] : this.rankTopY[minRank]) :
+                        (layoutReversed ? this.rankTopY[maxRank] : this.rankBottomY[maxRank]);
+                    let jetty = jettys[parallelEdgeCount * 4 + 1 + arrayOffset];
+                    if (reversed !== layoutReversed) {
+                        jetty = -jetty;
+                    }
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        y += jetty;
+                    }
+                    let x = jettys[parallelEdgeCount * 4 + arrayOffset];
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        newPoints.push(this.getPointvalue(x, y + layout.marginY));
+                    }
+                    else {
+                        if (layout.orientation === 'LeftToRight') {
+                            newPoints.push(this.getPointvalue(y + jetty, x + layout.marginY));
+                        }
+                        else {
+                            newPoints.push(this.getPointvalue(y, x + layout.marginY));
+                        }
+                    }
+                }
+                let loopStart = cell.x.length - 1;
+                let loopLimit = -1;
+                let loopDelta = -1;
+                let currentRank = cell.maxRank - 1;
+                if (reversed) {
+                    loopStart = 0;
+                    loopLimit = cell.x.length;
+                    loopDelta = 1;
+                    currentRank = cell.minRank + 1;
+                }
+                // Reversed edges need the points inserted in
+                // reverse order
+                for (let j = loopStart; (cell.maxRank !== cell.minRank) && j !== loopLimit; j += loopDelta) {
+                    // The horizontal position in a vertical layout
+                    let positionX = cell.x[j] + offsetX;
+                    // This cell.x determines the deviated points of the connectors and jetty positions 
+                    //determine the src and targetgeo points .
+                    // Work out the vertical positions in a vertical layout
+                    // in the edge buffer channels above and below this rank
+                    let topChannelY = (this.rankTopY[currentRank] + this.rankBottomY[currentRank + 1]) / 2.0;
+                    let bottomChannelY = (this.rankTopY[currentRank - 1] + this.rankBottomY[currentRank]) / 2.0;
+                    if (reversed) {
+                        let tmp = topChannelY;
+                        topChannelY = bottomChannelY;
+                        bottomChannelY = tmp;
+                    }
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        newPoints.push(this.getPointvalue(positionX, topChannelY + layout.marginY));
+                        newPoints.push(this.getPointvalue(positionX, bottomChannelY + layout.marginY));
+                    }
+                    else {
+                        newPoints.push(this.getPointvalue(topChannelY, positionX + layout.marginY));
+                        newPoints.push(this.getPointvalue(bottomChannelY, positionX + layout.marginY));
+                    }
+                    this.limitX = Math.max(this.limitX, positionX);
+                    currentRank += loopDelta;
+                }
+                // Second jetty of edge
+                if (jettys != null) {
+                    let arrayOffset = reversed ? 2 : 0;
+                    let rankY = reversed ?
+                        (layoutReversed ? this.rankTopY[maxRank] : this.rankBottomY[maxRank]) :
+                        (layoutReversed ? this.rankBottomY[minRank] : this.rankTopY[minRank]);
+                    let jetty = jettys[parallelEdgeCount * 4 + 3 - arrayOffset];
+                    if (reversed !== layoutReversed) {
+                        jetty = -jetty;
+                    }
+                    let y = rankY - jetty;
+                    let x = jettys[parallelEdgeCount * 4 + 2 - arrayOffset];
+                    if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                        newPoints.push(this.getPointvalue(x, y + layout.marginY));
+                    }
+                    else {
+                        newPoints.push(this.getPointvalue(y, x + layout.marginY));
+                    }
+                }
+                this.setEdgePoints(realEdge, newPoints, model);
+                // Increase offset so next edge is drawn next to
+                // this one
+                if (offsetX === 0.0) {
+                    offsetX = this.parallelEdgeSpacing;
+                }
+                else if (offsetX > 0) {
+                    offsetX = -offsetX;
+                }
+                else {
+                    offsetX = -offsetX + this.parallelEdgeSpacing;
+                }
+                parallelEdgeCount++;
+            }
+            cell.temp[0] = 101207;
+        }
+    }
+    /* tslint:enable */
+    getPointvalue(x, y) {
+        return { 'x': Number(x) || 0, 'y': Number(y) || 0 };
+    }
+    updateEdgeSetXYValue(model) {
+        if (model.layout.enableLayoutRouting) {
+            let isHorizontal = false;
+            if (model.layout.orientation === 'LeftToRight' || model.layout.orientation === 'RightToLeft') {
+                isHorizontal = true;
+            }
+            for (let i = 0; i < model.ranks.length; i++) {
+                let rank = model.ranks[i];
+                for (let k = 0; k < rank.length; k++) {
+                    let cell = rank[k];
+                    if ((cell).edges && (cell).edges.length > 0) {
+                        let spacing = model.layout.horizontalSpacing > 0 ? (model.layout.horizontalSpacing / 2) : 15;
+                        let check = true;
+                        if (!(cell.minRank === i - 1 || cell.maxRank === i - 1)) {
+                            check = false;
+                        }
+                        if (check) {
+                            this.setXY(cell, i, undefined, isHorizontal ? true : false, model.ranks, spacing);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    getPreviousLayerConnectedCells(layer, cell) {
+        if (cell.previousLayerConnectedCells == null) {
+            cell.previousLayerConnectedCells = [];
+            cell.previousLayerConnectedCells[0] = [];
+            for (let i = 0; i < cell.connectsAsSource.length; i++) {
+                let edge = cell.connectsAsSource[i];
+                if (edge.minRank === -1 || edge.minRank === layer - 1) {
+                    // No dummy nodes in edge, add node of other side of edge
+                    cell.previousLayerConnectedCells[0].push(edge.target);
+                }
+                else {
+                    // Edge spans at least two layers, add edge
+                    cell.previousLayerConnectedCells[0].push(edge);
+                }
+            }
+        }
+        return cell.previousLayerConnectedCells[0];
+    }
+    compare(a, b) {
+        if (a != null && b != null) {
+            if (b.weightedValue > a.weightedValue) {
+                return -1;
+            }
+            else if (b.weightedValue < a.weightedValue) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+    /* tslint:disable */
+    localEdgeProcessing(model, vertices) {
+        // Iterate through each vertex, look at the edges connected in
+        // both directions.
+        for (let rankIndex = 0; rankIndex < model.ranks.length; rankIndex++) {
+            let rank = model.ranks[rankIndex];
+            for (let cellIndex = 0; cellIndex < rank.length; cellIndex++) {
+                let cell = rank[cellIndex];
+                if (this.crossReduction.isVertex(cell)) {
+                    let currentCells = this.getPreviousLayerConnectedCells(rankIndex, cell);
+                    let currentRank = rankIndex - 1;
+                    // Two loops, last connected cells, and next
+                    for (let k = 0; k < 2; k++) {
+                        if (currentRank > -1
+                            && currentRank < model.ranks.length
+                            && currentCells != null
+                            && currentCells.length > 0) {
+                            let sortedCells = [];
+                            for (let j = 0; j < currentCells.length; j++) {
+                                let sorter = this.weightedCellSorter(currentCells[j], this.getX(currentRank, currentCells[j]));
+                                sortedCells.push(sorter);
+                            }
+                            sortedCells.sort(this.compare);
+                            cell.width = vertices[cell.id].cell.geometry.width;
+                            cell.height = vertices[cell.id].cell.geometry.height;
+                            let leftLimit;
+                            if (model.layout.orientation === 'TopToBottom' || model.layout.orientation === 'BottomToTop') {
+                                cell.x[0] = vertices[cell.id].cell.geometry.x + vertices[cell.id].cell.geometry.width / 2;
+                                leftLimit = cell.x[0] - cell.width / 2 + vertices[cell.id].cell.geometry.height / 2;
+                            }
+                            else {
+                                cell.x[0] = vertices[cell.id].cell.geometry.y;
+                                leftLimit = cell.x[0];
+                            }
+                            let rightLimit = leftLimit + cell.width;
+                            // Connected edge count starts at 1 to allow for buffer
+                            // with edge of vertex
+                            let connectedEdgeCount = 0;
+                            let connectedEdges = [];
+                            // Calculate width requirements for all connected edges
+                            for (let j = 0; j < sortedCells.length; j++) {
+                                let innerCell = sortedCells[j].cell;
+                                let connections;
+                                if (this.crossReduction.isVertex(innerCell)) {
+                                    // Get the connecting edge
+                                    if (k === 0) {
+                                        connections = cell.connectsAsSource;
+                                    }
+                                    else {
+                                        connections = cell.connectsAsTarget;
+                                    }
+                                    for (let connIndex = 0; connIndex < connections.length; connIndex++) {
+                                        if (connections[connIndex].source === innerCell
+                                            || connections[connIndex].target === innerCell) {
+                                            connectedEdgeCount += connections[connIndex].edges
+                                                .length;
+                                            connectedEdges.push(connections[connIndex]);
+                                        }
+                                    }
+                                }
+                                else {
+                                    connectedEdgeCount += innerCell.edges.length;
+                                    connectedEdges.push(innerCell);
+                                }
+                            }
+                            let requiredWidth = (connectedEdgeCount + 1)
+                                * this.previousEdgeDistance;
+                            // Add a buffer on the edges of the vertex if the edge count allows
+                            if (cell.width > requiredWidth
+                                + (2 * this.previousEdgeDistance)) {
+                                leftLimit += this.previousEdgeDistance;
+                                rightLimit -= this.previousEdgeDistance;
+                            }
+                            let availableWidth = rightLimit - leftLimit;
+                            let edgeSpacing = availableWidth / connectedEdgeCount;
+                            let currentX = leftLimit + edgeSpacing / 2.0;
+                            let currentYOffset = this.minEdgeJetty - this.previousEdgeOffset;
+                            for (let j = 0; j < connectedEdges.length; j++) {
+                                let numActualEdges = connectedEdges[j].edges
+                                    .length;
+                                if (this.jettyPositions === undefined) {
+                                    this.jettyPositions = {};
+                                }
+                                let pos = this.jettyPositions[connectedEdges[j].ids[0]];
+                                if (pos == null) {
+                                    pos = [];
+                                    this.jettyPositions[connectedEdges[j].ids[0]] = pos;
+                                }
+                                if (j < connectedEdgeCount / 2) {
+                                    currentYOffset += this.previousEdgeOffset;
+                                }
+                                else if (j > connectedEdgeCount / 2) {
+                                    currentYOffset -= this.previousEdgeOffset;
+                                }
+                                // Ignore the case if equals, this means the second of 2
+                                // jettys with the same y (even number of edges)
+                                for (let m = 0; m < numActualEdges; m++) {
+                                    pos[m * 4 + k * 2] = currentX;
+                                    currentX += edgeSpacing;
+                                    pos[m * 4 + k * 2 + 1] = currentYOffset;
+                                }
+                                
+                            }
+                        }
+                        currentCells = this.getNextLayerConnectedCells(rankIndex, cell);
+                        currentRank = rankIndex + 1;
+                    }
+                }
+            }
+        }
+    }
+    /* tslint:enable */
+    updateMultiOutEdgesPoints(clnode) {
+        for (let i = 0; i < clnode.outEdges.length / 2; i++) {
+            let connector1 = this.nameTable[clnode.outEdges[i]];
+            let connector2 = this.nameTable[clnode.outEdges[clnode.outEdges.length - (i + 1)]];
+            let geometry = 'geometry';
+            connector2[geometry].points[0].y = connector1[geometry].points[0].y;
+        }
+    }
+    getNextLayerConnectedCells(layer, cell) {
+        if (cell.nextLayerConnectedCells == null) {
+            cell.nextLayerConnectedCells = [];
+            cell.nextLayerConnectedCells[0] = [];
+            for (let i = 0; i < cell.connectsAsTarget.length; i++) {
+                let edge = cell.connectsAsTarget[i];
+                if (edge.maxRank === -1 || edge.maxRank === layer + 1) {
+                    // Either edge is not in any rank or
+                    // no dummy nodes in edge, add node of other side of edge
+                    cell.nextLayerConnectedCells[0].push(edge.source);
+                }
+                else {
+                    // Edge spans at least two layers, add edge
+                    cell.nextLayerConnectedCells[0].push(edge);
+                }
+            }
+        }
+        return cell.nextLayerConnectedCells[0];
+    }
+    getX(layer, cell) {
+        if (this.crossReduction.isVertex(cell)) {
+            return cell.x[0];
+        }
+        else if (!this.crossReduction.isVertex(cell)) {
+            return cell.x[layer - cell.minRank - 1] || cell.temp[layer - cell.minRank - 1];
+        }
+        return 0.0;
+    }
+    getGeometry(edge) {
+        let geometry = 'geometry';
+        return edge[geometry];
+    }
+    setEdgePoints(edge, points, model) {
+        if (edge != null) {
+            let geometryValue = 'geometry';
+            let geometry = this.getGeometry(edge);
+            if (points != null) {
+                for (let i = 0; i < points.length; i++) {
+                    points[i].x = points[i].x;
+                    points[i].y = points[i].y;
+                }
+            }
+            geometry.points = points;
+            edge[geometryValue] = geometry;
+        }
+    }
+    assignRankOffset(model) {
+        if (model) {
+            for (let i = 0; i < model.ranks.length; i++) {
+                this.rankCoordinatesAssigment(i, model);
+            }
+        }
+    }
+    rankCoordinatesAssigment(rankValue, model) {
+        let rank = model.ranks[rankValue];
+        let spacing = model.layout.horizontalSpacing;
+        let localOffset;
+        for (let i = 0; i < rank.length; i++) {
+            if (this[rankValue + '_' + 'RankOffset'] === undefined) {
+                this[rankValue + '_' + 'RankOffset'] = 0;
+            }
+            localOffset = rank[i].x[0];
+            if (this[rankValue + '_' + 'RankOffset'] < localOffset) {
+                this[rankValue + '_' + 'RankOffset'] = localOffset + rank[i].width / 2 + spacing;
+            }
+        }
+    }
+    getType(type) {
+        if (type === 'internalVertex') {
+            return 'internalVertex';
+        }
+        else {
+            return 'internalEdge';
+        }
+    }
+    updateRankValuess(model) {
+        this.rankTopY = [];
+        this.rankBottomY = [];
+        for (let i = 0; i < model.ranks.length; i++) {
+            this.rankTopY[i] = Number.MAX_VALUE;
+            this.rankBottomY[i] = -Number.MAX_VALUE;
+        }
+    }
+    setVertexLocationValue(cell, orientation, modelBounds) {
+        let cellGeomtry = cell.cell.geometry;
+        let positionX;
+        let positionY;
+        if (orientation === 'TopToBottom' || orientation === 'BottomToTop') {
+            positionX = cellGeomtry.x;
+            positionY = cellGeomtry.y;
+        }
+        else {
+            positionX = cellGeomtry.y;
+            positionY = cellGeomtry.x;
+        }
+        if (orientation === 'RightToLeft') {
+            positionX = cellGeomtry.y;
+            positionY = modelBounds.width - cellGeomtry.x - cellGeomtry.height;
+            this.rankBottomY[cell.minRank] = Math.max(this.rankBottomY[cell.minRank], positionY);
+            this.rankTopY[cell.minRank] = Math.min(this.rankTopY[cell.minRank], positionY + cellGeomtry.height);
+        }
+        else {
+            this.rankTopY[cell.minRank] = Math.min(this.rankTopY[cell.minRank], positionY);
+            this.rankBottomY[cell.minRank] = Math.max(this.rankBottomY[cell.minRank], positionY + cellGeomtry.height);
         }
     }
     matrixModel(options) {
@@ -54970,7 +55885,7 @@ class HierarchicalLayoutUtil {
      * Sets the position of the vertex
      * @private
      */
-    setXY(node, layer, value, isY) {
+    setXY(node, layer, value, isY, ranks, spacing) {
         if (node && node.cell) {
             if (node.cell.inEdges || node.cell.outEdges) {
                 if (isY) {
@@ -54988,6 +55903,9 @@ class HierarchicalLayoutUtil {
                     node.x[layer - node.minRank - 1] = value;
                 }
             }
+        }
+        else {
+            this.setEdgeXY(ranks, node, spacing, layer);
         }
     }
     /**
@@ -55486,8 +56404,9 @@ class MultiParentModel {
         let internalVertices = [];
         this.layout = dlayout;
         this.maxRank = 100000000;
+        this.edgeMapper = { map: {} };
         this.hierarchicalLayout = layout;
-        this.createInternalCells(layout, vertices, internalVertices);
+        this.createInternalCells(layout, vertices, internalVertices, dlayout);
         for (let i = 0; i < vertices.length; i++) {
             let edges = internalVertices[i].connectsAsSource;
             for (let j = 0; j < edges.length; j++) {
@@ -55515,10 +56434,17 @@ class MultiParentModel {
             internalVertices[i].temp[0] = 1;
         }
     }
+    /* tslint:disable */
+    resetEdge(edge) {
+        let geometry = { x: 0, y: 0, width: 0, height: 0, relative: true };
+        let geo = geometry;
+        edge['geometry'] = geo;
+        return edge;
+    }
     /**
      * used to create the duplicate of the edges on the layout model
      */
-    createInternalCells(layout, vertices, internalVertices) {
+    createInternalCells(layout, vertices, internalVertices, dlayout) {
         for (let i = 0; i < vertices.length; i++) {
             internalVertices[i] = {
                 x: [], y: [], temp: [], cell: vertices[i],
@@ -55534,6 +56460,16 @@ class MultiParentModel {
                     let directedEdges = layout.getEdgesBetween(vertices[i], cell, true);
                     if (undirectedEdges != null && undirectedEdges.length > 0 && directedEdges.length * 2 >= undirectedEdges.length) {
                         let internalEdge = { x: [], y: [], temp: [], edges: undirectedEdges, ids: [] };
+                        if (dlayout.enableLayoutRouting) {
+                            for (let k = 0; k < undirectedEdges.length; k++) {
+                                let edge = undirectedEdges[k];
+                                this.setDictionary(this.edgeMapper, undefined, internalEdge, edge.id);
+                                // Resets all point on the edge and disables the edge style
+                                // without deleting it from the cell style
+                                this.resetEdge(edge);
+                            }
+                        }
+                        internalEdge.source = internalVertices[i];
                         for (let m = 0; m < undirectedEdges.length; m++) {
                             internalEdge.ids.push(undirectedEdges[m].id);
                         }
@@ -55550,6 +56486,7 @@ class MultiParentModel {
             internalVertices[i].temp[0] = 0;
         }
     }
+    /* tslint:enable */
     /**
      * used to set the optimum value of each vertex on the layout
      * @private
@@ -55613,11 +56550,18 @@ class MultiParentModel {
     /**
      * used to store the value of th given key on the object
      */
-    setDictionary(dic, key, value) {
-        let id = key.name;
-        let previous = dic.map[id];
-        dic.map[id] = value;
-        return previous;
+    setDictionary(dic, key, value, edgeId) {
+        if (!edgeId) {
+            let id = key.name;
+            let previous = dic.map[id];
+            dic.map[id] = value;
+            return previous;
+        }
+        else {
+            let previous = dic.map[edgeId];
+            dic.map[edgeId] = value;
+            return previous;
+        }
     }
     /**
      * used to store the value of th given key on the object
@@ -58344,7 +59288,7 @@ class Overview extends Component {
         let width = bounds.width;
         let height = bounds.height;
         let w = Math.max(width, this.parent.scroller.viewPortWidth);
-        let h = Math.max(height, this.parent.scroller.viewPortHeight);
+        let h = Math.max(height, this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom);
         let scale = Math.min(Number(this.model.width) / w, Number(this.model.height) / h);
         htmlLayer.style.transform = 'scale(' + scale + ') translate(' + this.parent.scroller.transform.tx + 'px,'
             + (this.parent.scroller.transform.ty) + 'px)';
@@ -58368,7 +59312,7 @@ class Overview extends Component {
         let offheight = Number(this.model.height);
         let scale;
         let w = Math.max(width, this.parent.scroller.viewPortWidth);
-        let h = Math.max(height, this.parent.scroller.viewPortHeight);
+        let h = Math.max(height, this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom);
         this.contentWidth = w = Math.max(w, (offwidth / offheight) * h);
         this.contentHeight = h = Math.max(h, (offheight / offwidth) * w);
         scale = Math.min(offwidth / w, offheight / h);
@@ -58681,5 +59625,5 @@ __decorate$28([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectionPointOrigin, ChildArrangement, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, ScrollActions, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setPortsEdges, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, getPreviewSize, getSymbolSize, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, LineDistribution, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectionPointOrigin, ChildArrangement, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, ScrollActions, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, getSpaceValue, getInterval, setPortsEdges, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, initfixedUserHandlesSymbol, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, cloneSelectedObjects, updatePathElement, checkPort, findPath, getConnectorDirection, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, getPreviewSize, getSymbolSize, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, SymbolSize, SymbolPaletteInfo, FixedUserHandle, NodeFixedUserHandle, ConnectorFixedUserHandle, UserHandle, ToolBase, SelectTool, FixedUserHandleTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, LineDistribution, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, BlazorAnimation, BlazorTooltip, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolDragSize, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

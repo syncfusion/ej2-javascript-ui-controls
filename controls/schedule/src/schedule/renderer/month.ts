@@ -46,6 +46,7 @@ export class Month extends ViewBase implements IRenderer {
         this.parent.notify(event.virtualScroll, e);
         this.scrollTopPanel(<HTMLElement>e.target);
         this.scrollLeftPanel(<HTMLElement>e.target);
+        this.setPersistence();
     }
     public scrollLeftPanel(target: HTMLElement): void {
         let leftPanel: HTMLElement = this.getLeftPanelElement();
@@ -87,6 +88,7 @@ export class Month extends ViewBase implements IRenderer {
                 + this.parent.getMsFromDate(this.parent.selectedDate) + '"]');
             content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
+        this.retainScrollPosition();
     }
     public setContentHeight(content: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
         content.style.height = 'auto';

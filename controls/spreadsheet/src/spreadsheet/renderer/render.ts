@@ -112,7 +112,16 @@ export class Render {
             this.parent.trigger(beforeDataBound, {});
         }
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: true });
+        let sheetsLen: number = this.parent.sheets.length;
         this.parent.getData(`${sheetName}!${address}`).then((values: Map<string, CellModel>): void => {
+            if (args.refresh === 'All') {
+                if (sheetsLen < this.parent.sheets.length) { return; }
+                let sheetIdx: number = this.parent.sheets.indexOf(sheet);
+                if (sheetIdx === -1 || sheetIdx !== this.parent.activeSheetIndex) {
+                    if (sheetIdx > -1) { this.checkTopLeftCell(); }
+                    return;
+                }
+            }
             let indexes: number[] = [args.rowIndex, args.colIndex, ...getCellIndexes(address.split(':')[1])];
             switch (args.refresh) {
                 case 'All':

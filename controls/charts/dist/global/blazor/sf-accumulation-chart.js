@@ -14,11 +14,189 @@ var ChartLocation = /** @class */ (function () {
     }
     return ChartLocation;
 }());
+var SfAccumulationChart = /** @class */ (function () {
+    function SfAccumulationChart(id, element, dotnetRef) {
+        this.chartOnMouseDownRef = null;
+        this.mouseMoveRef = null;
+        this.mouseEndRef = null;
+        this.chartOnMouseClickRef = null;
+        this.chartRightClickRef = null;
+        this.mouseLeaveRef = null;
+        this.chartMouseWheelRef = null;
+        this.domMouseMoveRef = null;
+        this.domMouseUpRef = null;
+        this.longPressBound = null;
+        this.touchObject = null;
+        this.mouseY = 0;
+        this.mouseX = 0;
+        this.eventInterval = 80;
+        this.id = id;
+        this.element = element;
+        this.dotnetref = dotnetRef;
+        this.element.blazor__instance = this;
+    }
+    SfAccumulationChart.prototype.render = function () {
+        this.unWireEvents();
+        this.wireEvents();
+    };
+    SfAccumulationChart.prototype.destroy = function () {
+        this.unWireEvents();
+    };
+    SfAccumulationChart.prototype.wireEvents = function () {
+        var _this = this;
+        var element = document.getElementById(this.id);
+        if (!element) {
+            return;
+        }
+        AccumulationChart.dotnetrefCollection.push({ id: this.id, dotnetref: this.dotnetref });
+        /*! Find the Events type */
+        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        this.chartOnMouseDownRef = this.chartOnMouseDown.bind(this, this.dotnetref, this.id);
+        this.mouseMoveRef = this.mouseMove.bind(this, this.dotnetref, this.id);
+        this.mouseEndRef = this.mouseEnd.bind(this, this.dotnetref, this.id);
+        this.chartOnMouseClickRef = this.chartOnMouseClick.bind(this, this.dotnetref, this.id);
+        this.chartRightClickRef = this.chartRightClick.bind(this, this.dotnetref, this.id);
+        this.mouseLeaveRef = this.mouseLeave.bind(this, this.dotnetref, this.id);
+        /*! Bind the Event handler */
+        element.addEventListener('mousemove', throttle(function (e) {
+            _this.mouseMoveRef(e);
+        }, this.eventInterval));
+        element.addEventListener('touchmove', throttle(function (e) {
+            _this.mouseMoveRef(e);
+        }, this.eventInterval));
+        sf.base.EventHandler.add(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
+        sf.base.EventHandler.add(element, 'click', this.chartOnMouseClickRef);
+        sf.base.EventHandler.add(element, 'contextmenu', this.chartRightClickRef);
+        sf.base.EventHandler.add(element, cancelEvent, this.mouseLeaveRef);
+        AccumulationChart.resizeBound = AccumulationChart.chartResize.bind(this, AccumulationChart.dotnetrefCollection);
+        var resize = (sf.base.Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' :
+            'resize';
+        sf.base.EventHandler.add(window, resize, AccumulationChart.resizeBound);
+        this.longPressBound = this.longPress.bind(this, this.dotnetref, this.id);
+        this.touchObject = new sf.base.Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
+        /*! Apply the style for chart */
+    };
+    SfAccumulationChart.prototype.unWireEvents = function () {
+        var _this = this;
+        var element = document.getElementById(this.id);
+        if (!element) {
+            return;
+        }
+        AccumulationChart.dotnetrefCollection = AccumulationChart.dotnetrefCollection.filter(function (item) {
+            return item.id !== _this.id;
+        });
+        /*! Find the Events type */
+        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! Bind the Event handler */
+        sf.base.EventHandler.remove(element, sf.base.Browser.touchStartEvent, this.chartOnMouseDownRef);
+        element.removeEventListener('mousemove', this.mouseMoveRef);
+        element.removeEventListener('touchmove', this.mouseMoveRef);
+        sf.base.EventHandler.remove(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
+        sf.base.EventHandler.remove(element, 'click', this.chartOnMouseClickRef);
+        sf.base.EventHandler.remove(element, 'contextmenu', this.chartRightClickRef);
+        sf.base.EventHandler.remove(element, cancelEvent, this.mouseLeaveRef);
+        var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
+        sf.base.EventHandler.remove(window, resize, AccumulationChart.resizeBound);
+        if (this.touchObject) {
+            this.touchObject.destroy();
+            this.touchObject = null;
+        }
+        /*! Apply the style for chart */
+    };
+    SfAccumulationChart.prototype.getEventArgs = function (e) {
+        return {
+            type: e.type,
+            clientX: e.clientX,
+            clientY: e.clientY,
+            mouseX: this.mouseX,
+            mouseY: this.mouseY,
+            pointerType: e.pointerType,
+            target: e.target.id,
+            changedTouches: {
+                clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
+                clientY: e.changedTouches ? e.changedTouches[0].clientY : 0
+            }
+        };
+    };
+    SfAccumulationChart.prototype.setMouseXY = function (pageX, pageY) {
+        var svgRect = document.getElementById(this.id + '_svg').getBoundingClientRect();
+        var rect = document.getElementById(this.id).getBoundingClientRect();
+        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+    };
+    SfAccumulationChart.prototype.chartOnMouseDown = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseDown', this.getEventArgs(e));
+        return false;
+    };
+    SfAccumulationChart.prototype.mouseMove = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        var pageX;
+        var pageY;
+        var touchArg;
+        if (e.type === 'touchmove') {
+            this.isTouch = true;
+            touchArg = e;
+            pageX = touchArg.changedTouches[0].clientX;
+            pageY = touchArg.changedTouches[0].clientY;
+        }
+        else {
+            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || this.isTouch;
+            pageX = e.clientX;
+            pageY = e.clientY;
+        }
+        if (document.getElementById(this.id + '_svg')) {
+            this.setMouseXY(pageX, pageY);
+            this.dotnetref.invokeMethodAsync('OnChartMouseMove', this.getEventArgs(e));
+        }
+        return false;
+    };
+    SfAccumulationChart.prototype.mouseEnd = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseEnd', this.getEventArgs(e));
+        return false;
+    };
+    SfAccumulationChart.prototype.chartOnMouseClick = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseClick', this.getEventArgs(e));
+        return false;
+    };
+    SfAccumulationChart.prototype.chartRightClick = function (dotnetref, id, event) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartRightClick', this.getEventArgs(event));
+        return false;
+    };
+    SfAccumulationChart.prototype.mouseLeave = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e));
+        return false;
+    };
+    SfAccumulationChart.prototype.longPress = function (dotnetref, id, e) {
+        this.dotnetref = dotnetref;
+        this.id = id;
+        this.dotnetref.invokeMethodAsync('OnChartLongPress', e);
+        return false;
+    };
+    return SfAccumulationChart;
+}());
 var AccumulationChart = {
+    initialize: function (element, dotnetRef) {
+        var instance = new SfAccumulationChart(element.id, element, dotnetRef);
+        this.getAllCharacters();
+        instance.render();
+    },
+    destroy: function (element) {
+        if (!sf.base.isNullOrUndefined(element.blazor__instance)) {
+            element.blazor__instance.destroy();
+        }
+    },
     id: '',
-    mouseY: 0,
-    mouseX: 0,
-    eventInterval: 80,
     getElementBoundsById: function (id, isSetId) {
         if (isSetId === void 0) { isSetId = true; }
         if (isSetId) {
@@ -38,12 +216,13 @@ var AccumulationChart = {
         }
         return { width: 0, height: 0, left: 0, top: 0, right: 0, bottom: 0 };
     },
-    charCollection: [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '"', '#', '$', '%', '&', '\\', '(', ')', '*', '+', ',', '-', '.', '/', ':',
-        ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-        'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-        'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ',
-    ],
+    charCollection: [],
+    getAllCharacters: function () {
+        this.charCollection = [];
+        for (var i = 33; i < 591; i++) {
+            this.charCollection.push(String.fromCharCode(i));
+        }
+    },
     measureText: function (text, size, fontWeight, fontStyle, fontFamily) {
         var textObject = document.getElementById('chartmeasuretext');
         if (textObject === null) {
@@ -97,159 +276,28 @@ var AccumulationChart = {
         var fontFamily = fontValues[4];
         return this.measureText(char, size, fontWeight, fontStyle, fontFamily);
     },
-    resizeTo: {},
-    resizeBound: [],
     dotnetref: {},
     dotnetrefCollection: [],
-    wireEvents: function (id, dotnetref) {
+    resizeBound: {},
+    resize: {},
+    chartResize: function (dotnetrefCollection, e) {
         var _this = this;
-        var element = document.getElementById(id);
-        if (!element) {
-            return;
+        if (this.resize) {
+            clearTimeout(this.resize);
         }
-        this.dotnetref = dotnetref;
-        this.dotnetrefCollection.push({ id: id, dotnetref: dotnetref });
-        /*! Find the Events type */
-        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        this.chartOnMouseDownRef = this.chartOnMouseDown.bind(this, dotnetref, id);
-        this.mouseMoveRef = this.mouseMove.bind(this, dotnetref, id);
-        this.mouseEndRef = this.mouseEnd.bind(this, dotnetref, id);
-        this.chartOnMouseClickRef = this.chartOnMouseClick.bind(this, dotnetref, id);
-        this.chartRightClickRef = this.chartRightClick.bind(this, dotnetref, id);
-        this.mouseLeaveRef = this.mouseLeave.bind(this, dotnetref, id);
-        /*! Bind the Event handler */
-        element.addEventListener('mousemove', throttle(function (e) {
-            _this.mouseMoveRef(e);
-        }, this.eventInterval));
-        element.addEventListener('touchmove', throttle(function (e) {
-            _this.mouseMoveRef(e);
-        }, this.eventInterval));
-        sf.base.EventHandler.add(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
-        sf.base.EventHandler.add(element, 'click', this.chartOnMouseClickRef);
-        sf.base.EventHandler.add(element, 'contextmenu', this.chartRightClickRef);
-        sf.base.EventHandler.add(element, cancelEvent, this.mouseLeaveRef);
-        this.resizeBound[id] = this.chartResize.bind(this, dotnetref, id);
-        var resize = (sf.base.Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' :
-            'resize';
-        sf.base.EventHandler.add(window, resize, this.resizeBound[id]);
-        this.longPressBound = this.longPress.bind(this, dotnetref, id);
-        this.touchObject = new sf.base.Touch(element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
-        /*! Apply the style for chart */
-    },
-    unWireEvents: function (id, dotnetref) {
-        var element = document.getElementById(id);
-        if (!element) {
-            return;
-        }
-        this.dotnetref = dotnetref;
-        this.dotnetrefCollection = this.dotnetrefCollection.filter(function (item) {
-            return item.id !== id;
-        });
-        /*! Find the Events type */
-        var cancelEvent = sf.base.Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! Bind the Event handler */
-        sf.base.EventHandler.remove(element, sf.base.Browser.touchStartEvent, this.chartOnMouseDownRef);
-        element.removeEventListener('mousemove', this.mouseMoveRef);
-        element.removeEventListener('touchmove', this.mouseMoveRef);
-        sf.base.EventHandler.remove(element, sf.base.Browser.touchEndEvent, this.mouseEndRef);
-        sf.base.EventHandler.remove(element, 'click', this.chartOnMouseClickRef);
-        sf.base.EventHandler.remove(element, 'contextmenu', this.chartRightClickRef);
-        sf.base.EventHandler.remove(element, cancelEvent, this.mouseLeaveRef);
-        var resize = sf.base.Browser.isTouch && 'orientation' in window && 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        sf.base.EventHandler.remove(window, resize, this.resizeBound[id]);
-        if (this.touchObject) {
-            this.touchObject.destroy();
-            this.touchObject = null;
-        }
-        /*! Apply the style for chart */
-    },
-    getEventArgs: function (e, id) {
-        return {
-            type: e.type,
-            clientX: e.clientX,
-            clientY: e.clientY,
-            mouseX: this.mouseX,
-            mouseY: this.mouseY,
-            pointerType: e.pointerType,
-            target: e.target.id,
-            changedTouches: {
-                clientX: e.changedTouches ? e.changedTouches[0].clientX : 0,
-                clientY: e.changedTouches ? e.changedTouches[0].clientY : 0
+        this.resize = setTimeout(function () {
+            var count = dotnetrefCollection.length;
+            var tempDotnetref;
+            for (var i = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('RemoveElements');
             }
-        };
-    },
-    setMouseXY: function (pageX, pageY) {
-        var svgRect = document.getElementById(this.id + '_svg').getBoundingClientRect();
-        var rect = document.getElementById(this.id).getBoundingClientRect();
-        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
-        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
-    },
-    chartOnMouseDown: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseDown', this.getEventArgs(e));
-        return false;
-    },
-    mouseMove: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        var pageX;
-        var pageY;
-        var touchArg;
-        if (e.type === 'touchmove') {
-            this.isTouch = true;
-            touchArg = e;
-            pageX = touchArg.changedTouches[0].clientX;
-            pageY = touchArg.changedTouches[0].clientY;
-        }
-        else {
-            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || this.isTouch;
-            pageX = e.clientX;
-            pageY = e.clientY;
-        }
-        if (document.getElementById(this.id + '_svg')) {
-            this.setMouseXY(pageX, pageY);
-            this.dotnetref.invokeMethodAsync('OnChartMouseMove', this.getEventArgs(e));
-        }
-        return false;
-    },
-    mouseEnd: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseEnd', this.getEventArgs(e));
-        return false;
-    },
-    chartOnMouseClick: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseClick', this.getEventArgs(e));
-        return false;
-    },
-    chartRightClick: function (dotnetref, id, event) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartRightClick', this.getEventArgs(event));
-        return false;
-    },
-    mouseLeave: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartMouseLeave', this.getEventArgs(e));
-        return false;
-    },
-    chartResize: function (dotnetref, id, e) {
-        if (this.resizeTo[id]) {
-            clearTimeout(this.resizeTo[id]);
-        }
-        this.resizeTo[id] = setTimeout(function () {
-            dotnetref.invokeMethodAsync('OnChartResize', e);
+            for (var i = 0; i < count; i++) {
+                tempDotnetref = dotnetrefCollection[i].dotnetref;
+                tempDotnetref.invokeMethodAsync('OnChartResize', e);
+            }
+            clearTimeout(_this.resize);
         }, 500);
-        return false;
-    },
-    longPress: function (dotnetref, id, e) {
-        this.dotnetref = dotnetref;
-        this.id = id;
-        this.dotnetref.invokeMethodAsync('OnChartLongPress', e);
         return false;
     },
     performAnimation: function (index, sliceId, startX, startY, endX, endY, duration, transform, isReverse) {
@@ -303,43 +351,50 @@ var AccumulationChart = {
     createStyleElement: function (styleId, styleInnerHTML) {
         document.body.appendChild(sf.base.createElement('style', { id: styleId, innerHTML: styleInnerHTML }));
     },
-    tooltip: {},
-    renderTooltip: function (tooltipOptions, elementId, tooltipModule) {
+    renderTooltip: function (tooltipOptions, elementId, tooltipModule, element) {
         var svgElement = document.getElementById(elementId + '_svg');
         var firstRender = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0) ? false : true;
         var options = JSON.parse(tooltipOptions);
-        if (firstRender) {
-            this.tooltip = new sf.svgbase.Tooltip(options);
-            this.tooltip.tooltipRender = function () {
+        var currentInstance = element.blazor__instance;
+        if (firstRender && !sf.base.isNullOrUndefined(currentInstance)) {
+            currentInstance.tooltip = new sf.svgbase.Tooltip(options);
+            currentInstance.tooltip.tooltipRender = function () {
                 tooltipModule.invokeMethodAsync('TooltipRender');
             };
-            this.tooltip.animationComplete = function (args) {
+            currentInstance.tooltip.animationComplete = function (args) {
                 if (args.tooltip.fadeOuted) {
                     tooltipModule.invokeMethodAsync('TooltipAnimationComplete');
                 }
             };
-            this.tooltip.appendTo('#' + elementId);
+            currentInstance.tooltip.appendTo('#' + elementId);
         }
-        else {
-            this.tooltip.location = new sf.svgbase.TooltipLocation(options.location.x, options.location.y);
-            this.tooltip.content = options.content;
-            this.tooltip.header = options.header;
-            this.tooltip.offset = options.offset;
-            this.tooltip.palette = options.palette;
-            this.tooltip.shapes = options.shapes;
-            this.tooltip.data = options.data;
-            this.tooltip.template = options.template;
-            this.tooltip.textStyle.color = options.textStyle.color || this.tooltip.textStyle.color;
-            this.tooltip.textStyle.fontFamily = options.textStyle.fontFamily || this.tooltip.textStyle.fontFamily;
-            this.tooltip.textStyle.fontStyle = options.textStyle.fontStyle || this.tooltip.textStyle.fontStyle;
-            this.tooltip.textStyle.fontWeight = options.textStyle.fontWeight || this.tooltip.textStyle.fontWeight;
-            this.tooltip.textStyle.opacity = options.textStyle.opacity || this.tooltip.textStyle.opacity;
-            this.tooltip.textStyle.size = options.textStyle.size || this.tooltip.textStyle.size;
-            this.tooltip.isNegative = options.isNegative;
-            this.tooltip.clipBounds = new sf.svgbase.TooltipLocation(options.clipBounds.x, options.clipBounds.y);
-            this.tooltip.arrowPadding = options.arrowPadding;
-            this.tooltip.dataBind();
+        else if (!sf.base.isNullOrUndefined(currentInstance.tooltip)) {
+            currentInstance.tooltip.location = new sf.svgbase.TooltipLocation(options.location.x, options.location.y);
+            currentInstance.tooltip.content = options.content;
+            currentInstance.tooltip.header = options.header;
+            currentInstance.tooltip.offset = options.offset;
+            currentInstance.tooltip.palette = options.palette;
+            currentInstance.tooltip.shapes = options.shapes;
+            currentInstance.tooltip.data = options.data;
+            currentInstance.tooltip.template = options.template;
+            currentInstance.tooltip.textStyle.color = options.textStyle.color || this.tooltip.textStyle.color;
+            currentInstance.tooltip.textStyle.fontFamily = options.textStyle.fontFamily || this.tooltip.textStyle.fontFamily;
+            currentInstance.tooltip.textStyle.fontStyle = options.textStyle.fontStyle || this.tooltip.textStyle.fontStyle;
+            currentInstance.tooltip.textStyle.fontWeight = options.textStyle.fontWeight || this.tooltip.textStyle.fontWeight;
+            currentInstance.tooltip.textStyle.opacity = options.textStyle.opacity || this.tooltip.textStyle.opacity;
+            currentInstance.tooltip.textStyle.size = options.textStyle.size || this.tooltip.textStyle.size;
+            currentInstance.tooltip.isNegative = options.isNegative;
+            currentInstance.tooltip.clipBounds = new sf.svgbase.TooltipLocation(options.clipBounds.x, options.clipBounds.y);
+            currentInstance.tooltip.arrowPadding = options.arrowPadding;
+            currentInstance.tooltip.dataBind();
         }
+    },
+    fadeOut: function (element) {
+        if (sf.base.isNullOrUndefined(element.blazor__instance) ||
+            (!sf.base.isNullOrUndefined(element.blazor__instance) && sf.base.isNullOrUndefined(element.blazor__instance.tooltip))) {
+            return;
+        }
+        element.blazor__instance.tooltip.fadeOut();
     },
     animateRedrawElement: function (elementId, duration, startX, startY, endX, endY, x, y) {
         var _this = this;

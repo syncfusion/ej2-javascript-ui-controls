@@ -97,3 +97,5 @@ export const SWIMLANE_TREE_CLASS: string = 'e-swimlane-tree';
 export const WINDOW_WIDTH: string = 'WindowWidth';
 
 export const TOOLTIP_TEXT_CLASS: string = 'e-tooltip-text';
+
+export const POPUP_WRAPPER_CLASS: string = 'e-mobile-popup-wrapper';

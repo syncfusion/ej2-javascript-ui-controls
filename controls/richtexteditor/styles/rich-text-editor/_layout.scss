@@ -118,6 +118,10 @@
       .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child {
         margin-left: $rte-tb-items-margin-left;
       }
+
+      .e-hor-nav.e-expended-nav {
+        height: auto;
+      }
     }
 
     &.e-rtl .e-rte-toolbar .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child {
@@ -135,6 +139,7 @@
 
     .e-rte-toolbar,
     .e-rte-toolbar.e-toolbar.e-extended-toolbar {
+      position: inherit;
       z-index: 101;
 
       .e-toolbar-extended {

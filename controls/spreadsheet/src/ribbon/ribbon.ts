@@ -213,9 +213,9 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
 
     /**
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
+     * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
      * @method destroy
      * @return {void}
-     * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
      */
     public destroy(): void {
         let expandCollapseElem: HTMLElement = this.element.querySelector('.e-drop-icon');

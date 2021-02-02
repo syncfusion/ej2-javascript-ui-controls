@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, CellModel, getCell, setCell, getData } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale } from '../common/index';
-import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange } from '../common/index';
+import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
 import { initiateSort } from '../common/event';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 
@@ -56,9 +56,18 @@ export class WorkbookSort {
 
         let containsHeader: boolean = sortOptions.containsHeader;
         if (range[0] === range[2]) { //if selected range is a single cell 
-            range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
+            range = this.getSortDataRange(range[0], range[1], sheet);
             isSingleCell = true;
-            containsHeader = isNullOrUndefined(sortOptions.containsHeader) ? true : sortOptions.containsHeader;
+            if (isNullOrUndefined(sortOptions.containsHeader)) {
+                if (typeof getCell(range[0], range[1], sheet, null, true).value ===
+                    typeof getCell(range[0] + 1, range[1], sheet, null, true).value) {
+                    containsHeader = this.isSameStyle(
+                        getCell(range[0], range[1], sheet, null, true).style,
+                        getCell(range[0] + 1, range[1], sheet, null, true).style) ? false : true;
+                } else {
+                    containsHeader = true;
+                }
+            }
         }
         if ((isNullOrUndefined(args.sortOptions) || isNullOrUndefined(args.sortOptions.containsHeader)) && !isSingleCell) {
             if (!isNullOrUndefined(getCell(range[0], range[1], sheet)) && !isNullOrUndefined(getCell(range[0] + 1, range[1], sheet))) {
@@ -106,7 +115,7 @@ export class WorkbookSort {
                 let cell: CellModel = {};
                 let rowKey: string = '__rowIndex';
                 Array.prototype.forEach.call(e.result, (data: { [key: string]: CellModel }, index: number) => {
-                    if (!data || !jsonData[index]) { return; }
+                    if (!data) { return; }
                     sCIdx = range[1];
                     eCIdx = range[3];
                     sRIdx = parseInt(jsonData[index][rowKey] as string, 10) - 1;
@@ -122,67 +131,64 @@ export class WorkbookSort {
         });
     }
 
-    private getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
-        let range: number[] = [rowIdx, colIdx, rowIdx, colIdx];
-        let j: number; let rIdx: number = rowIdx; let cIdx: number = colIdx;
-        let loopLength: number = 0;
-        let length: number = sheet.usedRange.rowIndex + sheet.usedRange.colIndex;
-        for (let i: number = 1; i < length + 1; i++) {
-            for (j = -loopLength; j < loopLength + 1; j++) { // start from right
-                if (getCell(rIdx + j, cIdx + i, sheet)) {
-                     range[2] =  range[2] > rIdx + j ?  range[2] : rIdx + j;
-                     range[3] =  range[3] > cIdx + i ?  range[3] : cIdx + i;
-                }
-            }
-            if (getCell(rIdx + i, cIdx + i, sheet)) {
-                 range[2] =  range[2] > rIdx + i ?  range[2] : rIdx + i;
-                 range[3] =  range[3] > cIdx + i ?  range[3] : cIdx + i;
-            }
-            for (j = -loopLength; j < loopLength + 1; j++) {
-                if (getCell(rIdx + i, cIdx + j, sheet)) {
-                     range[2] =  range[2] > rIdx + i ?  range[2] : rIdx + i;
-                     range[3] =  range[3] > cIdx + j ?  range[3] : cIdx + j;
-                }
-            }
-            if (!getCell(rIdx, cIdx, sheet)) {
-                if (range[3] === colIdx && range[2] === rowIdx && range[0] === rowIdx && range[1] === colIdx) {
-                    if (loopLength === 0) {
-                        break;
-                    }
-                }
-            }
-            if (getCell(rIdx + i, cIdx - i, sheet)) {
-                 range[2] =  range[2] > rIdx + i ?  range[2] : rIdx + i;
-                 range[1] =  range[1] < cIdx - i ?  range[1] : cIdx - i;
-            }
-            for (j = -loopLength; j < loopLength + 1; j++) {
-                if (getCell(rIdx + j, cIdx - i, sheet)) {
-                     range[0] =  range[0] < rIdx + j ?  range[0] : rIdx + j;
-                     range[1] =  range[1] < cIdx - i ?  range[1] : cIdx - i;
-                     range[2] =  range[2] > rIdx + j ?  range[2] : rIdx + j;
-                }
-            }
-            if (getCell(rIdx - i, cIdx - i, sheet)) {
-                 range[0] =  range[0] < rIdx - i ?  range[0] : rIdx - i;
-                 range[1] =  range[1] < cIdx - i ?  range[1] : cIdx - i;
-            }
-            for (j = -loopLength; j < loopLength + 1; j++) {
-                if (getCell(rIdx - i, cIdx + j, sheet)) {
-                     range[0] =  range[0] < rIdx - i ?  range[0] : rIdx - i;
-                     range[1] =  range[1] < cIdx + j ?  range[1] : cIdx + j;
-                     range[3] =  range[3] > cIdx + j ?  range[3] : cIdx + j;
-                }
-            }
-            if (getCell(rIdx - i, cIdx + i, sheet)) {
-                 range[0] =  range[0] < rIdx - i ?  range[0] : rIdx - i;
-                 range[3] =  range[3] > cIdx + i ?  range[3] : cIdx + i;
-            }
-            if (range[3] === colIdx &&  range[2] === rowIdx &&  range[0] === rowIdx &&  range[1] === colIdx) {
+    private isSameStyle(firstCellStyle: CellStyleModel = {}, secondCellStyle: CellStyleModel = {}): boolean {
+        let sameStyle: boolean = true;
+        let keys: string[] = Object.keys(firstCellStyle);
+        for (let i: number = 0; i < keys.length; i++) {
+            if (firstCellStyle[keys[i]] === secondCellStyle[keys[i]] || this.parent.cellStyle[keys[i]] === firstCellStyle[keys[i]]) {
+                sameStyle = true;
+            } else {
+                sameStyle = false;
                 break;
             }
-            loopLength++;
         }
-        return range;
+        return sameStyle;
+    }
+
+    private getSortDataRange(rowIdx: number, colIdx: number, sheet: SheetModel): number[] {
+        let topIdx: number = rowIdx; let btmIdx: number = rowIdx;
+        let leftIdx: number = colIdx; let prevleftIdx: number;
+        let rightIdx: number = colIdx; let prevrightIdx: number;
+        let topReached: boolean; let btmReached: boolean;
+        let leftReached: boolean; let rightReached: boolean;
+        for (let i: number = 1; ; i++) {
+            if (!btmReached && getCell(rowIdx + i, colIdx, sheet, null, true).value) {
+                btmIdx = rowIdx + i;
+            } else {
+                btmReached = true;
+            }
+            if (!topReached && getCell(rowIdx - i, colIdx, sheet, null, true).value) {
+                topIdx = rowIdx - i;
+            } else {
+                topReached = true;
+            }
+            if (topReached && btmReached) {
+                break;
+            }
+        }
+        for (let j: number = 1; ; j++) {
+            prevleftIdx = leftIdx;
+            prevrightIdx = rightIdx;
+            for (let i: number = topIdx; i <= btmIdx; i++) {
+                if (!leftReached && getCell(i, leftIdx - 1, sheet, null, true).value) {
+                    leftIdx = prevleftIdx - 1;
+                }
+                if (!rightReached && getCell(i, rightIdx + 1, sheet, null, true).value) {
+                    rightIdx = prevrightIdx + 1;
+                }
+                if (i === btmIdx) {
+                    if (leftIdx === prevleftIdx) {
+                        leftReached = true;
+                    }
+                    if (rightIdx === prevrightIdx) {
+                        rightReached = true;
+                    }
+                }
+                if (rightReached && leftReached) {
+                    return [topIdx, leftIdx, btmIdx, rightIdx];
+                }
+            }
+        }
     }
 
     /**
@@ -203,6 +209,15 @@ export class WorkbookSort {
             } else {
                 return collator.compare(x.value as string, y.value as string) * -1;
             }
+        }
+        if ((x === null || isNullOrUndefined(x.value)) && (y === null || isNullOrUndefined(y.value))) {
+            return -1;
+        }
+        if (x === null || isNullOrUndefined(x.value)) {
+            return 1;
+        }
+        if (y === null || isNullOrUndefined(y.value)) {
+            return -1;
         }
         return comparer(x ? x.value : x, y ? y.value : y);
     }

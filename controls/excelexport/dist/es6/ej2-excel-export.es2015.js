@@ -1723,6 +1723,9 @@ class Workbook {
             }
         }
         sheetString += ('</sheetData>');
+        /* tslint:disable-next-line:max-line-length */
+        if (sheet.autoFilters !== null && sheet.autoFilters !== undefined)
+            sheetString += ('<autoFilter ref="' + this.getCellName(sheet.autoFilters.row, sheet.autoFilters.column) + ':' + this.getCellName(sheet.autoFilters.lastRow, sheet.autoFilters.lastColumn) + '"/>');
         if (sheet.mergeCells.length > 0) {
             sheetString += ('<mergeCells count="' + sheet.mergeCells.length + '">');
             for (let mCell of sheet.mergeCells) {
@@ -1737,9 +1740,6 @@ class Workbook {
             }
             sheetString += ('</hyperlinks>');
         }
-        /* tslint:disable-next-line:max-line-length */
-        if (sheet.autoFilters !== null && sheet.autoFilters !== undefined)
-            sheetString += ('<autoFilter ref="' + this.getCellName(sheet.autoFilters.row, sheet.autoFilters.column) + ':' + this.getCellName(sheet.autoFilters.lastRow, sheet.autoFilters.lastColumn) + '"/>');
         /* tslint:disable-next-line:max-line-length */
         sheetString += ('<pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5" /><headerFooter scaleWithDoc="1" alignWithMargins="0" differentFirst="0" differentOddEven="0" />');
         if (sheet.images != undefined && sheet.images.length > 0) {

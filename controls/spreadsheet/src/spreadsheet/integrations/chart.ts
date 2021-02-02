@@ -189,6 +189,10 @@ export class SpreadsheetChart {
                 let chartEleClassName: HTMLElement = document.getElementById((prevCellChart[i] as ChartModel).id);
                 if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
                     prevChartObj = prevCellChart[i];
+                    prevChartObj.height = args.currentHeight;
+                    prevChartObj.width = args.currentWidth;
+                    prevChartObj.top = args.currentTop;
+                    prevChartObj.left = args.currentLeft;
                     prevCellChart.splice(i, 1);
                 }
             }
@@ -592,7 +596,8 @@ export class SpreadsheetChart {
         if (argsOpt.isUndoRedo) {
         eventArgs = {
             type: argsOpt.option.type, theme: argsOpt.option.theme, isSeriesInRows: argsOpt.option.isSeriesInRows,
-            range: argsOpt.option.range, id: argsOpt.option.id, posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
+            range: argsOpt.option.range, height: argsOpt.option.height, width: argsOpt.option.width, id: argsOpt.option.id,
+            posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
         };
         this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
         if (eventArgs.cancel) { return []; }
@@ -601,6 +606,8 @@ export class SpreadsheetChart {
         argsOpt.option.isSeriesInRows = eventArgs.isSeriesInRows;
         argsOpt.option.range = eventArgs.range;
         argsOpt.option.id = eventArgs.id;
+        argsOpt.option.height = eventArgs.height;
+        argsOpt.option.width = eventArgs.width;
         }
         let id: string = argsOpt.option.id + '_overlay';
         let sheetIndex: number = (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
@@ -609,8 +616,12 @@ export class SpreadsheetChart {
         let eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
         let element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
         element.classList.add('e-datavisualization-chart');
-        element.style.width = '482px';
-        element.style.height = '290px';
+        element.style.width = argsOpt.option.width + 'px';
+        element.style.height = argsOpt.option.height + 'px';
+        element.style.top = isNullOrUndefined(argsOpt.option.top) ? element.style.top : (argsOpt.option.top + 'px');
+        element.style.left = isNullOrUndefined(argsOpt.option.left) ? element.style.left : (argsOpt.option.left + 'px');
+        argsOpt.option.top = parseInt(element.style.top.replace('px', ''), 10);
+        argsOpt.option.left = parseInt(element.style.left.replace('px', ''), 10);
         let chartContent: HTMLElement =
             this.parent.createElement('div', {
                 id: argsOpt.option.id, className: argsOpt.option.id
@@ -695,8 +706,8 @@ export class SpreadsheetChart {
             }
         }
         let eventArgs: BeforeChartEventArgs = {
-            id: chartObj.id, range: chartObj.range, type: chartObj.type, theme: chartObj.theme,
-            isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null, cancel: false
+            id: chartObj.id, range: chartObj.range, type: chartObj.type, theme: chartObj.theme, height: chartObj.height,
+            width: chartObj.width, isSeriesInRows: chartObj.isSeriesInRows, isInitCell: true, posRange: null, cancel: false
         };
         if (chartElements) {
             this.parent.notify(deleteChartColl, { id: args.id });

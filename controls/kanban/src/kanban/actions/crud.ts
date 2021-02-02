@@ -28,7 +28,7 @@ export class Crud {
                 let modifiedData: { [key: string]: Object }[] = [];
                 if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    modifiedData = this.priorityOrder(modifiedData, addArgs);
+                    modifiedData = this.priorityOrder(modifiedData);
                 }
                 let addedRecords: { [key: string]: Object }[] = (cardData instanceof Array) ? cardData : [cardData];
                 let changedRecords: { [key: string]: Object }[] =
@@ -50,7 +50,7 @@ export class Crud {
                 if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {
                     let modifiedData: { [key: string]: Object }[] = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    cardData = this.priorityOrder(modifiedData, updateArgs, index);
+                    cardData = this.priorityOrder(modifiedData, index);
                 }
                 let editParms: SaveChanges = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
@@ -81,13 +81,14 @@ export class Crud {
         });
     }
 
-    private priorityOrder(cardData: { [key: string]: Object }[], args?: ActionEventArgs, index?: number): { [key: string]: Object }[] {
+    private priorityOrder(cardData: { [key: string]: Object }[], cardIndex?: number): { [key: string]: Object }[] {
         let cardsId: string[] | number[] = cardData.map((obj: { [key: string]: string }) => obj[this.parent.cardSettings.headerField]);
         let num: number = cardData[cardData.length - 1][this.parent.sortSettings.field] as number;
         let allModifiedKeys: string[] = cardData.map((obj: { [key: string]: string }) => obj[this.parent.keyField]);
         let modifiedKey: string[] = allModifiedKeys.filter((key: string, index: number) => allModifiedKeys.indexOf(key) === index).sort();
         let columnAllDatas: { [key: string]: Object }[];
         let finalData: { [key: string]: Object }[] = [];
+        let originalIndex: number[] = [];
         for (let columnKey of modifiedKey) {
             let keyData: { [key: string]: Object }[] = cardData.filter((cardObj: { [key: string]: Object }) =>
                 cardObj[this.parent.keyField] === columnKey);
@@ -99,16 +100,26 @@ export class Crud {
                 }
             }
             keyData.forEach((key: { [key: string]: Object }) => finalData.push(key));
-            if (!isNullOrUndefined(index)) {
+            if (!isNullOrUndefined(cardIndex)) {
+                for (let j: number = 0; j < cardsId.length; j++) {
+                    columnAllDatas.filter((data: { [key: string]: Object }, index: number) => {
+                        if (data[this.parent.cardSettings.headerField] === cardsId[j] && index <= cardIndex) {
+                            originalIndex.push(index);
+                        }
+                    });
+                }
+                if (originalIndex.length > 0) {
+                    cardIndex = cardIndex + originalIndex.length;
+                }
                 if (this.parent.sortSettings.direction === 'Ascending') {
-                    for (let i: number = index; i < columnAllDatas.length; i++) {
+                    for (let i: number = cardIndex; i < columnAllDatas.length; i++) {
                         if (cardsId.indexOf(columnAllDatas[i][this.parent.cardSettings.headerField] as string) === -1) {
                             columnAllDatas[i][this.parent.sortSettings.field] = ++num;
                             finalData.push(columnAllDatas[i]);
                         }
                     }
                 } else {
-                    for (let i: number = index - 1; i >= 0; i--) {
+                    for (let i: number = cardIndex - 1; i >= 0; i--) {
                         if (cardsId.indexOf(columnAllDatas[i][this.parent.cardSettings.headerField] as string) === -1) {
                             columnAllDatas[i][this.parent.sortSettings.field] = ++num;
                             finalData.push(columnAllDatas[i]);

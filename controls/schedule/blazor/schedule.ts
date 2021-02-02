@@ -875,7 +875,12 @@ export class SfSchedule {
     }
     public setPersistence(): void {
         if (this.options.enablePersistence) {
-            let props: Object = { selectedDate: this.options.selectedDate, currentView: this.options.currentView };
+            let props: { [key: string]: Object } = { selectedDate: this.options.selectedDate, currentView: this.options.currentView };
+            let contentWrap: HTMLElement = this.element.querySelector('.e-content-wrap') as HTMLElement;
+            if (!isNullOrUndefined(contentWrap)) {
+                props.top = contentWrap.scrollTop;
+                props.left = contentWrap.scrollLeft;
+            }
             window.localStorage.setItem(this.element.id, JSON.stringify(props));
         }
     }

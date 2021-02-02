@@ -18,6 +18,7 @@ export let versionBasedStatePersistence: boolean = false;
  * @param {boolean} status - Optional argument Specifies the status value to enable or disable versionBasedStatePersistence option.
  * @returns {void}
  */
+/* istanbul ignore next */
 export function enableVersionBasedPersistence(status: boolean): void {
     versionBasedStatePersistence = status;
 }
@@ -99,7 +100,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.render();
         this.refreshing = false;
     }
-
+    /* istanbul ignore next */
     private accessMount(): void {
         if (this.mount && !this.isReactHybrid) {
             this.mount();
@@ -108,6 +109,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     /**
      * Returns the route element of the component
      */
+    /* istanbul ignore next */
     public getRootElement(): HTMLElement {
         if (this.isReactHybrid) {
             return (this as any).actualElement;
@@ -118,6 +120,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     /**
      * Returns the persistence data for component
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     public getLocalData(): any {
         let eleId: string = this.getModuleName() + this.element.id;
@@ -275,6 +278,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * This is a instance method to create an element.
      * @private
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     public createElement(tagName: string, prop?: ElementProperties, isVDOM?: boolean): any {
         if (isVDOM && this.isReactHybrid) {
@@ -293,6 +297,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * @param argument - Arguments to be passed to caller.
      * @private
      */
+    /* istanbul ignore next */
     //tslint:disable:no-any
     public triggerStateChange(handler?: Function, argument?: any): void {
         if (this.isReactHybrid) {

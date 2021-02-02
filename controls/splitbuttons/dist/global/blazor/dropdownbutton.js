@@ -281,10 +281,12 @@ var DropDownButton = /** @class */ (function (_super) {
                 _this.element.removeAttribute(key);
             });
             this.dropDown.destroy();
-            var popupEle = document.getElementById(this.getPopUpElement().id);
-            if (popupEle) {
-                sf.base.removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
-                sf.base.detach(popupEle);
+            if (this.getPopUpElement()) {
+                var popupEle = document.getElementById(this.getPopUpElement().id);
+                if (popupEle) {
+                    sf.base.removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
+                    sf.base.detach(popupEle);
+                }
             }
             if (!this.disabled) {
                 this.unWireEvents();

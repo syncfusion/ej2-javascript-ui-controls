@@ -106,7 +106,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                 } else if (IF_STMT.test(cnt)) {
                     //handling if condition
                     cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs: string): string => {
-                        return HandleSpecialCharArrObj(strs, nameSpace, localKeys);
+                        return HandleSpecialCharArrObj(strs, nameSpace, localKeys, true);
                     })) + '{ \n str = str + "';
                 } else if (FOR_STMT.test(cnt)) {
 
@@ -185,7 +185,11 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
         });
 }
 
-function addNameSpace(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[]): string {
+function addNameSpace(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[], emptyStrCheck?: boolean): string {
+    /* istanbul ignore next */
+    if (emptyStrCheck && str === '') {
+        return str;
+    }
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
 }
 
@@ -216,7 +220,7 @@ function SlashReplace(tempStr: string): any {
     return tempStr;
 }
 
-function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string[]): string {
+function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string[], emptyStrCheck?: boolean): string {
     str = str.trim();
     let windowFunc: RegExp = /\window\./gm;
     if (!windowFunc.test(str)) {
@@ -228,7 +232,7 @@ function HandleSpecialCharArrObj(str: string, nameSpaceNew: string, keys: string
         if (ARR_OBJ.test(str)) {
             return NameSpaceArrObj(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
         } else {
-            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys);
+            return addNameSpace(str, !(quotes.test(str)) && (keys.indexOf(str) === -1), nameSpaceNew, keys, emptyStrCheck);
         }
     } else {
         return str;

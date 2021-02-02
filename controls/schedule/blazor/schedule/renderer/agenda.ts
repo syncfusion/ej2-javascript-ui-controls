@@ -26,6 +26,10 @@ export class Agenda extends ViewBase implements IRenderer {
         this.parent.setDimensions();
     }
     public onDataReady(args: NotifyEventArgs, count?: number, isScrollTop?: boolean): void {
+        if (this.parent.options.enablePersistence) {
+            this.retainScrollPosition();
+            return;
+        }
         let wrap: HTMLElement = this.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
         if (!wrap) {
             wrap = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
@@ -70,6 +74,7 @@ export class Agenda extends ViewBase implements IRenderer {
                 this.beforeInvoke(index);
             }
         }
+        this.parent.setPersistence();
     }
     private beforeInvoke(index: number): void {
         window.clearTimeout(this.timeValue);

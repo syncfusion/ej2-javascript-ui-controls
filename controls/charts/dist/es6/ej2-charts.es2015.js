@@ -2956,7 +2956,8 @@ function createTemplate(childElement, pointIndex, content, chart, point, series,
     try {
         let blazor = 'Blazor';
         let tempObject = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
-        let elementData = templateFn ? templateFn(tempObject, chart, 'template', dataLabelId ||
+        let templateId = dataLabelId ? dataLabelId + '_template' : 'template';
+        let elementData = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
@@ -8210,6 +8211,8 @@ let Chart = class Chart extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /** @private */
+        this.rotatedDataLabelCollections = [];
         /** @public */
         this.animated = false;
         /** @private */
@@ -9097,6 +9100,7 @@ let Chart = class Chart extends Component {
         this.verticalAxes = [];
         this.visibleSeries = [];
         this.axisCollections = [];
+        this.rotatedDataLabelCollections = [];
         this.seriesElements = null;
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
@@ -9278,6 +9282,7 @@ let Chart = class Chart extends Component {
                 }
                 this.createChartSvg();
                 arg.currentSize = this.availableSize;
+                this.rotatedDataLabelCollections = [];
                 this.trigger(resized, arg);
                 this.refreshAxis();
                 this.refreshBound();
@@ -9567,7 +9572,7 @@ let Chart = class Chart extends Component {
         if (this.dataEditingModule) {
             this.dataEditingModule.pointMouseUp();
         }
-        if (!this.enableCanvas) {
+        if (!this.enableCanvas && this.seriesElements) {
             this.seriesElements.removeAttribute('clip-path');
         }
         this.notify(Browser.touchEndEvent, e);
@@ -18522,10 +18527,12 @@ class BaseTooltip extends ChartData {
      */
     removeTooltip(duration) {
         let tooltipElement = this.getElement(this.element.id + '_tooltip');
+        let tooltipTemplate = tooltipElement ? this.getElement(tooltipElement.id + 'parent_template') : null;
+        let isTemplateRendered = tooltipTemplate && tooltipTemplate.innerHTML !== '<div></div>';
         this.stopAnimation();
         // tslint:disable-next-line:no-any
-        if (this.chart.isReact) {
-            this.chart.clearTemplate();
+        if (this.chart.isReact && isTemplateRendered) {
+            this.chart.clearTemplate([tooltipTemplate.id], [0]);
         }
         if (tooltipElement && this.previousPoints.length > 0) {
             this.toolTipInterval = setTimeout(() => {
@@ -22336,6 +22343,8 @@ class DataLabel {
         this.inverted = chart.requireInvertedAxis;
         this.yAxisInversed = series.yAxis.isInversed;
         let redraw = chart.redraw;
+        let isDataLabelOverlap = false;
+        let coordinatesAfterRotation = [];
         let templateId = chart.element.id + '_Series_' +
             (series.index === undefined ? series.category : series.index) + '_DataLabelCollections';
         let element = createElement('div', {
@@ -22343,6 +22352,8 @@ class DataLabel {
         });
         let visiblePoints = getVisiblePoints(series);
         let point;
+        let rectCenterX;
+        let rectCenterY;
         // Data label point iteration started
         for (let i = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
@@ -22359,6 +22370,7 @@ class DataLabel {
             let isRender = true;
             let clip = series.clipRect;
             let shapeRect;
+            isDataLabelOverlap = false;
             angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             let argsFont = (extend({}, getValue('properties', dataLabel.font), null, true));
@@ -22394,27 +22406,31 @@ class DataLabel {
                                 }
                             }
                             let actualRect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
-                            let notOverlapping;
-                            let rectPoints = [];
-                            if (dataLabel.enableRotation && angle !== 0) {
-                                let rectCoordinates = this.getRectanglePoints(actualRect);
-                                let rectCenterX = actualRect.x + actualRect.width * 0.5;
-                                let rectCenterY = (actualRect.y - (actualRect.height / 2));
-                                rectPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
-                                notOverlapping = true;
-                                for (let index = i; index > 0; index--) {
-                                    if (rectPoints[i] && rectPoints[index - 1] &&
-                                        isRotatedRectIntersect(rectPoints[i], rectPoints[index - 1])) {
-                                        notOverlapping = false;
-                                        rectPoints[i] = null;
-                                        break;
+                            //let notOverlapping: boolean;
+                            if (dataLabel.enableRotation) {
+                                let rectCoordinates = this.getRectanglePoints(rect);
+                                rectCenterX = rect.x + (rect.width / 2);
+                                rectCenterY = (rect.y + (rect.height / 2));
+                                coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
+                                isDataLabelOverlap = this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
+                                if (!isDataLabelOverlap) {
+                                    this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
+                                    let currentPointIndex = this.chart.rotatedDataLabelCollections.length - 1;
+                                    for (let index = currentPointIndex; index >= 0; index--) {
+                                        if (this.chart.rotatedDataLabelCollections[currentPointIndex] &&
+                                            this.chart.rotatedDataLabelCollections[index - 1] &&
+                                            isRotatedRectIntersect(this.chart.rotatedDataLabelCollections[currentPointIndex], this.chart.rotatedDataLabelCollections[index - 1])) {
+                                            isDataLabelOverlap = true;
+                                            this.chart.rotatedDataLabelCollections[currentPointIndex] = null;
+                                            break;
+                                        }
                                     }
                                 }
                             }
                             else {
-                                notOverlapping = !isCollide(rect, chart.dataLabelCollections, clip);
+                                isDataLabelOverlap = isCollide(rect, chart.dataLabelCollections, clip);
                             }
-                            if ((notOverlapping || dataLabel.labelIntersectAction === 'None') && isRender) {
+                            if ((!isDataLabelOverlap || dataLabel.labelIntersectAction === 'None') && isRender) {
                                 chart.dataLabelCollections.push(actualRect);
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + point.index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -22429,9 +22445,11 @@ class DataLabel {
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
-                                    xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
-                                    yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
-                                        (dataLabel.margin.bottom) / 2;
+                                    // xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
+                                    xValue = rectCenterX;
+                                    //yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
+                                    // (dataLabel.margin.bottom) / 2;
+                                    yValue = rectCenterY;
                                     degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
                                 }
                                 else {
@@ -22467,6 +22485,14 @@ class DataLabel {
         let loc3 = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
         let loc4 = new ChartLocation(rect.x, rect.y + rect.height);
         return [loc1, loc2, loc3, loc4];
+    }
+    isDataLabelOverlapWithChartBound(rectCoordinates, chart, clip) {
+        for (let index = 0; index < rectCoordinates.length; index++) {
+            if (!withInBounds(rectCoordinates[index].x + clip.x, rectCoordinates[index].y + clip.y, chart.initialClipRect)) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * Render the data label template.
@@ -23524,6 +23550,7 @@ class Legend extends BaseLegend {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
+            chart.rotatedDataLabelCollections = [];
             blazorTemplatesReset(chart);
             removeElement$1(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
             this.redrawSeriesElements(series, chart);

@@ -168,6 +168,8 @@ export class WorkbookSave extends SaveWorker {
         if (typeof (result) === 'object' && (<{ [key: string]: Object }>result).error) {
             args.status = 'Failure';
             args.message = (<{ [key: string]: Object }>result).error.toString();
+        } else if (typeof (result) === 'object' && (<{ [key: string]: Object }>result).dialog) {
+            this.parent.notify(events.saveError, { content: (<{ [key: string]: Object }>result).dialog });
         } else {
             if (this.needBlobData) {
                 args.blobData = result as Blob;

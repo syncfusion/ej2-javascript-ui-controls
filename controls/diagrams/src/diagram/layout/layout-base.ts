@@ -272,6 +272,13 @@ export class Layout extends ChildProperty<Layout> {
     public enableAnimation: boolean;
 
     /**
+     * Enable / Disable connector routing for the layout
+     * @default false
+     */
+    @Property(false)
+    public enableRouting: boolean;
+
+    /**
      * Defines the root of the hierarchical tree layout
      * @default ''
      */

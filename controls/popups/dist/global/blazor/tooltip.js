@@ -572,6 +572,9 @@ var Tooltip = /** @class */ (function (_super) {
             }
             if (this.openDelay > 0) {
                 var show = function () {
+                    if (_this.mouseTrail) {
+                        sf.base.EventHandler.add(target, 'mousemove touchstart mouseenter', _this.onMouseMove, _this);
+                    }
                     if (_this.popupObj) {
                         _this.popupObj.show(openAnimation_1, target);
                     }
@@ -950,7 +953,7 @@ var Tooltip = /** @class */ (function (_super) {
                     sf.base.EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
                 }
             }
-            if (this.mouseTrail) {
+            if (this.mouseTrail && this.openDelay === 0) {
                 sf.base.EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
             }
         }

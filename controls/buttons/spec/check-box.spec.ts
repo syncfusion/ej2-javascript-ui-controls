@@ -362,7 +362,7 @@ describe('CheckBox', () => {
             let cbox: any = getEventObject('MouseEvents', 'mouseup');
             cbox = setMouseCoordinates(checkbox, 5, 5, label);
             EventHandler.trigger(label as HTMLElement, 'mouseup', cbox);
-            checkbox.clickHandler();
+            checkbox.element.click();
             expect(element.parentElement.parentElement.classList.contains('e-focus')).toEqual(false);
         });
 

@@ -827,6 +827,9 @@ export class LargeIconsView {
         } else {
             this.clearSelection();
         }
+        if (!isNOU(item)) {
+           this.updateType(item);
+        }
     }
 
     private dblClickHandler(e: TapEventArgs): void {

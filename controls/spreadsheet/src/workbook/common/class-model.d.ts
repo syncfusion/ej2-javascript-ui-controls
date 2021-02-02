@@ -375,6 +375,34 @@ export interface ChartModel {
      */
     id?: string;
 
+    /**
+     * Specifies the height of the chart.
+     * @default 290
+     * @asptype int
+     */
+    height?: number;
+
+    /**
+     * Specifies the width of the chart.
+     * @default 480
+     * @asptype int
+     */
+    width?: number;
+
+    /**
+     * Specifies the top position of the chart.
+     * @default 0
+     * @hidden
+     */
+    top?: number;
+
+    /**
+     * Specifies the left side of the chart.
+     * @default 0
+     * @hidden
+     */
+    left?: number;
+
 }
 
 /**

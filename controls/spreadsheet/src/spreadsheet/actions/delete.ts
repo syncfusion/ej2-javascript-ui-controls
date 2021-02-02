@@ -21,9 +21,15 @@ export class Delete {
         if (args.isAction) { isAction = true; delete args.isAction; }
         if (isAction) { this.parent.notify(beginAction, { eventArgs: args, action: 'delete' }); }
         if (args.modelType === 'Sheet') {
-            this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex - 1 }, true);
-            this.parent.notify(refreshSheetTabs, this);
-            this.parent.renderModule.refreshSheet();
+            let activeSheetDeleted: boolean = args.activeSheetIndex >= args.startIndex && args.activeSheetIndex <= args.endIndex;
+            if (activeSheetDeleted) {
+                this.parent.setProperties(
+                    { activeSheetIndex: this.parent.skipHiddenSheets(args.startIndex < this.parent.sheets.length ? args.startIndex :
+                    (args.startIndex ? args.startIndex - 1 : 0)) },
+                    true);
+            }
+            this.parent.notify(refreshSheetTabs, null);
+            if (activeSheetDeleted) { this.parent.renderModule.refreshSheet(); }
             this.parent.element.focus();
         } else if (args.modelType === 'Row') {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {

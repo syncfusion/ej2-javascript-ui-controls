@@ -325,25 +325,26 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     public destroy(): void {
         let classList: string[] = [RTL];
-        let element: Element = document.getElementById(this.element.id);
         if (this.cssClass) {
            classList = classList.concat(this.cssClass.split(' '));
         }
-        if (element && element.parentElement === this.wrapper) {
-            if (this.wrapper.tagName === TAGNAME) {
-                this.wrapper.innerHTML = '';
-                removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
-                removeClass([this.wrapper], this.cssClass.split(' '));
-            } else {
-                removeClass([this.element], classList);
-                ['aria-label', 'aria-haspopup', 'aria-expanded',
-                'aria-owns', 'type'].forEach((key: string) => {
-                    this.element.removeAttribute(key);
-                });
-                this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
-                remove(this.wrapper);
+        if (this.element) {
+            let element: Element = document.getElementById(this.element.id);
+            if (element && element.parentElement === this.wrapper) {
+                if (this.wrapper.tagName === TAGNAME) {
+                    this.wrapper.innerHTML = '';
+                    removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
+                    removeClass([this.wrapper], this.cssClass.split(' '));
+                } else {
+                    removeClass([this.element], classList);
+                    ['aria-label', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type'].forEach((key: string) => {
+                        this.element.removeAttribute(key);
+                    });
+                    this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
+                    remove(this.wrapper);
+                }
+                this.unWireEvents();
             }
-            this.unWireEvents();
         }
         this.primaryBtnObj.destroy();
         this.secondaryBtnObj.destroy();

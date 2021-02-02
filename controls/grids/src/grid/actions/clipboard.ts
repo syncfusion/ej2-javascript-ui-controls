@@ -211,11 +211,12 @@ export class Clipboard implements IAction {
                     if (i > 0) {
                         this.copyContent += '\n';
                     }
-                    let cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell'));
+                    let cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[i] as number].
+                        querySelectorAll('.e-rowcell:not(.e-hide)'));
                     if (isFrozen) {
-                        cells.push(...[].slice.call(mRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell')));
+                        cells.push(...[].slice.call(mRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         if (frRows) {
-                            cells.push(...[].slice.call(frRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell')));
+                            cells.push(...[].slice.call(frRows[selectedIndexes[i] as number].querySelectorAll('.e-rowcell:not(.e-hide)')));
                         }
                     }
                     this.getCopyData(cells, false, '\t', withHeader);

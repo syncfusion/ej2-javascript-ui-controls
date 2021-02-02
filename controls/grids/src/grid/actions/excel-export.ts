@@ -472,6 +472,7 @@ export class ExcelExport {
             if (!isNullOrUndefined(dataSource.childLevels) && dataSource.childLevels > 0) {
                 this.processGroupedRows(gObj, item.items, headerRow, item.items.level, startIndex,
                                         excelExportProperties, excelRows, helper);
+                this.processAggregates(gObj, item, excelRows, undefined, (level) + dataSource.childLevels , true);
             } else {
                 startIndex = this.processRecordRows(gObj, item.items, headerRow, (level), startIndex,
                                                     excelExportProperties, excelRows, helper);
@@ -625,6 +626,7 @@ export class ExcelExport {
     private fillAggregates(gObj: IGrid, rows: Row<AggregateColumnModel>[], indent: number, excelRows: ExcelRow[], customIndex?: number): ExcelRow[] {
         for (let row of rows) {
             let cells: ExcelCell[] = [];
+            let isEmpty: boolean = true;
             let index: number = 0;
             for (let cell of row.cells) {
                 /* tslint:disable-next-line:no-any */
@@ -635,6 +637,7 @@ export class ExcelExport {
                 if ((cell.visible || this.includeHiddenColumn)) {
                     index++;
                     if (cell.isDataCell) {
+                        isEmpty = false;
                         let footerTemplate: boolean = !isNullOrUndefined(cell.column.footerTemplate);
                         let groupFooterTemplate: boolean = !isNullOrUndefined(cell.column.groupFooterTemplate);
                         let groupCaptionTemplate: boolean = !isNullOrUndefined(cell.column.groupCaptionTemplate);
@@ -704,7 +707,8 @@ export class ExcelExport {
                 } else {
                     row = {index: this.rowLength++, cells: cells};
                 }
-                excelRows.push(row);
+                if (!isEmpty) {
+                excelRows.push(row); }
             }
         }
         return excelRows;
@@ -977,7 +981,7 @@ export class ExcelExport {
             (<{name?: string}>style).name = gObj.element.id + 'column' + index;
             this.styles.push(style);
         }
-        if (!isNullOrUndefined(col.width)) {
+        if (!isNullOrUndefined(col.width) && col.width !== 'auto') {
             this.columns.push({ index: index + (<{childGridLevel?: number}>gObj).childGridLevel, width: typeof col.width === 'number' ?
             col.width : this.helper.getConvertedWidth(col.width) });
         }

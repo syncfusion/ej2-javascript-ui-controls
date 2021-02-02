@@ -689,7 +689,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let width: number = bounds.width;
         let height: number = bounds.height;
         let w: number = Math.max(width, this.parent.scroller.viewPortWidth);
-        let h: number = Math.max(height, this.parent.scroller.viewPortHeight);
+        let h: number = Math.max(height, this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom);
         let scale: number = Math.min(Number(this.model.width) / w, Number(this.model.height) / h);
         htmlLayer.style.transform = 'scale(' + scale + ') translate(' + this.parent.scroller.transform.tx + 'px,'
             + (this.parent.scroller.transform.ty) + 'px)';
@@ -713,7 +713,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let offheight: number = Number(this.model.height);
         let scale: number;
         let w: number = Math.max(width, this.parent.scroller.viewPortWidth);
-        let h: number = Math.max(height, this.parent.scroller.viewPortHeight);
+        let h: number = Math.max(height, this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom);
         this.contentWidth = w = Math.max(w, (offwidth / offheight) * h);
         this.contentHeight = h = Math.max(h, (offheight / offwidth) * w);
         scale = Math.min(offwidth / w, offheight / h);

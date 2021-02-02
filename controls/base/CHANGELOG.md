@@ -2,9 +2,11 @@
 
 ## [Unreleased]
 
-## 18.4.31 (2020-12-22)
+## 18.4.41 (2021-02-02)
 
 ### Common
+
+- provided support for `Negative` number in `EJ2` Template conditions.
 
 #### Bug Fixes
 

@@ -114,7 +114,8 @@ export class ShowHide {
             }
             if ( isGroupAdaptive(this.parent)) {
             this.parent.contentModule.emptyVcRows(); }
-            if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
+            if (this.parent.allowSelection && this.parent.getSelectedRecords().length &&
+                !this.parent.selectionSettings.persistSelection) {
                 this.parent.clearSelection();
             }
             if (this.parent.enableColumnVirtualization) {

@@ -1632,7 +1632,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         let classArray: string[] = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         let attrs: string[] = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         removeClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED]);
-        if (this.element.classList.contains(FULLSCREEN)) {
+        if (!isNullOrUndefined(this.element) && this.element.classList.contains(FULLSCREEN)) {
             removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED]);
         }
         if (this.isModal) {
@@ -1645,7 +1645,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         if (!isNullOrUndefined(this.dragObj)) { this.dragObj.destroy(); }
-        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+        if (!isNullOrUndefined(this.popupObj.element) && this.popupObj.element.classList.contains(POPUP_ROOT)) {
             this.popupObj.destroy();
         }
         removeClass([this.element], classArray);

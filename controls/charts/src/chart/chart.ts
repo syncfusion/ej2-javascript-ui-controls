@@ -1292,6 +1292,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public dataLabelCollections: Rect[];
     /** @private */
+    public rotatedDataLabelCollections: ChartLocation[][] = [];
+    /** @private */
     public dataLabelElements: Element;
     /** @private */
     public mouseX: number;
@@ -2382,6 +2384,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.verticalAxes = [];
         this.visibleSeries = [];
         this.axisCollections = [];
+        this.rotatedDataLabelCollections = [];
         this.seriesElements = null;
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
@@ -2594,6 +2597,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     }
                     this.createChartSvg();
                     arg.currentSize = this.availableSize;
+                    this.rotatedDataLabelCollections = [];
                     this.trigger(resized, arg);
                     this.refreshAxis();
                     this.refreshBound();
@@ -2891,7 +2895,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.dataEditingModule) {
             this.dataEditingModule.pointMouseUp();
         }
-        if (!this.enableCanvas) {
+        if (!this.enableCanvas && this.seriesElements) {
             this.seriesElements.removeAttribute('clip-path');
         }
         this.notify(Browser.touchEndEvent, e);

@@ -112,6 +112,7 @@ var CheckBox = /** @class */ (function (_super) {
         }
         var changeEventArgs = { checked: this.updateVueArrayModel(false), event: event };
         this.trigger('change', changeEventArgs);
+        event.stopPropagation();
     };
     /**
      * Destroys the widget.

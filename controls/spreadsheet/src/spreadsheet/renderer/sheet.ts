@@ -170,10 +170,11 @@ export class SheetRender implements IRenderer {
         if (this.parent[isReact]) {
             this.parent[renderReactTemplates]();
         }
-        this.getContentTable().insertBefore(colGrp.cloneNode(true), cTBody);
+        cTBody.parentElement.insertBefore(colGrp.cloneNode(true), cTBody);
         getUpdateUsingRaf((): void => {
             let content: Element = this.parent.getMainContent();
-            document.getElementById(this.parent.element.id + '_sheet').appendChild(frag);
+            let sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+            sheetContent.appendChild(frag);
             if (args.top) {
                 content.scrollTop = args.top; if (sheet.showHeaders) { this.parent.getRowHeaderContent().scrollTop = args.top; }
             }

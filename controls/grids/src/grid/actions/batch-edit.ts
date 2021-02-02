@@ -601,23 +601,26 @@ export class BatchEdit {
         let gObj: IGrid = this.parent;
         let rows: Element[] = gObj.getAllDataRows(true);
         let dataRows: Element[][] = getGridRowElements(this.parent);
+        let dataObjects: Row<Column>[][]  = getGridRowObjects(this.parent);
         for (let i: number = 0, j: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[i].classList.contains('e-row') && !rows[i].classList.contains('e-hiddenrow')) {
                 gridActionHandler(
                     this.parent,
-                    (tableName: freezeTable, rowElements: Element[]) => {
+                    (tableName: freezeTable, rowElements: Element[], rowObjects: Row<Column>[]) => {
                         rowElements[i].setAttribute('aria-rowindex', j.toString());
+                        rowObjects[i].index = j;
                     },
-                    dataRows
+                    dataRows, null, dataObjects
                 );
                 j++;
             } else {
                 gridActionHandler(
                     this.parent,
-                    (tableName: freezeTable, rowElements: Element[]) => {
+                    (tableName: freezeTable, rowElements: Element[], rowObjects: Row<Column>[]) => {
                         rowElements[i].removeAttribute('aria-rowindex');
+                        rowObjects[i].index = -1;
                     },
-                    dataRows
+                    dataRows, null, dataObjects
                 );
             }
         }

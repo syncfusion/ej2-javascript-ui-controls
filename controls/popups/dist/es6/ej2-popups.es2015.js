@@ -2702,7 +2702,7 @@ let Dialog = class Dialog extends Component {
         let classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         let attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
-        if (this.element.classList.contains(FULLSCREEN)) {
+        if (!isNullOrUndefined(this.element) && this.element.classList.contains(FULLSCREEN)) {
             removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
         }
         if (this.isModal) {
@@ -2717,7 +2717,7 @@ let Dialog = class Dialog extends Component {
         if (!isNullOrUndefined(this.dragObj)) {
             this.dragObj.destroy();
         }
-        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+        if (!isNullOrUndefined(this.popupObj.element) && this.popupObj.element.classList.contains(POPUP_ROOT)) {
             this.popupObj.destroy();
         }
         removeClass([this.element], classArray);
@@ -3817,6 +3817,9 @@ let Tooltip = class Tooltip extends Component {
             }
             if (this.openDelay > 0) {
                 let show = () => {
+                    if (this.mouseTrail) {
+                        EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
+                    }
                     if (this.popupObj) {
                         this.popupObj.show(openAnimation, target);
                     }
@@ -4191,7 +4194,7 @@ let Tooltip = class Tooltip extends Component {
                     EventHandler.add(this.tooltipEle, 'mouseleave', this.tooltipMouseOut, this);
                 }
             }
-            if (this.mouseTrail) {
+            if (this.mouseTrail && this.openDelay === 0) {
                 EventHandler.add(target, 'mousemove touchstart mouseenter', this.onMouseMove, this);
             }
         }

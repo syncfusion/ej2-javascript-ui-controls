@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.39 (2021-01-28)
+## 18.4.41 (2021-02-02)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Auto filter corruption issue fixed in Grid to Excel export.
+
+## 18.4.34 (2021-01-12)
 
 ### Excel Export
 

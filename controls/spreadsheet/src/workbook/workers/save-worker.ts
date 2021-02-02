@@ -52,7 +52,6 @@ export class SaveWorker {
         for (i = 0; i < keys.length; i++) {
             formData.append(keys[i], customParams[keys[i]]);
         }
-
         fetch(saveSettings.url, { method: 'POST', body: formData })
         .then((response: Response) => {
             if (response.ok) {
@@ -64,7 +63,19 @@ export class SaveWorker {
             }
         })
         .then((data: Blob) => {
-            (postMessage as Function)(data);
+            new Promise((resolve: Function) => {
+                let reader: FileReader = new FileReader();
+                reader.onload = () => {
+                    if (reader.result.toString().indexOf('data:text/plain;base64,') > -1) {
+                        let str: string[] = atob((reader.result as string).replace('data:text/plain;base64,', '')).split(/(\r\n|\n|\r)/gm);
+                        if (str.length) { (postMessage as Function)({ dialog: str[0] }); }
+                    } else {
+                        (postMessage as Function)(data);
+                    }
+                    resolve(reader.result);
+                };
+                reader.readAsDataURL(data);
+            });
         })
         .catch((error: Error) => {
             (postMessage as Function)({ error: error.message });

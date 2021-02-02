@@ -1375,15 +1375,15 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     CalendarBase.prototype.destroy = function () {
-        if (this.getModuleName() === 'calendar') {
+        if (this.getModuleName() === 'calendar' && this.element) {
             removeClass([this.element], [ROOT]);
         }
         else {
-            if (this.calendarElement) {
+            if (this.calendarElement && this.element) {
                 removeClass([this.element], [ROOT]);
             }
         }
-        if (this.getModuleName() === 'calendar') {
+        if (this.getModuleName() === 'calendar' && this.element) {
             EventHandler.remove(this.headerTitleElement, 'click', this.navigateTitle);
             if (this.todayElement) {
                 EventHandler.remove(this.todayElement, 'click', this.todayButtonClick);
@@ -1395,7 +1395,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) ?
                 this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         }
-        this.element.innerHTML = '';
+        if (this.element) {
+            this.element.innerHTML = '';
+        }
         _super.prototype.destroy.call(this);
     };
     CalendarBase.prototype.title = function (e) {
@@ -1891,6 +1893,12 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         Property(new Date(1900, 0, 1))
     ], CalendarBase.prototype, "min", void 0);
     __decorate([
+        Property(true)
+    ], CalendarBase.prototype, "enabled", void 0);
+    __decorate([
+        Property(null)
+    ], CalendarBase.prototype, "cssClass", void 0);
+    __decorate([
         Property(new Date(2099, 11, 31))
     ], CalendarBase.prototype, "max", void 0);
     __decorate([
@@ -2002,6 +2010,10 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         }
         this.validateDate();
         this.minMaxUpdate();
+        this.setEnable(this.enabled);
+        if (this.getModuleName() === 'calendar') {
+            this.setClass(this.cssClass);
+        }
         _super.prototype.render.call(this);
         if (this.getModuleName() === 'calendar') {
             var form = closest(this.element, 'form');
@@ -2011,6 +2023,28 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             this.setTimeZone(this.serverTimezoneOffset);
         }
         this.renderComplete();
+    };
+    Calendar.prototype.setEnable = function (enable) {
+        if (!enable) {
+            addClass([this.element], DISABLED);
+        }
+        else {
+            removeClass([this.element], DISABLED);
+        }
+    };
+    Calendar.prototype.setClass = function (newCssClass, oldCssClass) {
+        if (!isNullOrUndefined(oldCssClass)) {
+            oldCssClass = (oldCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            newCssClass = (newCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(oldCssClass) && oldCssClass !== '') {
+            removeClass([this.element], oldCssClass.split(' '));
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            addClass([this.element], newCssClass.split(' '));
+        }
     };
     Calendar.prototype.isDayLightSaving = function () {
         var secondOffset = new Date(this.value.getFullYear(), 6, 1).getTimezoneOffset();
@@ -2252,6 +2286,14 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
                     if (this.isDateSelected) {
                         this.setProperties({ isMultiSelection: newProp.isMultiSelection }, true);
                         this.update();
+                    }
+                    break;
+                case 'enabled':
+                    this.setEnable(this.enabled);
+                    break;
+                case 'cssClass':
+                    if (this.getModuleName() === 'calendar') {
+                        this.setClass(newProp.cssClass, oldProp.cssClass);
                     }
                     break;
                 default:

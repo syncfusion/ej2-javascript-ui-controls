@@ -257,7 +257,6 @@ var SfSidebar = /** @class */ (function () {
         var elementWidth = this.element.getBoundingClientRect().width;
         elementWidth = this.enableDock && !this.isOpen ? this.dockSize : elementWidth;
         var sibling = document.querySelector('.e-main-content') || this.targetElement;
-        this.isPositionChange = false;
         if (sibling) {
             if (this.isPositionChange) {
                 this.position === LEFT ? sibling.style.marginRight = '0px' : sibling.style.marginLeft = '0px';
@@ -266,6 +265,7 @@ var SfSidebar = /** @class */ (function () {
             if (!sf.base.Browser.isDevice && this.type !== AUTO) {
                 this.position === LEFT ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
             }
+            this.isPositionChange = false;
             var margin = typeof (elementWidth) === 'string' ? elementWidth : elementWidth + 'px';
             var translate = this.position === LEFT ? elementWidth : -(elementWidth);
             var value = sibling && (this.enableDock || this.isOpen || this.isSwipChange);
@@ -317,7 +317,7 @@ var Sidebar = {
         if (this.isValid(element)) {
             element.blazor__instance.initialize();
         }
-        return !sf.base.Browser.isDevice && window.matchMedia(property.MediaQuery) ? true : false;
+        return !sf.base.Browser.isDevice && window.matchMedia(property.MediaQuery) ? true : (sf.base.Browser.isDevice && property.IsOpen) ? true : false;
     },
     setType: function (element, property) {
         if (this.isValid(element)) {

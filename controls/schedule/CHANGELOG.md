@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### Schedule
+
+#### New Features
+
+- `#304701`, `#305038` - Provided the persistence support for scroll bar position.
+
+#### Bug Fixes
+
+- `#I309044` - An issue with year view months rendered incorrectly issue has been fixed.
+
 ## 18.4.35 (2021-01-19)
 
 ### Schedule

@@ -27,6 +27,36 @@ var SfFileManager = /** @class */ (function () {
         this.bindKeyboardEvent();
         this.wireEvents();
     }
+    SfFileManager.prototype.unWireMobileEvents = function () {
+        this.clickObj.destroy();
+    };
+    SfFileManager.prototype.wireMobileEvents = function () {
+        var fileElement;
+        var proxy = this;
+        if (this.properties.view === 'Details') {
+            fileElement = this.element.querySelector('.e-view-container .e-grid .e-gridcontent');
+        }
+        else {
+            fileElement = this.element.querySelector('.e-view-container .e-large-icons');
+        }
+        this.clickObj = new sf.base.Touch(fileElement, {
+            tapHold: function (e) {
+                var targetElement;
+                var rowId;
+                if (proxy.properties.view === 'Details') {
+                    targetElement = sf.base.closest(e.originalEvent.target, '.e-row');
+                    rowId = targetElement ? targetElement.getAttribute('aria-rowindex') : null;
+                }
+                else {
+                    targetElement = sf.base.closest(e.originalEvent.target, 'li.e-list-item');
+                    rowId = targetElement ? targetElement.getAttribute('data-uid') : null;
+                }
+                if (targetElement != null && rowId != null) {
+                    proxy.dotnetRef.invokeMethodAsync('ChangeMobileMultiSelection', rowId);
+                }
+            }
+        });
+    };
     SfFileManager.prototype.wireEvents = function () {
         var gridElem = this.element.querySelector('#' + this.properties.id + '_grid');
         if (gridElem) {
@@ -62,19 +92,21 @@ var SfFileManager = /** @class */ (function () {
             if (this.dragObj) {
                 this.dragObj.destroy();
             }
-            this.dragObj = new sf.base.Draggable(dragEle, {
-                cursorAt: { left: 44, top: 18 },
-                enableTailMode: true,
-                dragArea: this.element,
-                dragTarget: '.' + FULLROW,
-                drag: this.draggingHandler.bind(this),
-                dragStart: function (args) {
-                    _this.dragStartHandler(args);
-                },
-                dragStop: this.dragStopHandler.bind(this),
-                enableAutoScroll: true,
-                helper: this.dragHelper.bind(this)
-            });
+            if (dragEle) {
+                this.dragObj = new sf.base.Draggable(dragEle, {
+                    cursorAt: { left: 44, top: 18 },
+                    enableTailMode: true,
+                    dragArea: this.element,
+                    dragTarget: '.' + FULLROW,
+                    drag: this.draggingHandler.bind(this),
+                    dragStart: function (args) {
+                        _this.dragStartHandler(args);
+                    },
+                    dragStop: this.dragStopHandler.bind(this),
+                    enableAutoScroll: true,
+                    helper: this.dragHelper.bind(this)
+                });
+            }
         }
         else if (!this.properties.draggable) {
             this.dragObj.destroy();
@@ -682,17 +714,21 @@ var SfFileManager = /** @class */ (function () {
 }());
 // tslint:disable-next-line
 var FileManager = {
-    initialize: function (element, dotnetRef, properties) {
+    initialize: function (element, dotnetRef, properties, isMobile) {
         new SfFileManager(element, dotnetRef, properties);
         if (properties.draggable) {
             element.blazor__instance.createDragObj();
         }
+        element.blazor__instance.isMobile = isMobile;
         return element.blazor__instance.adjustHeight();
     },
     dragStartActionContinue: function (element, cancel) {
         if (element) {
             element.blazor__instance.TriggerDragStartEvent(cancel);
         }
+    },
+    wireMobileEvents: function (element) {
+        element.blazor__instance.wireMobileEvents();
     },
     dragActionContinue: function (element, cancel) {
         if (element) {
@@ -703,6 +739,10 @@ var FileManager = {
         element.blazor__instance.properties = properties;
         element.blazor__instance.unWireEvents();
         element.blazor__instance.wireEvents();
+        if (element.blazor__instance.isMobile) {
+            element.blazor__instance.unWireMobileEvents();
+            element.blazor__instance.wireMobileEvents();
+        }
         return element.blazor__instance.adjustHeight();
     },
     uploadOpen: function (element, id) {
@@ -715,6 +755,10 @@ var FileManager = {
         if (element) {
             element.blazor__instance.properties.view = view;
             element.blazor__instance.bindKeyboardEvent();
+            if (element.blazor__instance.isMobile) {
+                element.blazor__instance.unWireMobileEvents();
+                element.blazor__instance.wireMobileEvents();
+            }
         }
     },
     updateGridRow: function (gridEle, index) {

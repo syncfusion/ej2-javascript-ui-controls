@@ -786,8 +786,10 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected unBindCommonEvent(): void {
-        EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
-        let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
+        if (this.targetElement()) {
+            EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
+        }
+        let formElement: HTMLFormElement = this.inputElement && closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement) {
             EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
@@ -2904,7 +2906,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.closePopup();
         let dataItem: { [key: string]: string } = this.getItemData();
         let isSelectVal: boolean = this.isServerBlazor ? !isNullOrUndefined(this.value) : !isNullOrUndefined(this.selectedLI);
-        if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
+        if (this.inputElement && this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);
@@ -2942,7 +2944,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.isTyped = true;
         this.hidePopup(e);
-        this.targetElement().blur();
+        if (this.targetElement()) {
+            this.targetElement().blur();
+        }
         removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
     }
     /**
@@ -2970,16 +2974,18 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.element && !this.element.classList.contains('e-' + this.getModuleName())) {
                 return;
             }
-            let attrArray: string[] = ['readonly', 'aria-disabled', 'aria-placeholder',
-                'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
-                'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            for (let i: number = 0; i < attrArray.length; i++) {
-                this.inputElement.removeAttribute(attrArray[i]);
+            if (this.inputElement) {
+                let attrArray: string[] = ['readonly', 'aria-disabled', 'aria-placeholder',
+                    'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
+                    'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
+                    'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
+                for (let i: number = 0; i < attrArray.length; i++) {
+                    this.inputElement.removeAttribute(attrArray[i]);
+                }
+                this.inputElement.setAttribute('tabindex', this.tabIndex);
+                this.inputElement.classList.remove('e-input');
+                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             }
-            this.inputElement.setAttribute('tabindex', this.tabIndex);
-            this.inputElement.classList.remove('e-input');
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             this.element.style.display = 'block';
             if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
                 detach(this.inputWrapper.container);

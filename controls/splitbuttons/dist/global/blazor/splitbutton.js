@@ -281,10 +281,12 @@ var DropDownButton = /** @class */ (function (_super) {
                 _this.element.removeAttribute(key);
             });
             this.dropDown.destroy();
-            var popupEle = document.getElementById(this.getPopUpElement().id);
-            if (popupEle) {
-                sf.base.removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
-                sf.base.detach(popupEle);
+            if (this.getPopUpElement()) {
+                var popupEle = document.getElementById(this.getPopUpElement().id);
+                if (popupEle) {
+                    sf.base.removeClass([popupEle], ['e-popup-open', 'e-popup-close']);
+                    sf.base.detach(popupEle);
+                }
             }
             if (!this.disabled) {
                 this.unWireEvents();
@@ -774,26 +776,27 @@ var SplitButton = /** @class */ (function (_super) {
     SplitButton.prototype.destroy = function () {
         var _this = this;
         var classList$$1 = [RTL];
-        var element = document.getElementById(this.element.id);
         if (this.cssClass) {
             classList$$1 = classList$$1.concat(this.cssClass.split(' '));
         }
-        if (element && element.parentElement === this.wrapper) {
-            if (this.wrapper.tagName === TAGNAME) {
-                this.wrapper.innerHTML = '';
-                sf.base.removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
-                sf.base.removeClass([this.wrapper], this.cssClass.split(' '));
+        if (this.element) {
+            var element = document.getElementById(this.element.id);
+            if (element && element.parentElement === this.wrapper) {
+                if (this.wrapper.tagName === TAGNAME) {
+                    this.wrapper.innerHTML = '';
+                    sf.base.removeClass([this.wrapper], ['e-rtl', 'e-' + this.getModuleName() + '-wrapper']);
+                    sf.base.removeClass([this.wrapper], this.cssClass.split(' '));
+                }
+                else {
+                    sf.base.removeClass([this.element], classList$$1);
+                    ['aria-label', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type'].forEach(function (key) {
+                        _this.element.removeAttribute(key);
+                    });
+                    this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
+                    sf.base.remove(this.wrapper);
+                }
+                this.unWireEvents();
             }
-            else {
-                sf.base.removeClass([this.element], classList$$1);
-                ['aria-label', 'aria-haspopup', 'aria-expanded',
-                    'aria-owns', 'type'].forEach(function (key) {
-                    _this.element.removeAttribute(key);
-                });
-                this.wrapper.parentNode.insertBefore(this.element, this.wrapper);
-                sf.base.remove(this.wrapper);
-            }
-            this.unWireEvents();
         }
         this.primaryBtnObj.destroy();
         this.secondaryBtnObj.destroy();

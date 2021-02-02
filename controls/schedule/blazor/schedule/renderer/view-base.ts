@@ -205,4 +205,20 @@ export class ViewBase {
     public getPanel(): HTMLElement {
         return this.element;
     }
+    public retainScrollPosition(): void {
+        if (this.parent.options.enablePersistence) {
+            let contentWrap: HTMLElement = this.element.querySelector('.e-content-wrap') as HTMLElement;
+            if (!isNullOrUndefined(contentWrap)) {
+                let props: Object = JSON.parse(window.localStorage.getItem(this.parent.element.id));
+                if (!isNullOrUndefined(props)) {
+                    let top: number = (<{ [key: string]: Object }>props).top as number;
+                    let left: number = (<{ [key: string]: Object }>props).left as number;
+                    if (!isNullOrUndefined(top) && !isNullOrUndefined(left)) {
+                        contentWrap.scrollTop = top;
+                        contentWrap.scrollLeft = left;
+                    }
+                }
+            }
+        }
+    }
 }

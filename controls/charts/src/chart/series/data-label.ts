@@ -10,7 +10,7 @@ import { Series, Points } from './chart-series';
 import { ITextRenderEventArgs } from '../../chart/model/chart-interface';
 import { textRender } from '../../common/model/constants';
 import {
-    createTemplate, getFontStyle, getElement, measureElementRect, templateAnimate, withIn
+    createTemplate, getFontStyle, getElement, measureElementRect, templateAnimate, withIn, withInBounds
 } from '../../common/utils/helper';
 import { createElement, getValue, extend } from '@syncfusion/ej2-base';
 import { Alignment } from '../../common/utils/enum';
@@ -141,6 +141,8 @@ export class DataLabel {
         this.inverted = chart.requireInvertedAxis;
         this.yAxisInversed = series.yAxis.isInversed;
         let redraw: boolean = chart.redraw;
+        let isDataLabelOverlap: boolean = false;
+        let coordinatesAfterRotation: ChartLocation[] = [];
         let templateId: string = chart.element.id + '_Series_' +
             (series.index === undefined ? series.category : series.index) + '_DataLabelCollections';
         let element: HTMLElement = createElement('div', {
@@ -148,6 +150,7 @@ export class DataLabel {
         });
         let visiblePoints: Points[] = getVisiblePoints(series);
         let point: Points;
+        let rectCenterX: number; let rectCenterY: number;
         // Data label point iteration started
         for (let i: number = 0; i < visiblePoints.length; i++) {
             point = visiblePoints[i];
@@ -164,6 +167,7 @@ export class DataLabel {
             let isRender: boolean = true;
             let clip: Rect = series.clipRect;
             let shapeRect: HTMLElement;
+            isDataLabelOverlap = false;
             angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             let argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
@@ -200,26 +204,33 @@ export class DataLabel {
                                 }
                             }
                             let actualRect: Rect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
-                            let notOverlapping: boolean;
-                            let rectPoints: ChartLocation[][] = [];
-                            if (dataLabel.enableRotation && angle !== 0) {
-                                let rectCoordinates: ChartLocation[] = this.getRectanglePoints(actualRect);
-                                let rectCenterX: number = actualRect.x + actualRect.width * 0.5;
-                                let rectCenterY: number = (actualRect.y - (actualRect.height / 2));
-                                rectPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
-                                notOverlapping = true;
-                                for (let index: number = i; index > 0; index--) {
-                                    if (rectPoints[i] && rectPoints[index - 1] &&
-                                        isRotatedRectIntersect(rectPoints[i], rectPoints[index - 1])) {
-                                        notOverlapping = false;
-                                        rectPoints[i] = null;
-                                        break;
+                            //let notOverlapping: boolean;
+                            if (dataLabel.enableRotation) {
+                                let rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
+                                rectCenterX = rect.x + (rect.width / 2);
+                                rectCenterY = (rect.y + (rect.height / 2));
+                                coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
+                                isDataLabelOverlap = this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
+                                if (!isDataLabelOverlap) {
+                                    this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
+                                    let currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
+                                    for (let index: number = currentPointIndex; index >= 0; index--) {
+                                        if (this.chart.rotatedDataLabelCollections[currentPointIndex] &&
+                                            this.chart.rotatedDataLabelCollections[index - 1] &&
+                                            isRotatedRectIntersect(
+                                                this.chart.rotatedDataLabelCollections[currentPointIndex],
+                                                this.chart.rotatedDataLabelCollections[index - 1])
+                                        ) {
+                                            isDataLabelOverlap = true;
+                                            this.chart.rotatedDataLabelCollections[currentPointIndex] = null;
+                                            break;
+                                        }
                                     }
                                 }
                             } else {
-                                notOverlapping = !isCollide(rect, chart.dataLabelCollections, clip);
+                                isDataLabelOverlap = isCollide(rect, chart.dataLabelCollections, clip);
                             }
-                            if ( (notOverlapping || dataLabel.labelIntersectAction === 'None') && isRender) {
+                            if ((!isDataLabelOverlap || dataLabel.labelIntersectAction === 'None') && isRender) {
                                 chart.dataLabelCollections.push(actualRect);
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(
@@ -240,9 +251,11 @@ export class DataLabel {
                                 yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0};
                                 if (angle !== 0 && dataLabel.enableRotation) {
-                                    xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
-                                    yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
-                                        (dataLabel.margin.bottom) / 2;
+                                    // xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
+                                    xValue = rectCenterX;
+                                    //yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
+                                    // (dataLabel.margin.bottom) / 2;
+                                    yValue = rectCenterY;
                                     degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
                                 } else {
                                     degree = 0;
@@ -285,6 +298,15 @@ export class DataLabel {
         let loc3: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
         let loc4: ChartLocation = new ChartLocation(rect.x, rect.y + rect.height);
         return [loc1, loc2, loc3, loc4];
+    }
+
+    private isDataLabelOverlapWithChartBound(rectCoordinates: ChartLocation[], chart: Chart, clip: Rect): boolean {
+        for (let index: number = 0; index < rectCoordinates.length; index++) {
+            if (!withInBounds(rectCoordinates[index].x + clip.x, rectCoordinates[index].y + clip.y, chart.initialClipRect)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

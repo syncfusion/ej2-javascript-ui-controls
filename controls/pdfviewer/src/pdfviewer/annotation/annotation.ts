@@ -2095,7 +2095,7 @@ export class Annotation {
             let leaderLengthElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_properties_leader_length');
             if (lineStartElement && lineEndElement) {
                 lineStartElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].sourceDecoraterShapes);
-                lineStartElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].taregetDecoraterShapes);
+                lineEndElement.value = this.getArrowString(this.pdfViewer.selectedItems.annotations[0].taregetDecoraterShapes);
             }
             thicknessElement.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeWidth;
             fillColorElement.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill;
@@ -2419,9 +2419,9 @@ export class Annotation {
             endArrow = this.getArrowTypeFromDropDown(lineEndElement.value, true);
             // tslint:disable-next-line
             thickness = parseInt(thicknessElement.value);
-            strokeColor = strokeColorElement.value;
+            strokeColor = this.getValue(strokeColorElement.children[0].style.borderBottomColor, 'hex');
             strokeColor = (strokeColor === '') ? '#ffffff00' : strokeColor;
-            fillColor = fillColorElement.value;
+            fillColor = this.getValue(fillColorElement.children[0].style.borderBottomColor, 'hex');
             fillColor = (fillColor === '' ) ? '#ffffff00' : fillColor;
             opacity = (opacityElement.value as number) / 100;
             if (lineStyleElement.value) {

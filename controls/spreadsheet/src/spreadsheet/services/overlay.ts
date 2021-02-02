@@ -179,8 +179,12 @@ export class Overlay {
         let target: HTMLElement = e.target as HTMLElement;
         let overlayElem: HTMLElement = e.target as HTMLElement;
         if (!target.classList.contains('e-ss-overlay')) {
-            overlayElem = closest(e.target as Element, '.e-datavisualization-chart') ?
-             closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement : target.parentElement;
+            overlayElem = target.parentElement;
+            if (closest(e.target as Element, '.e-datavisualization-chart')) {
+                overlayElem = closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement;
+                this.currentWidth = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('width').replace('px', ''));
+                this.currenHeight = parseFloat(getComputedStyle(overlayElem, null).getPropertyValue('height').replace('px', ''));
+            }
         }
         this.originalReorderLeft = parseInt(overlayElem.style.left, 10); //divLeft
         this.originalReorderTop = parseInt(overlayElem.style.top, 10); // divTop

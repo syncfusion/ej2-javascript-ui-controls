@@ -491,8 +491,10 @@ var DropDownList = /** @class */ (function (_super) {
         }
     };
     DropDownList.prototype.unBindCommonEvent = function () {
-        sf.base.EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
-        var formElement = sf.base.closest(this.inputElement, 'form');
+        if (this.targetElement()) {
+            sf.base.EventHandler.remove(this.targetElement(), 'blur', this.onBlur);
+        }
+        var formElement = this.inputElement && sf.base.closest(this.inputElement, 'form');
         if (formElement) {
             sf.base.EventHandler.remove(formElement, 'reset', this.resetValueHandler);
         }
@@ -2695,7 +2697,7 @@ var DropDownList = /** @class */ (function (_super) {
         this.closePopup();
         var dataItem = this.getItemData();
         var isSelectVal = this.isServerBlazor ? !sf.base.isNullOrUndefined(this.value) : !sf.base.isNullOrUndefined(this.selectedLI);
-        if (this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
+        if (this.inputElement && this.inputElement.value.trim() === '' && !this.isInteracted && (this.isSelectCustom ||
             isSelectVal && this.inputElement.value !== dataItem.text)) {
             this.isSelectCustom = false;
             this.clearAll(e);
@@ -2735,7 +2737,9 @@ var DropDownList = /** @class */ (function (_super) {
         }
         this.isTyped = true;
         this.hidePopup(e);
-        this.targetElement().blur();
+        if (this.targetElement()) {
+            this.targetElement().blur();
+        }
         sf.base.removeClass([this.inputWrapper.container], [dropDownListClasses.inputFocus]);
     };
     /**
@@ -2765,16 +2769,18 @@ var DropDownList = /** @class */ (function (_super) {
             if (this.element && !this.element.classList.contains('e-' + this.getModuleName())) {
                 return;
             }
-            var attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
-                'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
-                'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            for (var i = 0; i < attrArray.length; i++) {
-                this.inputElement.removeAttribute(attrArray[i]);
+            if (this.inputElement) {
+                var attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
+                    'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
+                    'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
+                    'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
+                for (var i = 0; i < attrArray.length; i++) {
+                    this.inputElement.removeAttribute(attrArray[i]);
+                }
+                this.inputElement.setAttribute('tabindex', this.tabIndex);
+                this.inputElement.classList.remove('e-input');
+                sf.inputs.Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             }
-            this.inputElement.setAttribute('tabindex', this.tabIndex);
-            this.inputElement.classList.remove('e-input');
-            sf.inputs.Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             this.element.style.display = 'block';
             if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
                 sf.base.detach(this.inputWrapper.container);

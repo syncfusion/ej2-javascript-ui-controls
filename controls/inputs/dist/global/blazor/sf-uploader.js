@@ -1991,7 +1991,9 @@ var SfUploader = /** @class */ (function () {
                     this.raiseSuccessEvent(e, metaData.file);
                     return;
                 }
-                this.sendNextRequest(metaData);
+                if (metaData.file.statusCode !== '4') {
+                    this.sendNextRequest(metaData);
+                }
             }
         }
         else {
@@ -2065,8 +2067,10 @@ var SfUploader = /** @class */ (function () {
         this.abortUpload(metaData, custom, eventArgs);
     };
     SfUploader.prototype.abortUpload = function (metaData, custom, eventArgs) {
-        metaData.request.emitError = false;
-        metaData.request.httpRequest.abort();
+        if (metaData.file.statusCode !== '4') {
+            metaData.request.emitError = false;
+            metaData.request.httpRequest.abort();
+        }
         var liElement = this.getLiElement(metaData.file);
         if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) || !custom)) {
             var targetElement = liElement.querySelector('.' + PAUSE_UPLOAD);

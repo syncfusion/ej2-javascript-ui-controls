@@ -462,8 +462,12 @@ export interface BeforeChartEventArgs {
     theme?: chartTheme;
     isSeriesInRows?: boolean;
     range?: string;
-    id: string;
-    posRange: string;
-    isInitCell: boolean;
+    id?: string;
+    height?: number;
+    width?: number;
+    top?: number;
+    left?: number;
+    posRange?: string;
+    isInitCell?: boolean;
     cancel: boolean;
 }

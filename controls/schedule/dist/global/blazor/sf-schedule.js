@@ -538,6 +538,22 @@ var ViewBase = /** @class */ (function () {
     ViewBase.prototype.getPanel = function () {
         return this.element;
     };
+    ViewBase.prototype.retainScrollPosition = function () {
+        if (this.parent.options.enablePersistence) {
+            var contentWrap = this.element.querySelector('.e-content-wrap');
+            if (!sf.base.isNullOrUndefined(contentWrap)) {
+                var props = JSON.parse(window.localStorage.getItem(this.parent.element.id));
+                if (!sf.base.isNullOrUndefined(props)) {
+                    var top_1 = props.top;
+                    var left = props.left;
+                    if (!sf.base.isNullOrUndefined(top_1) && !sf.base.isNullOrUndefined(left)) {
+                        contentWrap.scrollTop = top_1;
+                        contentWrap.scrollLeft = left;
+                    }
+                }
+            }
+        }
+    };
     return ViewBase;
 }());
 
@@ -1512,6 +1528,7 @@ var VerticalViews = /** @class */ (function (_super) {
         if (!sf.base.isNullOrUndefined(this.parent.quickPopup)) {
             this.parent.quickPopup.hide();
         }
+        this.parent.setPersistence();
     };
     VerticalViews.prototype.onApaptiveMove = function (e) {
         if (this.parent.uiStateValues.action) {
@@ -1561,6 +1578,7 @@ var VerticalViews = /** @class */ (function (_super) {
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
+        this.retainScrollPosition();
     };
     VerticalViews.prototype.setContentHeight = function (element, leftPanelElement, height) {
         if (!sf.base.isNullOrUndefined(leftPanelElement)) {
@@ -1609,7 +1627,9 @@ var VerticalViews = /** @class */ (function (_super) {
         if (this.parent.options.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             var currentDateIndex = this.getCurrentTimeIndicatorIndex();
             var timeCellsWrap = this.getLeftPanelElement();
-            sf.base.removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
+            if (!sf.base.isNullOrUndefined(timeCellsWrap)) {
+                sf.base.removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
+            }
             if (currentDateIndex.length > 0) {
                 var workCells = [].slice.call(this.element.querySelectorAll('.' + WORK_CELLS_CLASS));
                 if (workCells.length > 0) {
@@ -1680,6 +1700,9 @@ var VerticalViews = /** @class */ (function (_super) {
             styles: 'top:' + topInPx
         });
         var timeCellsWrap = this.getLeftPanelElement();
+        if (sf.base.isNullOrUndefined(timeCellsWrap)) {
+            return;
+        }
         var timeTrs = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
         if (rowIndex <= timeTrs.length) {
             sf.base.removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
@@ -2245,6 +2268,7 @@ var Month = /** @class */ (function (_super) {
         this.parent.onVirtualScroll();
         this.scrollTopPanel(e.target);
         this.scrollLeftPanel(e.target);
+        this.parent.setPersistence();
     };
     Month.prototype.scrollLeftPanel = function (target) {
         var leftPanel = this.getLeftPanelElement();
@@ -2288,6 +2312,7 @@ var Month = /** @class */ (function (_super) {
                 + this.parent.getMsFromDate(this.parent.options.selectedDate) + '"]');
             content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
+        this.retainScrollPosition();
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
         content.style.height = 'auto';
@@ -2545,6 +2570,7 @@ var Year = /** @class */ (function (_super) {
         if (scrollTopElement) {
             scrollTopElement.scrollTop = target.scrollTop;
         }
+        this.parent.setPersistence();
     };
     Year.prototype.onScrollUiUpdate = function (args) {
         var height = this.parent.element.offsetHeight - this.getHeaderBarHeight();
@@ -2575,6 +2601,7 @@ var Year = /** @class */ (function (_super) {
             // tslint:enable:no-any
         }
         this.setColWidth(this.getContentAreaElement());
+        this.retainScrollPosition();
     };
     Year.prototype.onDataReady = function () {
         if (this.parent.options.currentView === 'TimelineYear') {
@@ -2697,6 +2724,10 @@ var Agenda = /** @class */ (function (_super) {
         this.parent.setDimensions();
     };
     Agenda.prototype.onDataReady = function (args, count, isScrollTop) {
+        if (this.parent.options.enablePersistence) {
+            this.retainScrollPosition();
+            return;
+        }
         var wrap = this.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
         if (!wrap) {
             wrap = sf.base.createElement('div', { className: VIRTUAL_TRACK_CLASS });
@@ -2742,6 +2773,7 @@ var Agenda = /** @class */ (function (_super) {
                 this.beforeInvoke(index);
             }
         }
+        this.parent.setPersistence();
     };
     Agenda.prototype.beforeInvoke = function (index) {
         var _this = this;
@@ -6672,6 +6704,11 @@ var SfSchedule = /** @class */ (function () {
     SfSchedule.prototype.setPersistence = function () {
         if (this.options.enablePersistence) {
             var props = { selectedDate: this.options.selectedDate, currentView: this.options.currentView };
+            var contentWrap = this.element.querySelector('.e-content-wrap');
+            if (!sf.base.isNullOrUndefined(contentWrap)) {
+                props.top = contentWrap.scrollTop;
+                props.left = contentWrap.scrollLeft;
+            }
             window.localStorage.setItem(this.element.id, JSON.stringify(props));
         }
     };

@@ -11,9 +11,9 @@ export function addScrolling(
     offset?: number): HTMLElement {
     let containerOffset: number; let contentOffset: number;
     if (scrollType === 'vscroll') {
-        containerOffset = offset || container.offsetHeight; contentOffset = content.offsetHeight;
+        containerOffset = offset || container.getBoundingClientRect().height; contentOffset = content.getBoundingClientRect().height;
     } else {
-        containerOffset = container.offsetWidth; contentOffset = content.offsetWidth;
+        containerOffset = container.getBoundingClientRect().width; contentOffset = content.getBoundingClientRect().width;
     }
     if (containerOffset < contentOffset) {
         let scrollEle: HTMLElement = createElement('div', { className: 'e-menu-' + scrollType });

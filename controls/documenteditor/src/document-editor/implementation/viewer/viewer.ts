@@ -946,6 +946,7 @@ export class DocumentHelper {
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
         this.owner.commentReviewPane.reviewTab.hideTab(0, false);
+        this.owner.commentReviewPane.reviewTab.hideTab(1, !this.owner.enableTrackChanges);
         this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
     }
     /**

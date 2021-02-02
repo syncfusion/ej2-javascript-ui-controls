@@ -902,19 +902,22 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     break;
                 case 'dataSourceSettings':
                     if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource)) {
+                        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
+                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
+                            this.savedDataSourceSettings = undefined;
+                        }
                         if ((newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0 && !isNullOrUndefined(this.staticPivotGridModule)) {
                             this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { values: [] } }, true);
-                            this.engineModule.fieldList = {};
+                            this.staticPivotGridModule.setProperties({ dataSourceSettings: { filters: [] } }, true);
+                        }
+                        this.engineModule.fieldList = null;
+                        if (!isNullOrUndefined(this.staticPivotGridModule)) {
                             this.staticPivotGridModule.pivotValues = [];
                         }
                         this.initEngine();
-                        if (!isNullOrUndefined(this.savedDataSourceSettings)) {
-                            PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
-                            this.savedDataSourceSettings = undefined;
-                        }
                     }
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                         if (this.isPopupView && this.pivotGridModule &&

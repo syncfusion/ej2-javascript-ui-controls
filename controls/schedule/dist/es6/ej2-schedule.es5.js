@@ -749,7 +749,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
         this.parent.off(documentClick, this.closeHeaderPopup);
     };
     HeaderRenderer.prototype.closeHeaderPopup = function (e) {
-        var closestEle = closest(e.event.target, '.e-date-range,.e-header-popup,.e-day,.e-selected');
+        var closestEle = closest(e.event.target, '.e-date-range,.e-header-popup,.e-selected');
         if (!isNullOrUndefined(closestEle)) {
             return;
         }
@@ -1047,7 +1047,9 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             });
             var todayEle = this.parent.element.querySelector('.e-cell.e-today');
             todayEle.classList.remove('e-today');
-            addClass([selectAppointments[this.parent.activeCellsData.startTime.getDate() - 1]], 'e-today');
+            var timeZoneName = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+            var todayDate = this.parent.tzModule.convert(new Date(), this.parent.tzModule.getLocalTimezoneName(), timeZoneName);
+            addClass([selectAppointments[todayDate.getDate() - 1]], 'e-today');
         }
     };
     HeaderRenderer.prototype.calendarChange = function (args) {
@@ -1055,6 +1057,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
             var calendarDate = resetTime(new Date(args.value));
             this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
         }
+        this.updateTodayDate();
         this.headerPopup.hide();
     };
     HeaderRenderer.prototype.calculateViewIndex = function (args) {
@@ -1077,6 +1080,7 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     this.headerPopup.show();
+                    this.updateTodayDate();
                 }
                 break;
             case 'e-day':
@@ -15377,7 +15381,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Schedule.prototype.getPersistData = function () {
-        return this.addOnPersist(['currentView', 'selectedDate']);
+        return this.addOnPersist(['currentView', 'selectedDate', 'scrollTop', 'scrollLeft']);
     };
     /**
      * Called internally, if any of the property value changed.
@@ -19431,6 +19435,24 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         }
         return weekNumber;
     };
+    ViewBase.prototype.setPersistence = function () {
+        if (this.parent.enablePersistence) {
+            var contentWrap = this.element.querySelector('.e-content-wrap');
+            if (!isNullOrUndefined(contentWrap)) {
+                this.parent.scrollLeft = contentWrap.scrollLeft;
+                this.parent.scrollTop = contentWrap.scrollTop;
+            }
+        }
+    };
+    ViewBase.prototype.retainScrollPosition = function () {
+        if (this.parent.enablePersistence) {
+            var conWrap = this.parent.element.querySelector('.e-content-wrap');
+            if (!isNullOrUndefined(conWrap) && !isNullOrUndefined(this.parent.scrollLeft) && !isNullOrUndefined(this.parent.scrollTop)) {
+                conWrap.scrollTop = this.parent.scrollTop;
+                conWrap.scrollLeft = this.parent.scrollLeft;
+            }
+        }
+    };
     return ViewBase;
 }());
 
@@ -19494,6 +19516,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.parent.quickPopup)) {
             this.parent.quickPopup.quickPopupHide();
         }
+        this.setPersistence();
     };
     VerticalView.prototype.onApaptiveMove = function (e) {
         if (this.parent.uiStateValues.action) {
@@ -19547,6 +19570,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
+        this.retainScrollPosition();
     };
     VerticalView.prototype.setContentHeight = function (element, leftPanelElement, height) {
         if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
@@ -20402,6 +20426,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         this.parent.notify(virtualScroll, e);
         this.scrollTopPanel(e.target);
         this.scrollLeftPanel(e.target);
+        this.setPersistence();
     };
     Month.prototype.scrollLeftPanel = function (target) {
         var leftPanel = this.getLeftPanelElement();
@@ -20445,6 +20470,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
                 + this.parent.getMsFromDate(this.parent.selectedDate) + '"]');
             content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
+        this.retainScrollPosition();
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
         content.style.height = 'auto';
@@ -21062,7 +21088,7 @@ var Year = /** @__PURE__ @class */ (function (_super) {
         var monthCollection = Array.apply(null, { length: 12 }).map(function (value, index) { return index; });
         for (var _i = 0, monthCollection_1 = monthCollection; _i < monthCollection_1.length; _i++) {
             var month = monthCollection_1[_i];
-            var currentMonth = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            var currentMonth = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             var calendarElement = createElement('div', {
                 className: 'e-month-calendar e-calendar',
                 attrs: { 'data-role': 'calendar' }
@@ -21227,6 +21253,7 @@ var Year = /** @__PURE__ @class */ (function (_super) {
         if (scrollTopElement) {
             scrollTopElement.scrollTop = target.scrollTop;
         }
+        this.setPersistence();
     };
     Year.prototype.onScrollUiUpdate = function (args) {
         var height = this.parent.element.offsetHeight - this.getHeaderBarHeight();
@@ -21257,6 +21284,7 @@ var Year = /** @__PURE__ @class */ (function (_super) {
             // tslint:enable:no-any
         }
         this.setColWidth(this.getContentAreaElement());
+        this.retainScrollPosition();
     };
     Year.prototype.startDate = function () {
         var startDate = new Date(this.parent.selectedDate.getFullYear(), 0, 1);
@@ -21781,6 +21809,9 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         var contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
         this.parent.notify(eventsLoaded, {});
+        if (!this.parent.activeViewOptions.allowVirtualScrolling) {
+            this.retainScrollPosition();
+        }
     };
     Agenda.prototype.refreshEvent = function (refreshDate) {
         var processedData = [];
@@ -21905,6 +21936,9 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         this.parent.quickPopup.quickPopupHide();
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             this.virtualScrolling(event);
+        }
+        if (!this.parent.activeViewOptions.allowVirtualScrolling) {
+            this.setPersistence();
         }
     };
     Agenda.prototype.virtualScrolling = function (event) {
