@@ -1,5 +1,5 @@
 <a href="https://www.syncfusion.com/">
-    <img src="https://ej2.syncfusion.com/github/images/syncfusion-logo.svg" alt="Syncfusion Inc." title="Syncfusion Inc." align="right" width="250px" height="60px" />
+    <img src="https://ej2.syncfusion.com/github/images/syncfusion-logo.svg" alt="Syncfusion Inc." title="Syncfusion Inc." align="right" width="250px" height="70px" />
 </a>
 
 # [Syncfusion JavaScript UI Controls Library](https://www.syncfusion.com/javascript-ui-controls)
