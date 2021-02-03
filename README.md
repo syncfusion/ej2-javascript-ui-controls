@@ -1,10 +1,10 @@
 <a href="https://www.syncfusion.com/">
-    <img src="https://ej2.syncfusion.com/github/images/syncfusion-logo.svg" alt="Syncfusion Inc." title="Syncfusion Inc." align="right" width="175px" height="60px" />
+    <img src="https://ej2.syncfusion.com/github/images/syncfusion-logo.svg" alt="Syncfusion Inc." title="Syncfusion Inc." align="right" width="250px" height="60px" />
 </a>
 
 # [Syncfusion JavaScript UI Controls Library](https://www.syncfusion.com/javascript-ui-controls)
 
-> The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 65 high-performance, lightweight, modular, and responsive UI components in a single package.
+The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 65 high-performance, lightweight, modular, and responsive UI components in a single package.
 
  [![Screens of showcase applications](https://ej2.syncfusion.com/products/ej2-banner.gif)](https://syncfusion.com/javascript-ui-controls/)
  
