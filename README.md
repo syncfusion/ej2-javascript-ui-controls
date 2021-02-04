@@ -1095,16 +1095,6 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 | [<img src="https://ej2.syncfusion.com/github/images/angular.svg" height="50" />](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/blazor.svg" height="50" />](https://www.syncfusion.com/blazor-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Blazor](https://www.syncfusion.com/blazor-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |
 | :-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
 
-## Resources
-* [Documentation](https://ej2.syncfusion.com/documentation/)
-* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
-* [Custom Resource Generator](https://crg.syncfusion.com/)
-* [Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident?utm_medium=listing&utm_source=github)
-* [Forums](https://www.syncfusion.com/forums/essential-js2?utm_medium=listing&utm_source=github)
-* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
-* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
-* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
-
 ## Showcase Applications
 
 <p align="center">
@@ -1215,6 +1205,16 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
     </a>
 </p>
 <br /><br />
+
+## Resources
+* [Documentation](https://ej2.syncfusion.com/documentation/)
+* [Theme Studio](https://ej2.syncfusion.com/themestudio/)
+* [Custom Resource Generator](https://crg.syncfusion.com/)
+* [Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident?utm_medium=listing&utm_source=github)
+* [Forums](https://www.syncfusion.com/forums/essential-js2?utm_medium=listing&utm_source=github)
+* [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)
+* [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=github)
+* [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=github)
 
 ## Release Notes
  Please refer this [link](https://ej2.syncfusion.com/documentation/release-notes/index/)
