@@ -1096,7 +1096,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (sheet === this.getActiveSheet()) {
                 if (colIndex >= this.viewport.leftIndex && colIndex <= lastIdx) {
                     if (this.scrollSettings.enableVirtualization) { colIndex = colIndex - this.viewport.leftIndex; }
-                    let trgt: HTMLElement = this.getColumnHeaderContent().getElementsByClassName('e-header-cell')[colIndex] as HTMLElement;
+                    let trgt: HTMLElement;
+                    if (sheet.showHeaders) {
+                        trgt = this.getColumnHeaderContent().getElementsByClassName('e-header-cell')[colIndex] as HTMLElement;
+                    } else {
+                        trgt = this.getContentTable().getElementsByClassName('e-row')[0]
+                            .getElementsByClassName('e-cell')[colIndex] as HTMLElement;
+                    }
                     let eleWidth: number = parseInt(this.getMainContent().getElementsByTagName('col')[colIndex].style.width, 10);
                     let threshold: number = parseInt(colWidth, 10) - eleWidth;
                     if (threshold < 0 && eleWidth < -(threshold)) {
@@ -1140,13 +1146,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (sheet === this.getActiveSheet()) {
                 if (rowIndex <= this.viewport.bottomIndex && rowIndex >= this.viewport.topIndex) {
                     if (this.scrollSettings.enableVirtualization) { rowIndex = rowIndex - this.viewport.topIndex; }
-                    let trgt: HTMLElement = this.getRowHeaderContent().getElementsByClassName('e-header-cell')[rowIndex] as HTMLElement;
+                    let trgt: HTMLElement;
+                    if (sheet.showHeaders) {
+                        trgt = this.getRowHeaderContent().getElementsByClassName('e-header-cell')[rowIndex].parentElement as HTMLElement;
+                    } else {
+                        trgt = this.getContentTable().getElementsByClassName('e-row')[rowIndex] as HTMLElement;
+                    }
                     let eleHeight: number = parseInt(this.getMainContent().getElementsByTagName('tr')[rowIndex].style.height, 10);
                     let threshold: number = parseInt(rowHeight, 10) - eleHeight;
                     if (threshold < 0 && eleHeight < -(threshold)) {
                         threshold = -eleHeight;
                     }
-                    let oldIdx: number = parseInt(trgt.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+                    let oldIdx: number = parseInt(trgt.getAttribute('aria-rowindex'), 10) - 1;
                     if (this.getActiveSheet() === sheet) {
                         this.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
                         if (isNullOrUndefined(edited)) {
@@ -1697,6 +1708,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 let node: Node = td.lastChild;
                 if (td.querySelector('.e-hyperlink')) {
                     node = td.querySelector('.e-hyperlink').lastChild;
+                }
+                if (td.querySelector('.e-wrap-content')) {
+                    node = td.querySelector('.e-wrap-content').lastChild;
                 }
                 if (node && (node.nodeType === 3 || node.nodeType === 1)) {
                     node.nodeValue = value;

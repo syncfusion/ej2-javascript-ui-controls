@@ -385,9 +385,13 @@ export class Edit {
 
     private lastCellTab(formObj: Element): void {
       if (!this.parent.grid.isEdit && this.isOnBatch && this.keyPress === 'tab' && this.parent.editSettings.mode === 'Cell') {
-        this.updateGridEditMode('Normal');
-        this.isOnBatch = false;
-        this.keyPress = null;
+        if (!this.parent.editSettings.allowNextRowEdit) {
+          this.updateGridEditMode('Normal');
+          this.isOnBatch = false;
+          this.keyPress = null;
+        } else {
+          this.enableToolbarItems('edit');
+        }
       }
     }
 

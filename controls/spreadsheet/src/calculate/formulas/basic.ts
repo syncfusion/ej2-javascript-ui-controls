@@ -754,8 +754,12 @@ export class BasicFormulas {
     /** @hidden */
     public ComputeSUMIF(...range: string[]): string | number {
         let argArr: string[] = range;
-        if (argArr[0].indexOf(':') < 0 && !this.parent.isCellReference(argArr[0])) {
+        if (argArr[0].indexOf(':') < 0 && !this.parent.isCellReference(argArr[0]) ||
+            (argArr[2] && argArr[2].indexOf(':') < 0 && !this.parent.isCellReference(argArr[2]))) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.improper_formula];
+        }
+        if (argArr.length > 3 || argArr.length < 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let result: number[] | string = this.parent.computeSumIfAndAvgIf(range);
         if (typeof result === 'string' && (this.parent.formulaErrorStrings.indexOf(result)
@@ -1113,7 +1117,7 @@ export class BasicFormulas {
     /** @hidden */
     public ComputeCOUNTIF(...args: string[]): number | string {
         let argArr: string[] = args;
-        if (isNullOrUndefined(args) || args[0] === '' || argArr.length < 2) {
+        if (isNullOrUndefined(args) || args[0] === '' || argArr.length !== 2) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let cellColl: string[] | string;

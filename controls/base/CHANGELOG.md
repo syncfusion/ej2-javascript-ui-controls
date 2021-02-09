@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.4.42 (2021-02-09)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved Drag and Drop malfunction when setting top margin.
+- Resolved `Drag and Drop` malfunction while scrolling beyond screen size.
+- `I310147` - Provided Maximum fraction digit support for `Number Parser`.
+
 ## 18.4.41 (2021-02-02)
 
 ### Common

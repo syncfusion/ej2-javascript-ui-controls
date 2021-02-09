@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { beginAction, completeAction, skipHiddenIdx, refreshSheetTabs, refreshImagePosition } from '../common/index';
+import { beginAction, completeAction, skipHiddenIdx, refreshSheetTabs, refreshImagePosition, focus } from '../common/index';
 import { deleteAction, InsertDeleteEventArgs, dataChanged } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
@@ -30,7 +30,7 @@ export class Delete {
             }
             this.parent.notify(refreshSheetTabs, null);
             if (activeSheetDeleted) { this.parent.renderModule.refreshSheet(); }
-            this.parent.element.focus();
+            focus(this.parent.element);
         } else if (args.modelType === 'Row') {
             if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
                 if (this.parent.scrollSettings.enableVirtualization) {

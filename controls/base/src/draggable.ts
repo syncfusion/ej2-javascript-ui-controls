@@ -358,6 +358,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private parentClientRect: PositionModel;
     private parentScrollX: number = 0;
     private parentScrollY: number = 0;
+    private tempScrollHeight: number;
+    private tempScrollWidth: number;
     public droppables: { [key: string]: DropInfo } = {};
     constructor(element: HTMLElement, options?: DraggableModel) {
         super(options, element);
@@ -416,9 +418,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 if (axis === 'vertical') {
                     this.parentScrollY = this.parentScrollY +
                         (this.parentScrollY === 0 ? element.scrollTop : element.scrollTop - this.parentScrollY);
+                    this.tempScrollHeight = element.scrollHeight;
                 } else {
                     this.parentScrollX = this.parentScrollX +
                         (this.parentScrollX === 0 ? element.scrollLeft : element.scrollLeft - this.parentScrollX);
+                    this.tempScrollWidth = element.scrollWidth;
                 }
                 if (!isNullOrUndefined(element)) {
                     return this.getScrollableParent(element.parentNode as HTMLElement, axis);
@@ -556,9 +560,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 this.diffY = this.position.top - this.offset.top;
             }
             this.getScrollableValues();
-            if (!this.clone && !this.dragArea) {
-                pos.top -= this.parentScrollY;
-                pos.left -= this.parentScrollX;
+            // when drag element has margin-top
+            let styles: CSSStyleDeclaration = getComputedStyle(element);
+            let marginTop: number = parseFloat(styles.marginTop);
+            /* istanbul ignore next */
+            if (this.clone && marginTop !== 0) {
+                pos.top += marginTop;
             }
             let posValue: DragPosition = this.getProcessedPositionValue({
                 top: (pos.top - this.diffY) + 'px',
@@ -671,8 +678,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let pagey: number = intCoord.pageY;
         let dLeft: number = this.position.left - this.diffX;
         let dTop: number = this.position.top - this.diffY;
+        let styles: CSSStyleDeclaration = getComputedStyle(helperElement);
+        let marginTop: number = parseFloat(styles.marginTop);
         if (this.dragArea) {
-            let styles: CSSStyleDeclaration = getComputedStyle(helperElement);
             if (this.pageX !== pagex || this.skipDistanceCheck) {
                 let helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
                     + parseFloat(styles.marginRight));
@@ -712,15 +720,39 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let draEleTop: number;
         let draEleLeft: number;
         if (this.dragArea) {
+            this.dragLimit.top = this.clone ? this.dragLimit.top : 0;
             draEleTop = (top - iTop) < 0 ? this.dragLimit.top : (top - iTop);
             draEleLeft = (left - iLeft) < 0 ? this.dragElePosition.left : (left - iLeft);
+            // when drag-element has margin-top
+            /* istanbul ignore next */
+            if (marginTop > 0) {
+                if (this.clone) {
+                    draEleTop += this.element.offsetTop;
+                    if (dTop < 0) {
+                        if ((this.element.offsetTop + dTop) >= 0) {
+                            draEleTop = this.element.offsetTop + dTop;
+                        } else {
+                            draEleTop -= this.element.offsetTop;
+                        }
+                    }
+                    draEleTop = (this.dragLimit.bottom < draEleTop) ? this.dragLimit.bottom : draEleTop;
+                }
+                if ((top - iTop) < 0) {
+                    if (dTop + marginTop + (helperElement.offsetHeight - iTop) >= 0) {
+                        let tempDraEleTop: number = this.dragLimit.top + dTop - iTop;
+                        if ((tempDraEleTop + marginTop + iTop) < 0) {
+                            draEleTop -= marginTop + iTop;
+                        } else {
+                            draEleTop = tempDraEleTop;
+                        }
+                    } else {
+                        draEleTop -= marginTop + iTop;
+                    }
+                }
+            }
         } else {
             draEleTop = top - iTop;
             draEleLeft = left - iLeft;
-            if (!this.clone) {
-                draEleTop -= this.parentScrollY;
-                draEleLeft -= this.parentScrollX;
-            }
         }
 
         let dragValue: DragPosition = this.getProcessedPositionValue({ top: draEleTop + 'px', left: draEleLeft + 'px' });
@@ -892,6 +924,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         } else {
             pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
             pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        }
+        if (!this.clone) {
+            this.getScrollableValues();
+            pageY -=  this.tempScrollHeight ? this.parentScrollY : 0;
+            pageX -=  this.tempScrollWidth ? this.parentScrollY : 0;
         }
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),

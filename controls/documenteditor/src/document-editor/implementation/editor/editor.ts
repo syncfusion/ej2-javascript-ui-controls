@@ -6284,7 +6284,7 @@ export class Editor {
                     if (isEvenPage && (i + 1) % 2 === 0) {
                         this.updateHeaderFooterWidgetToPageInternal(page, node, node.headerFooterType.indexOf('Header') !== -1);
                     } else if ((!isEvenPage && (i + 1) % 2 !== 0)) {
-                        if (page.bodyWidgets[0].sectionFormat.differentFirstPage && (i + 1 !== 1)) {
+                        if (i > 0 || !(page.bodyWidgets[0].sectionFormat.differentFirstPage)) {
                             this.updateHeaderFooterWidgetToPageInternal(page, node, node.headerFooterType.indexOf('Header') !== -1);
                         }
                     }

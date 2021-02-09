@@ -50,6 +50,7 @@ export class Navigation {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
             this.pdfViewerBase.updateScrollTop(pageNumber - 1);
         }
+        this.pdfViewer.magnificationModule.resizeCanvas(pageNumber);
     }
 
     /**

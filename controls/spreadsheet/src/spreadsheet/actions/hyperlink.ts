@@ -1,5 +1,5 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
-import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf } from '../common/index';
+import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus } from '../common/index';
 import { editHyperlink, removeHyperlink, openHyperlink, editAlert } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -124,7 +124,7 @@ export class SpreadsheetHyperlink {
                         args.cancel = true;
                     }
                     dialogInst.dialogInstance.content = this.hyperlinkContent(); dialogInst.dialogInstance.dataBind();
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: {
@@ -210,7 +210,7 @@ export class SpreadsheetHyperlink {
                     args.cancel = true;
                 }
                 dialogInst.dialogInstance.content = this.hyperEditContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             buttons: [{
                 buttonModel: {

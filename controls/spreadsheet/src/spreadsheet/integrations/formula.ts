@@ -8,7 +8,7 @@ import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes } from '../../workbook/index';
 import { Dialog } from '../services/index';
-import { dialog, locale } from '../common/index';
+import { dialog, locale, focus } from '../common/index';
 
 /**
  * @hidden
@@ -268,10 +268,10 @@ export class Formula {
                 switch (keyCode) {
                     case this.keyCodes.ENTER:
                         this.addDefinedName({ name: trgtElem.value });
-                        this.parent.element.focus();
+                        focus(this.parent.element);
                         break;
                     case this.keyCodes.ESC:
-                        this.parent.element.focus();
+                        focus(this.parent.element);
                         break;
                 }
             }

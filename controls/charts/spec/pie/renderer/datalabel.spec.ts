@@ -143,7 +143,7 @@ describe('Data Label checking for the pie doughnut series', () => {
     });
     it('Datalabel Outside checking', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            datalabel = document.getElementById(connectorId + 2);
+            datalabel = document.getElementById(connectorId + 0);
             expect(datalabel).not.toBe(null);
             done();
         };
@@ -158,7 +158,7 @@ describe('Data Label checking for the pie doughnut series', () => {
     });
     it('Datalabel Outside connector dasharray', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            datalabel = document.getElementById(connectorId + 2);
+            datalabel = document.getElementById(connectorId + 0);
             expect(datalabel.getAttribute('stroke-dasharray') === '5,3').toBe(true);
             done();
         };
@@ -167,7 +167,7 @@ describe('Data Label checking for the pie doughnut series', () => {
     });
     it('Datalabel angle checking', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            datalabel = document.getElementById(labelId + 2);
+            datalabel = document.getElementById(labelId + 0);
             expect(datalabel.getAttribute('labelRotation') === '45').toBe(true);
             done();
         };
@@ -176,7 +176,7 @@ describe('Data Label checking for the pie doughnut series', () => {
     });
     it('Datalabel angle checking with enable rotation', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
-            datalabel = document.getElementById(labelId + 2);
+            datalabel = document.getElementById(labelId + 0);
             expect(datalabel.getAttribute('labelRotation') !== null).toBe(true);
             done();
         };

@@ -90,6 +90,7 @@ export class DatePicker extends Calendar implements IInput {
     protected isAngular: boolean = false;
     protected preventChange: boolean = false;
     protected isIconClicked : boolean = false;
+    protected isDynamicValueChanged: boolean = false;
     /**
      * Specifies the width of the DatePicker component.
      * @default null
@@ -1297,13 +1298,16 @@ export class DatePicker extends Calendar implements IInput {
     protected changeTrigger(event?: MouseEvent | KeyboardEvent): void {
         if (this.inputElement.value !== this.previousElementValue) {
             if (((this.previousDate && this.previousDate.valueOf()) !== (this.value && this.value.valueOf()))) {
+                if (this.isDynamicValueChanged) {
+                    this.popupUpdate();
+                }
                 this.changedArgs.value = this.value;
                 this.changedArgs.event = event || null;
                 this.changedArgs.element = this.element;
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
                 if (this.isAngular && this.preventChange) {
                     this.preventChange = false;
-                } else {
+                } else if (!this.isDynamicValueChanged) {
                     this.trigger('change', this.changedArgs);
                 }
                 this.previousElementValue = this.inputElement.value;
@@ -1324,7 +1328,9 @@ export class DatePicker extends Calendar implements IInput {
             this.changedArgs.isInteracted = this.isInteracted;
             this.trigger('change', this.changedArgs);
             this.previousDate = this.value && new Date(+this.value);
-            this.hide(event);
+            if (!this.isDynamicValueChanged) {
+                this.hide(event);
+            }
             this.previousElementValue = this.inputElement.value;
             this.errorClass();
         }
@@ -1949,6 +1955,7 @@ export class DatePicker extends Calendar implements IInput {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
+                    this.isDynamicValueChanged = true;
                     this.isInteracted = false;
                     this.invalidValueString = null;
                     if (!this.isBlazorServer) { this.checkInvalidValue(newProp.value); }
@@ -2033,7 +2040,10 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
             }
-            this.hide(null);
+            if (!this.isDynamicValueChanged) {
+                this.hide(null);
+            }
+            this.isDynamicValueChanged = false;
         }
     }
 }

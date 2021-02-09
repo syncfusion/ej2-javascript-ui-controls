@@ -346,8 +346,8 @@ export class Renderer {
                     this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 }
                 if (shape.lineFormat.lineFormatType !== 'None') {
-                    this.pageContext.strokeStyle = shape.lineFormat.color;
-                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                    this.pageContext.strokeStyle = HelperMethods.getColor(shape.lineFormat.color);
+                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));   
                 }
                 this.pageContext.closePath();
                 for (let i: number = 0; i < blocks.length; i++) {
@@ -717,9 +717,13 @@ export class Renderer {
                 (lineWidget.children[i].width === 0 && lineWidget.children[i].height === 0)) {
                 continue;
             }
-            if (height < lineWidget.children[i].height + lineWidget.children[i].margin.top) {
-                height = lineWidget.children[i].margin.top + lineWidget.children[i].height;
-                lineHeight = (lineWidget.children[i] instanceof ImageElementBox) ? 0.9 : lineWidget.children[i].height / 20;
+            if (lineWidget.children[i] instanceof ShapeElementBox) {
+                continue;
+            } else {
+                if (height < lineWidget.children[i].height + lineWidget.children[i].margin.top) {
+                    height = lineWidget.children[i].margin.top + lineWidget.children[i].height;
+                    lineHeight = (lineWidget.children[i] instanceof ImageElementBox) ? 0.9 : lineWidget.children[i].height / 20;
+                }
             }
         }
         return height - 2 * lineHeight;
@@ -1395,7 +1399,7 @@ export class Renderer {
                     } else if ((cell.y === tableCell.y) || (cell.y > tableCell.y && cell.y + cell.height < tableCell.y + cell.height)) {
                         // tslint:disable-next-line:max-line-length 
                         this.renderSingleBorder(borderColor, tableCell.x - tableCell.margin.left - lineWidth, cell.y - cell.margin.top, tableCell.x - tableCell.margin.left - lineWidth, cell.y + cell.height + cell.margin.bottom, lineWidth);
-                    } else if (cell. y < tableCell.y + cell.height && cell.y + cell.height < tableCell.y + tableCell.height) {
+                    } else if (cell.y < tableCell.y + cell.height && cell.y + cell.height < tableCell.y + tableCell.height) {
                         // tslint:disable-next-line:max-line-length 
                         this.renderSingleBorder(borderColor, cell.x - cell.margin.left - lineWidth, cell.y - cell.margin.top, cell.x - cell.margin.left - lineWidth, cell.y + cellWidget.height + cellBottomMargin, lineWidth);
                     } else if (cell.y > tableCell.x + tableCell.height) {

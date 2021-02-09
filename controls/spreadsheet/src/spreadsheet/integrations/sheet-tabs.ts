@@ -1,7 +1,7 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
 import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, beginAction } from '../common/index';
-import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate } from '../common/index';
+import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate, focus } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
 import { protectSheet, DialogBeforeOpenEventArgs, editOperation } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs } from '../../workbook/index';
@@ -72,7 +72,7 @@ export class SheetTabs {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(this.dropDownInstance, args.element),
             open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.dropDownInstance, args.element, 'left'),
             cssClass: 'e-sheets-list e-flat e-caret-hide',
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.dropDownInstance.createElement = this.parent.createElement;
         this.dropDownInstance.appendTo(ddb);
@@ -98,12 +98,12 @@ export class SheetTabs {
                 }
                 if (this.isSelectCancel) {
                     this.tabInstance.selectedItem = args.previousIndex; this.tabInstance.dataBind();
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 } else {
                     this.parent.activeSheetIndex = args.selectedIndex;
                     this.parent.dataBind();
                     this.updateDropDownItems(args.selectedIndex, args.previousIndex);
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     let completeEventArgs: { previousSheetIndex: number, currentSheetIndex: number } = {
                         previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex
                     };
@@ -192,7 +192,7 @@ export class SheetTabs {
         let isFormulaEdit: boolean = checkIsFormula(val) || val && val !== '' ? val.indexOf('=') === 0 : false;
         this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex + 1,  end:
             this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
-        this.parent.element.focus();
+        focus(this.parent.element);
     }
 
     private insertSheetTab(args: { startIdx: number, endIdx: number, preventUpdate?: boolean }): void {
@@ -300,7 +300,7 @@ export class SheetTabs {
             closest(target, '.e-dlg-container'))) { return; }
         target = document.getElementById(this.parent.element.id + '_rename_input') as HTMLInputElement;
         if (e.type === 'keydown' && (e as KeyboardEvent).keyCode === 27) {
-            this.removeRenameInput(target); this.parent.element.focus(); return;
+            this.removeRenameInput(target); focus(this.parent.element); return;
         }
         let value: string = target.value;
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -320,7 +320,7 @@ export class SheetTabs {
                     this.parent.setSheetPropertyOnMute(this.parent.sheets[idx], 'name', value);
                     this.updateSheetName({ value: value, idx: idx, items: items });
                 }
-                if (e.type === 'keydown' || (closest(e.target as Element, '.e-spreadsheet'))) { this.parent.element.focus(); }
+                if (e.type === 'keydown' || (closest(e.target as Element, '.e-spreadsheet'))) { focus(this.parent.element); }
             } else {
                 this.showRenameDialog(target, l10n.getConstant('SheetRenameInvalidAlert'));
             }
@@ -434,7 +434,7 @@ export class SheetTabs {
                             if (dlgArgs.cancel) {
                                 args.cancel = true;
                             }
-                            this.parent.element.focus();
+                            focus(this.parent.element);
                         },
                         buttons: [{
                             buttonModel: {
@@ -478,7 +478,7 @@ export class SheetTabs {
                     if (dlgArgs.cancel) {
                         args.cancel = true;
                     }
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
             });
         }
@@ -506,7 +506,7 @@ export class SheetTabs {
         this.tabInstance.selectedItem = activeIndex; this.tabInstance.dataBind();
         this.updateDropDownItems(activeIndex);
         this.parent.notify(protectSheet, null);
-        this.parent.element.focus();
+        focus(this.parent.element);
     }
 
     private showAggregate(): void {
@@ -534,7 +534,7 @@ export class SheetTabs {
                     beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
                         this.beforeOpenHandler(this.aggregateDropDown, args.element),
                     open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),
-                    close: (): void => this.parent.element.focus(),
+                    close: (): void => focus(this.parent.element),
                     cssClass: btnClass
                 });
                 this.aggregateDropDown.createElement = this.parent.createElement;

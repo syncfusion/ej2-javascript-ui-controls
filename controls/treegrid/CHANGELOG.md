@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 18.4.42 (2021-02-09)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#312347` - `selectRow` method works fine with Virtualization.
+- `#311453` - Expanding rows works fine when we enabled `frozenColumns` and `enableCollapseAll` property.
+
 ## 18.4.41 (2021-02-02)
+
+### TreeGrid
+
+#### New Features
+
+- `#300136` - Provided support for tab like behaviour on navigating over the cells for Cell and Batch Editing.
+
+## 18.4.39 (2021-01-28)
 
 ### TreeGrid
 

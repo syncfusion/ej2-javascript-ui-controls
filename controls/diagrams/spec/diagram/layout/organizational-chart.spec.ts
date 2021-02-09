@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
     ConnectorModel, Node, TextModel, Connector, IExpandStateChangeEventArgs, LineRouting,
-    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, SnapConstraints, DiagramConstraints
+    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, SnapConstraints, DiagramConstraints, OrthogonalSegmentModel
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
@@ -4387,6 +4387,114 @@ describe('balanced layout at runtime not wroking properly', () => {
         expect(diagram.nodes[12].offsetX === 665 &&diagram.nodes[12].offsetY === 205).toBe(true)
         done();
         });
+
+});
+
+
+describe('balanced layout connectors segment length is not correct', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    var nodes = [
+        {
+            id: 'node',
+        },
+        {
+            id: 'node1',
+        },
+        {
+            id: 'node11',
+        },
+        {
+            id: 'node111',
+        },
+        
+        {
+            id: 'node1111',
+        },
+        
+    ];
+    var connectors = [
+        { sourceID: "node", targetID:"node1" },
+        { sourceID: "node", targetID:"node11" },
+        { sourceID: "node", targetID:"node111" },
+        { sourceID: "node", targetID:"node1111" },
+
+    ]
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMap' });
+        document.body.appendChild(ele);
+ 
+
+        diagram = new Diagram({
+            width:"100%",
+            nodes:nodes,
+            connectors:connectors,
+            getConnectorDefaults: function (connector:any) {
+                connector.type = "Orthogonal";
+        connector.style.strokeColor = "#6d6d6d";
+        return connector;
+            },
+            getNodeDefaults: function (obj:any) {
+                obj.style = {
+                  fill: "#659be5",
+                  strokeColor: "none",
+                  color: "white",
+                  strokeWidth: 2
+                };
+                obj.borderColor = "#3a6eb5";
+                obj.backgroundColor = "#659be5";
+                (obj.shape).margin = { left: 5, right: 5, bottom: 5, top: 5 };
+                obj.expandIcon = {
+                  height: 10,
+                  width: 10,
+                  shape: "None",
+                  fill: "lightgray",
+                  offset: { x: 0.5, y: 1 }
+                };
+                obj.expandIcon.verticalAlignment = "Auto";
+                obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                obj.collapseIcon.offset = { x: 0.5, y: 1 };
+                obj.collapseIcon.verticalAlignment = "Auto";
+                obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                obj.collapseIcon.height = 10;
+                obj.collapseIcon.width = 10;
+                obj.collapseIcon.padding.top = 5;
+                obj.collapseIcon.shape = "None";
+                obj.collapseIcon.fill = "lightgray";
+                return obj;
+              },
+            layout:{
+                type: "OrganizationalChart",
+                orientation: "TopToBottom",
+                getLayoutInfo: (node:any, options:any) => {
+                  if (!options.hasSubTree) {
+                    options.type = "Balanced";
+                    options.orientation = "Horizontal";
+                   options.rows = 4;
+                   
+                  }
+                },
+                enableAnimation: true
+              },
+              dataSourceSettings: {
+                //sets the fields to bind
+                id: "Name",
+                parentId: "Category"
+              },
+            height:"400px",
+            
+        });
+        diagram.appendTo('#diagramdataMap');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('balanced layout connectors segment length is not correct', (done: Function) => {
+        var length = (diagram.connectors[2].segments[0] as OrthogonalSegmentModel).length
+        expect(length === 7.5).toBe(true)
+        done();
+    });
 
 });
 

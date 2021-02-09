@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.4.42 (2021-02-09)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#309065` - The issue with "The Sidebar destroy method throws error when continuously called two times" has been resolved.
+
+### Tab
+
+#### Bug Fixes
+
+- `#299892` - An issue with the Tab destroy method throws error has been resolved.
+
 ## 18.4.41 (2021-02-02)
 
 ### Menu

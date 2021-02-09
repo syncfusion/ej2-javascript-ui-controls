@@ -349,9 +349,10 @@ export class ContentRender implements IRenderer {
             tableName = contentModule.setTbody(modelData, args);
             tbdy = contentModule.getTbody(tableName);
         }
+        let isFrozenLeft: boolean = this.parent.getFrozenMode() === 'Left-Right' && tableName === 'frozen-right';
         /* tslint:disable:no-any */
         if (args.requestType !== 'infiniteScroll' && (this.parent as any).registeredTemplate
-            && (this.parent as any).registeredTemplate.template && !args.isFrozen) {
+            && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
             let templatetoclear: any = [];
             for (let i: number = 0; i < (this.parent as any).registeredTemplate.template.length; i++) {
                 for (let j: number = 0; j < (this.parent as any).registeredTemplate.template[i].rootNodes.length; j++) {

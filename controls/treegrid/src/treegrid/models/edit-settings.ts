@@ -84,4 +84,11 @@ export class EditSettings extends ChildProperty<EditSettings> {
      */
     @Property({})
     public dialog: IDialogUI;
+
+    /**   
+     * If `allowNextRowEdit` is set as true, editing is continued to next row with keyboard navigation.
+     * @default false 
+     */
+    @Property(false)
+    public allowNextRowEdit : boolean;
 }

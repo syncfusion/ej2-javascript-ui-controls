@@ -1561,7 +1561,8 @@ export class DocumentHelper {
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
         this.owner.viewer.updateScrollBars();
-        let vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height;
+        // tslint:disable-next-line:max-line-length
+        let vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
         if (vtHeight > this.pageContainer.offsetHeight) {
             this.viewerContainer.scrollTop = this.owner.viewer.containerTop - (vtHeight - this.pageContainer.offsetHeight);
         }

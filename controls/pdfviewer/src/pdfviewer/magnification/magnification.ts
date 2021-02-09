@@ -741,7 +741,10 @@ export class Magnification {
         }
     }
 
-    private resizeCanvas(pageNumber: number): void {
+    /**
+     * @private
+     */
+    public resizeCanvas(pageNumber: number): void {
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
             // tslint:disable-next-line
             let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);

@@ -254,7 +254,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         let top: number = this.getTopFromDateTime(this.parent.getCurrentTime());
         let topInPx: string = formatUnit(top);
         let rowIndex: number = Math.floor(top / firstRow.cells[0].offsetHeight);
-        if (isNullOrUndefined(rowIndex) || isNaN(rowIndex)) { return; }
+        let timeCellsWrap: Element = this.getLeftPanelElement();
+        let timeTrs: HTMLElement[] = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
+        if (isNullOrUndefined(rowIndex) || isNaN(rowIndex) || rowIndex === timeTrs.length) { return; }
         let curTimeWrap: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.TIMELINE_WRAPPER_CLASS));
         for (let i: number = 0, length: number = currentDateIndex[0]; i < length; i++) {
             curTimeWrap[i].appendChild(createElement('div', { className: cls.PREVIOUS_TIMELINE_CLASS, styles: 'top:' + topInPx }));
@@ -267,8 +269,6 @@ export class VerticalView extends ViewBase implements IRenderer {
             className: cls.CURRENT_TIME_CLASS,
             styles: 'top:' + topInPx
         });
-        let timeCellsWrap: Element = this.getLeftPanelElement();
-        let timeTrs: HTMLElement[] = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
         if (rowIndex <= timeTrs.length) {
             removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
             addClass([timeTrs[rowIndex].lastElementChild as Element], cls.HIDE_CHILDS_CLASS);

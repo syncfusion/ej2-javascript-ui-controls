@@ -1,8 +1,8 @@
 import { Kanban } from '../base/kanban';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { ActionEventArgs, SaveChanges } from '../base/interface';
 import * as events from '../base/constant';
-
+import * as cls from '../base/css-constant';
 /**
  * Kanban CRUD module
  * @hidden
@@ -40,11 +40,20 @@ export class Crud {
         });
     }
 
+    private getIndexFromData(data: { [key: string]: Object }): number {
+        let cardElement: HTMLElement =
+            this.parent.element.querySelector(`.${cls.CARD_CLASS}[data-id="${data[this.parent.cardSettings.headerField]}"]`);
+        let element: Element = closest(cardElement, '.' + cls.CONTENT_CELLS_CLASS);
+        let index: number = [].slice.call(element.querySelectorAll('.' + cls.CARD_CLASS)).indexOf(cardElement);
+        return index;
+    }
+
     public updateCard(cardData: { [key: string]: Object } | { [key: string]: Object }[], index?: number): void {
         let args: ActionEventArgs = {
             requestType: 'cardChange', cancel: false, addedRecords: [],
             changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
         };
+        index = isNullOrUndefined(index) ? this.getIndexFromData(args.changedRecords[0] as { [key: string]: Object }) : index;
         this.parent.trigger(events.actionBegin, args, (updateArgs: ActionEventArgs) => {
             if (!updateArgs.cancel) {
                 if (this.parent.sortSettings.field && this.parent.sortSettings.sortBy === 'Index') {

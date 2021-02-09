@@ -1,4 +1,4 @@
-import { dialog, Spreadsheet } from '../index';
+import { dialog, Spreadsheet, focus } from '../index';
 import { beginSave, saveCompleted, saveError } from '../../workbook/common/event';
 import { Dialog } from '../services/index';
 
@@ -72,7 +72,7 @@ export class Save {
         let dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
             target: this.parent.element, isModal: true, showCloseIcon: true, height: 180, width: 400, content: args.content,
-            beforeOpen: (): void => this.parent.element.focus()
+            beforeOpen: (): void => focus(this.parent.element)
         });
     }
 }

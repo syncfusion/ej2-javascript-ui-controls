@@ -541,6 +541,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     break;
             }
         }
+        this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
     }
 
     private updateValue(strippedVal: string): void {

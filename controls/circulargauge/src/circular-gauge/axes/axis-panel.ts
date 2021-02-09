@@ -409,6 +409,7 @@ export class AxisLayoutPanel {
             element = gauge.renderer.createGroup({
                 id: gauge.element.id + '_Axis_Group_' + index
             });
+            renderer.checkAngles(axis);
             renderer.drawAxisOuterLine(axis, index, element, gauge);
             renderer.drawAxisRange(axis, index, element, gauge);
             renderer.drawAxisLine(axis, index, element, gauge);

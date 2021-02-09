@@ -20,6 +20,7 @@ import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
+import { rowSelecting } from '../../../src';
 
 Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll);
 
@@ -4890,6 +4891,46 @@ describe('EJ2-45650 - Persist Checkbox selection not working properly with froze
         chkBox.click();
         chkBox.click();
         expect(chkBox.nextSibling.classList.contains('e-uncheck')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-45836 - The rowSelected event is triggered when rowselectig cancel is true in multiselection', () => {
+    let gridObj: Grid;
+    let check: boolean = true;
+    let rowSelecting: (e?: Object) => void;
+    let rowSelected: (e?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { type: "Multiple", enableSimpleMultiRowSelection: true },
+                rowSelecting: rowSelecting,
+                rowSelected: rowSelected,
+                columns: [
+                    { type: "checkbox", width: 120 },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('checking rowselected event should not call when rowselecting cancel is true', () => {
+        let rowSelecting = (e: any) => {
+            e.cancel = true;
+        };
+        let rowSelected = (e: any) => {
+            check = false;
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelectorAll('.e-rowcell')[0] as any).click();
+        expect(check).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);

@@ -264,21 +264,21 @@ export function getPathArc(
         range.position === 'Cross' ? (radius - ((startWidth + endWidth) / 4) - (axis.direction === 'ClockWise' ? startWidth : endWidth)
         / 2) : radius - ((startWidth + endWidth) / 2)) : radius - ((startWidth + endWidth) / 2);
     let insideArcRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' ?
-        radius + ((startWidth + endWidth) / 4) - (axis.direction === 'ClockWise' ? startWidth : endWidth) / 2 : radius;
+        radius + ((startWidth + endWidth) / 4)
+        - (axis.direction === 'ClockWise' ? startWidth : endWidth) / 2 : radius;
     let insideEndRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'ClockWise' ?
         radius - ((startWidth - endWidth) / 2) : radius;
     let insideStartRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'AntiClockWise' ?
         radius + ((startWidth - endWidth) / 2) : radius;
     if (startWidth !== undefined && endWidth !== undefined) {
-        endRadius = start === Math.round(end) ? startRadius : endRadius;
-        insideEndRadius = start === Math.round(end) && range.position === 'Cross' ? insideStartRadius : insideEndRadius;
+        insideEndRadius = range.position === 'Cross' ? (degree > 325 ? insideStartRadius : insideEndRadius) : insideEndRadius;
         return getRangePath(
             getLocationFromAngle(start, insideStartRadius, center),
             getLocationFromAngle(end, insideEndRadius, center),
             getLocationFromAngle(start, startRadius, center),
             getLocationFromAngle(end, endRadius, center),
-            insideArcRadius, arcRadius, arcRadius,
-            (degree < 180) ? 0 : 1
+            insideArcRadius, startRadius, endRadius, arcRadius,
+            (degree < 180) ? 0 : 1, center, degree, range, axis,
         );
     } else {
         return getCirclePath(
@@ -289,14 +289,59 @@ export function getPathArc(
 }
 
 /**
- * Function to get the range path direction of the circular gauge.
+ * Function to get the range path arc direction of the circular gauge.
  * @returns string
  * @private
  */
-export function getRangePath(
+export function arcPath(
+    start: GaugeLocation, end: GaugeLocation, radius: number, arcStartOne: number,
+    arcEndOne: number, arcStartTwo: number, arcEndTwo: number,
+    clockWise: number, innerStart: GaugeLocation, innerEnd: GaugeLocation,
+    pointPosition: GaugeLocation
+): string {
+    return 'M ' + start.x + ' ' + start.y + ' A ' + radius + ' ' + radius + ' 0 ' +
+        clockWise + ' 1 ' + end.x + ' ' + end.y + ' L ' + innerEnd.x + ' ' + innerEnd.y +
+        ' A ' + arcStartOne + ' ' + arcEndOne + ' 0 ' + clockWise + ' 0 ' + pointPosition.x
+        + ' ' + pointPosition.y + ' ' + ' A ' + arcStartTwo + ' ' + arcEndTwo
+        + ' 0 ' + clockWise + ' 0 ' + innerStart.x + ' ' + innerStart.y + ' Z ';
+}
+
+/**
+ * Function to get the range path arc direction of the circular gauge.
+ * @returns string
+ * @private
+ */
+export function arcRoundedPath(
+    start: GaugeLocation, end: GaugeLocation, radius: number, outerOldEnd: GaugeLocation, innerOldEnd: GaugeLocation,
+    arcStartOne: number, arcEndOne: number, arcStartTwo: number, arcEndTwo: number,
+    clockWise: number, innerStart: GaugeLocation, innerEnd: GaugeLocation, innerOldStart: GaugeLocation,
+    outerOldStart: GaugeLocation, pointPosition: GaugeLocation
+): string {
+    let roundedPath : string = 'M ' + start.x + ' ' + start.y + ' A ' + radius + ' ' + radius + ' 0 ' +
+    clockWise + ' 1 ' + end.x + ' ' + end.y + ' C ' + outerOldEnd.x + ' ' + outerOldEnd.y + ' ' + innerOldEnd.x + ' ' +
+    innerOldEnd.y + ' ' + innerEnd.x + ' ' + innerEnd.y;
+    if (isNullOrUndefined(arcStartTwo) && isNullOrUndefined(arcEndTwo)) {
+        return roundedPath + ' A ' + arcStartOne + ' ' + arcEndOne + ' 0 ' + clockWise + ' 0 ' + innerStart.x + ' '
+        + innerStart.y + ' C ' + innerOldStart.x + ' ' + innerOldStart.y + ' ' + outerOldStart.x + ' ' +
+        outerOldStart.y + ' ' + start.x + ' ' + start.y + ' Z';
+    } else {
+        return roundedPath + ' A ' + arcStartOne + ' ' + arcEndOne + ' 0 ' + clockWise + ' 0 '
+        + pointPosition.x + ' ' + pointPosition.y + ' ' + ' A ' + arcStartTwo + ' ' + arcEndTwo + ' 0 ' + clockWise + ' 0 '
+        + innerStart.x + ' ' + innerStart.y + ' C ' + innerOldStart.x + ' ' + innerOldStart.y + ' ' + outerOldStart.x + ' ' +
+        outerOldStart.y + ' ' + start.x + ' ' + start.y + ' Z';
+    }
+}
+
+/**
+ * Function to get the range path direction for different start and end width of the circular gauge.
+ * @returns string
+ * @private
+ */
+export function arcWidthPath(
     start: GaugeLocation, end: GaugeLocation,
     innerStart: GaugeLocation, innerEnd: GaugeLocation,
-    radius: number, startRadius: number, endRadius: number, clockWise: number
+    radius: number, startRadius: number,
+    endRadius: number, clockWise: number
 ): string {
     return 'M ' + start.x + ' ' + start.y +
         ' A ' + radius + ' ' + radius + ' 0 ' +
@@ -307,53 +352,208 @@ export function getRangePath(
 }
 
 /**
+ * Function to get the range path direction of the circular gauge.
+ * @returns string
+ * @private
+ */
+export function getRangePath(
+    start: GaugeLocation, end: GaugeLocation,
+    innerStart: GaugeLocation, innerEnd: GaugeLocation, radius: number, startRadius: number, endRadius: number,
+    arcRadius : number, clockWise: number, center: GaugeLocation, degree : number,
+    range?: Range, axis?: Axis,
+
+): string {
+    let startWidth: number = range.startWidth as number;
+    let endWidth: number = range.endWidth as number; let endArc : number; let startArc : number;
+    let widthDifference: number = Math.abs(startWidth - endWidth);
+    if (startWidth > endWidth && degree <= 260 && range.position !== 'Cross' && range.position !== 'Outside') {
+        endArc = (endRadius + (axis.direction === 'ClockWise' ? -(widthDifference / 2) : (widthDifference / 2)));
+        startArc =  (startRadius + (axis.direction === 'ClockWise' ? (widthDifference / 2) : -(widthDifference / 2)));
+        return arcWidthPath(start, end, innerStart, innerEnd, radius, startArc, endArc, clockWise);
+    } else if (endWidth > startWidth && degree <= 260 && range.position !== 'Cross' && range.position !== 'Outside') {
+        endArc = (startRadius + (axis.direction === 'ClockWise' ? -(widthDifference / 2) : (widthDifference / 2)));
+        startArc = (endRadius + (axis.direction === 'ClockWise' ? (widthDifference / 2) : -(widthDifference / 2)));
+        return arcWidthPath(start, end, innerStart, innerEnd, radius, startArc, endArc, clockWise);
+    } else if ((endWidth === startWidth) && (axis.startAngle !== 0 || axis.endAngle !== 0) ) {
+        return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
+    } else if ((degree > 260) || (axis.startAngle === 0 && axis.endAngle === 0)) {
+        return arcWidthPathCalculation(start, end, innerStart, innerEnd, radius, startRadius, endRadius, arcRadius, clockWise,
+                                       center, null, null, null, null,
+                                       startWidth, endWidth, degree, range, axis
+        );
+    } else {
+        if (range.position === 'Cross' || range.position === 'Outside') {
+           return arcWidthPath(start, end, innerStart, innerEnd, radius, arcRadius, arcRadius, clockWise);
+        }  else {
+           return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
+        }
+    }
+}
+
+/**
+ * Function to get start and end width range path calculation to the circular gauge.
+ * @returns string
+ * @private
+ */
+/* tslint:disable:max-func-body-length */
+export function arcWidthPathCalculation(
+    start: GaugeLocation, end: GaugeLocation, innerStart: GaugeLocation, innerEnd: GaugeLocation,
+    radius: number, startRadius: number, endRadius: number, arcRadius : number, clockWise: number, center: GaugeLocation,
+    outerOldEnd: GaugeLocation, innerOldEnd: GaugeLocation, outerOldStart: GaugeLocation,
+    innerOldStart: GaugeLocation, startWidth: number, endWidth: number, degree : number, range?: Range, axis?: Axis,
+): string {
+    if (!isNullOrUndefined(range)) {
+        let arcStartOne : number; let arcEndOne : number;
+        let widthDifference: number = Math.abs(startWidth - endWidth); let arcStartTwo : number; let arcEndTwo : number;
+        let startValueToAngle: number = getAngleFromValue(((range.start + range.end) / 2), axis.maximum, axis.minimum, axis.startAngle,
+                                                          axis.endAngle, axis.direction === 'ClockWise');
+        let pointPosition: GaugeLocation = (startWidth < ((endWidth))) ?
+            getLocationFromAngle(startValueToAngle, endRadius, center) : getLocationFromAngle(startValueToAngle, startRadius, center);
+        let endDistance: number = Math.sqrt((Math.pow((innerEnd.x - pointPosition.x), 2)) + (Math.pow((innerEnd.y - pointPosition.y), 2)));
+        let endRadii: number = endDistance / 2;
+        let centerDistance: number = Math.sqrt((Math.pow((center.x - pointPosition.x), 2)) + (Math.pow((center.y - pointPosition.y), 2)));
+        let centerStartDistance: number = Math.sqrt((Math.pow((center.x - innerStart.x), 2)) + (Math.pow((center.y - innerStart.y), 2)));
+        if (range.roundedCornerRadius <= 0) {
+            widthDifference = widthDifference === 0 ? 1 : widthDifference;
+            innerEnd.y = (range.position === 'Cross' && axis.direction === 'ClockWise') ? degree > 325 ?
+                          innerEnd.y - (widthDifference / 2) : innerEnd.y : innerEnd.y;
+            let degreeValue : number = range.position === 'Cross' ? 330 : 325;
+            if (((degreeValue <= degree && degree <= 360))) {
+                arcStartTwo = (axis.direction === 'ClockWise' ? (centerDistance / 2)
+                              : (degree >= 345 ? (startRadius - (widthDifference / 2) - (endWidth / 2))
+                              : range.position === 'Cross' ? (startRadius + (widthDifference / 4) - (startWidth / 2))
+                              : (startRadius - (widthDifference / 2) - (startWidth / 2))));
+                arcEndTwo = (axis.direction === 'ClockWise' ? (centerStartDistance / 2)
+                            : range.position === 'Cross' ?
+                            (endRadius + (widthDifference / 4)) - (endWidth / 4) :
+                            (range.position === 'Outside' && axis.direction === 'AntiClockWise') ? degree < 345 ?
+                            (startRadius - (widthDifference) - (endWidth / 4))
+                            : (startRadius - (widthDifference / 2))
+                            : (endRadius + (widthDifference / 2)) - (endWidth / 2));
+                return arcPath(start, end, radius, endRadii, endRadii, arcStartTwo, arcEndTwo, clockWise,
+                               innerStart, innerEnd, pointPosition);
+            } else if ((degree > 260 && degree < 325) && range.position !== 'Cross' && range.position !== 'Outside') {
+                let arcStart : number = (arcRadius - (widthDifference / 2));
+                let arcEnd : number = (arcRadius - (widthDifference / 2));
+                let angleValueDirection : boolean = axis.direction === 'ClockWise' ? degree >= 310 : degree < 345;
+                if (degree < 310) {
+                    return arcWidthPath(start, end, innerStart, innerEnd, radius, arcStart, arcEnd, clockWise);
+                } else if (degree >= 310 || angleValueDirection) {
+                    arcStart = (arcRadius - (widthDifference));
+                    return arcWidthPath(start, end, innerStart, innerEnd, radius, arcEnd, arcStart, clockWise);
+                } else {
+                    return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
+                }
+            } else {
+                if (range.position === 'Cross') {
+                    let endRadiusValue: number = axis.direction === 'ClockWise' ? degree <= 300 && degree >= 260 ?
+                                                 endRadius - (widthDifference / 2) - (startWidth / 4) : endRadius
+                                                 - (widthDifference) - (startWidth / 2) : degree <= 300 && degree >= 260 ?
+                                                 endRadius + (widthDifference / 4) - (startWidth / 4) :
+                                                 endRadius + (widthDifference / 4) - (startWidth / 2);
+                    let startRadiusValue: number = axis.direction === 'ClockWise' ? degree > 325 ? degree > 340 ? (startRadius - startWidth)
+                                                   - (widthDifference / 4) : startRadius - (widthDifference / 4)
+                                                   : startRadius : startRadius - (widthDifference / 4);
+                    return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadiusValue, endRadiusValue, clockWise);
+                } else if (range.position === 'Outside') {
+                    if (degree < 325 && degree > 285) {
+                        let arcOne : number; let arcTwo : number;
+                        let startGreater : number = startWidth / 2;
+                        let endGreater : number = endWidth / 2;
+                        arcOne = arcTwo = arcRadius + (widthDifference / 2) + startGreater + endGreater;
+                        innerEnd.y =  axis.direction === 'ClockWise' && startWidth !== endWidth && startWidth > widthDifference ?
+                        innerEnd.y - (widthDifference / 2) : innerEnd.y + startGreater;
+                        return arcWidthPath(start, end, innerStart, innerEnd, radius, arcOne, arcTwo, clockWise);
+                    } else {
+                        return arcWidthPath(start, end, innerStart, innerEnd, radius, arcRadius, arcRadius, clockWise);
+                    }
+                } else {
+                    return arcWidthPath(start, end, innerStart, innerEnd, radius, startRadius, endRadius, clockWise);
+                }
+            }
+        } else {
+            let degreeAngle : number = axis.endAngle < 4 ? 356 : 360;
+            clockWise = degree > degreeAngle ? 0 : clockWise;
+            let degreeValueOne : number = axis.direction === 'ClockWise' ? 327 : 322;
+            let degreeValueTwo : number = axis.direction === 'ClockWise' ? 328 : 325;
+            if ((endWidth === startWidth) && (axis.startAngle !== 0 || axis.endAngle !== 0)) {
+                return roundedArcWidthPathCalculation(start, end, innerStart, innerEnd, radius, startRadius, endRadius,
+                                                      clockWise, outerOldEnd, innerOldEnd, outerOldStart, innerOldStart);
+            } else if ((degree <= degreeAngle && degree > degreeValueOne) && range.roundedCornerRadius > 0) {
+                arcStartOne = axis.direction === 'ClockWise' ? degree < 334 && degree > 324  ? endRadii - (widthDifference / 2) :
+                endRadii - (widthDifference / 4) : endRadii;
+                arcStartTwo = (centerDistance / 2);
+                arcEndTwo = axis.direction === 'ClockWise' ? ((centerStartDistance / 2) + (widthDifference / 2)) :
+                            (centerStartDistance / 2);
+                return arcRoundedPath(start, end, radius, outerOldEnd, innerOldEnd, arcStartOne, endRadii,
+                                      arcStartTwo, arcEndTwo, clockWise, innerStart, innerEnd,
+                                      innerOldStart, outerOldStart, pointPosition);
+            } else if (degree > 270 && degree < degreeValueTwo) {
+                let startAddArc: number = endRadius + (widthDifference / 2) - (endWidth / 2);
+                let startSubArc: number = endRadius - (widthDifference / 2) - (endWidth / 2);
+                arcStartOne = (startRadius - (widthDifference / 2) - (startWidth / 2));
+                arcEndOne = (axis.direction === 'ClockWise' ? startSubArc : startAddArc);
+                return arcRoundedPath(start, end, radius, outerOldEnd, innerOldEnd, arcStartOne, arcEndOne,
+                                      null, null, clockWise, innerStart, innerEnd, innerOldStart, outerOldStart, null);
+            } else {
+                return roundedArcWidthPathCalculation(start, end, innerStart, innerEnd,
+                                                      radius, startRadius, endRadius, clockWise,
+                                                      outerOldEnd, innerOldEnd, outerOldStart, innerOldStart);
+            }
+        }
+    } else {
+        return roundedArcWidthPathCalculation(start, end, innerStart, innerEnd,
+                                              radius, startRadius, endRadius, clockWise,
+                                              outerOldEnd, innerOldEnd, outerOldStart, innerOldStart);
+    }
+}
+
+/**
+ * Function to get start and end width range rounded path calculation to the circular gauge.
+ * @returns string
+ * @private
+ */
+export function roundedArcWidthPathCalculation(
+    start: GaugeLocation, end: GaugeLocation, innerStart: GaugeLocation, innerEnd: GaugeLocation,
+    radius: number, startRadius: number, endRadius: number, clockWise: number,
+    outerOldEnd: GaugeLocation, innerOldEnd: GaugeLocation, outerOldStart: GaugeLocation,
+    innerOldStart: GaugeLocation
+): string {
+    return 'M ' + start.x + ' ' + start.y + ' A ' + radius + ' ' + radius + ' 0 ' +
+        clockWise + ' 1 ' + end.x + ' ' + end.y + ' C ' + outerOldEnd.x + ' ' + outerOldEnd.y + ' ' + innerOldEnd.x + ' ' +
+        innerOldEnd.y + ' ' + innerEnd.x + ' ' + innerEnd.y +
+        ' A ' + endRadius + ' ' + startRadius + ' 0 ' +
+        clockWise + ' 0 ' + innerStart.x + ' ' + innerStart.y +
+        ' C ' + innerOldStart.x + ' ' + innerOldStart.y + ' ' + outerOldStart.x + ' ' +
+        outerOldStart.y + ' ' + start.x + ' ' + start.y + ' Z';
+}
+/**
  * Function to get the rounded path direction of the circular gauge.
  * @returns string
  * @private
  */
 export function getRoundedPathArc(
     center: GaugeLocation, actualStart: number, actualEnd: number, oldStart: number, oldEnd: number,
-    radius: number, startWidth?: number, endWidth?: number
+    radius: number, startWidth?: number, endWidth?: number, range?: Range, axis?: Axis,
 ): string {
     actualEnd -= isCompleteAngle(actualStart, actualEnd) ? 0.0001 : 0;
     let degree: number = getDegree(actualStart, actualEnd);
     let startRadius: number = radius - startWidth;
     let endRadius: number = radius - endWidth;
     let arcRadius: number = radius - ((startWidth + endWidth) / 2);
-    return getRoundedPath(
+    return arcWidthPathCalculation(
         getLocationFromAngle(actualStart, radius, center),
         getLocationFromAngle(actualEnd, radius, center),
+        getLocationFromAngle(actualStart, startRadius, center),
+        getLocationFromAngle(actualEnd, endRadius, center),
+        radius, arcRadius, arcRadius, arcRadius,
+        (degree < 180) ? 0 : 1, center,
         getLocationFromAngle(oldEnd, radius, center),
         getLocationFromAngle(oldEnd, endRadius, center),
         getLocationFromAngle(oldStart, radius, center),
         getLocationFromAngle(oldStart, startRadius, center),
-        getLocationFromAngle(actualStart, startRadius, center),
-        getLocationFromAngle(actualEnd, endRadius, center),
-        radius, arcRadius, arcRadius,
-        (degree < 180) ? 0 : 1
+        startWidth, endWidth, degree, range, axis
     );
-}
-
-/**
- * Function to get the rounded range path direction of the circular gauge.
- * @returns string
- * @private
- */
-export function getRoundedPath(
-    start: GaugeLocation, end: GaugeLocation, outerOldEnd: GaugeLocation,
-    innerOldEnd: GaugeLocation, outerOldStart: GaugeLocation, innerOldStart: GaugeLocation,
-    innerStart: GaugeLocation, innerEnd: GaugeLocation,
-    radius: number, startRadius: number, endRadius: number, clockWise: number
-): string {
-    return 'M ' + start.x + ' ' + start.y +
-        ' A ' + radius + ' ' + radius + ' 0 ' +
-        clockWise + ' 1 ' + end.x + ' ' + end.y +
-        ' C ' + outerOldEnd.x + ' ' + outerOldEnd.y + ' ' + innerOldEnd.x + ' ' +
-        innerOldEnd.y + ' ' + innerEnd.x + ' ' + innerEnd.y +
-        ' A ' + endRadius + ' ' + startRadius + ' 0 ' +
-        clockWise + ' 0 ' + innerStart.x + ' ' + innerStart.y +
-        ' C ' + innerOldStart.x + ' ' + innerOldStart.y + ' ' + outerOldStart.x + ' ' +
-        outerOldStart.y + ' ' + start.x + ' ' + start.y + ' Z';
 }
 
 /**
@@ -534,6 +734,7 @@ export function calculateShapes(location: GaugeLocation, shape: string, size: Si
     let locY: number = location.y;
     let x: number = location.x + (-width / 2);
     let y: number = location.y + (-height / 2);
+    let space: number;
     let isLegend: boolean = options.id.indexOf('Shape') > -1;
     switch (shape) {
         case 'Circle':
@@ -581,7 +782,7 @@ export function calculateShapes(location: GaugeLocation, shape: string, size: Si
             merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
             break;
         case 'RightArrow':
-            let space: number = 2;
+            space = 2;
             path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
                 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
                 (locX + (-width / 2)) + ' ' + (locY + (height / 2)) + ' L' + ' ' + (locX + (-width / 2)) + ' ' +

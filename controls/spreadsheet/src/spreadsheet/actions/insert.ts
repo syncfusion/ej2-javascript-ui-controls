@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { beginAction, completeAction, insertSheetTab, skipHiddenIdx, refreshImagePosition } from '../common/index';
+import { beginAction, completeAction, insertSheetTab, skipHiddenIdx, refreshImagePosition, focus } from '../common/index';
 import { insert, InsertDeleteEventArgs, dataChanged } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell } from '../../workbook/index';
 
@@ -25,7 +25,7 @@ export class Insert {
                 this.parent.notify(
                     insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !isAction });
                 this.parent.renderModule.refreshSheet();
-                this.parent.element.focus();
+                focus(this.parent.element);
                 break;
             case 'Row':
                 if (!this.parent.scrollSettings.enableVirtualization || args.index <= this.parent.viewport.bottomIndex) {

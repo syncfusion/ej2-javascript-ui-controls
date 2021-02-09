@@ -156,6 +156,10 @@ describe('numberParser', () => {
             let result: number = NumberParser.numberParser('en', { format: 'P2' }, cldrData)('2671.6789');
             expect(result).toBe(26.72);
         });
+        it('maximum fraction digit support', () => {
+            let result: number = NumberParser.numberParser('en', { maximumFractionDigits: 11 }, cldrData)('11234.55644342344343243');
+            expect(result).toBe(11234.55644342344);
+         });
     });
     describe('exponential  value parsing', () => {
         it('with "e" prefix ', () => {

@@ -664,6 +664,12 @@ export class Layout {
                 this.moveToNextLine(line);
             } else if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
+                if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
+                    if (element.fieldType !== 2 && isNullOrUndefined(element.fieldSeparator)) {
+                        this.layoutEmptyLineWidget(paragraph, false, element.line);
+                    }
+                    this.moveToNextLine(line);
+                }
             } else if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width === 0) {
                 this.moveToNextLine(line);
                 if (line.paragraph.lastChild === line && !isNullOrUndefined(line.nextLine) &&
@@ -1850,7 +1856,7 @@ export class Layout {
                     textElement.text = text;
                     textElement.width -= splittedElement.width;
                     textElement.trimEndWidth = textElement.width;
-                    if (textElement.width === 0) {
+                    if (textElement.width === 0 && lineWidget.children.indexOf(textElement) !== -1) {
                         lineWidget.children.splice(lineWidget.children.indexOf(textElement), 1);
                     }
                     index = 0;
@@ -2676,9 +2682,9 @@ export class Layout {
         let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            if (!isList) {
-                clientActiveX = clientActiveX + firstLineIndent;
-            }
+            //if (!isList) {
+            //    clientActiveX = clientActiveX + firstLineIndent;
+            //}
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
@@ -6311,6 +6317,8 @@ export class Layout {
             let vertPosition: number = floatElement.verticalPosition;
             let horzPosition: number = floatElement.horizontalPosition;
             let layoutInCell: boolean = floatElement.layoutInCell;
+            // tslint:disable-next-line
+            let autoShape: any = floatElement.autoShapeType;
             //Word 2013 Layout picture in table cell even layoutInCell property was False.
             if (paragraph.isInsideTable && layoutInCell) {
                 isLayoutInCell = true;
@@ -6618,7 +6626,11 @@ export class Layout {
                                 //Re Update the x position to the page left when word version not equal to 2013 
                                 //and wrapping style not equal to infront of text and behind text. 
                                 if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'BehindText')) {
-                                    indentX = paragraph.x + horzPosition;
+                                    if (autoShape === 'StraightConnector') {
+                                        indentX = horzPosition + HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+                                    } else {
+                                        indentX = paragraph.x + horzPosition;
+                                    }
                                 } else {
                                     indentX = this.viewer.clientActiveArea.x + horzPosition;
                                 }

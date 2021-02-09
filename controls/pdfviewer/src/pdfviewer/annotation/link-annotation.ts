@@ -43,7 +43,7 @@ export class LinkAnnotation {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'weblinkdiv_' + i }) as HTMLAnchorElement;
             // tslint:disable-next-line
             let rect: any = hyperlinksBounds[i];
-            aTag = this.setHyperlinkProperties(aTag, rect);
+            aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.title = hyperlinks[i];
             aTag.setAttribute('href', hyperlinks[i]);
             if (this.pdfViewer.hyperlinkOpenState === 'CurrentTab') {
@@ -106,7 +106,7 @@ export class LinkAnnotation {
             let aTag: HTMLAnchorElement = createElement('a', { id: 'linkdiv_' + i }) as HTMLAnchorElement;
             // tslint:disable-next-line
             let rect: any = linkAnnotation[i];
-            aTag = this.setHyperlinkProperties(aTag, rect);
+            aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.setAttribute('href', 'javascript:void(0)');
             if (linkPage[i] !== undefined && linkPage[i] > 0) {
                 let destPageHeight: number = (this.pdfViewerBase.pageSize[pageIndex].height);
@@ -139,7 +139,7 @@ export class LinkAnnotation {
     }
 
     // tslint:disable-next-line
-    private setHyperlinkProperties(aTag: HTMLAnchorElement, rect: any): HTMLAnchorElement {
+    private setHyperlinkProperties(aTag: HTMLAnchorElement, rect: any, pageIndex: number): HTMLAnchorElement {
         aTag.className = 'e-pv-hyperlink';
         aTag.style.background = 'transparent';
         aTag.style.position = 'absolute';
@@ -153,6 +153,7 @@ export class LinkAnnotation {
             aTag.style.height = ((rect.Height < 0 ? - rect.Height : rect.Height) * this.pdfViewerBase.getZoomFactor()) + 'px';
         }
         aTag.style.color = 'transparent';
+        this.pdfViewerBase.applyElementStyles(aTag, pageIndex);
         return aTag;
     }
 

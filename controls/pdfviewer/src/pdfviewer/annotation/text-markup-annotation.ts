@@ -2036,6 +2036,9 @@ export class TextMarkupAnnotation {
         let currentTextMarkupAnnotations: ITextMarkupAnnotation[] = [];
         if (canvas) {
             let canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
+            if (canvas.clientWidth !== canvas.parentElement.clientWidth) {
+                canvasParentPosition = canvas.getBoundingClientRect();
+            }
             let leftClickPosition: number = clientX - canvasParentPosition.left;
             let topClickPosition: number = clientY - canvasParentPosition.top;
             let annotationList: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);

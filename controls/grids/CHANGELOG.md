@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.4.42 (2021-02-09)
+
+### Grid
+
+#### Bug Fixes
+
+- `#310158` - Selected records reorder issue has been fixed.
+- `#311583` - `rowSelected` event issue has been resolved.
+
 ## 18.4.41 (2021-02-02)
 
 ### Grid

@@ -1075,6 +1075,7 @@ describe('Batch Edit module', () => {
       gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
       gridObj.grid.actionComplete = actionComplete;
      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+     select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
       
    it('Add - Batch Editing', () => {
@@ -1130,7 +1131,41 @@ describe('Batch Edit module', () => {
      afterAll(() => {
       destroy(gridObj);
     });
-  }); 
+  });
+  
+    describe('Tab Next Row Edit Testing - EJ2-45352', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, allowNextRowEdit: true, mode: "Batch",
+          newRowPosition: "Child" },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'priority', headerText: 'priority' },
+          ]
+        },
+        done
+      );
+    });
+    it('Edit mode continued to the next row on tab click', () => {
+      gridObj.editCell(0, 'priority');
+      gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+      expect(gridObj.getRows()[0].classList.contains("e-editedrow")).toBe(true);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+      expect(gridObj.getRows()[1].classList.contains("e-editedrow")).toBe(true);
+  });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 
   it('memory leak', () => {
     profile.sample();

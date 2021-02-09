@@ -4,7 +4,7 @@ import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-mo
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Layer } from "../../../src/diagram/diagram/layer";
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { UndoRedo, NodeConstraints } from '../../../src/diagram/index';
+import { UndoRedo, NodeConstraints, IExportOptions } from '../../../src/diagram/index';
 
 Diagram.Inject(UndoRedo);
 
@@ -703,6 +703,68 @@ describe('Diagram Control', () => {
             expect((diagram_layer.firstChild as HTMLElement).id === "connector1_groupElement").toBe(true);
             expect((diagram_layer.lastChild as HTMLElement).id === "connector2_groupElement").toBe(true);
             expect((diagram_layer.childNodes[2] as HTMLElement).id === "node2_groupElement").toBe(true);
+            done();
+        });
+    });
+
+
+    describe('SendToBack and BringToFront not working properly when we select a single node in group  ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            var shape:any = { type: 'Basic', shape: 'Rectangle', cornerRadius: 16 };
+            let nodes: NodeModel[] = [
+                { id: 'node1', offsetX: 100,
+                offsetY: 100,
+                 width: 3, height: 3, shape: shape, borderColor: "red" },
+                    {
+                        id: 'node2', width: 100, height: 100, offsetX: 120, offsetY: 130,
+                        annotations: [{ content: 'node2' }]
+                    },
+                    { id: 'group', children: ['node1', 'node2'], rotateAngle: 0 },
+            ];
+            
+            diagram = new Diagram({
+                width: '1050px', height: '500px', nodes: nodes,
+                
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('SendToBack and BringToFront not working properly when we select a single node in group and', (done: Function) => {
+            var options:IExportOptions = {};
+            options.mode = 'Download';
+            options.stretch = 'Meet';
+            options.pageWidth = 500,
+                options.pageHeight = 500,
+                options.region = 'PageSettings';
+            options.fileName = 'export';
+            var data;
+            var image;
+            image = data = diagram.exportDiagram(options);
+                var node1id = diagram.nodes[0].id
+                diagram.select([diagram.nodes[0]]);
+                var groupNodeid = document.getElementById("group_groupElement")
+                expect(groupNodeid.children[2].id==="node2_groupElement").toBe(true);
+                diagram.bringToFront();
+                var groupNodeid = document.getElementById("group_groupElement")
+                expect(groupNodeid.children[2].id==="node1_groupElement").toBe(true);
+            
             done();
         });
     });

@@ -1,6 +1,6 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput } from '../common/event';
-import { clearCopy, protectSelection, clearUndoRedoCollection } from '../common/index';
+import { clearCopy, protectSelection, clearUndoRedoCollection, focus } from '../common/index';
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection} from '@syncfusion/ej2-lists';
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
@@ -104,7 +104,7 @@ export class ProtectSheet {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             open: (): void => {
                 this.okBtnFocus();
@@ -114,7 +114,7 @@ export class ProtectSheet {
                     this.parent.element.id + '_protect_check') as HTMLInputElement;
                 EventHandler.remove(checkboxElement, 'focus', this.okBtnFocus);
                 EventHandler.remove(checkbox.element, 'click', this.checkBoxClickHandler);
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             buttons: [{ click: (this.selectOption.bind(this, this.dialog, this)),
                 buttonModel: {  content: l10n.getConstant('Ok'), isPrimary: true}}]
@@ -214,9 +214,9 @@ export class ProtectSheet {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
     }
 

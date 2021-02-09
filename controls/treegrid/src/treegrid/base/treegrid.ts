@@ -2376,6 +2376,7 @@ private getGridEditSettings(): GridEditModel {
  edit.allowEditOnDblClick = this.editSettings.allowEditOnDblClick;
  edit.showConfirmDialog = this.editSettings.showConfirmDialog; edit.template = this.editSettings.template;
  edit.showDeleteConfirmDialog = this.editSettings.showDeleteConfirmDialog;
+ edit.allowNextRowEdit = this.editSettings.allowNextRowEdit;
  edit[guid] = this.editSettings[guid];
  edit.dialog = this.editSettings.dialog;
  switch (this.editSettings.mode) {
@@ -3444,10 +3445,17 @@ private getGridEditSettings(): GridEditModel {
         this.expandCollapse('expand', row, record);
         if (!(isRemoteData(this) && !isOffline(this)) && !isCountRequired(this)) {
           let collapseArgs: RowExpandedEventArgs = { data: record, row: row };
+          this.setHeightForFrozenContent();
           this.trigger(events.expanded, collapseArgs);
         }
     }
    });
+  }
+
+  private setHeightForFrozenContent(): void {
+    if (this.grid.getFrozenColumns() > 0) {
+      (<{ refreshScrollOffset?: Function }>this.grid.contentModule).refreshScrollOffset();
+    }
   }
 
   private getCollapseExpandRecords(row?: HTMLTableRowElement, record?: Object): Object {
@@ -3473,6 +3481,7 @@ private getGridEditSettings(): GridEditModel {
         this.expandCollapse('collapse', row, record);
         let collapseArgs: RowCollapsedEventArgs = {data: record, row: row};
         if (!isRemoteData(this)) {
+          this.setHeightForFrozenContent();
           this.trigger(events.collapsed, collapseArgs);
         }
       }
@@ -3740,6 +3749,7 @@ private getGridEditSettings(): GridEditModel {
         }
         this.isExpandRefresh = true;
         this.grid.refresh();
+        this.setHeightForFrozenContent();
         this.trigger(events.expanded, expandingArgs);
       });
   }
@@ -3762,10 +3772,12 @@ private getGridEditSettings(): GridEditModel {
       this.notify(events.remoteExpand, {record: record, rows: rows, parentRow: row});
       let args: RowExpandedEventArgs = {row: row, data: record};
       if (rows.length > 0) {
+        this.setHeightForFrozenContent();
         this.trigger(events.expanded, args);
       }
     } else {
       this.collapseRemoteChild({ record: record, rows: rows });
+      this.setHeightForFrozenContent();
       this.trigger(events.collapsed, args);
     }
   }

@@ -2990,7 +2990,9 @@ describe('Datepicker', () => {
         it(' mobile header with today date test case', function () {
             datepicker.value = null;
             datepicker.dataBind();
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            if (!datepicker.popupObj) {
+                (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            }
             expect(document.getElementsByClassName('e-date-modal')[0].classList.contains('e-date-modal')).toBe(true);
         });
     });
@@ -4136,6 +4138,29 @@ describe('Datepicker', () => {
             keyEventArgs.action = 'tab';
             datePicker.inputKeyActionHandle(keyEventArgs);
             expect((datePicker.popupObj) !== null).toBe(true);
+        });
+    });
+    describe('EJ2-45532 - Datepicker popup closing when updating value dynamically',function(){
+        let datePicker:any;
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(datePicker){
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#date');
+            datePicker.show();
+            datePicker.value = new Date('1/1/2020');
+            datePicker.dataBind();
+            expect((datePicker.popupObj) !== null).toBe(true);
+            expect(datePicker.inputElement.value === "1/1/2020").toBe(true)
         });
     });
 });

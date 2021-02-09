@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../index';
-import { checkConditionalFormat, initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs } from '../common/index';
+import { checkConditionalFormat, initiateConditionalFormat, locale, dialog, setCF, CFormattingEventArgs, focus } from '../common/index';
 import { beginAction, completeAction } from '../common/index';
 import { CellModel, SheetModel, getCell, setRow, setCell } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, cFInitialCheck, isNumber, cFRender, cFDelete, DataBar } from '../../workbook/common/index';
@@ -196,7 +196,7 @@ export class ConditionalFormatting {
             beforeOpen: (): void => {
                 dialogInst.dialogInstance.content = this.cFDlgContent(args.action);
                 dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             buttons: [{
                 buttonModel: {

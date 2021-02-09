@@ -449,6 +449,10 @@
             padding-top: $file-name-padding-top-smaller;
           }
 
+          #{if(&, '&', '*')} .e-file-type.e-hidden {
+            visibility: hidden;
+          }
+
           #{if(&, '&', '*')} .e-file-size {
             display: block;
             font-size: $list-item-status-font-size-smaller;

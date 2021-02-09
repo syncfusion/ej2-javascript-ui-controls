@@ -277,20 +277,27 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
     let nxtEleC: HTMLElement;
     let sheet: SheetModel = parent.getActiveSheet();
     if (isCol) {
-        curEle = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
-        curEleH = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
+        if (sheet.showHeaders) {
+            curEle = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
+            curEleH = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
+        }
         curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[index];
     } else {
-        curEle = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-        curEleH = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
+        if (sheet.showHeaders) {
+            curEle = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
+            curEleH = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
+            curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
+        }
         curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[index];
-        curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
         curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
-        let hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
-            parent.getRowHeaderContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
-        let hdrClone: HTMLElement[] = [];
-        hdrClone[0] = hdrRow[index].getElementsByTagName('td')[0].cloneNode(true) as HTMLElement;
-        let hdrFntSize: number = findMaxValue(parent.getRowHeaderTable(), hdrClone, false, parent) + 1;
+        let hdrFntSize: number;
+        if (sheet.showHeaders) {
+            let hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
+                parent.getRowHeaderContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
+            let hdrClone: HTMLElement[] = [];
+            hdrClone[0] = hdrRow[index].getElementsByTagName('td')[0].cloneNode(true) as HTMLElement;
+            hdrFntSize = findMaxValue(parent.getRowHeaderTable(), hdrClone, false, parent) + 1;
+        }
         let contentRow: HTMLCollectionOf<HTMLTableRowElement> =
             parent.getMainContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
         let contentClone: HTMLElement[] = [];
@@ -300,69 +307,75 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
         let cntFntSize: number = findMaxValue(parent.getContentTable(), contentClone, false, parent) + 1;
         let fntSize: number = hdrFntSize >= cntFntSize ? hdrFntSize : cntFntSize;
         if (parseInt(curEleC.style.height, 10) < fntSize ||
-            (curEle.classList.contains('e-reach-fntsize') && parseInt(curEleC.style.height, 10) === fntSize)) {
-            curEle.classList.add('e-reach-fntsize');
-            curEleH.style.lineHeight = parseInt(value, 10) >= 4 ? ((parseInt(value, 10)) - 4) + 'px' :
-                parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
+            (curEle && curEle.classList.contains('e-reach-fntsize') && parseInt(curEleC.style.height, 10) === fntSize)) {
+            if (sheet.showHeaders) {
+                curEle.classList.add('e-reach-fntsize');
+                curEleH.style.lineHeight = parseInt(value, 10) >= 4 ? ((parseInt(value, 10)) - 4) + 'px' :
+                    parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
+            }
             curEleC.style.lineHeight = parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
         } else {
-            curEleH.style.removeProperty('line-height');
+            if (curEleH) { curEleH.style.removeProperty('line-height'); }
             curEleC.style.removeProperty('line-height');
-            if (curEle.classList.contains('e-reach-fntsize')) {
+            if (curEle && curEle.classList.contains('e-reach-fntsize')) {
                 curEle.classList.remove('e-reach-fntsize');
             }
         }
     }
-    preEle = curEle.previousElementSibling as HTMLElement;
-    nxtEle = curEle.nextElementSibling as HTMLElement;
-    if (preEle) {
-        preEle = curEle.previousElementSibling as HTMLElement;
-        preEleH = curEleH.previousElementSibling as HTMLElement;
+    preEleC = curEleC.previousElementSibling as HTMLElement;
+    nxtEleC = curEleC.nextElementSibling as HTMLElement;
+    if (preEleC) {
+        if (sheet.showHeaders) {
+            preEle = curEle.previousElementSibling as HTMLElement;
+            preEleH = curEleH.previousElementSibling as HTMLElement;
+        }
         preEleC = curEleC.previousElementSibling as HTMLElement;
     }
-    if (nxtEle) {
-        nxtEle = curEle.nextElementSibling as HTMLElement;
-        nxtEleH = curEleH.nextElementSibling as HTMLElement;
+    if (nxtEleC) {
+        if (sheet.showHeaders) {
+            nxtEle = curEle.nextElementSibling as HTMLElement;
+            nxtEleH = curEleH.nextElementSibling as HTMLElement;
+        }
         nxtEleC = curEleC.nextElementSibling as HTMLElement;
     }
-    if (parseInt(value, 10) <= 0 && !(curEle.classList.contains('e-zero') || curEle.classList.contains('e-zero-start'))) {
-        if (preEle && nxtEle) {
+    if (parseInt(value, 10) <= 0 && !(curEleC.classList.contains('e-zero') || curEleC.classList.contains('e-zero-start'))) {
+        if (preEleC && nxtEleC) {
             if (isCol) {
-                curEleH.style.width = '2px';
+                if (sheet.showHeaders) { curEleH.style.width = '2px'; }
                 curEleC.style.width = '0px';
             } else {
-                curEleH.style.height = '2px';
+                if (sheet.showHeaders) { curEleH.style.height = '2px'; }
                 curEleC.style.height = '0px';
             }
-            if (preEle.classList.contains('e-zero-start')) {
-                curEle.classList.add('e-zero-start');
+            if (preEleC.classList.contains('e-zero-start')) {
+                if (sheet.showHeaders) { curEle.classList.add('e-zero-start'); }
                 curEleC.classList.add('e-zero-start');
             } else {
-                curEle.classList.add('e-zero');
+                if (sheet.showHeaders) { curEle.classList.add('e-zero'); }
                 curEleC.classList.add('e-zero');
             }
-            if (!nxtEle.classList.contains('e-zero') && !nxtEle.classList.contains('e-zero-last')) {
-                curEle.classList.add('e-zero-last');
+            if (nxtEle && !nxtEle.classList.contains('e-zero') && !nxtEle.classList.contains('e-zero-last')) {
+                if (sheet.showHeaders) { curEle.classList.add('e-zero-last'); }
                 curEleC.classList.add('e-zero-last');
             }
-            if (preEle.classList.contains('e-zero-last')) {
-                preEle.classList.remove('e-zero-last');
+            if (preEleC.classList.contains('e-zero-last')) {
+                if (sheet.showHeaders) { preEle.classList.remove('e-zero-last'); }
                 preEleC.classList.remove('e-zero-last');
             }
-            if (preEle.classList.contains('e-zero')) {
+            if (sheet.showHeaders && preEle.classList.contains('e-zero')) {
                 if (curEle.classList.contains('e-zero-end')) {
                     setWidthAndHeight(preEleH, -2, isCol);
                 } else {
                     setWidthAndHeight(preEleH, -2, isCol);
                 }
-            } else {
+            } else if (sheet.showHeaders) {
                 setWidthAndHeight(preEleH, -1, isCol);
             }
 
-            if (preEle.classList.contains('e-zero-start')) {
+            if (sheet.showHeaders && preEle.classList.contains('e-zero-start')) {
                 setWidthAndHeight(curEleH, -1, isCol);
             }
-            if (nxtEle.classList.contains('e-zero')) {
+            if (sheet.showHeaders && nxtEle.classList.contains('e-zero')) {
                 if (curEle.classList.contains('e-zero-start')) {
                     while (nxtEle) {
                         if (nxtEle.classList.contains('e-zero') && (parseInt(nxtEleH.style.height, 10) !== 0 && !isCol) ||
@@ -395,7 +408,7 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
                 } else {
                     setWidthAndHeight(curEleH, -2, isCol);
                 }
-            } else {
+            } else if (sheet.showHeaders) {
                 if (nxtEle.classList.contains('e-zero-end')) {
                     if (isCol) {
                         curEleH.style.width = '0px';
@@ -406,19 +419,19 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
                     setWidthAndHeight(nxtEleH, -1, isCol);
                 }
             }
-        } else if (preEle) {
+        } else if (preEleC) {
             if (isCol) {
-                curEleH.style.width = '1px';
+                if (sheet.showHeaders) { curEleH.style.width = '1px'; }
                 curEleC.style.width = '0px';
             } else {
-                curEleH.style.height = '1px';
+                if (sheet.showHeaders) { curEleH.style.height = '1px'; }
                 curEleC.style.height = '0px';
             }
-            curEle.classList.add('e-zero-end');
+            if (sheet.showHeaders) { curEle.classList.add('e-zero-end'); }
             curEleC.classList.add('e-zero-end');
-            curEle.classList.add('e-zero-last');
+            if (sheet.showHeaders) { curEle.classList.add('e-zero-last'); }
             curEleC.classList.add('e-zero-last');
-            if (preEle.classList.contains('e-zero')) {
+            if (sheet.showHeaders && preEle.classList.contains('e-zero')) {
                 setWidthAndHeight(preEleH, -2, isCol);
             } else {
                 setWidthAndHeight(preEleH, -1, isCol);
@@ -437,7 +450,7 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
                 curEleH.style.height = '1px';
                 curEleC.style.height = '0px';
             }
-            if (nxtEle.classList.contains('e-zero')) {
+            if (sheet.showHeaders && nxtEle.classList.contains('e-zero')) {
                 while (nxtEle) {
                     if (nxtEle.classList.contains('e-zero') && (parseInt(nxtEleH.style.width, 10) !== 0
                         && isCol) || (parseInt(nxtEleH.style.height, 10) !== 0 && !isCol)) {
@@ -467,19 +480,19 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
                     }
                 }
 
-            } else {
+            } else if (sheet.showHeaders) {
                 setWidthAndHeight(nxtEleH, -1, isCol);
             }
         }
     } else if (parseInt(value, 10) > 0) {
         if (isCol) {
-            curEleH.style.width = value;
+            if (sheet.showHeaders) { curEleH.style.width = value; }
             curEleC.style.width = value;
         } else {
-            curEleH.style.height = value;
+            if (sheet.showHeaders) { curEleH.style.height = value; }
             curEleC.style.height = value;
         }
-        if (preEle && nxtEle) {
+        if (sheet.showHeaders && preEle && nxtEle) {
             if (preEle.classList.contains('e-zero')) {
                 if (curEle.classList.contains('e-zero')) {
                     if (isCol) {
@@ -526,7 +539,7 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
                 preEle.classList.add('e-zero-last');
                 preEleC.classList.add('e-zero-last');
             }
-        } else if (preEle) {
+        } else if (sheet.showHeaders && preEle) {
             if (preEle.classList.contains('e-zero')) {
                 if (curEle.classList.contains('e-zero')) {
                     if (isCol) {
@@ -550,7 +563,7 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
             if (curEle.classList.contains('e-zero-end')) { curEle.classList.remove('e-zero-end'); }
             if (curEleC.classList.contains('e-zero')) { curEleC.classList.remove('e-zero'); }
             if (curEleC.classList.contains('e-zero-end')) { curEleC.classList.remove('e-zero-end'); }
-        } else if (nxtEle) {
+        } else if (sheet.showHeaders && nxtEle) {
             if (nxtEle.classList.contains('e-zero')) {
                 setWidthAndHeight(curEleH, -1, isCol);
             } else if (curEle.classList.contains('e-zero-start')) {
@@ -644,6 +657,10 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             let cellEvtArgs: CellSaveEventArgs = options.eventArgs as CellSaveEventArgs;
             let cellValue: CellModel = eventArgs.formula ? { formula: cellEvtArgs.formula } : { value: cellEvtArgs.value };
             spreadsheet.updateCell(cellValue, cellEvtArgs.address);
+            break;
+        case 'cellDelete':
+            spreadsheet.clearRange(options.eventArgs.address, null, true);
+            spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getRangeIndexes(options.eventArgs.address));
             break;
         case 'format':
             if (eventArgs.requestType === 'CellFormat') {
@@ -1005,4 +1022,17 @@ export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolea
         index = skipHiddenIdx(sheet, index, increase, layout);
     }
     return index;
+}
+
+/** @hidden */
+export function focus(ele: HTMLElement): void {
+    if (Browser.isIE) {
+        let scrollX: number = window.scrollX;
+        let scrollY: number = window.scrollY;
+        ele.focus();
+        window.scrollTo(scrollX, scrollY);
+    } else {
+        // tslint:disable-next-line
+        (ele as any).focus({ preventScroll: true });
+    }
 }

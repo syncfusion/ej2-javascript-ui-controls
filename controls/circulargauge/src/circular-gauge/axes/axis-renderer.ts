@@ -46,6 +46,16 @@ export class AxisRenderer {
     }
 
     /**
+     * Method to check the angles.
+     * @return {void}
+     * @private
+     */
+    public checkAngles(axis: Axis): void {
+        axis.startAngle = axis.startAngle >= 360 ? 360 : axis.startAngle <= -360 ? -360 : axis.startAngle ;
+        axis.endAngle = axis.endAngle >= 360 ? 360 : axis.endAngle <= -360 ? -360 : axis.endAngle;
+    }
+
+    /**
      * Method to render the axis line of the circular gauge.
      * @return {void}
      * @private
@@ -411,7 +421,7 @@ export class AxisRenderer {
                             getRoundedPathArc(
                                 location,
                                 Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
-                                range.currentRadius, startWidth, endWidth
+                                range.currentRadius, startWidth, endWidth, range, axis
                             ),
                             '', ''
                         ),

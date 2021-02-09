@@ -1673,4 +1673,53 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
+
+    describe('EJ2-45885 - Bold with list to Backspace key press testing', () => {
+        let elem: HTMLElement;
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let innerValue: string = `<div id="content-edit" contenteditable="true"><p><strong>&#8203;Test</strong><br></p><ul><li><strong id="strongEle">&#65279;&#65279;<br></strong></li></ul><div>`;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: innerValue
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' List next to paragraph tag', () => {
+            startNode = editNode.querySelector('#strongEle');
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'backspace';
+            keyBoardEvent.event.which = 8;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let liNode: Element = editNode.querySelector('li');
+            expect(!isNullOrUndefined(liNode)).toBe(true);
+            expect(isNullOrUndefined(liNode.querySelector('strong'))).toBe(true);
+            innerValue = `<div id="content-edit" contenteditable="true"><ul><li><strong id="strongEle">&#8203;</strong><br></li></ul><div>`;
+        });
+
+        it(' list tag alone', () => {
+            startNode = editNode.querySelector('#strongEle');
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'backspace';
+            keyBoardEvent.event.which = 8;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let liNode: Element = editNode.querySelector('li');
+            expect(!isNullOrUndefined(liNode)).toBe(true);
+            expect(isNullOrUndefined(liNode.querySelector('strong'))).toBe(true);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 });

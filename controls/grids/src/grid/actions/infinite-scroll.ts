@@ -294,11 +294,18 @@ export class InfiniteScroll implements IAction {
                         : isFrozenRight ? this.parent.element.querySelector('.e-frozen-right-header').querySelector('tbody')
                             : this.parent.getFrozenVirtualHeader().querySelector('tbody') : tbody;
         }
-        for (let i: number = row.length - 1; i >= 0; i--) {
-            if (this.requestType === 'delete') {
-                tbody.appendChild(rowRenderer.render(row[i], this.parent.getColumns()));
-            } else {
-                tbody.insertBefore(rowRenderer.render(row[i], this.parent.getColumns()), tbody.firstElementChild);
+        let notifyArgs: {
+            rows: Row<Column>[], cancel: boolean, args: { e: InfiniteScrollArgs, result: Object[] },
+            isMovable?: boolean, isFrozenRows?: boolean, isFrozenRight?: boolean
+        } = { rows: rows, cancel: false, args: args, isMovable: isMovable, isFrozenRows: isFrozenRows, isFrozenRight: isFrozenRows };
+        this.parent.notify(events.infiniteCrudCancel, notifyArgs);
+        if (!notifyArgs.cancel) {
+            for (let i: number = row.length - 1; i >= 0; i--) {
+                if (this.requestType === 'delete') {
+                    tbody.appendChild(rowRenderer.render(row[i], this.parent.getColumns()));
+                } else {
+                    tbody.insertBefore(rowRenderer.render(row[i], this.parent.getColumns()), tbody.firstElementChild);
+                }
             }
         }
         if (!isFrozenRows && this.parent.frozenRows

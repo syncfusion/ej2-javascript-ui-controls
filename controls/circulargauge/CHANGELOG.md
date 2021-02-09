@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## 18.4.35 (2021-01-19)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#293761` - The range with different start and end width will now render properly.
+
+## 18.4.34 (2021-01-12)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#308123` - Circular gauge will now render properly when angles are set.
+
 ## 18.3.51 (2020-11-24)
 
 ### CircularGauge

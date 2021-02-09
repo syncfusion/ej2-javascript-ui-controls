@@ -314,6 +314,30 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].direction = 'AntiClockWise';
             gauge.refresh();
         });
+        it('Checking Axis start angle and end angle greater than 360', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = document.getElementById('container_AxisLine_0');
+            expect(svg.getAttribute('opacity') == "null").toBe(true);
+            done();   
+            };
+            gauge.axes[0].startAngle = 400;
+            gauge.axes[0].endAngle = 400;
+            gauge.axes[0].ranges[0].start= 0;
+            gauge.axes[0].ranges[0].end = 120;
+            gauge.refresh();
+        });
+        it('Checking Axis start angle and end angle greater than -360', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+            svg = document.getElementById('container_AxisLine_0');
+            expect(svg.getAttribute('fill') == "transparent").toBe(true);
+            done();   
+            };
+            gauge.axes[0].startAngle = -390;
+            gauge.axes[0].endAngle = -390;
+            gauge.axes[0].ranges[0].start= 0;
+            gauge.axes[0].ranges[0].end = 120;
+            gauge.refresh();
+        });
 
     });
 

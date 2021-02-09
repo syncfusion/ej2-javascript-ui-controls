@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { findDlg, locale, dialog, gotoDlg, replace, findHandler, beginAction, BeforeReplaceEventArgs } from '../common/index';
+import { findDlg, locale, dialog, gotoDlg, replace, findHandler, beginAction, BeforeReplaceEventArgs, focus } from '../common/index';
 import { ReplaceEventArgs, completeAction, ReplaceAllEventArgs, DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -90,7 +90,7 @@ export class FindAndReplace {
                         args.cancel = true;
                     }
                     dialogInst.dialogInstance.content = this.findandreplaceContent(); dialogInst.dialogInstance.dataBind();
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: {
@@ -168,7 +168,7 @@ export class FindAndReplace {
                         args.cancel = true;
                     }
                     dialogInst.dialogInstance.content = this.GotoContent(); dialogInst.dialogInstance.dataBind();
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: {

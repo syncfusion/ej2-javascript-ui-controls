@@ -420,13 +420,21 @@ export class YearEvent extends TimelineEvent {
         for (let app of appointments as { [key: string]: Date }[]) {
             let appStart: Date = new Date(app[this.fields.startTime].getTime());
             let appEnd: Date = new Date(app[this.fields.endTime].getTime());
-            if (this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)
-                && (util.resetTime(appEnd).getTime() >= dateEnd)) {
-                appointmentsList.push(app);
-            }
-            if (!this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)
-                && (util.resetTime(appEnd).getTime() >= dateEnd)) {
-                appointmentsList.push(app);
+            if (this.parent.activeViewOptions.orientation === 'Vertical' &&
+                this.parent.activeViewOptions.group.resources.length > 0) {
+                if ((util.resetTime(appStart).getTime() > dateStart)
+                    && (util.resetTime(appEnd).getTime() < dateEnd)) {
+                    appointmentsList.push(app);
+                }
+            } else {
+                if (this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)
+                    && (util.resetTime(appEnd).getTime() >= dateEnd)) {
+                    appointmentsList.push(app);
+                }
+                if (!this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)
+                    && (util.resetTime(appEnd).getTime() >= dateEnd)) {
+                    appointmentsList.push(app);
+                }
             }
         }
         return appointmentsList;

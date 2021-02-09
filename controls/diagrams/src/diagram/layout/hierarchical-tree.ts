@@ -1332,13 +1332,13 @@ export class HierarchicalTree {
             this.getSegmentsForMultipleRows(layout, node, target, connector);
         } else {
             if (info.tree.children.length > 5) {
-                if (i < 4) {
+                if (i < 4 || i < info.tree.rows) {
                     this.getSegmentsForMultipleRows(layout, node, target, connector);
                 } else {
                     this.updateSegmentsForHorizontalOrientation(layout, node, target, connector);
                 }
             } else if (info.tree.children.length === 4) {
-                if (i < 2) {
+                if (i < 2 || i < info.tree.rows) {
                     this.getSegmentsForMultipleRows(layout, node, target, connector);
                 } else {
                     this.updateSegmentsForHorizontalOrientation(layout, node, target, connector);

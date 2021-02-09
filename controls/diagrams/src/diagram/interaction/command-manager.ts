@@ -2176,12 +2176,19 @@ export class CommandHandler {
                             //EJ2-42101 - SendToBack and BringToFront not working for connector with group node
                             //Added @Dheepshiva to restrict the objects with lower zIndex
                             if (layer.objects[i] !== undefined &&
-                            (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
-                            if (this.diagram.nameTable[layer.objects[i]].parentId === '') {
-                            this.moveSvgNode(layer.objects[i], objectName);
-                            this.updateNativeNodeIndex(objectName);
+                                (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
+                                if (this.diagram.nameTable[objectName].parentId === ''
+                                    && this.diagram.nameTable[layer.objects[i]].parentId === ''
+                                    && this.diagram.nameTable[objectName].parentId !== this.diagram.nameTable[layer.objects[i]].id) {
+                                    this.moveSvgNode(layer.objects[i], objectName);
+                                    this.updateNativeNodeIndex(objectName);
+                                } else {
+                                    if (this.checkGroupNode(objectName, layer.objects[i], this.diagram.nameTable)) {
+                                        this.moveSvgNode(layer.objects[i], objectName);
+                                        this.updateNativeNodeIndex(objectName);
+                                    }
+                                }
                             }
-                        }
                         }
                     }
                 }
@@ -2198,6 +2205,10 @@ export class CommandHandler {
         if (isBlazor()) {
             this. getZIndexObjects();
         }
+    }
+
+    private checkGroupNode(selectedNodeName: string, layerObject: string, nameTable: object): boolean {
+        return nameTable[layerObject].parentId === nameTable[selectedNodeName].parentId;
     }
 
     /** @private */

@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { spreadsheetDestroyed, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, RefreshType } from '../common/index';
-import { colWidthChanged, updateTableWidth } from '../common/index';
+import { colWidthChanged, updateTableWidth, focus } from '../common/index';
 import { IScrollArgs, onVerticalScroll, onHorizontalScroll, rowHeightChanged, beforeHeaderLoaded, deInitProperties } from '../common/index';
 import { SheetModel, getRowHeight, getRowsHeight, getColumnWidth, getColumnsWidth } from './../../workbook/index';
 import { getRangeAddress } from '../../workbook/common/index';
@@ -151,7 +151,7 @@ export class VirtualScroll {
                                 this.parent.renderModule.refreshUI(
                                     { rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Row', skipUpdateOnFirst: true });
                             }
-                            this.parent.element.focus();
+                            focus(this.parent.element);
                         }
                     }
                     this.updateScrollCount(threshold, 'row');
@@ -199,7 +199,7 @@ export class VirtualScroll {
                         });
                     }
                     this.updateScrollCount(idx, 'row', threshold);
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 }
             }
             args.prev.idx = idx;
@@ -260,7 +260,7 @@ export class VirtualScroll {
                                 this.parent.renderModule.refreshUI(
                                     { rowIndex: this.parent.viewport.topIndex, colIndex: 0, refresh: 'Column', skipUpdateOnFirst: true });
                             }
-                            this.parent.element.focus();
+                            focus(this.parent.element);
                         }
                     }
                     this.updateScrollCount(threshold, 'col');
@@ -308,7 +308,7 @@ export class VirtualScroll {
                         });
                     }
                     this.updateScrollCount(idx, 'col', threshold);
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 }
             }
             args.prev.idx = idx;

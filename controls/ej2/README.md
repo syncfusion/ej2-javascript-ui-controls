@@ -1,3 +1,5 @@
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2)](https://www.npmjs.com/package/@syncfusion/ej2)
+
 # Essential JS 2 - Modern JavaScript UI Components
 
 The only JavaScript UI package you will ever need.

@@ -643,17 +643,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             args = { requestType: 'template-initialize', ruleID: ruleElem.id, action: action, fields: this.fields, rule: rule };
             this.trigger('actionBegin', args);
             this.ruleTemplateFn = this.templateParser(column.ruleTemplate);
-            let templateID: string = this.element.id + column.field; let template: Element[];
+            let templateID: string = this.element.id + column.field; let template: Element;
             args.fields = this.fields; args.columns = this.columns;
             args.operators = this.getOperators(rule.field);
             args.operatorFields = { text: 'key', value: 'value' };
             // tslint:disable
-            if ((this as any).isReact || (this as any).isAngular) {
-                template = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
+            if ((this as any).isReact) {
+                template = this.ruleTemplateFn(args, this, ruleElem.id, templateID)[0];
+            } else if ((this as any).isAngular) {
+                let templateColl: Element [] = this.ruleTemplateFn(args, this, ruleElem.id, templateID);
+                template = (templateColl[0].nodeType === 3) ? templateColl[1] : templateColl[0];
             } else {
-                template = this.ruleTemplateFn(args, this, 'Template', templateID);
+                template = this.ruleTemplateFn(args, this, 'Template', templateID)[0];
             }
-            elem = template[0]; elem.className += ' e-rule-field';
+            elem = template; elem.className += ' e-rule-field';
         } else {
             elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true) as Element;
         }
@@ -2024,8 +2027,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.columnTemplateFn = this.templateParser(itemData.template as string);
                 let templateID: string = this.element.id + field;
                 // tslint:disable
-                if ((this as any).isReact || (this as any).isAngular) {
+                if ((this as any).isReact) {
                     valElem = this.columnTemplateFn(args, this, ruleID, templateID)[0];
+                } else if((this as any).isAngular) {
+                    let valElemColl: Element[] = this.columnTemplateFn(args, this, ruleID, templateID);
+                    valElem = (valElemColl[0].nodeType === 3) ? valElemColl[1] : valElemColl[0];
                 } else {
                     valElem = this.columnTemplateFn(args, this, 'Template', templateID)[0];
                 }
@@ -2971,7 +2977,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             detach(clnruleElem);
 			if (column && column.ruleTemplate) {
-				this.clearQBTemplate([ruleElem.id]);
+				this.clearQBTemplate([clnruleElem.id]);
             }
             if (column && this.isPlatformTemplate(column)) {
                 this.clearQBTemplate([clnruleElem.id]);

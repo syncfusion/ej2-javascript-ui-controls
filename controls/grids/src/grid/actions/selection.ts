@@ -145,6 +145,7 @@ export class Selection implements IAction {
     private isMultiSelection: boolean = false;
     private isAddRowsToSelection: boolean = false;
     private initialRowSelection: boolean = false;
+    private isPrevRowSelection: boolean = false;
     /**
      * @hidden
      */
@@ -614,17 +615,16 @@ export class Selection implements IAction {
                         isHeaderCheckboxClicked: this.isHeaderCheckboxClicked, rowIndexes: indexes
                     };
                 }
-                this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
-                    if (!isNullOrUndefined(args) && args[can] === true) {
-                        this.disableInteracted();
-                        return;
-                    }
-                    if (this.isSingleSel()) {
-                        this.clearRow();
-                    }
-                    this.updateRowSelection(selectedRow, rowIndex);
-                    this.selectMovableRow(selectedMovableRow, selectedFrozenRightRow, rowIndex);
-                });
+                this.parent.trigger(events.rowSelecting, this.fDataUpdate(args));
+                if (!isNullOrUndefined(args) && args[can] === true) {
+                    this.disableInteracted();
+                    return;
+                }
+                if (this.isSingleSel()) {
+                    this.clearRow();
+                }
+                this.updateRowSelection(selectedRow, rowIndex);
+                this.selectMovableRow(selectedMovableRow, selectedFrozenRightRow, rowIndex);
             }
             if (!isUnSelected) {
                 let isHybrid: string = 'isHybrid';
@@ -872,7 +872,9 @@ export class Selection implements IAction {
                             this.addRemoveClassesForRow(element[j], false, true, 'e-selectionbackground', 'e-active');
                         }
                         // tslint:disable-next-line:align
-                        this.updatePersistCollection(element[j], false);
+                        if (!this.isPrevRowSelection) {
+                            this.updatePersistCollection(element[j], false);
+                        }
                         this.updateCheckBoxes(element[j]);
                     }
                     if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
@@ -886,7 +888,9 @@ export class Selection implements IAction {
                                 this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
                             }
                             this.updateCheckBoxes(movableRow);
-                            this.updatePersistCollection(movableRow, false);
+                            if (!this.isPrevRowSelection) {
+                                this.updatePersistCollection(movableRow, false);
+                            }
                         }
                         let frRow: Element = this.getSelectedFrozenRightRow(this.selectedRowIndexes[i]);
                         if (frRow) {
@@ -895,13 +899,16 @@ export class Selection implements IAction {
                                 this.addRemoveClassesForRow(frRow, false, true, 'e-selectionbackground', 'e-active');
                             }
                             this.updateCheckBoxes(frRow);
-                            this.updatePersistCollection(frRow, false);
+                            if (!this.isPrevRowSelection) {
+                                this.updatePersistCollection(frRow, false);
+                            }
                         }
                     }
                     this.selectedRowIndexes = [];
                     this.selectedRecords = [];
                     this.isRowSelected = false;
                     this.selectRowIndex(-1);
+                    this.isPrevRowSelection = false;
                     this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow, undefined, fRightRow);
                     if (this.clearRowCheck) {
                         this.clearRowCallBack();
@@ -2715,6 +2722,9 @@ export class Selection implements IAction {
 
     private onDataBound(): void {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
+            if (this.selectedRecords.length) {
+                this.isPrevRowSelection = true;
+            }
             this.refreshPersistSelection();
         }
         if (this.parent.enableVirtualization) {

@@ -717,7 +717,9 @@ export class AccumulationDataLabel extends AccumulationBase {
     private finalizeDatalabels(point: AccPoints, points: AccPoints[], dataLabel: AccumulationDataLabelSettingsModel): void {
         if (this.isOverlapping(point, points) ||
             (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
-            //this.setPointVisibileFalse(point);
+            if (this.isCircular() && point.labelPosition === 'Outside') {
+                this.setPointVisibileFalse(point);
+            }
         }
 
         if (this.accumulation.accumulationLegendModule && point.labelVisible && point.labelRegion) {

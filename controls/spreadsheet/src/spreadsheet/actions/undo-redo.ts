@@ -5,7 +5,7 @@ import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRe
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
 import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
-import { SheetModel, MergeArgs, setMerge, getRangeAddress, getColumnHeaderText, FilterCollectionModel } from '../../workbook/index';
+import { SheetModel, MergeArgs, setMerge, getRangeAddress, FilterCollectionModel, getSwapRange } from '../../workbook/index';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { getFilteredCollection, CellStyleModel, TextDecoration, setCellFormat } from '../../workbook/index';
 /**
@@ -49,6 +49,7 @@ export class UndoRedo {
                 }
                 break;
             case 'beforeCellSave':
+            case 'cellDelete':
                 address = getRangeIndexes(eventArgs.address);
                 break;
             case 'beforeWrap':
@@ -87,6 +88,7 @@ export class UndoRedo {
                 case 'format':
                 case 'sorting':
                 case 'wrap':
+                case 'cellDelete':
                     undoRedoArgs = this.performOperation(undoRedoArgs);
                     break;
                 case 'clipboard':
@@ -159,7 +161,7 @@ export class UndoRedo {
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
             'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
-            'chartRefresh', 'filter'];
+            'chartRefresh', 'filter', 'cellDelete'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -171,7 +173,7 @@ export class UndoRedo {
         if (action === 'clipboard' || action === 'sorting' || action === 'format' || action === 'cellSave' ||
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
             action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
-            action === 'chartRefresh' || action === 'filter') {
+            action === 'chartRefresh' || action === 'filter' || action === 'cellDelete') {
             let beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -262,24 +264,27 @@ export class UndoRedo {
                     let cells: PreviousCellDetails[] = actionData.cutCellDetails;
                     this.updateCellDetails(
                         cells, getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)),
-                        copiedInfo.range as number[], isRefresh);
+                        getSwapRange(copiedInfo.range as number[]), isRefresh);
                     this.parent.notify(getFilteredCollection, null);
                     for (let i: number = 0; i < this.parent.sheets.length; i++) {
                         let sheetIndex: number = getSheetIndexFromId(this.parent, <number>copiedInfo.sId);
                         if (this.parent.filterCollection && this.parent.filterCollection[i] &&
                             this.parent.filterCollection[i].sheetIdx === eventArgs.pasteSheetIndex) {
                             let filterCol: FilterCollectionModel = this.parent.filterCollection[i];
-                            let fRange: number[] = getRangeIndexes(filterCol.filterRange);
-                            let endCol: string = getColumnHeaderText(range[3]);
-                            let fEndCol: string = getColumnHeaderText(fRange[3]);
-                            if (fRange[0] === range[0] && fRange[1] === range[1] && endCol === fEndCol) {
+                            let fRange: number[] = getRangeIndexes(filterCol.filterRange); let pRange: number[] = getSwapRange(range);
+                            if (fRange[0] >= pRange[0] && fRange[2] <= pRange[2]) {
                                 this.parent.notify(initiateFilterUI, {
                                     predicates: null, range: filterCol.filterRange,
                                     sIdx: eventArgs.pasteSheetIndex, isCut: true
                                 });
+                                let diff: number[] = [Math.abs(pRange[0] - fRange[0]), Math.abs(pRange[1] - fRange[1]),
+                                Math.abs(pRange[2] - fRange[2]), Math.abs(pRange[3] - fRange[3])];
+                                let copiedRange: number[] = getSwapRange(copiedInfo.range as number[]);
+                                diff = [copiedRange[0] + diff[0], copiedRange[1] + diff[1],
+                                Math.abs(copiedRange[2] - diff[2]), Math.abs(copiedRange[3] - diff[3])];
                                 this.parent.notify(initiateFilterUI, {
                                     predicates: null,
-                                    range: getRangeAddress(copiedInfo.range as number[]), sIdx: sheetIndex, isCut: true
+                                    range: getRangeAddress(diff), sIdx: sheetIndex, isCut: true
                                 });
                             }
                         }
@@ -295,9 +300,7 @@ export class UndoRedo {
             } else {
                 updateAction(args, this.parent, copiedInfo.isCut as boolean);
             }
-            if (isRefresh) {
-                this.parent.notify(selectRange, { indexes: range });
-            }
+            if (isRefresh) { this.parent.notify(selectRange, { indexes: range }); }
         }
         return args;
     }
@@ -323,9 +326,8 @@ export class UndoRedo {
 
     private performOperation(args: CollaborativeEditArgs): CollaborativeEditArgs {
         let eventArgs: UndoRedoEventArgs = args.eventArgs;
-        let address: string[] = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace') ?
-            eventArgs.address.split('!')
-            : eventArgs.range.split('!');
+        let address: string[] = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace'
+            || args.action === 'cellDelete') ? eventArgs.address.split('!') : eventArgs.range.split('!');
         let range: number[] = getRangeIndexes(address[1]);
         let indexes: number[] = range;
         let sheetIndex: number = getSheetIndex(this.parent, address[0]);
@@ -406,6 +408,7 @@ export class UndoRedo {
     private getCellDetails(address: number[], sheet: SheetModel): PreviousCellDetails[] {
         let cells: PreviousCellDetails[] = [];
         let cell: CellModel;
+        address = getSwapRange(address);
         for (let i: number = address[0]; i <= address[2]; i++) {
             for (let j: number = address[1]; j <= address[3]; j++) {
                 cell = getCell(i, j, sheet);

@@ -891,31 +891,33 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             name: resized,
             currentSize: new Size(0, 0)
         };
-        if(!isNullOrUndefined(document.getElementById(this.element.id + '_svg'))) {
-            this.createSvg();
-            this.calculateBounds();
-            this.renderElements();
-        }
-        args.currentSize = this.availableSize;
-        this.animatePointer = false;
-        if (this.resizeTo) {
-            clearTimeout(this.resizeTo);
-        }
-    else
-        if (this.element.classList.contains('e-circulargauge')) {
-            this.resizeTo = window.setTimeout(
-                (): void => {
-                    this.createSvg();
-                    this.calculateBounds();
-                    this.renderElements();
-                    args.currentSize = this.availableSize;
-                    if (this.isBlazor) {
-                        const {previousSize, name, currentSize} : IResizeEventArgs = args;
-                        args = {previousSize, name, currentSize};
-                    }
-                    this.trigger(resized, args);
-                },
-                500);
+        if(!isNullOrUndefined(this.element)) {
+            if (this.element.classList.contains('e-circulargauge')) {
+                this.createSvg();
+                this.calculateBounds();
+                this.renderElements();
+            }
+            args.currentSize = this.availableSize;
+            this.animatePointer = false;
+            if (this.resizeTo) {
+                clearTimeout(this.resizeTo);
+            }
+            else
+                if (this.element.classList.contains('e-circulargauge')) {
+                    this.resizeTo = window.setTimeout(
+                        (): void => {
+                            this.createSvg();
+                            this.calculateBounds();
+                            this.renderElements();
+                            args.currentSize = this.availableSize;
+                            if (this.isBlazor) {
+                                const {previousSize, name, currentSize} : IResizeEventArgs = args;
+                                 args = {previousSize, name, currentSize};
+                            }
+                            this.trigger(resized, args);
+                        },
+                        500);
+                }
         }
         return false;
     }
@@ -1283,8 +1285,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             removeElement(this.element.id + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex);
             annotation.content = content;
             this.annotationsModule.createTemplate(element, annotationIndex, axisIndex);
-            if (!isElementExist) {
-                getElement(this.element.id + '_Secondary_Element').appendChild(element);
+            let secondaryElement: Element = getElement(this.element.id + '_Secondary_Element');
+            if (!isElementExist && !isNullOrUndefined(secondaryElement)) {
+                secondaryElement.appendChild(element);
             }
         }
     }

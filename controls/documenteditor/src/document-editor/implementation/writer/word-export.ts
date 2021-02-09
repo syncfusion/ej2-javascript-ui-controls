@@ -4719,7 +4719,9 @@ export class WordExport {
         if (!isNullOrUndefined(tabStop.tabLeader) && (tabStop.tabLeader !== 'None')) {
             writer.writeAttributeString('w', 'leader', this.wNamespace, this.getTabLeader(tabStop.tabLeader));
         }
-        writer.writeAttributeString('w', 'pos', this.wNamespace, position.toString() + '');
+        if (!isNaN(position)) {
+            writer.writeAttributeString('w', 'pos', this.wNamespace, position.toString() + '');
+        }
         writer.writeEndElement();
     }
     private getTabLeader(tabLeader: TabLeader): string {

@@ -1909,6 +1909,8 @@ export function insertObject(obj: NodeModel | ConnectorModel, key: string, colle
             } else if (collection[mid][key] > obj[key]) {
                 high = mid;
                 mid = Math.floor((low + high) / 2);
+            } else {
+                break;
             }
         }
         if (collection[high][key] < obj[key]) {

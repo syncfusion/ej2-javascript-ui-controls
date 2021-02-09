@@ -1,5 +1,5 @@
 import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
-import { applySort, completeAction, beginAction } from '../index';
+import { applySort, completeAction, beginAction, focus } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange } from '../../workbook/index';
 import { getColumnHeaderText, CellModel, getRangeAddress } from '../../workbook/index';
@@ -114,7 +114,7 @@ export class Sort {
                     args.cancel = true;
                 }
                 dialogInst.dialogInstance.content = this.customSortContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             buttons: [{
                 buttonModel: {

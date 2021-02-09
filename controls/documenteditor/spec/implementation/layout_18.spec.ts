@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { DocumentHelper, Editor, LineWidget, ParagraphWidget, Selection, TabElementBox, TableRowWidget, TableWidget } from '../../src/index';
+import { DocumentHelper, Editor, LineWidget, ParagraphWidget, Selection, TabElementBox, TableRowWidget, TableWidget, EditorHistory } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 describe('Merge cell index validtaion', () => {
     let editor: DocumentEditor = undefined;
@@ -921,3 +921,39 @@ describe('Tab after list element width calculation validation', () => {
         expect(Math.round((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as any).width)).toBe(10);
     });
 })
+describe('Field end element validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor, EditorHistory);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Field end element validation', () => {
+        editor.openBlank();
+        editor.editor.insertField('MERGEFIELD ' + 'Field1' + ' \\* MERGEFORMAT');
+        editor.editor.onEnter();
+        editor.editor.insertField('MERGEFIELD ' + 'Field2' + ' \\* MERGEFORMAT');
+        editor.selection.handleHomeKey();
+        editor.selection.handleUpKey();
+        editor.selection.handleControlRightKey();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editorHistory.undo();
+        expect((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).y).toBe(112);
+    });    
+});

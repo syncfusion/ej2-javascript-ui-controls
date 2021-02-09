@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs } from '../common/index';
+import { formulaBar, locale, selectionComplete, enableFormulaInput, DialogBeforeOpenEventArgs, focus } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
 import { CellModel, getSheetName, getTypeFromFormat, getSheet, SheetModel, checkIsFormula, getCell } from '../../workbook/index';
@@ -169,7 +169,7 @@ export class FormulaBar {
             }
             if ((sheetIdx) === this.parent.activeSheetIndex) {
                 this.parent.selectRange(range);
-                this.parent.element.focus();
+                focus(this.parent.element);
             } else {
                 updateSelectedRange(this.parent, range, sheet);
                 this.parent.activeSheetIndex = sheetIdx;
@@ -364,7 +364,7 @@ export class FormulaBar {
                             dialogName: 'InsertFunctionDialog', element: args.element, target: args.target, cancel: args.cancel };
                         this.parent.trigger('dialogBeforeOpen', dlgArgs);
                         if (dlgArgs.cancel) { args.cancel = true; }
-                        this.parent.element.focus(); },
+                        focus(this.parent.element); },
                     open: this.dialogOpen.bind(this), beforeClose: this.dialogBeforeClose.bind(this), close: this.dialogClose.bind(this),
                     buttons: [
                     {

@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
-import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, hideShow, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
@@ -114,51 +114,51 @@ export class ContextMenu {
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_unhide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_hide_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_unhide_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_insert_row_above': case id + '_delete_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
                         this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true,
                         insertType: 'above' });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_insert_row_below':
                     indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                     this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
                         indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true,
                         insertType: 'below' });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_insert_column_before': case id + '_delete_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
                         this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_insert_column_after':
                     indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
                     this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
                         indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case id + '_hyperlink':
                     this.parent.notify(initiateHyperlink, null);

@@ -2,7 +2,7 @@ import { ColorPicker as ColorPickerComponent, BeforeOpenCloseEventArgs, OpenEven
 import { ColorPickerEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale } from '../common/index';
+import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale, focus } from '../common/index';
 import { setCellFormat, SetCellFormatArgs } from '../../workbook/common/index';
 /**
  * `Color Picker` module is used to handle ColorPicker functionality.
@@ -37,7 +37,7 @@ export class ColorPicker {
                 } else {
                     this.updateSelectedColor(eventArgs.style.color, this.fontColorPicker.element);
                 }
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             created: (): void => this.wireFocusEvent(this.fontColorPicker.element, '#000000')
         });
@@ -65,7 +65,7 @@ export class ColorPicker {
                 } else {
                     this.updateSelectedColor(eventArgs.style.backgroundColor, this.filColorPicker.element);
                 }
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             created: (): void => this.wireFocusEvent(this.filColorPicker.element, '#ffff00')
         });
@@ -82,7 +82,7 @@ export class ColorPicker {
         this.updateSelectedColor(color, element);
         element = element.parentElement.querySelector('.e-split-colorpicker');
         element.addEventListener('focus', (): void => {
-            this.parent.element.focus();
+            focus(this.parent.element);
         });
     }
     private openHandler(args: OpenEventArgs): void {

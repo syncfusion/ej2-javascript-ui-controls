@@ -2,7 +2,7 @@ import { Column, NotifyArgs, SentinelType } from '@syncfusion/ej2-grids';
 import { Offsets, VirtualInfo, ServiceLocator, IGrid, IModelGenerator } from '@syncfusion/ej2-grids';
 import { VirtualContentRenderer } from '@syncfusion/ej2-grids';
 import { RowPosition } from '../enum';
-import { InterSectionObserver } from '@syncfusion/ej2-grids';
+import { InterSectionObserver, RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
 import { isNullOrUndefined, EventHandler, getValue, setValue, Browser } from '@syncfusion/ej2-base';
@@ -101,6 +101,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.observers.observes((scrollArgs: ScrollArg) => this.scrollListeners(scrollArgs));
                 this.parent.off('content-ready', this.fn);
               };
+              this.parent.addEventListener('dataBound', this.dataBoundEvent.bind(this));
+              this.parent.addEventListener('rowSelected', this.rowSelectedEvent.bind(this));
+              this.parent[action]('select-virtual-Row', this.toSelectVirtualRow, this);
               this.parent.on('content-ready', this.fn, this);
               this.parent.addEventListener(events.actionComplete, this.onActionComplete.bind(this));
               this.parent[action]('virtual-scroll-edit-action-begin', this.beginEdit, this);
@@ -151,6 +154,21 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             } else {
               return super.getTranslateY(sTop, cHeight, info, isOnenter);
             }
+    }
+
+    private dataBoundEvent(): void {
+      let dataBoundEve: string = 'dataBound';
+      super[dataBoundEve]();
+    }
+
+    private rowSelectedEvent(args: RowSelectEventArgs): void {
+      let rowSelected: string = 'rowSelected';
+      super[rowSelected](args);
+    }
+
+    private toSelectVirtualRow(args: { selectedIndex: number }): void {
+      let selectVirtualRow: string = 'selectVirtualRow';
+      super[selectVirtualRow](args);
     }
 
     private beginEdit(e: { data: Object, index: number }): void {
@@ -343,6 +361,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       if (this.parent.isDestroyed) { return; }
       this.parent.off('data-ready', this.onDataReady);
       this.parent.off('content-ready', this.fn);
+      this.parent.off('select-virtual-Row', this.toSelectVirtualRow);
+      this.parent.off('dataBound', this.dataBoundEvent);
+      this.parent.off('rowSelected', this.rowSelectedEvent);
       this.parent.off(events.virtualActionArgs, this.virtualOtherAction);
       this.parent.off(events.indexModifier, this.indexModifier);
       this.parent.off('virtual-scroll-edit-action-begin', this.beginEdit);

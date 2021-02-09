@@ -20,6 +20,7 @@ export interface NumericParts {
     fractionDigits?: number;
     isAccount?: boolean;
     custom?: boolean;
+    maximumFractionDigits?: number;
 }
 /**
  * interface for numeric parse options
@@ -49,6 +50,11 @@ export class NumberParser {
         if ((base.formatRegex.test(option.format)) || !(option.format)) {
             extend(parseOptions, base.getProperNumericSkeleton(option.format || 'N'));
             parseOptions.custom = false;
+            if (!parseOptions.fractionDigits) {
+                if (option.maximumFractionDigits) {
+                    parseOptions.maximumFractionDigits = option.maximumFractionDigits;
+                }
+            }
         } else {
             extend(parseOptions, base.customFormat(option.format, null, null));
         }
@@ -126,10 +132,21 @@ export class NumberParser {
                 ret = parseFloat(ret.toFixed(options.custom ?
                     (isNegative ? options.nData.maximumFractionDigits : options.pData.maximumFractionDigits) : options.fractionDigits));
             }
+            if (options.maximumFractionDigits) {
+                ret = this.convertMaxFracDigits(tempValue, options, ret, isNegative);
+            }
             if (isNegative) {
                 ret *= -1;
             }
             return ret;
         }
+    }
+    private static convertMaxFracDigits(value: string, options: NumericParts, ret: number, isNegative: boolean): number {
+        let decimalSplitValue: string[] = value.split('.');
+        if (decimalSplitValue[1] && decimalSplitValue[1].length > options.maximumFractionDigits) {
+            ret = +(ret.toFixed(options.custom ?
+                (isNegative ? options.nData.maximumFractionDigits : options.pData.maximumFractionDigits) : options.maximumFractionDigits));
+        }
+        return ret;
     }
 }

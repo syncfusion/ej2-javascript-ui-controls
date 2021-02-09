@@ -2,7 +2,7 @@ import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
-import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage } from '../common/index';
+import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
@@ -10,7 +10,7 @@ import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert, FormulaBarEdit } from '../common/index';
 import { getSwapRange, getCellIndexes, wrap as wrapText, checkIsFormula, dataChanged, isNumber, isLocked } from '../../workbook/index';
 import { checkConditionalFormat, initiateFormulaReference, initiateCur, clearCellRef, addressHandle } from '../common/event';
-import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart } from '../common/event';
+import { editValue, initiateEdit, forRefSelRender, isFormulaBarEdit, deleteChart, beginAction } from '../common/event';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -270,8 +270,8 @@ export class Edit {
                             } else { this.startEdit(null, null, true, true); }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
-                            this.isLockCellDelete(e);
-                            this.editingHandler('delete');
+                            let islockcell: boolean = this.isLockCellDelete(e);
+                            if (!islockcell) { this.editingHandler('delete'); }
                         }
                     }
                 }
@@ -293,7 +293,7 @@ export class Edit {
             }
         }
     }
-    private isLockCellDelete(e: KeyboardEventArgs): void {
+    private isLockCellDelete(e: KeyboardEventArgs): boolean {
         let sheet: SheetModel = this.parent.getActiveSheet(); let count: number = 0;
         let address: number[] = getRangeIndexes(sheet.selectedRange);
         for (let row: number = address[2]; row <= address[0]; row++) {
@@ -305,9 +305,7 @@ export class Edit {
                 }
             }
         }
-        if (count > 0) {
-            return;
-        }
+        return count > 0;
     }
     private renderEditor(): void {
         if (!this.editorElem || !select('#' + this.parent.element.id + '_edit', this.parent.element)) {
@@ -417,7 +415,9 @@ export class Edit {
                     });
                 }
                 } else {
-                    let address: string = this.parent.getActiveSheet().selectedRange;
+                    let sheet: SheetModel = this.parent.getActiveSheet();
+                    let address: string = sheet.selectedRange;
+                    this.parent.notify(beginAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
                     let range: number[] = getIndexesFromAddress(address);
                     range = range[0] > range[2] ? getSwapRange(range) : range;
                     address = getRangeAddress(range);
@@ -425,6 +425,7 @@ export class Edit {
                     this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                     this.parent.notify(selectionComplete, {});
                     this.parent.notify(dataChanged, { address: address, sheetIdx: this.parent.activeSheetIndex, action: 'delete' });
+                    this.parent.notify(completeAction, { action: 'cellDelete', eventArgs: { address: sheet.name + '!' + address }});
                 }
                 break;
         }
@@ -794,7 +795,7 @@ export class Edit {
     }
 
     private focusElement(): void {
-        this.parent.element.focus();
+        focus(this.parent.element);
         this.parent.notify(enableToolbarItems, [{ enable: true }]);
     }
 

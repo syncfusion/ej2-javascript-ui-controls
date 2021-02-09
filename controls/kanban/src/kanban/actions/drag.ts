@@ -127,7 +127,7 @@ export class DragAndDrop {
         if (!e.target) {
             return;
         }
-        let cardElement: HTMLElement = closest(e.target as HTMLElement, '.' + cls.CARD_CLASS) as HTMLElement;
+        let cardElement: HTMLElement = closest(e.target as HTMLElement,  '.' + cls.ROOT_CLASS + ' .' + cls.CARD_CLASS) as HTMLElement;
         let target: HTMLElement = cardElement || e.target as HTMLElement;
         let selector: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS
             + '.' + cls.DROPPABLE_CLASS;

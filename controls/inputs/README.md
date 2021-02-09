@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-inputs/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inputs)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-inputs)](https://www.npmjs.com/package/@syncfusion/ej2-inputs)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-inputs/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inputs)
 
 # ej2-inputs
 

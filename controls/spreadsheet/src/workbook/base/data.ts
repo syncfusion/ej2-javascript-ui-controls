@@ -177,6 +177,9 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
         if (isSheet) {
             if ((model[i] as SheetModel).id < 1) {
                 (model[i] as SheetModel).id = getMaxSheetId(context.sheets);
+                if ((model[i] as { properties: {} }).properties) {
+                    (model[i] as { properties: { id: number } }).properties.id = (model[i] as SheetModel).id;
+                }
             }
             if (!(model[i] as SheetModel).name) {
                 context.setSheetPropertyOnMute(model[i], 'name', 'Sheet' + getSheetNameCount(context));

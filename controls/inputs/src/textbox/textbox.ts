@@ -383,15 +383,15 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.textarea.setAttribute('role', this.element.getAttribute('role'));
                 this.element.removeAttribute('role');
                 this.textarea.setAttribute('id', getUniqueID('textarea'));
-                let attrs : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
-                for (let i: number = 0; i < this.element.attributes.length; i++) {
-                    let attributeName: string = this.element.attributes[i].nodeName;
+                let apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
+                for (let index: number = 0; index < this.element.attributes.length; index++) {
+                    let attributeName: string = this.element.attributes[index].nodeName;
                     if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
                         !(attributeName === 'id' || attributeName === 'type')) {
-                        this.textarea.setAttribute(attributeName, this.element.attributes[i].nodeValue);
-                        if (attrs.indexOf(attributeName) < 0) {
+                        this.textarea.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                        if (apiAttributes.indexOf(attributeName) < 0) {
                             this.element.removeAttribute(attributeName);
-                            i--;
+                            index--;
                         }
                     }
                 }

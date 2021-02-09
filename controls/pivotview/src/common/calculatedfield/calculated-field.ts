@@ -1187,7 +1187,7 @@ export class CalculatedField implements IAction {
             }
             let dropDiv: HTMLElement = createElement('textarea', {
                 id: this.parentID + 'droppable',
-                className: cls.FORMULA,
+                className: cls.FORMULA + ' e-control e-textbox e-input',
                 attrs: {
                     'placeholder': this.parent.isAdaptive ? this.parent.localeObj.getConstant('dropTextMobile') :
                         (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('olapDropText') :

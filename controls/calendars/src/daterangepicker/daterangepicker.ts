@@ -4375,7 +4375,7 @@ export class DateRangePicker extends CalendarBase {
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
         let format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (let prop of Object.keys(newProp)) {
-            let openPopup: string[] = ['maxDays', 'minDays'];
+            let openPopup: string[] = ['maxDays', 'minDays', 'value'];
             if (openPopup.indexOf(prop) < 0) {
                 this.hide(null);
             }
@@ -4505,6 +4505,27 @@ export class DateRangePicker extends CalendarBase {
                                 this.clearModelvalue(newProp, oldProp);
                             }
                         }
+                    }
+                    if (this.isPopupOpen()) {
+                        if (isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) {
+                            this.removeSelection();
+                            if (this.isMobile) {
+                                this.deviceHeaderUpdate();
+                            }
+                            return;
+                        }
+                        if (this.isMobile) {
+                            this.navigate(this.deviceCalendar, this.startValue, this.currentView() as CalendarView);
+                            this.deviceHeaderUpdate();
+                        } else {
+                            this.navigate(this.leftCalendar, this.startValue, this.currentView() as CalendarView);
+                            this.updateControl(this.leftCalendar);
+                            this.navigate(this.rightCalendar, this.endValue, this.currentView() as CalendarView);
+                            this.updateControl(this.rightCalendar);
+                        }
+                        this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
+                        this.updateHeader();
+                        this.applyButton.disabled = this.applyButton.element.disabled = false;
                     }
                     break;
                 case 'minDays':

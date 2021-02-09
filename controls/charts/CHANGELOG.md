@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.41 (2021-02-02)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#297039` - Fixed the data labels are overlapped issue in accumulation chart.
+
 ## 18.4.39 (2021-01-28)
 
 ### Chart

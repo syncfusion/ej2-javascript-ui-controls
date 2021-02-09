@@ -721,7 +721,7 @@ export class Table {
                     tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
                         'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
                     this.updateHelper();
-                } else if (this.resizeBtnStat.tableBox) {
+                } else if (this.resizeBtnStat.tableBox && !isNullOrUndefined(tableReBox)) {
                     if (!Browser.isDevice) {
                         EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
                     }

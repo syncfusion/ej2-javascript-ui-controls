@@ -177,6 +177,7 @@ export class Data {
         });
         this.parent.layoutModule.refresh();
         this.parent.renderTemplates();
+        this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
     }
 }

@@ -76,4 +76,10 @@ export interface EditSettingsModel {
      */
     dialog?: IDialogUI;
 
+    /**
+     * If `allowNextRowEdit` is set as true, editing is continued to next row with keyboard navigation.
+     * @default false 
+     */
+    allowNextRowEdit?: boolean;
+
 }

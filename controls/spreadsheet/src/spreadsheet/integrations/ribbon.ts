@@ -1,7 +1,7 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, selectionComplete, beforeRibbonCreate, removeDataValidation, clearViewer } from '../common/index';
-import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF } from '../common/index';
+import { initiateDataValidation, invalidData, setUndoRedo, initiateConditionalFormat, setCF, focus } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat } from '../common/index';
 import { findHandler, DialogBeforeOpenEventArgs, insertChart } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
@@ -225,7 +225,7 @@ export class Ribbon {
                 click: () => {
                     this.parent.notify(paste, { isAction: true, isInternal: true });
                 },
-                close: () => { this.parent.element.focus(); }
+                close: () => { focus(this.parent.element); }
             });
         this.pasteSplitBtn.createElement = this.parent.createElement;
         this.pasteSplitBtn.appendTo(btn);
@@ -326,7 +326,7 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => this.numDDBSelect(args),
             open: (args: OpenCloseMenuEventArgs): void => this.numDDBOpen(args),
             beforeItemRender: (args: MenuEventArgs): void => this.previewNumFormat(args),
-            close: (): void => this.parent.element.focus(),
+            close: (): void => focus(this.parent.element),
             cssClass: 'e-flat e-numformat-ddb',
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(args.element, args.items)
         });
@@ -351,7 +351,7 @@ export class Ribbon {
                 this.parent.notify(setCellFormat, eventArgs);
                 if (!eventArgs.cancel) { this.fontSizeDdb.content = eventArgs.style.fontSize.split('pt')[0]; this.fontSizeDdb.dataBind(); }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
         this.fontSizeDdb.appendTo(this.parent.createElement('button', { id: id + '_font_size' }));
@@ -564,7 +564,7 @@ export class Ribbon {
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-chart-ddb')) { args.cancel = true; }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.chartDdb.createElement = this.parent.createElement;
         let chartBtn: HTMLElement = this.parent.createElement('button', { id: id + '_chart-btn' });
@@ -834,7 +834,7 @@ export class Ribbon {
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-cf-ddb')) { args.cancel = true; }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.cFDdb.createElement = this.parent.createElement;
         this.cFDdb.appendTo(this.parent.createElement('button', { id: id + '_conditionalformatting' }));
@@ -932,7 +932,7 @@ export class Ribbon {
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-borders-menu')) { args.cancel = true; }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.bordersDdb.createElement = this.parent.createElement;
         this.bordersDdb.appendTo(this.parent.createElement('button', { id: id + '_borders' }));
@@ -1040,7 +1040,7 @@ export class Ribbon {
                 this.parent.notify(setCellFormat, eventArgs);
                 if (!eventArgs.cancel) { this.refreshFontNameSelection(eventArgs.style.fontFamily); }
             },
-            close: (): void => this.parent.element.focus(),
+            close: (): void => focus(this.parent.element),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.tBarDdbBeforeOpen(args.element, args.items)
         });
         this.fontNameDdb.createElement = this.parent.createElement;
@@ -1090,7 +1090,7 @@ export class Ribbon {
                         break;
                 }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.datavalidationDdb.createElement = this.parent.createElement;
         this.datavalidationDdb.appendTo(this.parent.createElement('button', { id: id + '_datavalidation' }));
@@ -1115,7 +1115,7 @@ export class Ribbon {
                     this.textAlignDdb.iconCss = `e-icons e-${eventArgs.style.textAlign}-icon`; this.textAlignDdb.dataBind();
                 }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.textAlignDdb.createElement = this.parent.createElement;
         this.textAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_text_align' }));
@@ -1140,7 +1140,7 @@ export class Ribbon {
                     this.verticalAlignDdb.iconCss = `e-icons e-${eventArgs.style.verticalAlign}-icon`; this.verticalAlignDdb.dataBind();
                 }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.verticalAlignDdb.createElement = this.parent.createElement;
         this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align' }));
@@ -1157,7 +1157,7 @@ export class Ribbon {
                 `${id}_merge_horizontally` }, { text: l10n.getConstant('MergeVertically'), id: `${id}_merge_vertically` },
                 { separator: true, id: `${id}_merge_separator` }, { text: l10n.getConstant('Unmerge'), id: `${id}_unmerge` }],
             select: this.mergeSelectHandler.bind(this),
-            close: (): void => this.parent.element.focus(),
+            close: (): void => focus(this.parent.element),
             click: (args: BtnClickEventArgs): void => {
                 if (args.element.classList.contains('e-active')) {
                     this.toggleActiveState(false); this.unMerge();
@@ -1213,7 +1213,7 @@ export class Ribbon {
                 if (dlgArgs.cancel) {
                     args.cancel = true;
                 }
-                this.parent.element.focus();
+                focus(this.parent.element);
             },
             buttons: [{
                 buttonModel: { content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true },
@@ -1289,7 +1289,7 @@ export class Ribbon {
                         break;
                 }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.sortingDdb.createElement = this.parent.createElement;
         this.sortingDdb.appendTo(this.parent.createElement('button', { id: id + '_sorting' }));
@@ -1385,7 +1385,7 @@ export class Ribbon {
                     let element: HTMLElement = document.querySelector('.e-find-toolbar');
                     EventHandler.remove(element, 'focus', this.textFocus);
                     EventHandler.remove(document, 'click', this.closeDialog);
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
                 created: (): void => {
                     toolbarObj.createElement = this.parent.createElement;
@@ -1406,7 +1406,7 @@ export class Ribbon {
             if (!isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
                 this.findDialog.hide();
                 detach(this.parent.element.querySelector('.e-findtool-dlg'));
-                this.findDialog = null; this.parent.element.focus();
+                this.findDialog = null; focus(this.parent.element);
             }
         }
     }
@@ -1456,7 +1456,7 @@ export class Ribbon {
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(clearViewer, { options: { type: args.item.text } });
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         this.clearDdb.createElement = this.parent.createElement;
         this.clearDdb.appendTo(this.parent.createElement('button', { id: id + '_clear' }));
@@ -1508,7 +1508,7 @@ export class Ribbon {
         if (!eventArgs.cancel && value !== eventArgs.style[key]) {
             this.refreshToggleBtn(getCellIndexes(this.parent.getActiveSheet().activeCell));
         }
-        this.parent.element.focus();
+        focus(this.parent.element);
     }
 
     private getCellStyleValue(cssProp: string, indexes: number[]): string {
@@ -1826,7 +1826,7 @@ export class Ribbon {
                             if (dlgArgs.cancel) {
                                 args.cancel = true;
                             }
-                            this.parent.element.focus();
+                            focus(this.parent.element);
                         },
                         buttons: [{
                             buttonModel: {
@@ -1861,7 +1861,7 @@ export class Ribbon {
                     this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
                     (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
                     this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case parentId + '_gridlines':
                     let evtglArgs: { isShow: boolean, sheetIdx: number, cancel: boolean } = {
@@ -1873,7 +1873,7 @@ export class Ribbon {
                     if (evtglArgs.cancel) { return; }
                     this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
                     this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                     break;
                 case parentId + '_protect':
                     this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
@@ -2123,7 +2123,7 @@ export class Ribbon {
                     }
                 }
             },
-            close: (): void => this.parent.element.focus()
+            close: (): void => focus(this.parent.element)
         });
         ddbObj.createElement = this.parent.createElement;
         ddbObj.appendTo(ddb);
@@ -2225,7 +2225,7 @@ export class Ribbon {
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
         this.parent.on(protectCellFormat, this.protectSheetHandler, this);
         this.parent.on(selectionComplete, this.updateMergeItem, this);
-        this.parent.on(refreshRibbonIcons, this.refreshToggleBtn, this);
+        this.parent.on(refreshRibbonIcons, this.refreshRibbonContent, this);
     }
     public destroy(): void {
         let parentElem: HTMLElement = this.parent.element;
@@ -2270,7 +2270,7 @@ export class Ribbon {
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
             this.parent.off(protectCellFormat, this.protectSheetHandler);
             this.parent.off(selectionComplete, this.updateMergeItem);
-            this.parent.off(refreshRibbonIcons, this.refreshToggleBtn);
+            this.parent.off(refreshRibbonIcons, this.refreshRibbonContent);
         }
     }
 }

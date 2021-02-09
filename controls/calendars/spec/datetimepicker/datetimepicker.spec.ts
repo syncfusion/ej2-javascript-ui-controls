@@ -3300,4 +3300,27 @@ describe('invalid String', () => {
             expect((dateTimePicker.popupObj) !== null).toBe(true);
         });
     });
+    describe('EJ2-45532 - DateTimePicker popup closing when updating value dynamically',function(){
+        let dateTimePicker:any;
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(dateTimePicker){
+                dateTimePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            dateTimePicker = new DateTimePicker({
+            });
+            dateTimePicker.appendTo('#date');
+            dateTimePicker.show();
+            dateTimePicker.value = new Date('1/1/2020');
+            dateTimePicker.dataBind();
+            expect((dateTimePicker.popupObj) !== null).toBe(true);
+            expect(dateTimePicker.inputElement.value === "1/1/2020 12:00 AM").toBe(true)
+        });
+    });
 });

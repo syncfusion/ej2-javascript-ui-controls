@@ -9850,6 +9850,36 @@ describe('List tab Width Validation', () => {
     });
     it('List Tab Width', () => {
 console.log('List Tab Width');
-        expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBeGreaterThanOrEqual(18);
+        expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBeGreaterThanOrEqual(8);
+    });
+});
+describe('List tab Width first indent Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('List tab Width first indent Validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('hello');
+        editor.selection.handleTabKey(true, false);
+        (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).paragraphFormat.firstLineIndent = 100;
+        expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBeGreaterThanOrEqual(8);
     });
 });

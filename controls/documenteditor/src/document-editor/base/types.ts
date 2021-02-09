@@ -1376,8 +1376,15 @@ export type ToolbarItem =
     /**
      * Update fields options in toolbar item.
      */
-    'UpdateFields';
-
+    'UpdateFields'|
+    /**
+     * InsertFootnote option in the toolbar item.
+     */
+    'InsertFootnote' |
+    /**
+     * InsertEndnote option in the toolbar item.
+     */
+    'InsertEndnote';
 /**
  * Specifies the type of Text formField
  * @private

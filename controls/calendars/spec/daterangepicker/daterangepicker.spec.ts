@@ -9272,6 +9272,29 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.endDate).toBe(null);
         });
     });
+    describe('EJ2-45532 - DateRangepicker popup closing when updating value dynamically',function(){
+        let daterangePicker:any;
+        beforeEach(function(){
+            let element: HTMLElement = createElement('input',{id:'date'});
+            document.body.appendChild(element);
+        });
+        afterEach(function(){
+            if(daterangePicker){
+                daterangePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('check the popup open',function(){
+            daterangePicker = new DateRangePicker({
+            });
+            daterangePicker.appendTo('#date');
+            daterangePicker.show();
+            daterangePicker.value = [new Date('1/1/2020'), new Date('2/2/2020')];
+            daterangePicker.dataBind();
+            expect((daterangePicker.popupObj) !== null).toBe(true);
+            expect(daterangePicker.inputElement.value === "1/1/2020 - 2/2/2020").toBe(true)
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

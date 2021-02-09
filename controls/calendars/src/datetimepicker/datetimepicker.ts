@@ -1657,6 +1657,7 @@ export class DateTimePicker extends DatePicker {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
+                    this.isDynamicValueChanged = true;
                     let options: object = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
@@ -1665,6 +1666,9 @@ export class DateTimePicker extends DatePicker {
                     Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
                     this.valueWithMinutes = newProp.value;
                     this.setProperties({ value: newProp.value }, true);
+                    if (this.popupObj) {
+                        this.popupUpdate();
+                    }
                     this.previousDateTime = new Date(this.inputElement.value);
                     this.updateInput();
                     this.changeTrigger(null);
@@ -1745,7 +1749,8 @@ export class DateTimePicker extends DatePicker {
                     super.onPropertyChanged(newProp, oldProp);
                     break;
             }
-            this.hide(null);
+            if (!this.isDynamicValueChanged) { this.hide(null); }
+            this.isDynamicValueChanged = false;
         }
     }
     /**

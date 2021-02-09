@@ -66,8 +66,10 @@ export class SaveWorker {
             new Promise((resolve: Function) => {
                 let reader: FileReader = new FileReader();
                 reader.onload = () => {
-                    if (reader.result.toString().indexOf('data:text/plain;base64,') > -1) {
-                        let str: string[] = atob((reader.result as string).replace('data:text/plain;base64,', '')).split(/(\r\n|\n|\r)/gm);
+                    let result: string = reader.result.toString();
+                    if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1) {
+                        result = result.replace('data:text/plain;base64,', ''); result = result.replace('data:text/html;base64,', '');
+                        let str: string[] = atob(result).split(/(\r\n|\n|\r)/gm);
                         if (str.length) { (postMessage as Function)({ dialog: str[0] }); }
                     } else {
                         (postMessage as Function)(data);

@@ -16,7 +16,7 @@ import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRende
 import {  IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';
 import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';
-import { chartMouseLeave, chartMouseMove, chartMouseUp, resized } from '../common/model/constants';
+import { chartMouseLeave, chartMouseMove, chartMouseUp, resized, beforeResize } from '../common/model/constants';
 import { FontModel, MarginModel, BorderModel, IndexesModel, TooltipSettingsModel } from '../common/model/base-model';
 import { AccumulationSeriesModel, PieCenterModel} from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
@@ -44,7 +44,7 @@ import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
 import { getTitle } from '../common/utils/helper';
 import {Index} from '../common/model/base';
 import { IThemeStyle } from '../chart/model/chart-interface';
-import { IAccResizeEventArgs } from './model/pie-interface';
+import { IAccResizeEventArgs, IAccBeforeResizeEventArgs } from './model/pie-interface';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
 import { ExportUtils } from '../common/utils/export';
@@ -543,6 +543,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public chartMouseUp: EmitType<IMouseEventArgs>;
 
     /**
+     * Triggers before window resize.
+     * @event
+     * @blazorProperty 'BeforeResize'
+     */
+    @Event()
+    public beforeResize: EmitType<IAccBeforeResizeEventArgs>;
+
+    /**
      * Triggers after window resize.
      * @event
      * @blazorProperty 'Resized'
@@ -619,10 +627,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.renderElements();
         } else {
             for (let i: number = 0; i < currentSeries.points.length; i++) {
-                currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.points[i].y = currentSeries.dataSource[i][currentSeries.yName];
                 currentSeries.points[i].color = currentSeries.dataSource[i][currentSeries.pointColorMapping] != null
                     ? currentSeries.dataSource[i][currentSeries.pointColorMapping] : currentSeries.points[i].color;
-                currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
+                currentSeries.sumOfPoints += currentSeries.dataSource[i][currentSeries.yName];
             }
             this.redraw = this.enableAnimation;
             this.animateSeries = false;
@@ -882,23 +890,26 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             currentSize: new Size(0, 0),
             chart: this.isBlazor ? {} as AccumulationChart : this,
         };
-
+        let beforeResizeArgs: IAccBeforeResizeEventArgs = { name: 'beforeResize', cancelResizedEvent: false };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
-        this.resizeTo = setTimeout(
-            (): void => {
-                if (this.isDestroyed) {
-                    clearTimeout(this.resizeTo);
-                    return;
-                }
-                calculateSize(this);
-                args.currentSize = this.availableSize;
-                this.trigger(resized, args);
-                this.refreshSeries();
-                this.refreshChart();
-            },
-            500);
+        this.trigger(beforeResize, beforeResizeArgs);
+        if (!beforeResizeArgs.cancelResizedEvent) {
+            this.resizeTo = setTimeout(
+                (): void => {
+                    if (this.isDestroyed) {
+                        clearTimeout(this.resizeTo);
+                        return;
+                    }
+                    calculateSize(this);
+                    args.currentSize = this.availableSize;
+                    this.trigger(resized, args);
+                    this.refreshSeries();
+                    this.refreshChart();
+                },
+                500);
+        }
         return false;
     }
 

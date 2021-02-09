@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.4.42 (2021-02-09)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#312744` - This issue "Exception occurs when mouse over the node with  many connector " has been fixed.
+- `#301792` - This issue "Alignment of connector is misplaced in balanced layout " has been fixed.
+
 ## 18.4.41 (2021-02-02)
 
 ### Diagram

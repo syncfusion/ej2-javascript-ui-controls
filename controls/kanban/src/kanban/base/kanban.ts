@@ -761,4 +761,17 @@ export class Kanban extends Component<HTMLElement> {
         super.destroy();
     }
 
+    /**
+     * Update the header count value in header template.
+     * @method renderHeader
+     * @return {void}
+     */
+    public renderHeader(): void {
+        this.clearTemplate();
+        if (this.layoutModule) {
+            this.layoutModule.refreshHeaders();
+        }
+        this.renderReactTemplates();
+    }
+
 }

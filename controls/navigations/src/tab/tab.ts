@@ -1384,9 +1384,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         });
     }
     private unWireEvents(): void {
-        this.keyModule.destroy();
-        this.tabKeyModule.destroy();
-        if (!isNOU(this.cntEle)) { this.touchModule.destroy(); }
+        if ( !isNOU(this.keyModule) ) {
+            this.keyModule.destroy();
+        }
+        if ( !isNOU(this.tabKeyModule) ) {
+            this.tabKeyModule.destroy();
+        }
+        if (!isNOU(this.cntEle)) { if ( !isNOU(this.touchModule) ) { this.touchModule.destroy(); } }
         window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'keydown', this.spaceKeyDown);

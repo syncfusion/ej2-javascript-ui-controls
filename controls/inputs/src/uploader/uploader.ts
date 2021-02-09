@@ -2436,7 +2436,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             let fileNameEle: HTMLElement = this.createElement('span', { className: FILE_NAME });
             fileNameEle.innerHTML = this.getFileNameOnly(listItem.name);
             let fileTypeEle: HTMLElement = this.createElement('span', { className: FILE_TYPE });
-            fileTypeEle.innerHTML = '.' + this.getFileType(listItem.name);
+            let fileType: string = this.getFileType(listItem.name);
+            fileTypeEle.innerHTML = '.' + fileType;
+            if (!fileType) {
+                fileTypeEle.classList.add('e-hidden');
+            }
             if (!this.enableRtl) {
                 fileContainer.appendChild(fileNameEle);
                 fileContainer.appendChild(fileTypeEle);
@@ -2660,7 +2664,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     let textElement: HTMLElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
                     textElement.innerHTML = this.getFileNameOnly(listItem.name);
                     let fileExtension: Element = this.createElement('span', { className: FILE_TYPE });
-                    fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
+                    let fileType: string = this.getFileType(listItem.name);
+                    fileExtension.innerHTML = '.' + fileType;
+                    if (!fileType) {
+                        fileExtension.classList.add('e-hidden');
+                    }
                     if (!this.enableRtl) {
                         textContainer.appendChild(textElement);
                         textContainer.appendChild(fileExtension);

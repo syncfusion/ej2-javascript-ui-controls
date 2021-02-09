@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-diagrams/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-diagrams)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-diagrams)](https://www.npmjs.com/package/@syncfusion/ej2-diagrams)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-diagrams/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-diagrams)
 
 # ej2-diagrams
 

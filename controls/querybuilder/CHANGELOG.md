@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.41 (2021-02-02)
+## 18.4.42 (2021-02-09)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with angular template is fixed.
+
+## 18.4.33 (2021-01-05)
 
 ### QueryBuilder
 

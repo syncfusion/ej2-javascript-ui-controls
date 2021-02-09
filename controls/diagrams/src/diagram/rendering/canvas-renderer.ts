@@ -143,14 +143,38 @@ export class CanvasRenderer implements IRenderer {
         }
         return dashes;
     }
+
+    private drawRoundedRect(canvas: HTMLCanvasElement, options: RectAttributes): void {
+        let context: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
+        context.beginPath();
+        let x: number = options.x;
+        let y: number = options.y;
+        let w: number = options.width;
+        let h: number = options.height;
+        let mx: number = x + w / 2;
+        let my: number = y + h / 2;
+        context.beginPath();
+        this.setStyle(canvas, options);
+        context.moveTo(x, my);
+        context.quadraticCurveTo(x, y, mx, y);
+        context.quadraticCurveTo(x + w, y, x + w, my);
+        context.quadraticCurveTo(x + w, y + h, mx, y + h);
+        context.quadraticCurveTo(x, y + h, x, my);
+        context.stroke();
+    }
+
     //Rendering Part
 
     /**   @private  */
     public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes): void {
         if (options.visible === true) {
             if (options.cornerRadius) {
-                (options as PathAttributes).data = getRectanglePath(options.cornerRadius, options.height, options.width);
-                this.drawPath(canvas, options as PathAttributes);
+                if (options.width < 30 || options.height < 30) {
+                    this.drawRoundedRect(canvas, options);
+                 } else {
+                    (options as PathAttributes).data = getRectanglePath(options.cornerRadius, options.height, options.width);
+                    this.drawPath(canvas, options as PathAttributes);
+                }
             } else {
                 let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
                 if (options.shadow) {

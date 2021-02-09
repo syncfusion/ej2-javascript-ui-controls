@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { applyMerge, activeCellMergedRange, MergeArgs } from '../../workbook/common/index';
-import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs } from '../common/index';
+import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, focus } from '../common/index';
 import { checkPrevMerge, checkMerge, DialogBeforeOpenEventArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow } from '../../workbook/index';
@@ -35,7 +35,7 @@ export class Merge {
                     if (dlgArgs.cancel) {
                         args.cancel = true;
                     }
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
             });
             return;

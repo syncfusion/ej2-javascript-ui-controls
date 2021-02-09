@@ -501,9 +501,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private destroyItems(): void {
-        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => {
-            detach(el);
-        });
+        if (this.element) {
+            [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach((el: HTEle) => {
+                detach(el);
+            });
+        }
         let tbarItems: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEMS);
         if (this.tbarAlign) {
             [].slice.call(tbarItems.children).forEach((el: HTEle) => {

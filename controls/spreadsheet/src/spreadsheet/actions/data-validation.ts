@@ -5,7 +5,7 @@ import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
-import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp } from '../common/index';
+import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp, focus } from '../common/index';
 import { formulaBarOperation, removeDataValidation } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { setRow } from '../../workbook/base/row';
@@ -276,7 +276,7 @@ export class DataValidation {
                     dialogInst.dialogInstance.content =
                         this.dataValidationContent(isNew, type, operator, value1, value2, ignoreBlank, inCellDropDown);
                     dialogInst.dialogInstance.dataBind();
-                    this.parent.element.focus();
+                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: {
@@ -287,7 +287,7 @@ export class DataValidation {
                         dialogInst.dialogInstance.content =
                             this.dataValidationContent(true, type, operator, value1, value2, ignoreBlank, inCellDropDown);
                         dialogInst.dialogInstance.dataBind();
-                        this.parent.element.focus();
+                        focus(this.parent.element);
                     }
                 },
                 {

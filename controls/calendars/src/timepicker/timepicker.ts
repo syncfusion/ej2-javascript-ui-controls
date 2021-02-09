@@ -2659,6 +2659,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                             this.checkErrorState(this.invalidValueString);
                         }
                         this.checkValueChange(null, false);
+                        if (this.isPopupOpen()) {
+                            this.setScrollPosition();
+                        }
                         if (this.isAngular && this.preventChange) {
                             this.preventChange = false;
                         }

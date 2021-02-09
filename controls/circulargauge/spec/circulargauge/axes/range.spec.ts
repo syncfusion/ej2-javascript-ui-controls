@@ -911,7 +911,256 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.refresh();
         });
+        it('Checking startwidth and endwidth are different for different angles', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 21.5 A 203.5 203.5 0 1 1 221.97767370537588 102.53064278855823 L 245.93673900679465 120.58509348311966 A 163.5 163.5 0 1 0 384.49999999999994 61.5 Z' ||
+                value === 'M 378.99999999999994 21.5 A 203.5 203.5 0 1 1 216.47767370537588 102.53064278855823 L 240.43673900679465 120.58509348311966 A 163.5 163.5 0 1 0 378.99999999999994 61.5 Z').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 307;
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are same for different angles', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 21.5 A 203.5 203.5 0 1 1 384.4996448254972 21.500000000309967 L 384.49969718537477 51.500000000264265 A 173.5 173.5 0 1 0 384.49999999999994 51.5 Z'
+                || value === 'M 378.99999999999994 21.5 A 203.5 203.5 0 1 1 378.9996448254972 21.500000000309967 L 378.99969718537477 51.500000000264265 A 173.5 173.5 0 1 0 378.99999999999994 51.5 Z').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 360;
+            gauge.axes[0].ranges[0].startWidth = 30;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with AntiClockWise Direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 21.5 A 203.5 203.5 0 1 1 208.26383032986675 123.24999999999997 L 242.90484648124428 143.25 A 163.5 163.5 0 1 0 384.49999999999994 51.5 Z' 
+                || value === 'M 378.99999999999994 21.5 A 203.5 203.5 0 1 1 202.76383032986675 123.24999999999997 L 237.40484648124428 143.25 A 163.5 163.5 0 1 0 378.99999999999994 51.5 Z').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 300;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with Range Position as Outside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 21.5 A 203.5 203.5 0 1 1 208.26383032986675 123.24999999999997 L 182.2830682163336 103.24999999999997 A 278.5 278.5 0 1 0 384.49999999999994 -18.5 Z' ||
+                value === 'M 378.99999999999994 21.5 A 203.5 203.5 0 1 1 202.76383032986675 123.24999999999997 L 176.7830682163336 103.24999999999997 A 278.5 278.5 0 1 0 378.99999999999994 -18.5 Z').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 300;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with Range Position as Outside in AntiCLockWise direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 21.5 A 203.5 203.5 0 1 1 208.26383032986675 123.24999999999997 L 173.6228141784892 123.24999999999997 A 278.5 278.5 0 1 0 384.49999999999994 -8.5 Z' ||
+                value === 'M 378.99999999999994 21.5 A 203.5 203.5 0 1 1 202.76383032986675 123.24999999999997 L 168.1228141784892 123.24999999999997 A 278.5 278.5 0 1 0 378.99999999999994 -8.5 Z').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 300;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with Range Position as Cross', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 21.5 A 201 201 0 1 1 212.59395734878893 125.74999999999997 L 238.5747194623221 140.75 A 153.5 163.5 0 1 0 384.49999999999994 61.5 Z'
+                || value === 'M 378.99999999999994 21.5 A 201 201 0 1 1 207.09395734878893 125.74999999999997 L 233.0747194623221 140.75 A 153.5 163.5 0 1 0 378.99999999999994 61.5 Z'
+               ).toBe(true);
+                done();
+            };
 
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 300;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with Range Position as Cross in AntiCLockWise Direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d');
+                expect(value === 'M 384.49999999999994 26.5 A 201 201 0 1 1 208.26383032986675 123.24999999999997 L 242.90484648124428 143.25 A 156 166 0 1 0 384.49999999999994 56.5 Z'
+                || value === 'M 378.99999999999994 26.5 A 201 201 0 1 1 202.76383032986675 123.24999999999997 L 237.40484648124428 143.25 A 156 166 0 1 0 378.99999999999994 56.5 Z').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 300;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 270;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Inside';
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 300;
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius with AntiClockWise Direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 270;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius with Range Position as Outside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 270;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Outside';
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius with Range Position as Outside  in AntiClockWise Direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 270;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Outside';
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius with Range Position as Cross', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 270;
+            gauge.axes[0].direction = 'ClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
+        it('Checking startwidth and endwidth are different for different angles with rounded corner radius with Range Position as Cross in AntiClockWise direction', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[2]).toBe('21.623966701614023');
+                expect(value[4]).toBe('203.5');
+                expect(value[5]).toBe('203.5');
+
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 270;
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].ranges[0].startWidth = 40;
+            gauge.axes[0].ranges[0].endWidth = 30;
+            gauge.axes[0].ranges[0].end = 160;
+            gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.axes[0].ranges[0].roundedCornerRadius = 10;
+            gauge.refresh();
+        });
     });
 
     describe('Checking the behaviour of range in the absence of pointer', () => {

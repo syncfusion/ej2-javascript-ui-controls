@@ -488,3 +488,5 @@ export const preventFrozenScrollRefresh: string = 'prevent-frozen-scroll-refresh
 export const nextCellIndex: string = 'next-cell-index';
 /** @hidden */
 export const refreshInfiniteCurrentViewData: string = 'refresh-infinite-current-view-data';
+/** @hidden */
+export const infiniteCrudCancel: string = 'infinite-crud-cancel';

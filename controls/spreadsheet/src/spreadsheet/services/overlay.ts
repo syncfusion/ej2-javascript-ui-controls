@@ -116,59 +116,68 @@ export class Overlay {
                     break;
             }
         } else if (this.isOverlayClicked) {
-            let posX: number = e.clientX;
-            let posY: number = e.clientY;
-            let aX: number = posX - this.diffX;
-            let aY: number = posY - this.diffY;
-            if (aX > -1) {
-                overlayElem.style.left = aX + 'px';
+            if ((closest(target, '.e-sheet-content') && !target.classList.contains('e-sheet-content')) ||
+                target.classList.contains('e-cell')) {
+                let posX: number = e.clientX;
+                let posY: number = e.clientY;
+                let aX: number = posX - this.diffX;
+                let aY: number = posY - this.diffY;
+                if (aX > -1) {
+                    overlayElem.style.left = aX + 'px';
+                }
+                if (aY > -1) {
+                    overlayElem.style.top = aY + 'px';
+                }
+                this.resizedReorderLeft = aX; //resized divLeft
+                this.resizedReorderTop = aY; // resized divTop
+            } else {
+                this.overlayMouseUpHandler(e, true);
             }
-            if (aY > -1) {
-                overlayElem.style.top = aY + 'px';
-            }
-            this.resizedReorderLeft = aX; //resized divLeft
-            this.resizedReorderTop = aY; // resized divTop
         }
     }
-    private overlayMouseUpHandler(e: MouseEvent): void {
+    private overlayMouseUpHandler(e: MouseEvent, isMouseUp?: boolean): void {
         if (this.parent.getActiveSheet().isProtected) {
             return;
         }
-        this.isOverlayClicked = false;
         this.isResizerClicked = false;
         let elem: HTMLElement = (e.target as HTMLElement);
+        let overlaElems: HTMLCollectionOf<Element> =
+            document.getElementsByClassName('e-datavisualization-chart e-ss-overlay-active');
         if (!elem.classList.contains('e-ss-overlay')) {
             elem = closest(e.target as Element, '.e-datavisualization-chart') ?
-             closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement : elem;
+                closest(e.target as Element, '.e-datavisualization-chart') as HTMLElement : elem;
         }
         let eventArgs: BeforeImageRefreshData = {
             prevTop: this.originalReorderTop, prevLeft: this.originalReorderLeft,
-            currentTop: this.resizedReorderTop ? this.resizedReorderTop : this.originalReorderTop, currentLeft: this.resizedReorderLeft ?
-                this.resizedReorderLeft : this.originalReorderLeft, id: elem.id, currentHeight: this.currenHeight,
-                 currentWidth: this.currentWidth, requestType: 'imageRefresh',
-            prevHeight: this.originalHeight, prevWidth: this.originalWidth
+            currentTop: this.resizedReorderTop ? this.resizedReorderTop : this.originalReorderTop,
+            currentLeft: this.resizedReorderLeft ? this.resizedReorderLeft : this.originalReorderLeft,
+            id: elem.id, currentHeight: this.currenHeight, currentWidth: this.currentWidth,
+            requestType: 'imageRefresh', prevHeight: this.originalHeight, prevWidth: this.originalWidth
         };
-        if (elem.id.indexOf('overlay') > 0 || elem.classList.contains('e-ss-resizer')) {
+        if (this.isOverlayClicked || isMouseUp) {
             if (this.originalReorderTop !== this.resizedReorderTop || this.originalReorderLeft !== this.resizedReorderLeft) {
                 eventArgs.id = elem.id;
-                if (elem.classList.contains('e-datavisualization-chart')) {
+                if (overlaElems && overlaElems[0]) {
                     eventArgs.requestType = 'chartRefresh';
                     this.parent.notify(refreshChartCellObj, eventArgs);
+                } else {
+                    this.parent.notify(refreshImgCellObj, eventArgs);
                 }
-                this.parent.notify(refreshImgCellObj, eventArgs);
                 this.resizedReorderTop = this.originalReorderTop;
                 this.resizedReorderLeft = this.originalReorderLeft;
             } else if (this.currenHeight !== this.originalHeight || this.originalWidth !== this.currentWidth) {
-                eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement.id;
-                if (elem.classList.contains('e-datavisualization-chart')) {
+                eventArgs.id = elem.id.indexOf('overlay') > 0 ? elem.id : elem.parentElement ? elem.parentElement.id : '';
+                if (overlaElems && overlaElems[0]) {
                     eventArgs.requestType = 'chartRefresh';
                     this.parent.notify(refreshChartCellObj, eventArgs);
+                } else {
+                    this.parent.notify(refreshImgCellObj, eventArgs);
                 }
-                this.parent.notify(refreshImgCellObj, eventArgs);
                 this.originalHeight = this.currenHeight;
                 this.originalWidth = this.currentWidth;
             }
         }
+        this.isOverlayClicked = false;
     }
 
     private overlayClickHandler(e: MouseEvent): void {

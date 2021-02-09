@@ -152,6 +152,7 @@ export class SpreadsheetChart {
             } else {
                 value = this.parent.sheets[sheetIndex].rows[rIdx].cells[cIdx].value;
             }
+            value = isNullOrUndefined(value) ? '' : value;
             return value;
         } else {
             return '';
@@ -185,7 +186,8 @@ export class SpreadsheetChart {
         let prevCellImgLen: number = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
         if (prevCellObj && prevCellObj.chart) {
             for (let i: number = 0; i < prevCellImgLen; i++) {
-                let overlayEle: HTMLElement = document.getElementById(args.id);
+                let overlayEle: HTMLElement =
+                    document.getElementsByClassName('e-datavisualization-chart e-ss-overlay-active')[0] as HTMLElement;
                 let chartEleClassName: HTMLElement = document.getElementById((prevCellChart[i] as ChartModel).id);
                 if (closest(chartEleClassName, '.' + overlayEle.classList[1]) === overlayEle) {
                     prevChartObj = prevCellChart[i];
@@ -666,6 +668,9 @@ export class SpreadsheetChart {
                     selectedTheme = selectedTheme ? selectedTheme : 'Material';
                     args.accumulation.theme = <AccumulationTheme>(selectedTheme.charAt(0).toUpperCase() +
                         selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+                },
+                beforeResize: (args: IBeforeResizeEventArgs) => {
+                    args.cancelResizedEvent = true; // This is for cancel the resized event.
                 }
             });
             this.chart.appendTo(chartContent);
