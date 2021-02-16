@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 18.4.43 (2021-02-16)
+
+### Uploader
+
+#### Bug Fixes
+
+- Issue with "dot present in the end of file name while rendering the preload files without type of file" has been resolved.
+
+### TextBox
+
+#### Bug Fixes
+
+- `#313099` - Issue with "script error throws when disable the clear button dynamically" has been resolved.
+
+### FormValidator
+
+#### Bug Fixes
+
+- `#F162275` - Issue with "validation message shows while setting required as false in the rules property" has been resolved.
+
 ## 18.4.32 (2020-12-29)
 
 ### ColorPicker

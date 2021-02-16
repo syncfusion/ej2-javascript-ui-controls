@@ -41,6 +41,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public parentObject: Object | Calculate;
     /** @hidden */
+    public spreadSheetUsedRange: number[];
+    /** @hidden */
     public tic: string = '\"';
     /** @hidden */
     public singleTic: string = '\'';
@@ -869,6 +871,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         let argArr: string[] = range;
+        for (let i: number = 0; i < argArr.length; i++) {
+            if (this.isCellReference(argArr[i]) && isNullOrUndefined(argArr[i].match(/[0-9]/)) && argArr[i].indexOf('!') < 0) {
+                let splitArray: string[] = argArr[i].split(':');
+                argArr[i] = splitArray[0] + '1' + ':' + splitArray[1] + this.spreadSheetUsedRange[0];
+            }
+        }
         let argCount: number = argArr.length;
         if (argCount !== 2 && argCount !== 3 && argCount === 0) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
@@ -879,6 +887,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (criteria.length > 255) {
             return this.getErrorStrings()[CommonErrors.value];
         }
+        criteria = this.isCellReference(criteria) ? this.getValueFromArg(criteria) : criteria;
         let opt: string = this.parser.tokenEqual;
         if (criteria.startsWith('<=')) {
             opt = this.parser.tokenLessEq;
@@ -1650,6 +1659,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             let criteria: string;
             let newCell: string = '';
             criteria = argArr[2].split(this.tic).join(this.emptyString);
+            criteria = this.isCellReference(criteria) ? this.getValueFromArg(criteria) : criteria;
             isCriteria = isCountIfs === this.trueValue ? this.trueValue : isCriteria;
             if (isCriteria === this.trueValue) {
                 let cell: string = '';
@@ -2201,8 +2211,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {ValueChangedArgs} changeArgs - Value changed arguments.
      * @param {boolean} isCalculate - Value that allow to calculate.
      */
-    public valueChanged(grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean): void {
-        let pgrid: string = grid;
+    public valueChanged(grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[]): void {
+        let pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
         let isComputedValueChanged: boolean = true;
         let isCompute: boolean = true;

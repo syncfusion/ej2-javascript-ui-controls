@@ -875,8 +875,13 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         secondQuarter.sort((a: AccPoints, b: AccPoints) => a.midAngle - b.midAngle);
         this.leftSidePoints.sort((a: AccPoints, b: AccPoints) => a.midAngle - b.midAngle);
         this.rightSidePoints = firstQuarter.concat(secondQuarter);
-        accumulation.accumulationDataLabelModule.drawDataLabels(this, this.dataLabel, datalabelGroup as HTMLElement, element, redraw)
+        accumulation.accumulationDataLabelModule.drawDataLabels(this, this.dataLabel, datalabelGroup as HTMLElement, element, redraw);
         if (this.dataLabel.template !== null && element.childElementCount) {
+            let dataLabelCallBack: Function = accumulation.accumulationDataLabelModule.drawDataLabels.bind(
+                accumulation.accumulationDataLabelModule, this, this.dataLabel, datalabelGroup, element, redraw
+                );
+            // tslint:disable-next-line:no-any
+            if ((accumulation as any).isReact) { (accumulation as any).renderReactTemplates(dataLabelCallBack);}
             appendChildElement(
                 false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw
             );

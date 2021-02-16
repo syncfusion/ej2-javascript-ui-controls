@@ -2521,6 +2521,7 @@ export class Calendar extends CalendarBase {
                     super.onPropertyChanged(newProp, oldProp, this.isMultiSelection, this.values);
             }
         }
+        this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
     }
 
     /**

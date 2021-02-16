@@ -125,6 +125,8 @@ export const aggregateMenuOpen: string = 'aggregateMenuOpen';
 export const fieldDragStart: string = 'fieldDragStart';
 /** @hidden */
 export const chartPointClick: string = 'chartPointClick';
+/** @hidden */
+export const beforeServiceInvoke: string = 'beforeServiceInvoke';
 
 /** 
  * Specifies pivot internal events

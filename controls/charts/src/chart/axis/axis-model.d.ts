@@ -579,6 +579,13 @@ export interface AxisModel {
     labelPadding?: number;
 
     /**
+     * Specifies the titlePadding from axis label
+     * @default 5
+     */
+
+    titlePadding?: number;
+
+    /**
      * Options for customizing major tick lines.
      */
 

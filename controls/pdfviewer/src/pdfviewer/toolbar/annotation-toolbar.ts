@@ -3075,7 +3075,10 @@ export class AnnotationToolbar {
     private resetViewerHeight(viewerHeight: number, toolbarHeight: number): number {
         return viewerHeight + toolbarHeight;
     }
-    private afterAnnotationToolbarCreationInBlazor(): void {
+    /**
+     * @private
+     */
+    public afterAnnotationToolbarCreationInBlazor(): void {
         this.HighlightElement = document.getElementById(this.pdfViewer.element.id + '_highLight').children[0];
         this.UnderlineElement = document.getElementById(this.pdfViewer.element.id + '_underline').children[0];
         this.StrikethroughElement = document.getElementById(this.pdfViewer.element.id + '_strikethrough').children[0];

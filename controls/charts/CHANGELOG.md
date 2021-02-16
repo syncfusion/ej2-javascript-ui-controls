@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+## 18.4.43 (2021-02-16)
+
+### Chart
+
+#### Bug Fixes
+
+- `#308967` - Chart horizontal strip line position changes issue has been fixed.
+- `#21006` - Render fail using point color mapping if datasource array is empty issue fixed.
+
+#### New Features
+
+- `#281265` - Support for spacing between axis labels & axis title and padding for legend container implemented
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#308019` - Accumulation chart data labels are rendering over the chart issue has been fixed.
+- `#308020` - The labels to each slice of the pie chart are not reactive issue has been fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#311116` - Disable range selector is not working issue has been fixed.
+
+## 18.4.42 (2021-02-09)
+
+### Chart
+
+#### New Features
+
+- `#292925, #311306` - Provided the support for chart trackball tooltip template.
+
+#### Bug Fixes
+
+- `#305550` - Dragging issue fixed on multi selection in chart.
+
 ## 18.4.41 (2021-02-02)
 
 ### Accumulation chart

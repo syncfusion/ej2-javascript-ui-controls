@@ -9451,11 +9451,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let z: number = 0; z < preview.children.length; z++) {
                 let previewChildId: string = preview.children[z];
                 let previewIndex: number = this.nodes.indexOf(this.nameTable[previewChildId]);
-                this.nodes.splice(previewIndex, 1);
+                if (previewIndex >= 0) {
+                    this.nodes.splice(previewIndex, 1);
+                }
                 delete this.nameTable[previewChildId];
             }
             let previewIndex: number = this.nodes.indexOf(this.nameTable[this.currentSymbol.id]);
-            this.nodes.splice(previewIndex, 1);
+            if (previewIndex >= 0) {
+                this.nodes.splice(previewIndex, 1);
+            }
         }
     }
 

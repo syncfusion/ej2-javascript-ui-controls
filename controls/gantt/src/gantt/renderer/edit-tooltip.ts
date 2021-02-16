@@ -141,7 +141,7 @@ export class EditTooltip {
         }
         if (this.parent.tooltipSettings.editing) {
             let templateNode: NodeList = this.parent.tooltipModule.templateCompiler(
-                this.parent.tooltipSettings.editing, this.parent, editRecord, 'TooltipEditingTemplate');
+                this.parent.tooltipSettings.editing, this.parent, this.taskbarEdit.taskBarEditRecord, 'TooltipEditingTemplate');
             if (getValue('tooltipEle', this.toolTipObj)) {
                 this.parent.renderTemplates();
             }

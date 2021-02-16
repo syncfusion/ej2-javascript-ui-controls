@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.43 (2021-02-16)
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#310244` - The issue on changing the `treeSettings.autoCheck` property dynamically in the `Box` mode has been resolved in the Dropdown Tree component.
+
 ## 18.4.35 (2021-01-19)
 
 ### DropDownList

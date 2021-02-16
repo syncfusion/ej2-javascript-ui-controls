@@ -124,6 +124,10 @@ export class TreeViewRenderer implements IAction {
         this.treeViewElement.innerHTML = '';
         this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(this.treeViewElement);
+        let dragEle : HTMLElement = this.parent.renderMode === "Fixed" ? this.parent.element : this.parentElement;
+        if(!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))){
+            (dragEle.querySelector('.' + cls.FIELD_LIST_CLASS) as any).ej2_instances[0].dragArea = dragEle;
+        }
     }
     private updateNodeIcon(args: NodeExpandEventArgs): void {
         if (this.parent.dataType === 'olap') {

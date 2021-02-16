@@ -1194,9 +1194,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      */
     public refreshDataManager(chart: Chart): void {
         this.chart = chart;
-        let dateSource: Object | DataManager = this.dataSource || chart.dataSource;
-        if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
-            this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, false);
+        let dataSource: Object | DataManager;
+        let isAngular: string = 'isAngular';
+        if (chart[isAngular]) {
+            dataSource = Object.keys(this.dataSource).length ? this.dataSource : chart.dataSource;
+        } else {
+            dataSource = this.dataSource || chart.dataSource;
+        }
+        if (!(dataSource instanceof DataManager) && isNullOrUndefined(this.query)) {
+            this.dataManagerSuccess({ result: dataSource, count: (dataSource as Object[]).length }, false);
             return;
         }
         let dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());

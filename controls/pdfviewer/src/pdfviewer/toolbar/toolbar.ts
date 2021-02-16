@@ -142,6 +142,9 @@ export class Toolbar {
                 if (this.pdfViewer.enableToolbar) {
                     this.bindOpenIconEvent();
                 }
+                if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar && !Browser.isDevice) {
+                    this.annotationToolbarModule.afterAnnotationToolbarCreationInBlazor();
+                }
             }
         }
         return toolbarDiv;

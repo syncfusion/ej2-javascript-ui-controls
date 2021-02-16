@@ -1565,6 +1565,7 @@ export class Render {
                         this.parent.grid.height = gridHeight;
                         this.parent.grid.dataBind();
                     }
+                    this.parent.grid.widthService.refreshFrozenScrollbar();
                 } else {
                     if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
                         gridHeight = 'auto';

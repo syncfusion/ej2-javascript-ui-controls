@@ -1942,7 +1942,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private initializeDataModule(series: SeriesBase): void {
         series.xData = []; series.yData = [];
-        series.dataModule = new Data(series.dataSource || this.dataSource, series.query);
+        let dataSource: Object | DataManager;
+        let isAngular: string = 'isAngular';
+        if (this[isAngular]) {
+            dataSource = Object.keys(series.dataSource).length ? series.dataSource : this.dataSource;
+        } else {
+            dataSource = series.dataSource || this.dataSource;
+        }
+        series.dataModule = new Data(dataSource, series.query);
         series.points = [];
         (series as TechnicalIndicator).refreshDataManager(this);
     }
@@ -3455,7 +3462,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             }
                             if (series && (series.dataSource || series.query || series.errorBar || series.xName ||
                                 series.yName || series.size || series.high || series.low || series.open || series.close ||
-                                series.fill || series.name || blazorProp)) {
+                                series.fill || series.name || series.marker || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

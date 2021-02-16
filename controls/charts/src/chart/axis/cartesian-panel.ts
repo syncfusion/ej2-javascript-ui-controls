@@ -895,7 +895,7 @@ export class CartesianAxisLayoutPanel {
 
             let labelRotation: number = (axis.opposedPosition) ? 90 : -90;
 
-            let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+            let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + axis.titlePadding) +
                 (axis.labelPosition === 'Inside' ? 0 :
                     (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
 
@@ -1379,7 +1379,7 @@ export class CartesianAxisLayoutPanel {
             let chart: Chart = this.chart;
             let elementSize: Size = measureText(axis.title, axis.titleStyle);
             let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight : 0;
-            let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
+            let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + axis.titlePadding) +
                 (axis.labelPosition === 'Inside' ? 0 :
                     axis.maxLabelSize.height + axis.multiLevelLabelHeight + axis.labelPadding);
             let titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));

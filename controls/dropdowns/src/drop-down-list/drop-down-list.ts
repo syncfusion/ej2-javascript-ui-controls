@@ -2623,8 +2623,7 @@ export class DropDownList extends DropDownBase implements IInput {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'query':
-                case 'dataSource':
-                    break;
+                case 'dataSource': break;
                 case 'htmlAttributes': this.setHTMLAttributes();
                     break;
                 case 'width': this.setEleWidth(newProp.width); break;
@@ -2713,6 +2712,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     break;
             }
         }
+        this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
     }
 
     private checkValidLi(element: Element): boolean {

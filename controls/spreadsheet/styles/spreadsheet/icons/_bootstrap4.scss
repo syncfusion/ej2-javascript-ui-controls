@@ -292,9 +292,20 @@
     }
   }
 
-  .e-chart-menu .e-ul .e-menu-item .e-menu-icon {
-    font-size: 30px;
-    margin-right: 5px;
+  .e-chart-menu .e-ul .e-menu-item {
+    padding: 0 16px 0 10px;
+
+    .e-menu-icon {
+      font-size: 30px;
+      margin-right: 10px;
+    }
+
+    .e-bar {
+      font-size: 42px;
+      left: -6px;
+      margin-right: -2px;
+      position: relative;
+    }
   }
 
   .e-chart-menu {

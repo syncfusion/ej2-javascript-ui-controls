@@ -328,14 +328,27 @@ export class DataLabel {
                 styles: 'position: absolute;background-color:' + data.color + ';' +
                     getFontStyle(dataLabel.font) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
             }),
-            point.index, data.template, this.chart, point, series, this.chart.element.id + '_DataLabel');
+            point.index, data.template, this.chart, point, series, this.chart.element.id + '_DataLabel', labelIndex);
+        this.calculateTemplateLabelSize(parentElement, childElement, point, series, dataLabel, labelIndex, clip, redraw);
+    }
+    public calculateTemplateLabelSize(
+        parentElement: HTMLElement, childElement: HTMLElement, point: Points, series: Series, dataLabel: DataLabelSettingsModel,
+        labelIndex: number, clip: Rect, redraw: boolean, isReactCallback?: boolean
+        ): void {
         let elementRect: ClientRect = measureElementRect(childElement, redraw);
         let rect: Rect = this.calculateTextPosition(
             point, series, { width: elementRect.width, height: elementRect.height },
             dataLabel, labelIndex
         );
-        childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x) + 'px';
-        childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y) + 'px';
+        let clipWidth: number = 0;
+        let clipHeight: number = 0;
+        if (isReactCallback) {
+            clipWidth = ((series.clipRect.x + rect.x) + elementRect.width) > parentElement.clientWidth ?
+                (parentElement.clientWidth - (series.clipRect.x + rect.x)) : 0;
+            clipHeight = (series.points.length - 1 === point.index) ? elementRect.height / 2 : 0;
+        }
+        childElement.style.left = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.x) + rect.x - clipWidth) + 'px';
+        childElement.style.top = ((this.chart.chartAreaType === 'PolarRadar' ? 0 : series.clipRect.y) + rect.y + clipHeight) + 'px';
         let rgbValue: ColorValue = convertHexToColor(colorNameToHex(this.fontBackground));
         let vAxis: Axis = series.chart.requireInvertedAxis ? series.xAxis : series.yAxis;
         let hAxis: Axis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;

@@ -220,8 +220,6 @@
   }
 
   .e-bigger.e-pivot-formatting-dialog,
-  .e-bigger .e-pivot-formatting-dialog,
-  .e-bigger.e-pivot-formatting-dialog,
   .e-bigger .e-pivot-formatting-dialog {
     // sass-lint:disable-all
     min-width: $format-dialog-bigger-width !important;
@@ -622,26 +620,26 @@
               padding-right: $field-list-header-padding;
             }
 
-            .e-pivot-all-field-title-wrapper,
-            .e-pivot-all-field-title-container {
+            .e-pivot-all-field-title-wrapper {
               background-color: $field-list-header-background-color;
               color: $field-list-default-header-font-color;
               display: flex;
               font-size: $field-list-header-font-size;
 
-              // .e-edit,
-              // .e-edited {
-              //   cursor: pointer;
-              //   padding: 7px !important;
+              .e-info {
+                padding: 7px !important;
 
-              //   &:hover {
-              //     font-weight: bold;
-              //   }
-    
-              //   &:focus {
-              //     font-weight: bold;
-              //   }
-              // }
+                &:hover {
+                  color: $field-list-active-color;
+                }
+              }
+            }
+
+            .e-pivot-all-field-title-container {
+              background-color: $field-list-header-background-color;
+              color: $field-list-default-header-font-color;
+              display: flex;
+              font-size: $field-list-header-font-size;
 
               .e-info {
                 padding: 7px !important;
@@ -709,8 +707,6 @@
     // sass-lint:enable-all
   }
 
-  .e-bigger.e-pivot-calc-dialog-div,
-  .e-bigger .e-pivot-calc-dialog-div,
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
     // sass-lint:disable-all
@@ -796,29 +792,10 @@
     // sass-lint:enable-all
   }
 
-  .e-pivotfieldlist-wrapper,
-  .e-pivotfieldlist-container {
-    .e-adaptive-field-list-dialog,
-    .e-member-editor-dialog,
-    .e-value-field-settings {
-      border-radius: $field-list-default-border-radius;
-      width: auto;
-
-      .e-dlg-header-content,
-      .e-footer-content {
-        border-radius: $field-list-default-border-radius;
-      }
-
-      .e-dlg-header-content {
-        border: 0;
-        font-weight: normal;
-      }
-
-      .e-footer-content {
-        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-        padding-top: $field-list-editor-dialog-footer-padding;
+    .e-pivotfieldlist-wrapper {
+      .e-member-editor-dialog {
+        min-width: 320px;
+        max-width: 400px;
 
         .e-clear-filter-button {
           float: left;
@@ -828,14 +805,8 @@
             display: none;
           }
         }
-      }
 
-      .e-dlg-content {
-        overflow: hidden;
-        padding: 0;
-
-        .e-editor-label-wrapper,
-        .e-editor-label-container {
+        .e-editor-label-wrapper {
           background-color: $field-list-editor-label-fill;
           opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-padding-size;
@@ -850,186 +821,127 @@
           }
         }
 
-        // sass-lint:disable-all
-        .e-value-field-div-content {
-            padding: 0 $field-list-editor-search-padding-size 10px;          
-
-          .e-field-option-wrapper,
-          .e-field-option-container {
-            .e-field-name-text-wrapper,
-            .e-field-name-text-container {
-              display: flex;
-
-              .e-field-name-title,
-              .e-field-name-content {
-                font-size: 13px;
-                font-weight: 500;
-              }
-
-              .e-field-name-title {
-                flex: none;
-              }
-
-              .e-field-name-content {
-                flex: auto;
-                width: 100%;
-              }
-            }
-
-            .e-caption-input-wrapper,
-            .e-caption-input-container,
-            .e-type-option-wrapper,
-            .e-type-option-container,
-            .e-base-field-option-wrapper,
-            .e-base-field-option-container,
-            .e-base-item-option-wrapper,
-            .e-base-item-option-container {
-              padding-top: $field-list-editor-search-padding-size;
-
-              .e-base-field-option-text,
-              .e-base-item-option-text,
-              .e-type-option-text {
-                font-size: 13px;
-                font-weight: 500;
-                width: 100%;
-              }
-
-              .e-caption-input-text {
-                font-size: 13px;
-              }
-            }
-          }
+        .e-editor-search-wrapper {
+          display: flex;
+          padding: 0 $field-list-editor-search-padding-size 10px;
         }
-        // sass-lint:enable-all
 
-        .e-member-editor-wrapper,
-        .e-member-editor-outer-container {
-          .e-editor-search-wrapper,
-          .e-editor-search-container {
-            display: flex;
-            padding: 0 $field-list-editor-search-padding-size 10px;
+        .e-filter-sort {
+          box-shadow: none;
+          margin-left: $field-list-sort-wrapper-padding-size;
 
-            .e-filter-sort {
-              box-shadow: none;
-              margin-left: $field-list-sort-wrapper-padding-size;
-
-              // sass-lint:disable-all
-              .e-member-sort {
-                @if ($field-list-skin == 'bootstrap4') {
-                  background-color: $content-bg;
-                  border-color: $gray-400;
-                  color:  $gray-700;
-                }
-
-                &:hover {
-                  @if ($field-list-skin == 'bootstrap4') {
-                    background-color: #6c757d;
-                    border-color: #6c757d;
-                    color: #fff;
-                  }
-                }
-
-                &.e-active {
-                  @if ($field-list-skin == 'bootstrap4') {
-                    background-color: $field-list-sort-select-background-color;
-                    border-color: $field-list-sort-select-border-color;
-                    color: $field-list-sort-select-color;
-                    outline: none;
-                  }
-                }
-
-                .e-sort-ascend-icon,
-                .e-sort-descend-icon {
-                  font-size: 16px;
-                }
-
-                &:focus {
-                  @if ($field-list-skin == 'bootstrap4') {
-                    background-color: #6c757d;
-                    border-color: #6c757d;
-                    color: #fff;
-                  }
-
-                  &.e-active {
-                    background-color: $field-list-sort-select-background-color;
-                    border-color: $field-list-sort-select-border-color;
-                    color: $field-list-sort-select-color;
-                    outline: none;
-                  }
-                }
-              }
-              // sass-lint:enable-all
+          // sass-lint:disable-all
+          .e-member-sort {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: $content-bg;
+              border-color: $gray-400;
+              color:  $gray-700;
             }
-          }
 
-          .e-member-prompt {
-            padding: 25px $field-list-editor-search-padding-size;
-            text-align: center;
-            width: 100%;
-          }
+            &:hover {
+              @if ($field-list-skin == 'bootstrap4') {
+                background-color: #6c757d;
+                border-color: #6c757d;
+                color: #fff;
+              }
+            }
 
-          .e-member-editor-container-outer-div {
-            display: inline-block;
-            height: $field-list-member-filter-list-height;
-            max-width: 400px;
-            overflow: auto;
-            width: 100%;
-          }
+            &.e-active {
+              @if ($field-list-skin == 'bootstrap4') {
+                background-color: $field-list-sort-select-background-color;
+                border-color: $field-list-sort-select-border-color;
+                color: $field-list-sort-select-color;
+                outline: none;
+              }
+            }
 
-          .e-member-editor-container {
-            display: inline-table;
-            height: 100%;
-            width: 100%;
+            .e-sort-ascend-icon,
+            .e-sort-descend-icon {
+              font-size: 16px;
+            }
 
-            &.e-rtl {
-              ul {
-                .e-list-icon {
-                  transform: rotateX(0deg) rotateY(180deg);
-                }
+            &:focus {
+              @if ($field-list-skin == 'bootstrap4') {
+                background-color: #6c757d;
+                border-color: #6c757d;
+                color: #fff;
+              }
+
+              &.e-active {
+                background-color: $field-list-sort-select-background-color;
+                border-color: $field-list-sort-select-border-color;
+                color: $field-list-sort-select-color;
+                outline: none;
               }
             }
           }
+          // sass-lint:enable-all
+        }
 
-          .e-select-all-wrapper ul,
-          .e-select-all-container ul,
-          .e-member-editor-container ul {
-            margin-left: $field-list-member-filter-list-padding-size;
-            overflow: hidden;
+        .e-member-prompt {
+          padding: 25px $field-list-editor-search-padding-size;
+          text-align: center;
+          width: 100%;
+        }
 
-            li {
-              .e-list-text {
-                font-family: $field-list-font-family;
-              }
+        .e-member-editor-container-outer-div {
+          display: inline-block;
+          height: $field-list-member-filter-list-height;
+          max-width: 400px;
+          overflow: auto;
+          width: 100%;
+        }
 
+        .e-member-editor-container {
+          display: inline-table;
+          height: 100%;
+          width: 100%;
+
+          &.e-rtl {
+            ul {
               .e-list-icon {
-                margin: 0;
-              }
-
-              // sass-lint:disable-all
-              .e-calc-measure-icon,
-              .e-calc-dimension-icon,
-              .e-attributeCDB-icon,
-              .e-hierarchyCDB-icon,
-              .e-level-members,
-              .e-namedSetCDB-icon,
-              .e-measure-icon,
-              .e-kpiGoal-icon,
-              .e-kpiStatus-icon,
-              .e-kpiTrend-icon,
-              .e-kpiValue-icon {
-                margin-left: 10px;
+                transform: rotateX(0deg) rotateY(180deg);
               }
             }
           }
-          
-          .e-disable {
-            display: none !important;
-          }
         }
 
+        .e-select-all-wrapper ul,
+        .e-member-editor-container ul {
+          margin-left: $field-list-member-filter-list-padding-size;
+          overflow: hidden;
+
+          li {
+            .e-list-text {
+              font-family: $field-list-font-family;
+            }
+
+            .e-list-icon {
+              margin: 0;
+            }
+
+            // sass-lint:disable-all
+            .e-calc-measure-icon,
+            .e-calc-dimension-icon,
+            .e-attributeCDB-icon,
+            .e-hierarchyCDB-icon,
+            .e-level-members,
+            .e-namedSetCDB-icon,
+            .e-measure-icon,
+            .e-kpiGoal-icon,
+            .e-kpiStatus-icon,
+            .e-kpiTrend-icon,
+            .e-kpiValue-icon {
+              margin-left: 10px;
+            }
+          }
+        }
         
-        .e-filter-tab-wrapper,
-        .e-filter-tab-container {
+        .e-disable {
+          display: none !important;
+        }
+
+        .e-filter-tab-wrapper {
           border: none;
           // sass-lint:enable-all
 
@@ -1086,8 +998,6 @@
 
           .e-filter-option-wrapper-1,
           .e-filter-option-wrapper-2,
-          .e-filter-option-container-1,
-          .e-filter-option-container-2,
           .e-separator-div {
             padding-top: 20px;
           }
@@ -1100,7 +1010,182 @@
             display: none;
           }
         }
-        // sass-lint:disable-all
+
+        &.e-excel-filter {
+          .e-editor-label-wrapper {
+            opacity: $field-list-editor-label-excel-opacity;
+            padding: $field-list-editor-label-excel-padding-size;
+          }
+        }
+  
+        &.e-rtl {
+          .e-member-editor-wrapper {
+            .e-editor-search-wrapper {
+              .e-filter-sort {
+                margin-left: 0;
+                margin-right: $field-list-sort-wrapper-padding-size;
+              }
+            }
+  
+            ul {
+              margin-left: 0;
+              margin-right: $field-list-member-filter-list-padding-size;
+            }
+          }
+  
+          .e-footer-content {
+            .e-clear-filter-button {
+              float: right;
+            }
+          }
+        }
+
+        &.e-olap-editor-dialog {
+          .e-member-editor-wrapper {
+            .e-select-all-wrapper ul,
+            .e-member-editor-container ul {
+              margin-left: 0;
+            }
+  
+            .e-treeview ul:first-child {
+              padding-left: 10px;
+              padding-right: 10px;
+            }
+  
+            .e-editor-search-wrapper {
+              display: flex;
+  
+              .e-level-drop {
+                margin: 0 5px;
+  
+                .e-caret {
+                  font-size: $field-list-icon-size;
+                }
+  
+                li .e-disabled {
+                  opacity: .5;
+                  pointer-events: none;
+                }
+              }
+            }
+          }
+  
+          // sass-lint:disable-all
+          &.e-rtl {
+            .e-member-editor-wrapper {
+              .e-editor-search-wrapper {
+                .e-filter-sort {
+                  margin-left: 0;
+                  margin-right: $field-list-sort-wrapper-padding-size;
+                }
+              }
+  
+              ul {
+                margin-right: 0;
+  
+                li {
+                  .e-calc-measure-icon,
+                  .e-calc-dimension-icon,
+                  .e-attributeCDB-icon,
+                  .e-hierarchyCDB-icon,
+                  .e-level-members,
+                  .e-namedSetCDB-icon,
+                  .e-measure-icon,
+                  .e-kpiGoal-icon,
+                  .e-kpiStatus-icon,
+                  .e-kpiTrend-icon,
+                  .e-kpiValue-icon {
+                    margin-left: 0;
+                    margin-right: 10px;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+
+      }
+
+      .e-value-field-settings {
+        max-width: 400px;
+        min-width: 300px;
+  
+        .e-dlg-content {
+          overflow: auto;
+        }
+
+        .e-value-field-div-content {
+          padding: 0 $field-list-editor-search-padding-size 10px;          
+
+          .e-field-option-wrapper {
+            .e-field-name-text-wrapper {
+              display: flex;
+
+              .e-field-name-title,
+              .e-field-name-content {
+                font-size: 13px;
+                font-weight: 500;
+              }
+
+              .e-field-name-title {
+                flex: none;
+              }
+
+              .e-field-name-content {
+                flex: auto;
+                width: 100%;
+              }
+            }
+
+            .e-caption-input-wrapper,
+            .e-type-option-wrapper,
+            .e-base-field-option-wrapper,
+            .e-base-item-option-wrapper {
+              padding-top: $field-list-editor-search-padding-size;
+
+              .e-base-field-option-text,
+              .e-base-item-option-text,
+              .e-type-option-text {
+                font-size: 13px;
+                font-weight: 500;
+                width: 100%;
+              }
+
+              .e-caption-input-text {
+                font-size: 13px;
+              }
+            }
+          }
+        }
+      }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      border-radius: $field-list-default-border-radius;
+      width: auto;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $field-list-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: 0;
+        font-weight: normal;
+      }
+
+      .e-footer-content {
+        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-top: $field-list-editor-dialog-footer-padding;
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: 0;
 
         .e-empty-field::-webkit-input-placeholder {
           color: $error-font-color !important;
@@ -1123,9 +1208,238 @@
         }
         // sass-lint:enable-all
       }
+    }
+
+    .e-adaptive-field-list-dialog {
+      .e-dlg-content {
+        .e-member-editor-wrapper {
+          .e-member-editor-container-outer-div {
+            height: $field-list-member-field-list-height;
+          }
+        }
+      }
+    }
+  }
+
+  .e-pivotfieldlist-container {
+    .e-member-editor-dialog {
+      min-width: 320px;
+      max-width: 400px;
+
+      .e-clear-filter-button {
+        float: left;
+        margin: 0;
+
+        &.e-disable {
+          display: none;
+        }
+      }
+
+      .e-editor-label-container {
+        background-color: $field-list-editor-label-fill;
+        opacity: $field-list-editor-label-excel-opacity;
+        padding: $field-list-editor-label-padding-size;
+
+        .e-editor-label {
+          color: $field-list-editor-label-color;
+          font: $field-list-editor-label-font;
+          opacity: $field-list-editor-label-opacity;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .e-editor-search-container {
+        display: flex;
+        padding: 0 $field-list-editor-search-padding-size 10px;
+      }
+      
+      .e-filter-sort {
+        box-shadow: none;
+        margin-left: $field-list-sort-wrapper-padding-size;
+
+        // sass-lint:disable-all
+        .e-member-sort {
+          @if ($field-list-skin == 'bootstrap4') {
+            background-color: $content-bg;
+            border-color: $gray-400;
+            color:  $gray-700;
+          }
+
+          &:hover {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: #6c757d;
+              border-color: #6c757d;
+              color: #fff;
+            }
+          }
+
+          &.e-active {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: $field-list-sort-select-background-color;
+              border-color: $field-list-sort-select-border-color;
+              color: $field-list-sort-select-color;
+              outline: none;
+            }
+          }
+
+          .e-sort-ascend-icon,
+          .e-sort-descend-icon {
+            font-size: 16px;
+          }
+
+          &:focus {
+            @if ($field-list-skin == 'bootstrap4') {
+              background-color: #6c757d;
+              border-color: #6c757d;
+              color: #fff;
+            }
+
+            &.e-active {
+              background-color: $field-list-sort-select-background-color;
+              border-color: $field-list-sort-select-border-color;
+              color: $field-list-sort-select-color;
+              outline: none;
+            }
+          }
+        }
+      }
+
+      .e-member-prompt {
+        padding: 25px $field-list-editor-search-padding-size;
+        text-align: center;
+        width: 100%;
+      }
+
+      .e-member-editor-container-outer-div {
+        display: inline-block;
+        height: $field-list-member-filter-list-height;
+        max-width: 400px;
+        overflow: auto;
+        width: 100%;
+      }
+
+      .e-member-editor-container {
+        display: inline-table;
+        height: 100%;
+        width: 100%;
+
+        &.e-rtl {
+          ul {
+            .e-list-icon {
+              transform: rotateX(0deg) rotateY(180deg);
+            }
+          }
+        }
+      }
+
+      .e-select-all-container ul,
+      .e-member-editor-container ul {
+        margin-left: $field-list-member-filter-list-padding-size;
+        overflow: hidden;
+
+        li {
+          .e-list-text {
+            font-family: $field-list-font-family;
+          }
+
+          .e-list-icon {
+            margin: 0;
+          }
+
+          // sass-lint:disable-all
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 10px;
+          }
+        }
+      }
+      
+      .e-disable {
+        display: none !important;
+      }
+
+      .e-filter-tab-container {
+        border: none;
+        // sass-lint:enable-all
+
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+
+          .e-text-wrap {
+            .e-tab-icon {
+              height: 14px;
+              min-width: 14px;
+              width: 14px;
+              @if ($field-list-skin == 'bootstrap4') {
+                height: auto;
+              }
+
+              &::before {
+                font-size: 14px;
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-excelfilter {
+        padding-top: 20px;
+
+        .e-member-editor-container-outer-div {
+          height: $field-list-excel-member-filter-height;
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-height;
+        overflow: auto;
+        padding: 20px;
+        padding-bottom: 0;
+
+        .e-filter-text-div {
+          color: $field-list-button-icon-color !important;
+          font-size: 13px;
+          font-weight: 500;
+        }
+
+        .e-filter-option-container-1,
+        .e-filter-option-container-2,
+        .e-separator-div {
+          padding-top: 20px;
+        }
+
+        .e-between-text-div {
+          padding: 8px 0;
+        }
+
+        .e-disable {
+          display: none;
+        }
+      }
 
       &.e-excel-filter {
-        .e-editor-label-wrapper,
         .e-editor-label-container {
           opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-excel-padding-size;
@@ -1133,9 +1447,7 @@
       }
 
       &.e-rtl {
-        .e-member-editor-wrapper,
         .e-member-editor-outer-container {
-          .e-editor-search-wrapper,
           .e-editor-search-container {
             .e-filter-sort {
               margin-left: 0;
@@ -1157,9 +1469,7 @@
       }
 
       &.e-olap-editor-dialog {
-        .e-member-editor-wrapper,
         .e-member-editor-outer-container {
-          .e-select-all-wrapper ul,
           .e-select-all-container ul,
           .e-member-editor-container ul {
             margin-left: 0;
@@ -1170,7 +1480,6 @@
             padding-right: 10px;
           }
 
-          .e-editor-search-wrapper,
           .e-editor-search-container {
             display: flex;
 
@@ -1191,9 +1500,7 @@
 
         // sass-lint:disable-all
         &.e-rtl {
-          .e-member-editor-wrapper,
           .e-member-editor-outer-container {
-            .e-editor-search-wrapper,
             .e-editor-search-container {
               .e-filter-sort {
                 margin-left: 0;
@@ -1226,11 +1533,6 @@
       }
     }
 
-    .e-member-editor-dialog {
-      min-width: 320px;
-      max-width: 400px;
-    }
-
     .e-value-field-settings {
       max-width: 400px;
       min-width: 300px;
@@ -1238,11 +1540,106 @@
       .e-dlg-content {
         overflow: auto;
       }
+
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;          
+
+        .e-field-option-container {
+          .e-field-name-text-container {
+            display: flex;
+
+            .e-field-name-title,
+            .e-field-name-content {
+              font-size: 13px;
+              font-weight: 500;
+            }
+
+            .e-field-name-title {
+              flex: none;
+            }
+
+            .e-field-name-content {
+              flex: auto;
+              width: 100%;
+            }
+          }
+
+          .e-caption-input-container,
+          .e-type-option-container,
+          .e-base-field-option-container,
+          .e-base-item-option-container {
+            padding-top: $field-list-editor-search-padding-size;
+
+            .e-base-field-option-text,
+            .e-base-item-option-text,
+            .e-type-option-text {
+              font-size: 13px;
+              font-weight: 500;
+              width: 100%;
+            }
+
+            .e-caption-input-text {
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      border-radius: $field-list-default-border-radius;
+      width: auto;
+
+      .e-dlg-header-content,
+      .e-footer-content {
+        border-radius: $field-list-default-border-radius;
+      }
+
+      .e-dlg-header-content {
+        border: 0;
+        font-weight: normal;
+      }
+
+      .e-footer-content {
+        border-top: $field-list-border-size $field-list-border-type $field-list-default-border-color;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-top: $field-list-editor-dialog-footer-padding;
+      }
+
+      .e-dlg-content {
+        overflow: hidden;
+        padding: 0;
+
+        // sass-lint:disable-all
+
+        .e-empty-field::-webkit-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field::-moz-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+
+        .e-empty-field:-ms-input-placeholder {
+          color: $error-font-color !important;
+          font-weight: 600 !important;
+        }
+        // sass-lint:enable-all
+      }
     }
 
     .e-adaptive-field-list-dialog {
       .e-dlg-content {
-        .e-member-editor-wrapper,
         .e-member-editor-outer-container {
           .e-member-editor-container-outer-div {
             height: $field-list-member-field-list-height;
@@ -1337,10 +1734,6 @@
   .e-bigger .e-field-list-tree.e-drag-item.e-treeview,
   .e-bigger .e-pivot-calc.e-drag-item.e-treeview,
   .e-bigger.e-field-list-tree.e-drag-item.e-treeview,
-  .e-bigger.e-pivot-calc.e-drag-item.e-treeview,
-  .e-bigger .e-field-list-tree.e-drag-item.e-treeview,
-  .e-bigger .e-pivot-calc.e-drag-item.e-treeview,
-  .e-bigger.e-field-list-tree.e-drag-item.e-treeview
   .e-bigger.e-pivot-calc.e-drag-item.e-treeview {
     height: $field-list-bigger-button-height;
     padding: 6px 12px;
@@ -1393,8 +1786,6 @@
   }
 
   .e-bigger .e-button-drag-clone,
-  .e-bigger.e-button-drag-clone,
-  .e-bigger .e-button-drag-clone,
   .e-bigger.e-button-drag-clone {
     height: $field-list-bigger-button-height !important;
     line-height: 1.5em;
@@ -1427,31 +1818,20 @@
   }
 
   .e-bigger .e-pivotfieldlist-wrapper,
-  .e-bigger.e-pivotfieldlist-wrapper,
-  .e-bigger .e-pivotfieldlist-wrapper,
-  .e-bigger.e-pivotfieldlist-wrapper,
-  .e-bigger .e-pivotfieldlist-container,
-  .e-bigger.e-pivotfieldlist-container,
-  .e-bigger .e-pivotfieldlist-container,
-  .e-bigger.e-pivotfieldlist-container {
+  .e-bigger.e-pivotfieldlist-wrapper {
+
     .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div ,
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div,
-    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div ,
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div {
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div {
       height: $field-list-member-filter-list-bigger-height;
     }
 
+
     // sass-lint:disable-all
     .e-member-editor-dialog {
-      .e-editor-search-wrapper,
-      .e-editor-search-container {
-        .e-filter-sort {
-          .e-member-sort {
-            .e-sort-ascend-icon,
-            .e-sort-descend-icon {
-              font-size: 18px;
-            }
-          }
+      .e-editor-search-wrapper {
+        .e-sort-ascend-icon,
+        .e-sort-descend-icon {
+          font-size: 18px;
         }
 
         .e-level-drop {
@@ -1461,7 +1841,165 @@
         }
       }
 
-      .e-member-editor-wrapper ul,
+      .e-member-editor-wrapper ul {
+        @if ($field-list-skin == 'bootstrap4') {
+          margin-left: -30px;
+        }
+
+        li {
+          .e-calc-measure-icon,
+          .e-calc-dimension-icon,
+          .e-attributeCDB-icon,
+          .e-hierarchyCDB-icon,
+          .e-level-members,
+          .e-namedSetCDB-icon,
+          .e-measure-icon,
+          .e-kpiGoal-icon,
+          .e-kpiStatus-icon,
+          .e-kpiTrend-icon,
+          .e-kpiValue-icon {
+            margin-left: 10px;
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-member-editor-wrapper ul {
+          @if ($field-list-skin == 'bootstrap4') {
+            margin-right: -30px;
+          }
+
+          li {
+            .e-calc-measure-icon,
+            .e-calc-dimension-icon,
+            .e-attributeCDB-icon,
+            .e-hierarchyCDB-icon,
+            .e-level-members,
+            .e-namedSetCDB-icon,
+            .e-measure-icon,
+            .e-kpiGoal-icon,
+            .e-kpiStatus-icon,
+            .e-kpiTrend-icon,
+            .e-kpiValue-icon {
+              margin-left: 10px;
+            }
+          }
+        }
+      }
+    }
+    // sass-lint:enable-all
+
+    .e-member-editor-dialog {
+      .e-filter-tab-wrapper {
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-bigger-height;
+
+        .e-filter-text-div {
+          font-size: 14px;
+        }
+
+        .e-filter-option-wrapper-1,
+        .e-filter-option-wrapper-2,
+        .e-separator-div {
+          padding-top: 24px;
+        }
+
+        .e-between-text-div {
+          padding: 10px 0;
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: $field-list-bigger-excel-dialog-min-width;
+      }
+
+
+    }
+
+    .e-adaptive-field-list-dialog,
+    .e-member-editor-dialog,
+    .e-value-field-settings {
+      .e-dlg-header-content {
+        .e-clear-filter-button.e-small {
+          font-size: 14px;
+          top: 0;
+        }
+      }
+    }
+
+    .e-value-field-settings {
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;
+      }
+    }
+
+    // sass-lint:disable-all
+    .e-value-field-settings {
+      .e-field-name-text-wrapper {
+        display: flex;
+
+        .e-field-name-title,
+        .e-field-name-content {
+          font-size: 14px;
+        }
+      }
+
+      .e-caption-input-wrapper,
+      .e-type-option-wrapper,
+      .e-base-field-option-wrapper,
+      .e-base-item-option-wrapper {
+        padding-top: 24px;
+
+        .e-base-field-option-text,
+        .e-base-item-option-text,
+        .e-type-option-text,
+        .e-caption-input-text {
+          font-size: 14px;
+        }
+      }
+    }
+    // sass-lint:enable-all
+  }
+
+  .e-bigger .e-pivotfieldlist-container,
+  .e-bigger.e-pivotfieldlist-container {
+
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div ,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-outer-container .e-member-editor-container-outer-div {
+      height: $field-list-member-filter-list-bigger-height;
+    }
+
+    // sass-lint:disable-all
+    .e-member-editor-dialog {
+      .e-editor-search-container {
+        .e-sort-ascend-icon,
+        .e-sort-descend-icon {
+          font-size: 18px;
+        }
+
+        .e-level-drop {
+          .e-caret {
+            font-size: $field-list-bigger-icon-size !important;
+          }
+        }
+      }
+
       .e-member-editor-outer-container ul {
         @if ($field-list-skin == 'bootstrap4') {
           margin-left: -30px;
@@ -1485,7 +2023,6 @@
       }
 
       &.e-rtl {
-        .e-member-editor-wrapper ul,
         .e-member-editor-outer-container ul {
           @if ($field-list-skin == 'bootstrap4') {
             margin-right: -30px;
@@ -1511,6 +2048,53 @@
     }
     // sass-lint:enable-all
 
+    .e-member-editor-dialog {
+      .e-filter-tab-container {
+        .e-tab-header {
+          .e-toolbar-item .e-icon-left + .e-tab-text {
+            margin: 0 0 0 6px;
+          }
+        }
+
+        &.e-rtl {
+          .e-tab-header {
+            .e-toolbar-item .e-icon-left + .e-tab-text {
+              margin: 0 6px 0 0;
+            }
+          }
+        }
+      }
+
+      .e-excelfilter {
+        .e-member-editor-container-outer-div {
+          height: $field-list-excel-member-filter-bigger-height;
+        }
+      }
+
+      .e-label-filter,
+      .e-value-filter {
+        height: $field-list-excel-filter-bigger-height;
+
+        .e-filter-text-div {
+          font-size: 14px;
+        }
+
+        .e-filter-option-container-1,
+        .e-filter-option-container-2,
+        .e-separator-div {
+          padding-top: 24px;
+        }
+
+        .e-between-text-div {
+          padding: 10px 0;
+        }
+      }
+
+      &.e-excel-filter {
+        min-width: $field-list-bigger-excel-dialog-min-width;
+      }
+    }
+
     .e-adaptive-field-list-dialog,
     .e-member-editor-dialog,
     .e-value-field-settings {
@@ -1520,96 +2104,38 @@
           top: 0;
         }
       }
+    }
 
-      .e-dlg-content {
-        .e-filter-tab-wrapper,
-        .e-filter-tab-container {
-          .e-tab-header {
-            .e-toolbar-item .e-icon-left + .e-tab-text {
-              margin: 0 0 0 6px;
-            }
-          }
-
-          &.e-rtl {
-            .e-tab-header {
-              .e-toolbar-item .e-icon-left + .e-tab-text {
-                margin: 0 6px 0 0;
-              }
-            }
-          }
-        }
-
-        .e-excelfilter {
-          .e-member-editor-container-outer-div {
-            height: $field-list-excel-member-filter-bigger-height;
-          }
-        }
-
-        .e-label-filter,
-        .e-value-filter {
-          height: $field-list-excel-filter-bigger-height;
-
-          .e-filter-text-div {
-            font-size: 14px;
-          }
-
-          .e-filter-option-wrapper-1,
-          .e-filter-option-wrapper-2,
-          .e-filter-option-container-1,
-          .e-filter-option-container-2,
-          .e-separator-div {
-            padding-top: 24px;
-          }
-
-          .e-between-text-div {
-            padding: 10px 0;
-          }
-        }
-      }
-
-      &.e-excel-filter {
-        min-width: $field-list-bigger-excel-dialog-min-width;
+    .e-value-field-settings {
+      .e-value-field-div-content {
+        padding: 0 $field-list-editor-search-padding-size 10px;
       }
     }
 
     // sass-lint:disable-all
     .e-value-field-settings {
-      .e-value-field-div-content {
-        padding: 0 $field-list-editor-search-padding-size 10px;
+      .e-field-name-text-container {
+        display: flex;
 
-        .e-field-option-wrapper,
-        .e-field-option-container {
-          .e-field-name-text-wrapper,
-          .e-field-name-text-container {
-            display: flex;
+        .e-field-name-title,
+        .e-field-name-content {
+          font-size: 14px;
+        }
+      }
 
-            .e-field-name-title,
-            .e-field-name-content {
-              font-size: 14px;
-            }
-          }
+      .e-caption-input-container,
+      .e-type-option-container,
+      .e-base-field-option-container,
+      .e-base-item-option-container {
+        padding-top: 24px;
 
-          .e-caption-input-wrapper,
-          .e-caption-input-container,
-          .e-type-option-wrapper,
-          .e-type-option-container,
-          .e-base-field-option-wrapper,
-          .e-base-field-option-container,
-          .e-base-item-option-wrapper,
-          .e-base-item-option-container {
-            padding-top: 24px;
-
-            .e-base-field-option-text,
-            .e-base-item-option-text,
-            .e-type-option-text,
-            .e-caption-input-text {
-              font-size: 14px;
-            }
-          }
+        .e-base-field-option-text,
+        .e-base-item-option-text,
+        .e-type-option-text,
+        .e-caption-input-text {
+          font-size: 14px;
         }
       }
     }
-    // sass-lint:enable-all
   }
 }
-  

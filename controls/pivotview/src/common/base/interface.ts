@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet } from '../../base/engine';
+import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort } from '../../base/engine';
 import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
 import { IFilter } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes } from '../base/enum';
@@ -974,4 +974,62 @@ export interface MemberItems {
 export interface TreeDataInfo {
     index: number;
     isSelected: boolean;
+}
+
+/**
+ * The before service invoke event arguments provide the necessary information about the service before it get invoked.
+ */
+export interface BeforeServiceInvokeEventArgs {
+    /** Defines XML HTTP Request. */
+    request?: XMLHttpRequest;
+    /** Defines the data source settings. */
+    dataSourceSettings?: IDataOptions;
+    /** Defines the action which is being performed. */
+    action?: string;
+    /** Defines the custom properties which needs to pass to server side. */
+    customProperties?: any;
+    /** Defines the drill item. */
+    drillItem?: IDrilledItem;
+    /** Defines the sort item. */
+    sortItem?: ISort;
+    /** Defines the aggregate item. */
+    aggregatedItem?: IFieldOptions;
+    /** Defines the calculated item. */
+    calculatedItem?: ICalculatedFields;
+    /** Defines the filter item. */
+    filterItem?: IFilter;
+    /** Defines the member name. */
+    memberName?: string;
+    /** Defines the raw data needs to be fetched. */
+    fetchRawDataArgs?: FetchRawDataArgs;
+    /** Defines the raw data needs to be updated. */
+    editArgs?: UpdateRawDataArgs;
+    /** Defines the hash string. */
+    hash?: string;
+    /** Defines the internal properties. */
+    internalProperties?: any;
+}
+
+/**
+ * Defines the raw data needs to be fetched.
+ */
+export interface UpdateRawDataArgs {
+    /** Defines the raw data needs to be added. */
+    addedData: IDataSet[];
+    /** Defines the raw data needs to be removed. */
+    removedData: object[];
+    /** Defines the raw data needs to be updated. */
+    updatedData: IDataSet[];
+    /** Defines the index object. */
+    indexObject: object[];
+}
+
+/**
+ * Defines the raw data needs to be updated.
+ */
+export interface FetchRawDataArgs {
+    /** Defines the column index. */
+    columnIndex: number;
+    /** Defines the row index. */
+    rowIndex: number;
 }

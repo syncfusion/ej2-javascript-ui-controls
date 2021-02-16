@@ -726,6 +726,9 @@ export class SfdtExport {
             this.writeChart(element, inline);
         } else if (element instanceof ImageElementBox) {
             inline.imageString = element.imageString;
+            inline.metaFileImageString = element.metaFileImageString;
+            inline.isMetaFile =  element.isMetaFile;
+            inline.isCompressed = element.isCompressed;
             inline.width = HelperMethods.convertPixelToPoint(element.width);
             inline.height = HelperMethods.convertPixelToPoint(element.height);
             inline.iscrop = element.isCrop;

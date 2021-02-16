@@ -3743,6 +3743,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 case 'value':
                     this.updateVal(this.value, oldProp.value, 'value');
                     this.addValidInputClass();
+                    if (!this.closePopupOnSelect && this.isPopupOpen()) { this.refreshPopup(); }
                     break;
                 case 'width':
                     this.setWidth(newProp.width);
@@ -3808,6 +3809,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     break;
             }
         }
+        this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
     }
     private reInitializePoup(): void {
         if (this.popupObj) {
@@ -3824,15 +3826,17 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.onLoadSelect();
         } else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
-        } else if (!this.inputFocus) {
+        } else {
             if (prop === 'text') {
                 this.initialTextUpdate();
                 newProp = this.value;
             }
             if (isNullOrUndefined(this.value) || this.value.length === 0) { this.tempValues = oldProp; }
             this.initialValueUpdate();
-            if (this.mode !== 'Box') { this.updateDelimView(); }
-            this.refreshInputHight();
+            if (this.mode !== 'Box' && !this.inputFocus) { this.updateDelimView(); }
+            if (!this.inputFocus) {
+                this.refreshInputHight();
+            }
             this.refreshPlaceHolder();
             if (this.mode !== 'CheckBox' && this.changeOnBlur) { this.updateValueState(null, newProp, oldProp); }
             this.checkPlaceholderSize();

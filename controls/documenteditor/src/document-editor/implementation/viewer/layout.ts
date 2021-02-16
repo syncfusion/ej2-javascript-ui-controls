@@ -1096,11 +1096,6 @@ export class Layout {
             } else if (this.documentHelper.textHelper.containsSpecialCharAlone(text.charAt(i))) {
                 currentCharacterType = 2;
                 if (separateEachWordSplitChars = (isTextBidi || (text.charAt(i) === ' ' && wordSplitChars === ''))) {
-                    if (i !== 0 && /^[0-9]+$/.test(text[i - 1]) && text[i] === '.' && text[i + 1] && /^[0-9]+$/.test(text[i + 1])) {
-                        numberText += text[i];
-                        currentCharacterType = 4;
-                    }
-                } else {
                     wordSplitChars += text[i];
                 }
             } else if (this.documentHelper.textHelper.isRTLText(text.charAt(i))) {
@@ -4620,9 +4615,9 @@ export class Layout {
                 } else {
                     paragraph = block as ParagraphWidget;
                 }
-                if ((this.viewer.owner.isDocumentLoaded) && this.viewer.owner.editorModule) {
-                    this.viewer.owner.editorModule.updateWholeListItems(paragraph);
-                }
+                //if ((this.viewer.owner.isDocumentLoaded) && this.viewer.owner.editorModule) {
+                //    this.viewer.owner.editorModule.updateWholeListItems(paragraph);
+                //}
                 viewer.updateClientAreaForBlock(block, true);
                 if (this.viewer instanceof WebLayoutViewer) {
                     block.containerWidget.height -= block.height;
@@ -6174,7 +6169,16 @@ export class Layout {
                         element.text = text;
                     }
                 }
-
+                let textElement: ElementBox = element.nextElement;
+                if (element instanceof TextElementBox && this.documentHelper.textHelper.containsNumberAlone(element.text.trim())) {
+                    // tslint:disable-next-line:max-line-length
+                    while (textElement instanceof TextElementBox && textElement.text.trim() !== '' && (this.documentHelper.textHelper.containsNumberAlone(textElement.text.trim()) || this.documentHelper.textHelper.containsSpecialCharAlone(textElement.text.trim()))) {
+                        element.text = element.text + textElement.text;
+                        element.line.children.splice(element.line.children.indexOf(textElement), 1);
+                        textElement = element.nextElement;
+                    }
+                    element.width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
+                }
             }
             let isRTLText: boolean = false;
             // let isNumber: boolean = false;

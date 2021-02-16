@@ -518,6 +518,8 @@ export interface ContextMenuOpenEventArgs extends GridContextMenuOpenEventArgs {
     type?: ContextMenuType;
     /** Defines the hidden items collection */
     hideItems?: string[];
+    /** Defines the sub menu hidden items collection */
+    hideChildItems?: string[];
     /** Defines the disabled items collection */
     disableItems?: string[];
     /** Defines the target element. */

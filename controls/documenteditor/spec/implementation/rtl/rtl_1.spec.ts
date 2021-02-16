@@ -41,18 +41,18 @@ describe('Rtl with special charater layout with bidi true', () => {
     it('Number validation with RTL bidi true', () => {
 console.log('Number validation with RTL bidi true');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[3] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[2] as TextElementBox).text).toBe('2');
+        expect((lineWidget.children[2] as TextElementBox).text).toBe('1-2-2018');
     });
     it('special character validation with Rtl Text', () => {
 console.log('special character validation with Rtl Text');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[12] as TextElementBox).text).toBe('قم  ( ');
+        expect((lineWidget.children[12] as TextElementBox).text).toBe('«');
     });
     it('insert field at start of text element with line widget contains special character', () => {
 console.log('insert field at start of text element with line widget contains special character');
         editor.editor.insertField('MERGEFIELD  MyField  \\* MERGEFORMAT', '«MyField»');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[12] as TextElementBox).text).toBe('قم  ( ');
+        expect((lineWidget.children[12] as TextElementBox).text).toBe('«');
     });
 });
 
@@ -93,6 +93,6 @@ console.log('English with special character');
     it('Hebrew with special character', () => {
 console.log('Hebrew with special character');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[3] as TextElementBox).text).toBe('דשצפךק@#$% ');
+        expect((lineWidget.children[3] as TextElementBox).text).toBe(' ');
     });
 });

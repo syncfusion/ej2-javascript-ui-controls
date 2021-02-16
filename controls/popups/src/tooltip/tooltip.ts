@@ -231,6 +231,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public showTipPointer: boolean;
     /**
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip. 
+     * If the value of the property is set to false, the tooltip content will be displayed as HTML string instead of HTML DOM elements.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlParse: boolean;
+    /**
      * It is used to set the position of tip pointer on tooltip.
      * When it sets to auto, the tip pointer auto adjusts within the space of target's length
      *  and does not point outside.
@@ -606,11 +614,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.enableHtmlSanitizer) {
                         this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
                     }
-                    tooltipContent.innerHTML = this.content;
+                    tooltipContent[this.enableHtmlParse ? 'innerHTML' : 'textContent'] = this.content;
                 } else {
                     let templateFunction: Function = compile(this.content);
                     let tempArr: Element[] = templateFunction(
-                                                {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                        {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
                     if (tempArr) {
                         append(tempArr, tooltipContent);
                     }

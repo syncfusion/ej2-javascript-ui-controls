@@ -17,6 +17,7 @@ import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
+import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -1025,10 +1026,37 @@ export function getTemplateFunction(template: string): Function {
     return templateFn;
 }
 /** @private */
+export function accReactTemplate(
+    childElement: HTMLElement, chart: AccumulationChart, isTemplate: boolean, points: AccPoints[],
+    argsData: IAccTextRenderEventArgs, point?: AccPoints, datalabelGroup?: Element, id?: string,
+    dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
+    ): void {
+    let clientRect: ClientRect = childElement.getBoundingClientRect();
+    chart.accumulationDataLabelModule.calculateLabelSize(
+        isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw, clientRect, true
+    );
+}
+/** @private */
+export function chartReactTemplate(
+    childElement: HTMLElement, chart: Chart, point: Points, series: Series,
+    labelIndex: number, redraw?: boolean
+    ): void {
+    let parentElement: HTMLElement = document.getElementById(
+        chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) + '_DataLabelCollections'
+        );
+    if (parentElement) {
+        chart.dataLabelModule.calculateTemplateLabelSize(
+            parentElement, childElement, point, series, series.marker.dataLabel,
+            labelIndex, series.clipRect, redraw, true
+            );
+    }
+}
+/** @private */
 export function createTemplate(
-    childElement: HTMLElement, pointIndex: number, content: string,
-    chart: Chart | AccumulationChart | RangeNavigator,
-    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string
+    childElement: HTMLElement, pointIndex: number, content: string, chart: Chart | AccumulationChart | RangeNavigator,
+    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string, labelIndex?: number,
+    argsData?: IAccTextRenderEventArgs, isTemplate?: boolean, points?: AccPoints[], datalabelGroup?: Element, id?: string,
+    dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
 ): HTMLElement {
     let templateFn: Function;
     let templateElement: HTMLCollection;
@@ -1046,8 +1074,21 @@ export function createTemplate(
                 childElement.appendChild(templateElement[i]);
             }
         }
-        // tslint:disable-next-line:no-any
-        if ((chart as any).isReact) { (chart as any).renderReactTemplates(); }
+        let reactCallback: Function;
+        if (chart.getModuleName() === 'accumulationchart') {
+            reactCallback = accReactTemplate.bind(
+                this, childElement, chart, isTemplate, points, argsData, points[pointIndex],
+                datalabelGroup, id, dataLabel, redraw
+                );
+            // tslint:disable-next-line:no-any
+            if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
+        } else if (chart.getModuleName() === 'chart') {
+            reactCallback = chartReactTemplate.bind(
+                this, childElement, chart, point, series, labelIndex, redraw
+                );
+            // tslint:disable-next-line:no-any
+            if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
+        }
     } catch (e) {
         return childElement;
     }
@@ -1612,6 +1653,7 @@ export function textElement(
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
     htmlObject.style.color = font.color;
+    htmlObject.style.textAnchor = option.anchor;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);

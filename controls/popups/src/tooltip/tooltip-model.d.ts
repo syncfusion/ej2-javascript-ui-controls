@@ -94,6 +94,14 @@ export interface TooltipModel extends ComponentModel{
     showTipPointer?: boolean;
 
     /**
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip. 
+     * If the value of the property is set to false, the tooltip content will be displayed as HTML string instead of HTML DOM elements.
+     *
+     * @default true
+     */
+    enableHtmlParse?: boolean;
+
+    /**
      * It is used to set the position of tip pointer on tooltip.
      * When it sets to auto, the tip pointer auto adjusts within the space of target's length
      *  and does not point outside.

@@ -267,6 +267,13 @@ export class SheetTabs {
         if (target) {
             target = target.querySelector('.e-text-wrap');
             let value: string = target.querySelector('.e-tab-text').textContent;
+            let args: { eventArgs: { name: string, index: number }, action: string, cancel: boolean } = {
+                eventArgs: {
+                    name: value, index: this.parent.getActiveSheet().id
+                },
+                action: 'renameSheet', cancel: false
+            };
+            this.parent.trigger('actionBegin', args);
             let input: HTMLElement = this.parent.createElement('input', {
                 id: this.parent.element.id + '_rename_input',
                 className: 'e-input e-sheet-rename', styles: `width: ${target.getBoundingClientRect().width}px`, attrs: {

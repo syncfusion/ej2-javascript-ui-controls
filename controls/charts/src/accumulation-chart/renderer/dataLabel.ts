@@ -604,8 +604,20 @@ export class AccumulationDataLabel extends AccumulationBase {
             styles: 'position: absolute;background-color:' + argsData.color + ';' +
                 getFontStyle(dataLabel.font) + ';border:' + argsData.border.width + 'px solid ' + argsData.border.color + ';'
         });
-        let textSize: Size = isTemplate ? this.getTemplateSize(childElement, point, argsData, redraw) :
-            measureText(point.label, dataLabel.font);
+        this.calculateLabelSize(isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw);
+    }
+
+    /**
+     * To calculate label size
+     */
+    public calculateLabelSize(
+        isTemplate: boolean, childElement: HTMLElement, point: AccPoints, points: AccPoints[],
+        argsData: IAccTextRenderEventArgs, datalabelGroup: Element, id: string,
+        dataLabel: AccumulationDataLabelSettingsModel, redraw?: boolean, clientRect?: ClientRect, isReactCallback?: boolean
+        ): void {
+        let textSize: Size = isTemplate ? (isReactCallback ? { width: clientRect.width, height: clientRect.height } : this.getTemplateSize(
+            childElement, point, argsData, redraw, isTemplate, points, datalabelGroup, id, dataLabel
+            )) : measureText(point.label, dataLabel.font);
         textSize.height += 4; // 4 for calculation with padding for smart label shape
         textSize.width += 4;
         point.textSize = textSize;
@@ -749,12 +761,15 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @param argsData
      */
     private getTemplateSize(
-        element: HTMLElement, point: AccPoints, argsData: IAccTextRenderEventArgs, redraw: boolean
+        element: HTMLElement, point: AccPoints, argsData: IAccTextRenderEventArgs, redraw: boolean,
+        isTemplate: boolean, points: AccPoints[], datalabelGroup: Element,
+        id: string, dataLabel: AccumulationDataLabelSettingsModel
     ): Size {
         let clientRect: ClientRect;
         element = createTemplate(
             element, point.index, argsData.template, this.accumulation,
-            point, this.accumulation.visibleSeries[0], this.accumulation.element.id + '_DataLabel'
+            point, this.accumulation.visibleSeries[0], this.accumulation.element.id + '_DataLabel',
+            0, argsData, isTemplate, points, datalabelGroup, id, dataLabel, redraw
         );
         clientRect = measureElementRect(element, redraw);
         return { width: clientRect.width, height: clientRect.height };

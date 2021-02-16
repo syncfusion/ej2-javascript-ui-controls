@@ -17,7 +17,9 @@ export class WorkbookInsert {
         this.parent = parent;
         this.addEventListener();
     }
+    // tslint:disable-next-line
     private insertModel(args: InsertDeleteModelArgs): void {
+        if (!args.model) { return; }
         let index: number; let model: RowModel[] = []; let mergeCollection: MergeArgs[]; let isModel: boolean;
         if (typeof (args.start) === 'number') {
             index = args.start; args.end = args.end || index;
@@ -33,12 +35,17 @@ export class WorkbookInsert {
         if (args.modelType === 'Row') {
             args.model = <SheetModel>args.model;
             if (!args.model.rows) { args.model.rows = []; }
+            if (isModel && args.model.usedRange.rowIndex > -1 && index > args.model.usedRange.rowIndex) {
+                for (let i: number = args.model.usedRange.rowIndex; i < index - 1; i++) {
+                    model.splice(0, 0, {});
+                }
+            }
             args.model.rows.splice(index, 0, ...model);
             //this.setInsertInfo(args.model, index, model.length, 'count');
             if (index > args.model.usedRange.rowIndex) {
-                this.parent.setUsedRange(index + (model.length - 1), args.model.usedRange.colIndex);
+                this.parent.setUsedRange(index + (model.length - 1), args.model.usedRange.colIndex, args.model);
             } else {
-                this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex);
+                this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex, args.model);
             }
             let curIdx: number = index + model.length;
             for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
@@ -56,9 +63,9 @@ export class WorkbookInsert {
             args.model.columns.splice(index, 0, ...model);
             //this.setInsertInfo(args.model, index, model.length, 'fldLen', 'Column');
             if (index > args.model.usedRange.colIndex) {
-                this.parent.setUsedRange(args.model.usedRange.rowIndex, index + (model.length - 1));
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, index + (model.length - 1), args.model);
             } else {
-                this.parent.setUsedRange(args.model.usedRange.rowIndex, args.model.usedRange.colIndex + model.length);
+                this.parent.setUsedRange(args.model.usedRange.rowIndex, args.model.usedRange.colIndex + model.length, args.model);
             }
             if (!args.model.rows) { args.model.rows = []; }
             let cellModel: CellModel[] = [];
@@ -87,6 +94,17 @@ export class WorkbookInsert {
             mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(insertMerge, mergeArgs); });
         } else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
+            let sheetModel: SheetModel[] = model as SheetModel[];
+            for (let i: number = 0; i < sheetModel.length; i++) {
+                if (sheetModel[i].name) {
+                    for (let j: number = 0; j < this.parent.sheets.length; j++) {
+                        if (sheetModel[i].name === this.parent.sheets[j].name) {
+                            sheetModel.splice(i, 1); i--; break;
+                        }
+                    }
+                }
+            }
+            if (!sheetModel.length) { return; }
             delete model[0].index; this.parent.createSheet(index, model); let id: number;
             if (args.activeSheetIndex) {
                 this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
@@ -110,8 +128,9 @@ export class WorkbookInsert {
                 model: model, startIndex: args.start, endIndex: args.end, modelType: args.modelType, name: 'insert', activeSheetIndex:
                     args.activeSheetIndex, sheetCount: this.parent.sheets.length }
         };
-        if (args.modelType === 'Column' || args.modelType === 'Row') {
+        if (args.modelType !== 'Sheet') {
             this.parent.notify(workbookFormulaOperation, insertArgs); this.parent.notify(workbookFormulaOperation, eventArgs);
+            if (args.model !== this.parent.getActiveSheet()) { return; }
         }
         this.parent.notify(insert, {
             model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:

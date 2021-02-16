@@ -76,8 +76,7 @@ export class DrillThroughDialog {
                     this.drillThroughGrid.setProperties({
                         dataSource: this.parent.editSettings.allowEditing ?
                             this.dataWithPrimarykey(eventArgs) : this.gridData,
-                        height: !this.parent.editSettings.allowEditing ? 300 : 220,
-                        rowHeight: this.parent.gridSettings.rowHeight
+                        height: !this.parent.editSettings.allowEditing ? 300 : 220
                     }, false);
                 },
                 beforeClose: () => {
@@ -348,7 +347,8 @@ export class DrillThroughDialog {
             enableRtl: this.parent.enableRtl,
             enableVirtualization: !this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing,
-            pageSettings: { pageSize: 20 }
+            pageSettings: { pageSize: 20 },
+            rowHeight: this.parent.gridSettings.rowHeight
         });
         if (isBlazor()) {
             /* tslint:disable-next-line */

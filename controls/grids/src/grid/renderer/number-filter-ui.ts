@@ -4,7 +4,7 @@ import { FilterSettings } from '../base/grid';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
-import { extend, isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isUndefined, KeyboardEventArgs  } from '@syncfusion/ej2-base';
 
 /**
  * `numberfilterui` render number column.
@@ -26,6 +26,16 @@ export class NumberFilterUI implements IFilterMUI {
         this.parent = parent;
         this.serviceLocator = serviceLocator;
     }
+
+    private keyEventHandler(args: KeyboardEventArgs): void {
+        if (args.keyCode === 13 || args.keyCode === 9) {
+            let evt: Event = document.createEvent('HTMLEvents');
+            evt.initEvent('change', false, true);
+            /* tslint:disable-next-line:no-any */
+            (this as any).dispatchEvent(evt);
+          }
+    }
+
     public create(args: IFilterCreate): void {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'numberui-' + args.column.uid });
         args.target.appendChild(this.instance);
@@ -45,15 +55,13 @@ export class NumberFilterUI implements IFilterMUI {
 
     public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
         let numberuiObj: NumericTextBox = (<EJ2Intance>document.querySelector('#numberui-' + args.column.uid)).ej2_instances[0];
+        numberuiObj.element.addEventListener('keydown', this.keyEventHandler);
         numberuiObj.value = args.filteredValue as number;
     }
 
     public read(element: Element, column: Column, filterOptr: string, filterObj: Filter): void {
         let numberuiObj: NumericTextBox = (<EJ2Intance>document.querySelector('#numberui-' + column.uid)).ej2_instances[0];
         let filterValue: number = numberuiObj.value;
-        if (isNullOrUndefined(filterValue)) {
-            filterValue = parseFloat((<{ value?: string }>element).value);
-        }
         filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', true);
     }
 }

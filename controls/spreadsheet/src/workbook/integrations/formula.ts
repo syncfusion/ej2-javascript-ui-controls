@@ -375,7 +375,8 @@ export class WorkbookFormula {
         if (isFormula) {
             value = this.parseSheetRef(value);
             let cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
-            this.calculateInstance.valueChanged(sheetName, cellArgs, true);
+            let usedRangeCol: number[] = [this.parent.getActiveSheet().usedRange.rowIndex, this.parent.getActiveSheet().usedRange.colIndex];
+            this.calculateInstance.valueChanged(sheetName, cellArgs, true, usedRangeCol);
             let referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true) {
                 let rowId: number;

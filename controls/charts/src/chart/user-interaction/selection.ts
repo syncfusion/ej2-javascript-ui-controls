@@ -897,11 +897,7 @@ export class Selection extends BaseSelection {
             }
             if (this.rectGrabbing || this.resizing) {
                 let rectElement: Element;
-                if (this.resizing) {
-                    rectElement = getElement(this.draggedRect + this.targetIndex);
-                } else {
-                    rectElement = getElement(target.id);
-                }
+                rectElement = getElement(this.draggedRect + this.targetIndex);
                 if (rectElement.nextSibling) {
                     remove(rectElement.nextSibling);
                 }

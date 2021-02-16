@@ -13,7 +13,7 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';
@@ -1609,6 +1609,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public fieldRemove: EmitType<FieldRemoveEventArgs>;
 
+    /**
+     * It triggers before service get invoked from client.
+     * @event
+     */
+    @Event()
+    public beforeServiceInvoke: EmitType<BeforeServiceInvokeEventArgs>;
+
     /* tslint:enable */
     /**
      * Constructor for creating the widget
@@ -2411,7 +2418,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /**
      * @hidden
      */
-    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: any, editArgs?: any): void {
+    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: FetchRawDataArgs, editArgs?: UpdateRawDataArgs): void {
         this.currentAction = action;
         this.isServerWaitingPopup = false;
         let customProperties: any = {
@@ -2420,10 +2427,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
-        let params: any = {
+        this.request.open("POST", this.dataSourceSettings.url, true);
+        let params: BeforeServiceInvokeEventArgs = {
+            request: this.request,
             dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
             action: action,
-            customProperties: customProperties,
+            customProperties: {},
+            internalProperties: customProperties,
             drillItem: drillItem,
             sortItem: sortItem,
             aggregatedItem: aggField,
@@ -2432,10 +2442,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             memberName: memberName,
             fetchRawDataArgs: rawDataArgs,
             editArgs: editArgs,
-            hash: this.guid,
-            customArguments: this.serverCustomProperties
+            hash: this.guid
         };
-        this.request.open("POST", this.dataSourceSettings.url, true);
+        this.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
+            this.request = observedArgs.request;
+            params.internalProperties = observedArgs.internalProperties;
+            params.customProperties = observedArgs.customProperties;
+            params.dataSourceSettings = observedArgs.dataSourceSettings;
+            params.calculatedItem = observedArgs.calculatedItem;
+            params.drillItem = observedArgs.drillItem;
+            params.editArgs = observedArgs.editArgs;
+            params.fetchRawDataArgs = observedArgs.fetchRawDataArgs;
+            params.filterItem = observedArgs.filterItem;
+            params.hash = observedArgs.hash;
+            params.memberName = observedArgs.memberName;
+            params.sortItem = observedArgs.sortItem;
+        });
         this.request.withCredentials = false;
         this.request.onreadystatechange = this.onSuccess.bind(this);
         this.request.setRequestHeader("Content-type", "application/json");
@@ -2893,7 +2915,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.chartModule) {
             this.chartModule.engineModule = this.engineModule;
             this.chartModule.loadChart(this, this.chartSettings);
-            if (this.enableRtl && this.chart) {
+            if (this.enableRtl && this.chart && document.body.getAttribute('dir') !== 'rtl') {
                 addClass([this.chart.element], cls.PIVOTCHART_LTR);
             }
         }
@@ -4613,9 +4635,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     if (isBlazor()) {
                         this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as DataSourceSettings;
                     } else {
-                        this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
-                        this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as DataSourceSettings;
-                        this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
+                        let dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
+                        dataSourceSettings.dataSource = [];
+                        this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
                     }
 
                 }
@@ -5066,9 +5088,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (isBlazor()) {
                 this.clonedReport = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
             } else {
-                this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
-                this.clonedReport = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
-                this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
+                let dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
+                dataSourceSettings.dataSource = [];
+                this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
             }
         }
         /* tslint:disable-next-line:max-line-length */

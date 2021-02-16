@@ -195,6 +195,7 @@ export class PivotButton implements IAction {
                                 this.parent.getModuleName() === 'pivotfieldlist') {
                                 this.createDraggable(field[i], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
                             }
+                            (buttonElement as any).querySelector('.' + cls.BUTTON_DRAGGABLE).ej2_instances[0].dragArea = this.parentElement;
                         }
                     }
                 }

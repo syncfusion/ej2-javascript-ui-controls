@@ -76,7 +76,7 @@ export class WorkbookChart {
                 chart[i].width = chart[i].width || 480;
                 this.parent.notify(initiateChart, {
                     option: chart[i], chartCount: this.parent.chartCount, isInitCell: args.isInitCell, isUndoRedo: args.isUndoRedo,
-                    dataSheetIdx: args.dataSheetIdx, range: args.range
+                    dataSheetIdx: args.dataSheetIdx, range: args.range, isPaste: args.isPaste
                 });
                 this.parent.chartColl.push(chart[i]);
                 if (!idAvailable) {

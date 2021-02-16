@@ -220,6 +220,8 @@ export class Clipboard {
             if (this.copiedShapeInfo && !this.copiedInfo) {
                 let pictureElem: HTMLElement = this.copiedShapeInfo.pictureElem as HTMLElement;
                 if (pictureElem.classList.contains('e-datavisualization-chart')) {
+                    this.copiedShapeInfo.chartInfo.top = null;
+                    this.copiedShapeInfo.chartInfo.left = null;
                     this.parent.notify(setChart, {
                         chart: [this.copiedShapeInfo.chartInfo], isInitCell: true, isUndoRedo: true, isPaste: true,
                         dataSheetIdx: this.copiedShapeInfo.sheetIdx, isCut: this.copiedShapeInfo.isCut,

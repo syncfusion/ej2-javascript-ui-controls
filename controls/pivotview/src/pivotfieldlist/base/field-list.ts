@@ -7,7 +7,7 @@ import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../.
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs } from '../../common/base/interface';
 import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
 import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';
 import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';
@@ -419,6 +419,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /* tslint:enable */
 
     /**
+     * It triggers before service get invoked from client.
+     * @event
+     */
+    @Event()
+    public beforeServiceInvoke: EmitType<BeforeServiceInvokeEventArgs>;
+
+    /**
      * Constructor for creating the widget
      * @param  {PivotFieldListModel} options?
      * @param  {string|HTMLButtonElement} element?
@@ -687,7 +694,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /**
      * @hidden
      */
-    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: any, editArgs?: any): void {
+    public getEngine(action: string, drillItem?: IDrilledItem, sortItem?: ISort, aggField?: IFieldOptions, cField?: ICalculatedFields, filterItem?: IFilter, memberName?: string, rawDataArgs?: FetchRawDataArgs, editArgs?: UpdateRawDataArgs): void {
         this.currentAction = action;
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
@@ -699,10 +706,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };
-        let params: any = {
+        this.request.open("POST", this.dataSourceSettings.url, true);
+        let params: BeforeServiceInvokeEventArgs = {
+            request: this.request,
             dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
             action: action,
-            customProperties: customProperties,
+            customProperties: {},
+            internalProperties: customProperties,
             drillItem: drillItem,
             sortItem: sortItem,
             aggregatedItem: aggField,
@@ -713,7 +723,20 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             editArgs: editArgs,
             hash: this.guid
         };
-        this.request.open("POST", this.dataSourceSettings.url, true);
+        this.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
+            this.request = observedArgs.request;
+            params.internalProperties = observedArgs.internalProperties;
+            params.customProperties = observedArgs.customProperties;
+            params.dataSourceSettings = observedArgs.dataSourceSettings;
+            params.calculatedItem = observedArgs.calculatedItem;
+            params.drillItem = observedArgs.drillItem;
+            params.editArgs = observedArgs.editArgs;
+            params.fetchRawDataArgs = observedArgs.fetchRawDataArgs;
+            params.filterItem = observedArgs.filterItem;
+            params.hash = observedArgs.hash;
+            params.memberName = observedArgs.memberName;
+            params.sortItem = observedArgs.sortItem;
+        });
         this.request.withCredentials = false;
         this.request.onreadystatechange = this.onSuccess.bind(this);
         this.request.setRequestHeader("Content-type", "application/json");
@@ -1012,9 +1035,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     if (isBlazor()) {
                         this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
                     } else {
-                        this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
-                        this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
-                        this.setProperties({ dataSourceSettings: { dataSource: pivotDataSet } }, true);
+                        let dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
+                        dataSourceSettings.dataSource = [];
+                        this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
                     }
                 }
                 let customProperties: ICustomProperties = this.frameCustomProperties();

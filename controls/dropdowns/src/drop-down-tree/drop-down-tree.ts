@@ -2946,6 +2946,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.treeObj.dataBind();
         this.setMultiSelect();
+        this.updateValue(this.value);
     }
 
     private updateCheckBoxState(checkBox: boolean): void {
@@ -3215,6 +3216,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     break;
                 case 'showCheckBox':
                     this.updateCheckBoxState(newProp.showCheckBox);
+                    if (!this.wrapText) {
+                        this.updateOverflowWrapper(true);
+                    }
                     this.updatePopupHeight();
                     this.updateOption();
                     break;

@@ -1617,7 +1617,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                                 blazorProp = true;
                             }
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName ||
-                                blazorProp)) {
+                                newProp.series[i].dataLabel || blazorProp)) {
                                 extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

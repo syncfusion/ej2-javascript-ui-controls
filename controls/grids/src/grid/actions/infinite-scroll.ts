@@ -21,6 +21,8 @@ export class InfiniteScroll implements IAction {
     private parent: IGrid;
     private serviceLocator: ServiceLocator;
     private maxPage: number;
+    private actionBeginFunction: () => void;
+    private actionCompleteFunction: () => void;
     private infiniteCache: { [x: number]: Row<Column>[] } = {};
     private infiniteCurrentViewData: { [x: number]: Object[] } = {};
     private infiniteFrozenCache: { [x: number]: Row<Column>[][] } = {};
@@ -104,9 +106,11 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
         this.parent.on(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData, this);
+        this.actionBeginFunction = this.actionBegin.bind(this);
+        this.actionCompleteFunction = this.actionComplete.bind(this);
         this.parent.on(events.deleteComplete, this.deleteComplate, this);
-        this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
-        this.parent.addEventListener(events.actionComplete, this.actionComplete.bind(this));
+        this.parent.addEventListener(events.actionBegin, this.actionBeginFunction);
+        this.parent.addEventListener(events.actionComplete, this.actionCompleteFunction);
     }
 
     /**
@@ -135,8 +139,8 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.virtualScrollAddActionBegin, this.infiniteAddActionBegin);
         this.parent.off(events.modelChanged, this.modelChanged);
         this.parent.off(events.refreshInfiniteCurrentViewData, this.refreshInfiniteCurrentViewData);
-        this.parent.removeEventListener(events.actionBegin, this.actionBegin.bind(this));
-        this.parent.removeEventListener(events.actionComplete, this.actionComplete.bind(this));
+        this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
+        this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
     }
 
     private updateCurrentViewData(): void {

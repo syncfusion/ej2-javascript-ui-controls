@@ -3472,7 +3472,9 @@ export class WordExport {
     // Serialize the graphics element for pictures.
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
         let id: string = '';
-
+        if (picture.isMetaFile && !isNullOrUndefined(picture.metaFileImageString)) {
+            picture.imageString = picture.metaFileImageString;
+        }
         id = this.updateShapeId(picture);
         // picture.ShapeId = this.getNextDocPrID();
         // Processing picture

@@ -5717,6 +5717,14 @@ export class ImageElementBox extends ShapeBase {
     /**
      * @private
      */
+    public isCompressed: boolean = false;
+    /**
+     * @private
+     */
+    public metaFileImageString: string;
+    /**
+     * @private
+     */
     get isInlineImage(): boolean {
         return this.isInlineImageIn;
     }
@@ -5768,6 +5776,8 @@ export class ImageElementBox extends ShapeBase {
         image.characterFormat.copyFormat(this.characterFormat);
         image.imageString = this.imageString;
         image.isMetaFile = this.isMetaFile;
+        image.isCompressed = this.isCompressed;
+        image.metaFileImageString =  this.metaFileImageString;
         image.width = this.width;
         image.height = this.height;
         if (this.isCrop) {
@@ -8027,7 +8037,7 @@ export class WTableHolder {
                 //let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 //if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
                 this.fitColumns(containerWidth, preferredTableWidth, isAuto);
-                //return;
+                return;
                 //}
                 // tslint:disable-next-line:max-line-length
                 //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;

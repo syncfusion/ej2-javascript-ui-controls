@@ -33,6 +33,8 @@ export const TOGGLE_SELECT_CLASS: string = 'e-select-table';
 /** @hidden */
 export const FIELD_TABLE_CLASS: string = 'e-field-table';
 /** @hidden */
+export const BUTTON_DRAGGABLE: string = 'e-draggable';
+/** @hidden */
 export const OLAP_FIELD_TABLE_CLASS: string = 'e-olap-field-table';
 /** @hidden */
 export const FIELD_LIST_CLASS: string = 'e-field-list';

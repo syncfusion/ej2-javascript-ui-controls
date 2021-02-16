@@ -23,8 +23,6 @@ import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
-const axisPadding: number = 5;
-
 /**
  * Configures the `rows` of the chart.
  */
@@ -718,6 +716,14 @@ export class Axis extends ChildProperty<Axis> {
     public labelPadding: number;
 
     /**
+     * Specifies the titlePadding from axis label
+     * @default 5
+     */
+
+    @Property(5)
+    public titlePadding: number;
+
+    /**
      * Options for customizing major tick lines.
      */
 
@@ -953,7 +959,7 @@ export class Axis extends ChildProperty<Axis> {
         }
         let diff: number;
         let value: number;
-        let labelSize: number = titleSize + innerPadding + axisPadding + this.labelPadding +
+        let labelSize: number = titleSize + innerPadding + this.titlePadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             let range: VisibleRangeModel = crossAxis.visibleRange;

@@ -2302,4 +2302,39 @@ describe('MultiSelect', () => {
             }, 450);
         });
     });
+    describe("EJ2-36805", () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Chip not created when change value dynamically when control is in focus', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { "Name": "India", "Code": "IN" },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'Box',
+                value: ['AU','US'],
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            expect(listObj.chipCollectionWrapper.childElementCount).toBe(2);
+            listObj.focusIn();
+            listObj.value = ['IN'];
+            listObj.dataBind();
+            expect(listObj.chipCollectionWrapper.childElementCount).toBe(1);
+            expect(listObj.chipCollectionWrapper.firstElementChild.innerText).toBe("India");
+        });
+        
+    });
 });

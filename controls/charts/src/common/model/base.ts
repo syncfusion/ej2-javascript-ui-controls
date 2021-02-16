@@ -218,6 +218,39 @@ export class Margin extends ChildProperty<Margin> {
     public bottom: number;
 }
 /**
+ * Configures the chart Legend Container Padding.
+ */
+export class ContainerPadding extends ChildProperty<ContainerPadding> {
+
+    /**
+     * Left padding in pixels.
+     * @default 0
+     */
+    @Property(0)
+    public left: number;
+
+    /**
+     * Right padding in pixels.
+     * @default 0
+     */
+    @Property(0)
+    public right: number;
+
+    /**
+     * Top padding in pixels.
+     * @default 0
+     */
+    @Property(0)
+    public top: number;
+
+    /**
+     * Bottom padding in pixels.
+     * @default 0
+     */
+    @Property(0)
+    public bottom: number;
+}
+/**
  * Configures the animation behavior for chart series.
  */
 

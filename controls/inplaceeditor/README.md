@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-inplace-editor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inplace-editor)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-inplace-editor)](https://www.npmjs.com/package/@syncfusion/ej2-inplace-editor)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-inplace-editor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inplace-editor)
 
 # ej2-inplace-editor
 

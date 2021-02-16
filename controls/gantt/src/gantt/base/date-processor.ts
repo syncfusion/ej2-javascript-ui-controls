@@ -30,15 +30,17 @@ export class DateProcessor {
      * @param validateAsMilestone 
      * @private
      */
-    public checkStartDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean): Date {
+    public checkStartDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean, isLoad?: boolean): Date {
         if (isNullOrUndefined(date)) {
             return null;
         }
         let cloneStartDate: Date = new Date(date.getTime()); let hour: number = this.getSecondsInDecimal(cloneStartDate);
         validateAsMilestone = isNullOrUndefined(validateAsMilestone) ? !isNullOrUndefined(ganttProp) ?
             ganttProp.isMilestone : false : validateAsMilestone;
-        if (hour < this.parent.defaultStartTime) {
+        if (hour < this.parent.defaultStartTime && (!validateAsMilestone || isLoad)) {
             this.setTime(this.parent.defaultStartTime, cloneStartDate);
+        } else if (hour < this.parent.defaultStartTime && validateAsMilestone) {
+            this.setTime(this.parent.defaultEndTime, cloneStartDate);
         } else if ((hour === this.parent.defaultEndTime && (!ganttProp || !validateAsMilestone)) || hour > this.parent.defaultEndTime) {
             cloneStartDate.setDate(cloneStartDate.getDate() + 1);
             this.setTime(this.parent.defaultStartTime, cloneStartDate);
@@ -61,11 +63,12 @@ export class DateProcessor {
             let holidayLength: number = this.parent.totalHolidayDates.length;
             // check holidays and weekends
             if (this.isValidateNonWorkDays(ganttProp)) {
+                let startTime: number = (!validateAsMilestone || isLoad) ? this.parent.defaultStartTime : this.parent.defaultEndTime;
                 if (!this.parent.includeWeekend) {
                     let tempDate: Date = new Date(cloneStartDate.getTime());
                     cloneStartDate = this.getNextWorkingDay(cloneStartDate);
                     if (tempDate.getTime() !== cloneStartDate.getTime()) {
-                        this.setTime(this.parent.defaultStartTime, cloneStartDate);
+                        this.setTime(startTime, cloneStartDate);
                     }
                 }
                 for (let count: number = 0; count < holidayLength; count++) {
@@ -75,7 +78,7 @@ export class DateProcessor {
                     holidayTo.setHours(23, 59, 59, 59);
                     if (cloneStartDate.getTime() >= holidayFrom.getTime() && cloneStartDate.getTime() < holidayTo.getTime()) {
                         cloneStartDate.setDate(cloneStartDate.getDate() + 1);
-                        this.setTime(this.parent.defaultStartTime, cloneStartDate);
+                        this.setTime(startTime, cloneStartDate);
                     }
                 }
             }

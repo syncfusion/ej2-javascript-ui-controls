@@ -33,6 +33,7 @@ export class FocusStrategy {
     private activeKey: string;
     private empty: string;
     private actions: string[] = ['downArrow', 'upArrow'];
+    private isVirtualScroll: boolean = false;
     constructor(parent: IGrid) {
         this.parent = parent;
         this.rowModelGen = new RowModelGenerator(this.parent);
@@ -182,9 +183,15 @@ export class FocusStrategy {
                 // tslint:disable-next-line:no-any
                 (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
             } else {
-                this.currentInfo.elementToFocus.focus();
+                if (this.isVirtualScroll) {
+                    // tslint:disable-next-line:no-any
+                    (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
+                } else {
+                    this.currentInfo.elementToFocus.focus();
+                }
             }
         }
+        this.isVirtualScroll = false;
     }
 
     public getFocusedElement(): HTMLElement {
@@ -358,6 +365,7 @@ export class FocusStrategy {
                                     document.documentElement.clientWidth) &&
                                 cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
                                     document.documentElement.clientHeight)) {
+                                this.isVirtualScroll = true;
                                 this.focus();
                             }
                         }

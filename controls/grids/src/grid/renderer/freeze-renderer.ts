@@ -571,7 +571,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
-        if (isWrap) {
+        if (isWrap && this.parent.height !== 'auto') {
             this.setFrozenHeight();
         }
     }

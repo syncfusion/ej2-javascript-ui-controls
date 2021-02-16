@@ -568,10 +568,9 @@ export class Toolbar {
         this.container.enableLocalPaste = !this.container.enableLocalPaste;
         this.toggleButton(id, this.container.enableLocalPaste);
     }
-    private toggleEditing(id: string): void {
+    private toggleEditing(): void {
         this.container.restrictEditing = !this.container.restrictEditing;
         this.container.showPropertiesPane = !this.container.restrictEditing;
-        // this.toggleButton(id, this.container.restrictEditing);
     }
     private toggleButton(id: string, toggle: boolean): void {
         let element: HTMLElement = document.getElementById(id);
@@ -605,8 +604,7 @@ export class Toolbar {
         } else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         } else if (id === parentId + READ_ONLY) {
-            this.container.restrictEditing = !this.container.restrictEditing;
-            this.container.showPropertiesPane = !this.container.restrictEditing;
+            this.toggleEditing();
         } else if (id === parentId + PROTECTIONS) {
             this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
         } else if (id === parentId + CHECKBOX) {

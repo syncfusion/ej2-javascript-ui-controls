@@ -270,7 +270,7 @@ export class Edit {
                             } else { this.startEdit(null, null, true, true); }
                         }
                         if (keyCode === this.keyCodes.DELETE) {
-                            let islockcell: boolean = this.isLockCellDelete(e);
+                            let islockcell: boolean = sheet.isProtected && this.isLockCellDelete();
                             if (!islockcell) { this.editingHandler('delete'); }
                         }
                     }
@@ -293,19 +293,19 @@ export class Edit {
             }
         }
     }
-    private isLockCellDelete(e: KeyboardEventArgs): boolean {
-        let sheet: SheetModel = this.parent.getActiveSheet(); let count: number = 0;
-        let address: number[] = getRangeIndexes(sheet.selectedRange);
-        for (let row: number = address[2]; row <= address[0]; row++) {
-            for (let col: number = address[3]; col <= address[1]; col++) {
+    private isLockCellDelete(): boolean {
+        let sheet: SheetModel = this.parent.getActiveSheet(); let hasLockCell: boolean;
+        let address: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        for (let row: number = address[0]; row <= address[2]; row++) {
+            for (let col: number = address[1]; col <= address[3]; col++) {
                 let cell: CellModel = getCell(row, col, sheet);
                 if (isLocked(cell, getColumn(sheet, col))) {
-                    e.preventDefault();
-                    count++;
+                    hasLockCell = true;
+                    break;
                 }
             }
         }
-        return count > 0;
+        return hasLockCell;
     }
     private renderEditor(): void {
         if (!this.editorElem || !select('#' + this.parent.element.id + '_edit', this.parent.element)) {
@@ -512,7 +512,7 @@ export class Edit {
                     }
                 } else {
                     if (isFormula && this.editCellData.value === this.editorElem.textContent && this.editorElem.textContent.indexOf('(') !==
-                        this.editorElem.textContent.length - 1) {
+                        this.editorElem.textContent.length - 1 && !this.isCellEdit) {
                         if (this.editCellData.sheetIndex === sheet.id - 1) {
                             let curPos: number = window.getSelection().focusOffset;
                             if (this.validCharacters.indexOf(this.editorElem.textContent.substring(curPos - 1, curPos)) === -1) {

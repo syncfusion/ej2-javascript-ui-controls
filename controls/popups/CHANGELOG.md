@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.43 (2021-02-16)
+
+### Tooltip
+
+#### New Features
+
+- `#306971` - In Tooltip, support for `enableHtmlParse` property has been provided to enable or disable the parsing of HTML string content as DOM elements.
+
 ## 18.4.41 (2021-02-02)
 
 ### Tooltip

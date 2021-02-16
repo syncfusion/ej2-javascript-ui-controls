@@ -2391,9 +2391,13 @@ export class PivotEngine {
             if (childrens && childrens.type == 'number' && headers.length > 0 && (typeof (headers[0].actualText) == 'string')) {
                 let stringValue: IAxisSet[] = [];
                 let alphaNumbervalue: IAxisSet[] = [];
+                let nullValue: IAxisSet[] = [];
                 for (let i: number = 0; i < headers.length; i++) {
                     if (isNaN(headers[i].actualText.toString().charAt(0) as any)) {
                         stringValue.push(headers[i]);
+                    }
+                    else if (headers[i].actualText === "") {
+                        nullValue.push(headers[i]);
                     }
                     else {
                         alphaNumbervalue.push(headers[i]);
@@ -2410,7 +2414,7 @@ export class PivotEngine {
                             (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
                             alphaNumbervalue;
                 }
-                return headers = alphaNumbervalue.concat(stringValue);
+                return headers = nullValue.concat(alphaNumbervalue, stringValue);
             }
             else {
                 return sortOrder === 'Ascending' ?
@@ -2865,9 +2869,13 @@ export class PivotEngine {
                     if (childrens.type === 'number' && hierarchy.length > 0 && (typeof (hierarchy[0].actualText) === 'string')) {
                         let stringValue: IAxisSet[] = [];
                         let alphaNumbervalue: IAxisSet[] = [];
+                        let nullValue: IAxisSet[] = [];
                         for (let i: number = 0; i < hierarchy.length; i++) {
                             if (isNaN(hierarchy[i].actualText.toString().charAt(0) as any)) {
                                 stringValue.push(hierarchy[i]);
+                            }
+                            else if (hierarchy[i].actualText === "") {
+                                nullValue.push(hierarchy[i]);
                             }
                             else {
                                 alphaNumbervalue.push(hierarchy[i]);
@@ -2884,7 +2892,7 @@ export class PivotEngine {
                                     (alphaNumbervalue.sort((a, b) => (Number(a.actualText.toString().match(/\d+/)[0]) < Number(b.actualText.toString().match(/\d+/)[0])) ? 1 : ((Number(b.actualText.toString().match(/\d+/)[0]) < Number(a.actualText.toString().match(/\d+/)[0])) ? -1 : 0))) :
                                     alphaNumbervalue;
                         }
-                        return hierarchy = alphaNumbervalue.concat(stringValue);
+                        return hierarchy = nullValue.concat(alphaNumbervalue, stringValue);
                     }
                     else {
                         return childrens.sort === 'Ascending' ?

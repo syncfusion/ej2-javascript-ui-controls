@@ -4572,6 +4572,7 @@ export class DateRangePicker extends CalendarBase {
                     this.refreshChange();
                     break;
             }
+            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
 }

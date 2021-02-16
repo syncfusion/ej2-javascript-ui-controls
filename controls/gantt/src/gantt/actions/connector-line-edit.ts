@@ -679,7 +679,7 @@ export class ConnectorLineEdit {
                 if (endDate < parentGanttRecord.ganttProperties.startDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskBeforePredecessor_SF';
-                } else if (endDate > parentGanttRecord.ganttProperties.startDate) {
+                } else if (endDate >= parentGanttRecord.ganttProperties.startDate) {
                     this.validationPredecessor.push(predecessor[i]);
                     violationType = 'taskAfterPredecessor_SF';
                 }

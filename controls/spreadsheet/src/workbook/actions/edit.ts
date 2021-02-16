@@ -111,11 +111,6 @@ export class WorkbookEdit {
                 sheetIndex: sheetIdx,
                 isFormula: isFormula
             };
-            this.parent.notify(workbookFormulaOperation, eventArgs);
-            if (isFormula) {
-                cell.formula = <string>eventArgs.value;
-                value = cell.value;
-            }
             if (getTypeFromFormat(cell.format) !== 'Text') {
                 let dateEventArgs: { [key: string]: string | number } = {
                     value: value,
@@ -125,10 +120,14 @@ export class WorkbookEdit {
                     updatedVal: ''
                 };
                 this.parent.notify(checkDateFormat, dateEventArgs);
-
                 if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                     cell.value = <string>dateEventArgs.updatedVal;
                 }
+            }
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+            if (isFormula) {
+                cell.formula = <string>eventArgs.value;
+                value = cell.value;
             }
         } else {
             if (value && value.toString().indexOf(this.decimalSep) > -1) {
