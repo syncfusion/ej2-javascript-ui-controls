@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### TextBox
+
+#### Bug Fixes
+
+- Issue with "`e-mappinguid` attribute is added to textarea element while rendering the multiline textbox" has been resolved.
+
 ## 18.4.43 (2021-02-16)
 
 ### Uploader

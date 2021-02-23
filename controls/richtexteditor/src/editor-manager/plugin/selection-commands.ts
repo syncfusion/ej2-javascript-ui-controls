@@ -108,15 +108,31 @@ export class SelectionCommands {
         value: string,
         endNode: Node): Node {
         let cursorNodes: Node[] = domSelection.getNodeCollection(range);
-        let cursorFormat: Node = (cursorNodes.length > 0) ? isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
+        let cursorFormat: Node = (cursorNodes.length > 0) ?
+        (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
+        this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
+        isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
         let cursorNode: Node = null;
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
         } else {
+            if (cursorNodes.length > 1 && ((cursorNodes[0] as HTMLElement).firstElementChild &&
+                (cursorNodes[0] as HTMLElement).firstElementChild.tagName.toLowerCase() === 'br')) {
+                (cursorNodes[0] as HTMLElement).innerHTML = '';
+            }
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }
         return cursorNode;
+    }
+
+    private static getCursorFormat(isFormatted: IsFormatted, cursorNodes: Node[], format: string, endNode: Node): Node {
+        let currentNode: Node;
+        for (let index: number = 0; index < cursorNodes.length; index++) {
+            currentNode = (cursorNodes[index] as HTMLElement).lastElementChild ?
+            (cursorNodes[index] as HTMLElement).lastElementChild : cursorNodes[index];
+        }
+        return isFormatted.getFormattedNode(currentNode, format, endNode);
     }
 
     private static removeFormat(

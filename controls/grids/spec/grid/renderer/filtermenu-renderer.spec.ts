@@ -685,4 +685,64 @@ describe('filter menu module =>', () => {
             destroy(gridObj);
         });
     });
+    describe('EJ2-43342 ==> filtering menu with checkbox  =>', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        let actionBegin: any = (args?: any) => {
+            if (args.requestType == "filterbeforeopen") {
+                gridObj.filterModule.menuOperator = [{ value: 'equal', text: 'Equal' },
+                { value: 'notequal', text: 'Not Equal' }];
+            }
+        };
+        (window as any).renderCheckBoxMenu = function (value: any) {
+            gridObj.filterModule.renderCheckboxOnFilterMenu()
+        };
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    allowReordering: true,
+                    columns: [{ field: 'OrderID', type: 'number' },
+                    { field: 'CustomerID', filterTemplate: '${renderCheckBoxMenu(data)}', }
+                    ],
+                    actionBegin: actionBegin,
+                },
+                done);
+        });
+        it('filtering menu checkbox ui testing =>', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterafteropen') {
+                    let menuCheckBoxFilter: HTMLElement = gridObj.element.querySelector('.e-menucheckbox');
+                    let flm: FilterMenuRenderer = new FilterMenuRenderer(
+                        gridObj, gridObj.filterSettings as FilterSettings, gridObj.serviceLocator);
+                    expect(menuCheckBoxFilter.querySelector('.e-searchbox')).not.toBe(null);
+                    expect(menuCheckBoxFilter.querySelector('.e-spinner')).not.toBe(null);
+                    expect(menuCheckBoxFilter.querySelector('.e-flm_optrdiv')).not.toBe(null);
+                    expect(menuCheckBoxFilter.querySelectorAll('.e-check').length).toBe(44);
+                    (<HTMLInputElement>menuCheckBoxFilter.querySelectorAll('.e-check')[1]).click();
+                    (menuCheckBoxFilter.querySelector('.e-dropdownlist') as any).ej2_instances[0].value = 'notequal';
+                    (<HTMLInputElement>document.querySelector('.e-primary')).click();
+                    expect(gridObj.filterSettings.columns[0].field).toEqual('CustomerID');
+                    expect(gridObj.filterSettings.columns.length).toBe(1);
+                    expect(gridObj.element.querySelectorAll('.e-filtered').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+
+        it('currentView check with notequal =>', () => {
+            expect(gridObj.currentViewData.length).not.toBe(1);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

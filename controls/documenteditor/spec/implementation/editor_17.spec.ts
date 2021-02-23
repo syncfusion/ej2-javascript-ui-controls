@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, BookmarkDialog, BookmarkElementBox } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition, WSectionFormat } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -338,3 +338,42 @@ describe('Paste contents in document with header distance greater than 36', () =
         expect(editor.selection.start.paragraph.bodyWidget.sectionFormat.headerDistance).toBe(50);
     }); 
 });
+describe('Bookmark delete validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableComment: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Bookmark delete validation', function () {
+      editor.openBlank();
+      editor.editor.insertText('check');
+      editor.editor.insertText('Bookmark');
+      editor.editor.insertText('content');
+      editor.selection.handleHomeKey();
+      editor.selection.handleControlRightKey();
+      editor.selection.handleControlShiftRightKey();
+      editor.editor.insertBookmark('check');
+      editor.selection.handleHomeKey();
+      editor.selection.handleControlRightKey();
+      editor.selection.handleControlRightKey();
+      editor.editor.onBackSpace();
+      expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any).childWidgets[0] as LineWidget).children[1].line.indexInOwner).toBe((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).reference.line.indexInOwner);
+    });
+});  

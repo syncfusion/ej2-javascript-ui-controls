@@ -2099,27 +2099,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         this.notify(editOperation, { action: 'renderEditor' });
                     }
                     break;
+                case 'allowInsert':
+                    let addBtn: HTMLButtonElement = this.element.getElementsByClassName('e-add-sheet-tab')[0] as HTMLButtonElement;
+                    if (addBtn) {
+                        addBtn.disabled = !this.allowInsert;
+                        if (this.allowInsert) {
+                            if (addBtn.classList.contains('e-disabled')) { addBtn.classList.remove('e-disabled'); }
+                        } else {
+                            if (!addBtn.classList.contains('e-disabled')) { addBtn.classList.add('e-disabled'); }
+                        }
+                    }
+                    break;
                 case 'sheets':
-                    // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
-                    // if (this.activeSheetIndex === Number(sheetIdx)) {
-                    //     if (newProp.sheets[sheetIdx].showGridLines !== undefined) {
-                    //         this.notify(updateToggleItem, { props: 'GridLines', pos: 2 });
-                    //     }
-                    //     if (newProp.sheets[sheetIdx].showHeaders !== undefined) {
-                    //         this.sheetModule.showHideHeaders();
-                    //         this.notify(updateToggleItem, { props: 'Headers', pos: 0 });
-                    //     }
-                    // }
-                    // if (newProp.sheets[sheetIdx].name !== undefined) {
-                    //     this.notify(sheetNameUpdate, {
-                    //         items: this.element.querySelector('.e-sheet-tabs-items').children[sheetIdx],
-                    //         value: newProp.sheets[sheetIdx].name,
-                    //         idx: sheetIdx
-                    //     });
-                    // }
-                    // if (newProp.sheets[sheetIdx].range) {
-                    //     this.sheets[sheetIdx].range = newProp.sheets[sheetIdx].range;
-
                     Object.keys(newProp.sheets).forEach((sheetIdx: string, index: number) => {
                         let sheet: SheetModel = newProp.sheets[sheetIdx];
                         if (sheet.ranges && Object.keys(sheet.ranges).length) {

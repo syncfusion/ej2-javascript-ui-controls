@@ -52,7 +52,7 @@ export class SheetTabs {
         addBtn.addEventListener('click', this.addSheetTab.bind(this));
         (addBtn as HTMLButtonElement).disabled = !this.parent.allowInsert;
         panel.appendChild(addBtn);
-        if (this.parent.allowInsert) { this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' }); }
+        this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
         let ddb: HTMLElement = this.parent.createElement('button', { attrs: { 'title': l10n.getConstant('ListAllSheets') } });
         panel.appendChild(ddb);
         this.parent.element.appendChild(panel);

@@ -12,7 +12,7 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
 import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode } from './enum';
-import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
+import { Dialog, calculateRelativeBasedPosition, Popup } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
@@ -623,26 +623,14 @@ export function getFilterMenuPostion(target: Element, dialogObj: Dialog, grid: I
     dialogObj.element.style.display = 'block';
     let dlgWidth: number = dialogObj.width as number;
     let newpos: { top: number, left: number };
-    if (!grid.enableRtl) {
-        newpos = calculateRelativeBasedPosition((<HTMLElement>target), dialogObj.element);
-        dialogObj.element.style.display = elementVisible;
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
-        let leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
-        } else {
-            dialogObj.element.style.left = leftPos + -4 + 'px';
-        }
+    newpos = calculateRelativeBasedPosition((<HTMLElement>target), dialogObj.element);
+    dialogObj.element.style.display = elementVisible;
+    dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
+    let leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
+    if (leftPos < 1) {
+        dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
     } else {
-        newpos = calculatePosition((<HTMLElement>target), 'left', 'bottom');
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 35 + 'px';
-        dialogObj.element.style.display = elementVisible;
-        let leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) + - 16 + 'px';
-        } else {
-            dialogObj.element.style.left = leftPos - 16 + 'px';
-        }
+        dialogObj.element.style.left = leftPos + -4 + 'px';
     }
 }
 
@@ -1104,6 +1092,15 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
     }
     if (!rows.length) {
         gObj.renderModule.emptyRow(true);
+    }
+}
+
+/** @hidden */
+export function resetRowObjectIndex(gObj: IGrid, rows: Row<Column>[], index?: number): void {
+    let startIndex: number = index ? index : 0;
+    for (let i: number = 0; i < rows.length; i++) {
+            rows[i].index = startIndex;
+            startIndex++;
     }
 }
 

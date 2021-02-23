@@ -2781,7 +2781,9 @@ describe('MultiSelect', () => {
                 showSelectAll: true,
                 change: (): void => {
                     if (popup) {
-                        expect(popup.querySelectorAll('.e-check').length).toBe(0);
+                        setTimeout(() => {
+                            expect(popup.querySelectorAll('.e-check').length).toBe(0);
+                        }, 0);
                         done();
                     }                  
                 },

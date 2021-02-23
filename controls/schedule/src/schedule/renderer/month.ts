@@ -2,7 +2,7 @@ import { EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-bas
 import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
-import { ViewBase } from './view-base';
+import { ViewBase, ViewHelper } from './view-base';
 import { MonthEvent } from '../event-renderer/month';
 import * as util from '../base/util';
 import * as event from '../base/constant';
@@ -278,7 +278,7 @@ export class Month extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.workDays.length;
         for (let i: number = 0, length: number = (this.renderDates.length / noOfDays); i < length; i++) {
             let dates: Date[] = dateCol.splice(0, noOfDays);
-            let weekNumber: string = this.getWeekNumberContent(dates).toString();
+            let weekNumber: string = ViewHelper.getWeekNumberContent(this.parent, dates).toString();
             contentWrapTable.querySelector('tbody').appendChild(this.createWeekNumberElement(weekNumber));
         }
         return td;

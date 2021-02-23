@@ -311,7 +311,8 @@ export class AccPoints {
     public initialLabelRegion: Rect = null;
     /** @private */
     public templateElement: HTMLElement;
-
+    /** @private */
+    public legendImageUrl: string;
 }
 
 /**
@@ -420,11 +421,20 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
+     * * Image -Render a image.
      * @default 'SeriesType'
      */
 
     @Property('SeriesType')
     public legendShape: LegendShape;
+
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+
+    @Property('')
+    public legendImageUrl: string;
 
     /**
      * The DataSource field that contains the color value of point
@@ -774,6 +784,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         point.x = getValue(this.xName, data[i]);
         point.y = getValue(this.yName, data[i]);
         point.percentage = (+(point.y / this.sumOfPoints * 100).toFixed(2));
+        point.legendImageUrl = getValue(this.legendImageUrl, data[i]);
         point.color = getValue(this.pointColorMapping, data[i]);
         point.text = point.originalText = getValue(this.dataLabel.name || '', data[i]);
         point.tooltip = getValue(this.tooltipMappingName || '', data[i]);

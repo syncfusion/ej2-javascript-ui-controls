@@ -443,6 +443,7 @@ export type LegendPosition =
  * * pentagon - Renders a pentagon.
  * * invertedTriangle - Renders a invertedTriangle.
  * * SeriesType -Render a legend shape based on series type.
+ * * image - Renders a image.
  */
 export type LegendShape =
     /** Render a circle. */
@@ -470,7 +471,9 @@ export type LegendShape =
     /** Render a InvertedTriangle. */
     'InvertedTriangle' |
     /** Render a legend shape based on series type. */
-    'SeriesType';
+    'SeriesType' |
+    /** Render a Image. */
+    'Image';
 
 /**
  * Defines the zooming mode, They are.

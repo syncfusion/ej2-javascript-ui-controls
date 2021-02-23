@@ -60,10 +60,19 @@ export class Range extends ChildProperty<Range> {
     * * Pentagon
     * * InvertedTriangle
     * * SeriesType
+    * * Image
     * @default 'Rectangle'
     */
    @Property('Rectangle')
    public shape: LegendShape;
+
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+
+    @Property('')
+    public legendImageUrl: string;
 
 }
 

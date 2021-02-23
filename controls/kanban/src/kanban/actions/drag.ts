@@ -347,7 +347,11 @@ export class DragAndDrop {
             dragMultiClone.forEach((clone: HTMLElement) => { remove(clone); });
             this.dragObj.element.style.removeProperty('width');
             this.multiCloneRemove();
-            removeClass([this.dragObj.element], cls.DRAGGED_CARD_CLASS);
+            if (this.dragObj.selectedCards instanceof HTMLElement) {
+                removeClass([this.dragObj.selectedCards as HTMLElement], cls.DRAGGED_CARD_CLASS);
+            } else {
+                removeClass(this.dragObj.selectedCards as HTMLElement[], cls.DRAGGED_CARD_CLASS);
+            }
             clearInterval(this.dragObj.navigationInterval);
             this.dragObj.navigationInterval = null;
             if (document.body.style.cursor === 'not-allowed') {

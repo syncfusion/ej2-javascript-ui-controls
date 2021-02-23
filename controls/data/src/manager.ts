@@ -2,7 +2,7 @@ import { Ajax } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataUtil, Aggregates, Group } from './util';
 import { Query } from './query';
-import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor } from './adaptors';
+import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor, RemoteOptions, AjaxAdaptor } from './adaptors';
 /**
  * DataManager is used to manage and manipulate relational data. 
  */
@@ -21,6 +21,8 @@ export class DataManager {
     public ready: Promise<Ajax>;
     private isDataAvailable: boolean;
     private requests: Ajax[] = [];
+    private ajaxDeffered: Deferred;
+    private ajaxReqOption: Ajax;
 
     /**
      * Constructor for DataManager class
@@ -67,7 +69,8 @@ export class DataManager {
                 jsonp: dataSource.jsonp,
                 dataType: dataSource.dataType,
                 offline: dataSource.offline !== undefined ? dataSource.offline
-                    : dataSource.adaptor instanceof RemoteSaveAdaptor ? false : dataSource.url ? false : true,
+                    : dataSource.adaptor instanceof RemoteSaveAdaptor || dataSource.adaptor instanceof AjaxAdaptor ?
+                        false : dataSource.url ? false : true,
                 requiresFormat: dataSource.requiresFormat
             };
         } else {
@@ -184,11 +187,11 @@ export class DataManager {
         let args: Object = { query: query };
 
         if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')
-            || (!isNullOrUndefined(this.adaptor[makeRequest]))) {
+            || (!isNullOrUndefined(this.adaptor[makeRequest])) || this.isAjaxAdaptor(this.adaptor)) {
             let result: ReturnOption = this.adaptor.processQuery(this, query);
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
-            } else if (!isNullOrUndefined(result.url)) {
+            } else if (!isNullOrUndefined(result.url) || this.isAjaxAdaptor(this.adaptor)) {
                 this.makeRequest(result, deffered, args, <Query>query);
             } else {
                 args = DataManager.getDeferedArgs(<Query>query, result as ReturnOption, args as ReturnOption);
@@ -238,6 +241,7 @@ export class DataManager {
             },
             url);
     }
+    // tslint:disable-next-line:max-func-body-length
     private makeRequest(url: ReturnOption, deffered: Deferred, args?: RequestOptions, query?: Query): Object {
         let isSelector: boolean = !!query.subQuerySelector;
         let fnFail: Function = (e: string) => {
@@ -277,6 +281,9 @@ export class DataManager {
             return childReq;
         };
         let fnSuccess: Function = (data: string | Object, request: Ajax) => {
+            if (this.isAjaxAdaptor(this.adaptor)) {
+                request = extend({}, this.ajaxReqOption, request) as Ajax;
+            }
             if (request.httpRequest.getResponseHeader('Content-Type').indexOf('xml') === -1 && this.dateParse) {
                 data = DataUtil.parse.parseJson(data);
             }
@@ -300,13 +307,22 @@ export class DataManager {
             }
         };
         let req: Object = this.extendRequest(url, fnSuccess, fnFail);
-        let ajax: Ajax = new Ajax(req);
-        ajax.beforeSend = () => {
-            this.beforeSend(ajax.httpRequest, ajax);
-        };
-        req = ajax.send();
-        (<Promise<Ajax>>req).catch((e: Error) => true); // to handle failure remote requests.        
-        this.requests.push(ajax);
+        if (!this.isAjaxAdaptor(this.adaptor)) {
+            let ajax: Ajax = new Ajax(req);
+            ajax.beforeSend = () => {
+                this.beforeSend(ajax.httpRequest, ajax);
+            };
+            req = ajax.send();
+            (<Promise<Ajax>>req).catch((e: Error) => true); // to handle failure remote requests.        
+            this.requests.push(ajax);
+        } else {
+            this.ajaxReqOption = req as Ajax;
+            let request: AjaxOption = req;
+            (<{ options?: RemoteOptions }>this.adaptor).options.getData({
+                data: request.data,
+                onSuccess: request.onSuccess, onFailure: request.onFailure
+            });
+        }
         if (isSelector) {
             let promise: Promise<Object[]>;
             let res: Object[] = query.subQuerySelector.call(this, { query: query.subQuery, parent: query });
@@ -386,7 +402,7 @@ export class DataManager {
 
         if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
             return this.adaptor[doAjaxRequest](req);
-        } else {
+        } else if (!this.isAjaxAdaptor(this.adaptor)) {
             let deff: Deferred = new Deferred();
             let ajax: Ajax = new Ajax(req);
             ajax.beforeSend = () => {
@@ -401,8 +417,9 @@ export class DataManager {
             };
             (<Promise<Ajax>>ajax.send()).catch((e: Error) => true); // to handle the failure requests.        
             return deff.promise;
+        } else {
+            return this.doAjaxRequest(req, (<{ options?: RemoteOptions }>this.adaptor).options.batchUpdate);
         }
-
     }
 
     /**
@@ -428,7 +445,7 @@ export class DataManager {
         if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
             return this.adaptor[doAjaxRequest](req);
         } else {
-            return this.doAjaxRequest(req);
+            return this.doAjaxRequest(req, (<{ options?: RemoteOptions }>this.adaptor).options.addRecord);
         }
     }
 
@@ -460,7 +477,8 @@ export class DataManager {
         if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
             return this.adaptor[doAjaxRequest](res);
         } else {
-            return this.doAjaxRequest(res);
+            let remove: Function = (<{ options?: RemoteOptions }>this.adaptor).options.deleteRecord;
+            return this.doAjaxRequest(res, remove);
         }
     }
     /**
@@ -488,12 +506,34 @@ export class DataManager {
         if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
             return this.adaptor[doAjaxRequest](res);
         } else {
-            return this.doAjaxRequest(res);
+            let update: Function = (<{ options?: RemoteOptions }>this.adaptor).options.updateRecord;
+            return this.doAjaxRequest(res, update);
         }
     }
 
-    private doAjaxRequest(res: Object): Promise<Ajax> {
-        let defer: Deferred = new Deferred();
+    private isAjaxAdaptor(dataSource: AdaptorOptions): boolean {
+        return (<{ getModuleName?: Function }>this.adaptor).getModuleName &&
+            (<{ getModuleName?: Function }>this.adaptor).getModuleName() === 'AjaxAdaptor';
+    }
+
+    private successFunc(record: string | Object, request: Ajax): void {
+        if (this.isAjaxAdaptor(this.adaptor)) {
+            request = extend({}, this.ajaxReqOption, request) as Ajax;
+        }
+        try {
+            DataUtil.parse.parseJson(record);
+        } catch (e) {
+            record = [];
+        }
+        record = this.adaptor.processResponse(DataUtil.parse.parseJson(record), this, null, request.httpRequest, request);
+        this.ajaxDeffered.resolve(record);
+    };
+
+    private failureFunc (e: string): void  {
+        this.ajaxDeffered.reject([{ error: e }]);
+    };
+
+    private doAjaxRequest(res: Object, ajaxFunc?: Function): Promise<Ajax> {
 
         res = extend(
             {}, {
@@ -502,26 +542,25 @@ export class DataManager {
                 processData: false
             },
             res);
+        this.ajaxDeffered = new Deferred();
 
-        let ajax: Ajax = new Ajax(res);
+        if (!this.isAjaxAdaptor(this.adaptor)) {
+            let ajax: Ajax = new Ajax(res);
 
-        ajax.beforeSend = () => {
-            this.beforeSend(ajax.httpRequest, ajax);
-        };
-        ajax.onSuccess = (record: string | Object, request: Ajax) => {
-            try {
-                DataUtil.parse.parseJson(record);
-            } catch (e) {
-                record = [];
-            }
-            record = this.adaptor.processResponse(DataUtil.parse.parseJson(record), this, null, request.httpRequest, request);
-            defer.resolve(record);
-        };
-        ajax.onFailure = (e: string) => {
-            defer.reject([{ error: e }]);
-        };
-        (<Promise<Ajax>>ajax.send()).catch((e: Error) => true); // to handle the failure requests.
-        return defer.promise as Promise<Ajax>;
+            ajax.beforeSend = () => {
+                this.beforeSend(ajax.httpRequest, ajax);
+            };
+            ajax.onSuccess = this.successFunc.bind(this);
+            ajax.onFailure = this.failureFunc.bind(this);
+            (<Promise<Ajax>>ajax.send()).catch((e: Error) => true); // to handle the failure requests.
+        } else {
+            this.ajaxReqOption = res as Ajax;
+            ajaxFunc.call(this, {
+                data: (res as AjaxOption).data, onSuccess: this.successFunc.bind(this),
+                onFailure: this.failureFunc.bind(this)
+            });
+        }
+        return this.ajaxDeffered.promise as Promise<Ajax>;
     }
 }
 
@@ -590,6 +629,15 @@ export interface ReturnOption {
     count?: number;
     url?: string;
     aggregates?: Aggregates;
+}
+
+/**
+ * @hidden
+ */
+export interface AjaxOption {
+    onSuccess?: Function;
+    onFailure?: Function;
+    data?: string;
 }
 
 /**

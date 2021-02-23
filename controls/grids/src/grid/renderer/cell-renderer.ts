@@ -7,6 +7,7 @@ import { doesImplementInterface, setStyleAndAttributes, appendChildren, extendOb
 import { ServiceLocator } from '../services/service-locator';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { foreignKeyData } from '../base/constant';
+import { CellType } from '../base/enum';
 
 /**
  * CellRenderer class which responsible for building cell content. 
@@ -296,7 +297,9 @@ export class CellRenderer implements ICellRenderer<Column> {
             classes.push(...['e-columnselection']);
         }
 
-        if (!isNullOrUndefined(cell.index)) {
+        if (cell.cellType === CellType.Header) {
+            attr[prop.colindex] = cell.colIndex;
+        }   else if (!isNullOrUndefined(cell.index)) {
             attr[prop.colindex] = cell.index;
         }
 

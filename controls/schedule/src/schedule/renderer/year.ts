@@ -1,6 +1,6 @@
 import { EventHandler, formatUnit, remove, createElement, addClass, closest, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { ViewBase } from './view-base';
+import { ViewBase, ViewHelper } from './view-base';
 import { IRenderer, EventClickArgs, TdData, NotifyEventArgs } from '../base/interface';
 import { YearEvent } from '../event-renderer/year';
 import * as util from '../base/util';
@@ -112,7 +112,7 @@ export class Year extends ViewBase implements IRenderer {
             let weekDates: Date[] = dateCollection.splice(0, util.WEEK_LENGTH);
             let tr: HTMLElement = createElement('tr', { attrs: { 'role': 'row' } });
             if (this.parent.activeViewOptions.showWeekNumber) {
-                let weekNumber: number = this.getWeekNumberContent(weekDates);
+                let weekNumber: number = ViewHelper.getWeekNumberContent(this.parent, weekDates);
                 let td: HTMLElement = createElement('td', {
                     className: 'e-week-number',
                     attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },

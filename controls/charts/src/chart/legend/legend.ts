@@ -81,7 +81,7 @@ export class Legend extends BaseLegend {
                 this.legendCollections.push(new LegendOptions(
                     series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                         (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
-                    seriesType, series.marker.shape, series.marker.visible
+                    seriesType, series.legendImageUrl, series.marker.shape, series.marker.visible
                 ));
             }
         }

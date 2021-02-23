@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Common
+
+#### Bug Fixes
+
+- `I309800` - Resolved Events are not properly triggered when using `EJ2 controls` with the Windows web browser.
+
 ## 18.4.43 (2021-02-16)
 
 ### Common

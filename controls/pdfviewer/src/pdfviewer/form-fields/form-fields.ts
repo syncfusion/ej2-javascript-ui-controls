@@ -623,7 +623,6 @@ export class FormFields {
         currentField.className = 'e-pdfviewer-signatureformFields signature';
         this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
         currentField.style.pointerEvents = 'none';
-        currentField.parentElement.style.pointerEvents = 'none';
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         // tslint:disable-next-line
         this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id, annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);

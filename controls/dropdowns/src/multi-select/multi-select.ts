@@ -2082,7 +2082,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.notify('updatelist', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', li: element, e: eve });
                         attributes(this.inputElement, { 'aria-activedescendant': element.id });
                         if ((this.value && this.value.length !== this.mainData.length)
-                            && (this.mode === 'CheckBox' && this.showSelectAll)) {
+                            && (this.mode === 'CheckBox' && this.showSelectAll && !(this.isSelectAll || isClearAll))) {
                             this.notify(
                                 'checkSelectAll',
                                 { module: 'CheckBoxSelection',
@@ -2910,12 +2910,17 @@ export class MultiSelect extends DropDownBase implements IInput {
     };
     protected updateListSelection(li: Element, e: MouseEvent | KeyboardEventArgs, length?: number): void {
         let customVal: string | number | boolean = li.getAttribute('data-value');
-        let value: string | number | boolean = this.getFormattedValue(customVal);
-        if (this.allowCustomValue && (( customVal !== 'false' && value === false ) ||
-        (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
+        let value: string | number | boolean;
+        if (this.mode !== 'CheckBox') {
+            value = this.getFormattedValue(customVal);
+            if (this.allowCustomValue && ((customVal !== 'false' && value === false) ||
+                (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
+                value = customVal;
+            }
+            let text: string = this.getTextByValue(value);
+        } else {
             value = customVal;
         }
-        let text: string = this.getTextByValue(value);
         this.removeHover();
         if (!this.value || (this.value as string[]).indexOf(value as string) === -1) {
             this.dispatchSelect(value, e, <HTMLElement>li, (li.getAttribute('aria-selected') === 'true'), length);
@@ -3049,7 +3054,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
             this.notify('activeList', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', li: element, e: this });
-            if (this.chipCollectionWrapper !== null) {
+            if (this.chipCollectionWrapper) {
                 this.removeChipSelection();
             }
             attributes(this.inputElement, { 'aria-activedescendant': element.id });
@@ -3094,15 +3099,24 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
                         if (this.mode !== 'CheckBox') {
                             this.focusAtLastListItem(<string>li.getAttribute('data-value'));
+                            this.refreshSelection();
                         }
-                        this.refreshSelection();
                     } else {
                         this.makeTextBoxEmpty();
                     }
                 }
                 if (this.mode === 'CheckBox') {
                     this.updateDelimView();
-                    this.updateDelimeter(this.delimiterChar, e);
+                    if (this.value && this.value.length > 50) {
+                        setTimeout(
+                            (): void => {
+                                this.updateDelimeter(this.delimiterChar, e);
+                            },
+                            0
+                        );
+                    } else {
+                        this.updateDelimeter(this.delimiterChar, e);
+                    }
                     this.refreshInputHight();
                 } else {
                     this.updateDelimeter(this.delimiterChar, e);
@@ -3597,6 +3611,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private updateValue (event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[], state: boolean): void {
         let length: number = li.length;
+        let hiddenValue: string = '';
         if (li && li.length) {
             let index: number = 0;
             let count: number = 0;
@@ -3607,19 +3622,36 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             while (index < length && index <= 50 && index < count) {
                 this.updateListSelection(li[index], event, length - index);
-                this.findGroupStart(li[index]);
+                if (this.enableGroupCheckBox) {
+                    this.findGroupStart(li[index]);
+                }
+                if (state) {
+                    hiddenValue += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
+                }
                 index++;
             }
+            this.hiddenElement.innerHTML = hiddenValue;
             if (length > 50) {
                 setTimeout(
                     (): void => {
+                        hiddenValue = '';
                         while (index < length && index < count) {
                             this.updateListSelection(li[index], event, length - index);
-                            this.findGroupStart(li[index]);
+                            if (this.enableGroupCheckBox) {
+                                this.findGroupStart(li[index]);
+                            }
+                            if (state) {
+                                hiddenValue += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
+                            }
                             index++;
                         }
                         if (!(isBlazor() && this.isServerRendered)) {
+                            this.hiddenElement.innerHTML += hiddenValue;
                             this.updatedataValueItems(event);
+                            if (!this.changeOnBlur) {
+                                this.updateValueState(event, this.value, this.tempValues);
+                                this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
+                            }
                         }
                     },
                     0
@@ -3629,6 +3661,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!(isBlazor() && this.isServerRendered)) {
             this.updatedataValueItems(event);
             this.checkPlaceholderSize();
+            if (length <= 50) {
+                if (!this.changeOnBlur) {
+                    this.updateValueState(event, this.value, this.tempValues);
+                    this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
+                }
+            }
         }
     }
 
@@ -3637,14 +3675,18 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.textboxValueUpdate(event);
     }
     private textboxValueUpdate(event?: MouseEvent | KeyboardEventArgs): void {
-        if (this.mode !== 'Box' && !this.isPopupOpen()) {
+        let isRemoveAll: Element = event && event.target && (closest(event.target as Element, '.e-selectall-parent')
+        || closest(event.target as Element, '.e-close-hooker'));
+        if (this.mode !== 'Box' && !this.isPopupOpen() && !(this.mode === 'CheckBox' && (this.isSelectAll || isRemoveAll))) {
             this.updateDelimView();
         } else {
             this.searchWrapper.classList.remove(ZERO_SIZE);
         }
         if (this.mode === 'CheckBox') {
             this.updateDelimView();
-            this.updateDelimeter(this.delimiterChar, event);
+            if (!(isRemoveAll || this.isSelectAll)) {
+                this.updateDelimeter(this.delimiterChar, event);
+            }
             this.refreshInputHight();
         } else {
             this.updateDelimeter(this.delimiterChar, event);
@@ -3947,7 +3989,16 @@ export class MultiSelect extends DropDownBase implements IInput {
      */
     public clear(): void {
        this.selectAll(false);
-       this.setProperties({value: null}, true);
+       if (this.value && this.value.length) {
+        setTimeout(
+            (): void => {
+                this.setProperties({value: null}, true);
+            },
+            0
+        );
+       } else {
+           this.setProperties({value: null}, true);
+       }
     }
     /**
      * To Initialize the control rendering

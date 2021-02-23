@@ -2178,7 +2178,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     let item: Element = compiledTemplate[i] as Element;
                     append([item], this.element);
                 }
+                if (this.element.innerHTML.trim() !== '') {
                 this.setProperties({ value: this.element.innerHTML.trim() });
+                }
             }
         } else {
             let  innerHtml: string = !isNOU(this.element.innerHTML) && this.element.innerHTML.replace(/<(\/?|\!?)(!--!--)>/g, '').trim();

@@ -4,6 +4,7 @@
 import { detach, Browser } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { SelectionCommands } from '../../../src/editor-manager/plugin/selection-commands';
+import { renderRTE, destroy } from '../../rich-text-editor/render.spec';
 
 describe('Selection commands', () => {
     //HTML value
@@ -544,6 +545,79 @@ describe('Selection commands', () => {
         domSelection.setSelectionText(document, text1, text1, 11, 11);
         SelectionCommands.applyFormat(document, 'bold', parentDiv);
         expect((node1 as HTMLElement).querySelectorAll('strong').length).toEqual(1);
+    });
+});
+
+describe('Selection Testing with Multiple nodes', () => {
+    //HTML value
+    let innervalue: string = '<p><strong>​<em>​<span style="text-decoration: underline;">​Testing</span></em>'
+    + '</strong><br></p><p><strong><em><span style="text-decoration: underline;"><br></span></em></strong></p>';
+
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    let rteID: any;
+    let boldItem: any;
+    let italicItem: any;
+    let underlineItem: any;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            },
+            created: function() {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                boldItem = document.body.querySelector('#' + rteID + '_toolbar_Bold')
+                italicItem = document.body.querySelector('#' + rteID + '_toolbar_Italic')
+                underlineItem = document.body.querySelector('#' + rteID + '_toolbar_Underline')
+            }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Checking the nodes innerHTML', (done) => {
+        rteObj.inputElement.childNodes[1].focus();
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[1], rteObj.inputElement.childNodes[1], 0, 0);
+        boldItem.click();
+        expect(rteObj.inputElement.childNodes[1].firstElementChild.tagName.toLowerCase()).not.toBe('strong');
+        italicItem.click();
+        expect(rteObj.inputElement.childNodes[1].firstElementChild.tagName.toLowerCase()).not.toBe('em');
+        underlineItem.click();
+        expect(rteObj.inputElement.childNodes[1].firstElementChild.tagName.toLowerCase()).not.toBe('span');
+        done();
+    });
+});
+
+describe('Remove Br tags when applying formatting', () => {
+    //HTML value
+    let innervalue: string = '<p><br></p>';
+
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    let controlId: string;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: innervalue,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            }
+        });
+        controlId = rteObj.element.id;
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('if value is empty', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[0], 0, 0);
+        let boldItem: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
+        boldItem.click();
+        expect(rteObj.inputElement.childNodes[0].firstElementChild.tagName.toLowerCase()).not.toBe('br');
+        done();
     });
 });
 

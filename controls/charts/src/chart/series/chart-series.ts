@@ -1519,11 +1519,20 @@ export class Series extends SeriesBase {
      * * Pentagon
      * * InvertedTriangle
      * * SeriesType
+     * * Image
      * @default 'SeriesType'
      */
 
     @Property('SeriesType')
     public legendShape: LegendShape;
+
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+
+    @Property('')
+    public legendImageUrl: string;
 
     /**
      * Custom style for the selected series or points.

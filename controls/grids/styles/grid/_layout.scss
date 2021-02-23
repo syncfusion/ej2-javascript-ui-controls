@@ -2919,11 +2919,13 @@
         overflow-y: hidden;
       }
 
-      .e-label.e-fltrcheck {
+      .e-label.e-fltrcheck,
+      .e-label.e-choosercheck {
         width: $grid-filter-checkbox-width;
       }
 
-      .e-checkboxlist .e-fltrcheck {
+      .e-checkboxlist .e-fltrcheck,
+      .e-cc-contentdiv .e-choosercheck {
         white-space: $grid-filter-checkbox-white-space;
       }
 

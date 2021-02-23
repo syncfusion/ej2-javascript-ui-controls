@@ -221,6 +221,15 @@ export class Annotation {
             this.pdfViewerBase.signatureModule.setAnnotationMode();
         } else if (type === 'Ink') {
             this.inkAnnotationModule.setAnnotationMode();
+        } else if (type === 'StickyNotes') {
+            if (this.pdfViewer.toolbar) {
+                this.pdfViewer.toolbar.isCommentIconAdded = true;
+            }
+            // tslint:disable-next-line:max-line-length
+            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
+            if (pageDiv) {
+                pageDiv.addEventListener('mousedown', this.pdfViewer.annotationModule.stickyNotesAnnotationModule.drawIcons.bind(this));
+            }
         } else if (type === 'Stamp') {
             this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
             this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;

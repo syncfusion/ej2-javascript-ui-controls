@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- The `getData` method is not working when range is passed without sheet name issue fixed.
+
 ## 18.4.43 (2021-02-16)
 
 ### Spreadsheet

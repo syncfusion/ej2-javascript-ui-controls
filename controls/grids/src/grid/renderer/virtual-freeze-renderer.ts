@@ -409,6 +409,8 @@ export function getReorderedFrozenRows(
     if (!args.renderMovableContent) {
         args.virtualInfo.columnIndexes = [];
     }
+    let firstRecordslength: number = parent.getCurrentViewRecords().length;
+    firstPageRecords = parent.renderModule.data.dataManager.dataSource.json.slice(0, firstRecordslength);
     let virtualRows: Row<Column>[] = virtualRenderer.vgenerator.generateRows(firstPageRecords, args);
     rows = splitReorderedRows(virtualRows, parent, freezeRowGenerator);
     args.virtualInfo.blockIndexes = bIndex;

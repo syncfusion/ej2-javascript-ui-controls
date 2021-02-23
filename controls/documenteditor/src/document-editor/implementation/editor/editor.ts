@@ -10543,8 +10543,8 @@ export class Editor {
                         }
                     }
                     lastText = text[text.length - 1];
-                    textCount += text.length;
                 }
+                textCount += elementbox.length;
             }
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -11770,7 +11770,7 @@ export class Editor {
     // tslint:disable-next-line:max-line-length
     private removeCharacter(inline: ElementBox, offset: number, count: number, lineWidget: LineWidget, lineIndex: number, i: number, isRearrange?: boolean): boolean {
         let isBreak: boolean = false;
-        if (inline instanceof BookmarkElementBox) {
+        if (inline instanceof BookmarkElementBox && inline.line !== inline.reference.line) {
             if (!isNullOrUndefined(inline.line.previousLine)) {
                 inline.line.previousLine.children.splice(inline.line.previousLine.children.length, 0, inline);
                 inline.line = inline.line.previousLine;

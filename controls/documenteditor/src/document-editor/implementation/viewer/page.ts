@@ -1798,7 +1798,11 @@ export class TableWidget extends BlockWidget {
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
+            // tslint:disable-next-line:max-line-length
+            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent, isAutoFit);
+        }
+        if (!isAutoFit && isAutoWidth) {
+            tableWidth = this.tableHolder.tableWidth;
         }
         //Sets the width to cells
         this.setWidthToCells(tableWidth, isAutoWidth);
@@ -7798,7 +7802,7 @@ export class Page {
     /**
      * @private
      */
-    public currentPageNum: number = 0;
+    public currentPageNum: number = 1;
     /**
      * 
      */
@@ -8103,7 +8107,8 @@ export class WTableHolder {
     /**
      * @private
      */
-    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number): void {
+    // tslint:disable-next-line:max-line-length
+    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number, isAutoFit?: boolean): void {
         if (isNullOrUndefined(indent)) {
             indent = 0;
         }
@@ -8115,7 +8120,9 @@ export class WTableHolder {
         }
 
         // If auto table width, based on total column widths, minimum value will be updated.
-        if (isAutoWidth) {
+        if (isAutoWidth && !isAutoFit) {
+            this.tableWidth = preferredTableWidth > totalColumnWidth ? preferredTableWidth : totalColumnWidth;
+        } else if (isAutoWidth) {
             this.tableWidth = preferredTableWidth > totalColumnWidth ? totalColumnWidth : preferredTableWidth;
         } else {
             this.tableWidth = preferredTableWidth;

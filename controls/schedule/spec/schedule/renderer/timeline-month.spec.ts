@@ -759,6 +759,38 @@ describe('Schedule Timeline Month view', () => {
         });
     });
 
+    describe('Getting Week numbers while changing weekRule property', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            let model: ScheduleModel = {
+                selectedDate: new Date(2020, 11, 29),
+                currentView: 'TimelineMonth',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                headerRows: [{ option: 'Year' }, { option: 'Month' }, { option: 'Week' }, { option: 'Date' }, { option: 'Hour' }],
+                showWeekNumber: true
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Week number testing for when weekRule set to FirstDay', () => {
+            schObj.weekRule = 'FirstDay';
+            expect((schObj.element.querySelectorAll('.e-header-week-cell')[1] as HTMLElement).innerText).toBe('50');
+        });
+        it('Week number testing for when weekRule set to FirstFourDayWeek', () => {
+            schObj.weekRule = 'FirstFourDayWeek';
+            schObj.dataBind();
+            expect((schObj.element.querySelectorAll('.e-header-week-cell')[4] as HTMLElement).innerText).toBe('53');
+        });
+        it('Week number testing for when weekRule set to FirstFullWeek', () => {
+            schObj.weekRule = 'FirstFullWeek';
+            schObj.dataBind();
+            expect((schObj.element.querySelectorAll('.e-header-week-cell')[1] as HTMLElement).innerText).toBe('49');
+        });
+    });
+
     describe('Public methods', () => {
         let schObj: Schedule;
         beforeEach((): void => {

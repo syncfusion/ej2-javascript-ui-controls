@@ -102,6 +102,15 @@ export interface TooltipModel extends ComponentModel{
     enableHtmlParse?: boolean;
 
     /**
+     * It is used to set the collision target element as page viewport (window) or Tooltip element, when using the target. 
+     * If this property is enabled, tooltip will perform the collision calculation between the target elements 
+     * and viewport(window) instead of Tooltip element.
+     *
+     * @default false
+     */
+    windowCollision?: boolean;
+
+    /**
      * It is used to set the position of tip pointer on tooltip.
      * When it sets to auto, the tip pointer auto adjusts within the space of target's length
      *  and does not point outside.

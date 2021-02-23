@@ -17,7 +17,8 @@ export function getData(
             let i: number; let cell: CellModel;
             let row: RowModel;
             let data: Map<string, CellModel> | { [key: string]: CellModel }[] = new Map();
-            let sheetIdx: number = getSheetIndex(context, getSheetNameFromAddress(address));
+            let sheetIdx: number = address.indexOf('!') > -1 ? getSheetIndex(context, getSheetNameFromAddress(address))
+                : context.activeSheetIndex;
             let sheet: SheetModel = getSheet(context, sheetIdx);
             let indexes: number[] = getIndexesFromAddress(address);
             let sRow: number = indexes[0];

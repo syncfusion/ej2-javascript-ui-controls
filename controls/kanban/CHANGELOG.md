@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#315107` - The issue with "cards are hidden when multiple cards are dragged and dropped to their original position" has been fixed.
+
 ## 18.4.41 (2021-02-02)
 
 ### Kanban

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Grid
+
+#### Bug Fixes
+
+- `#314800` - filter dialog position when `rtl` is enabled issue has been fixed.
+- `#314860` - Grouped icon drag and drop issue has been fixed.
+
 ## 18.4.43 (2021-02-16)
 
 ### Grid
@@ -11,6 +20,9 @@
 - `#310507` - Frozen layout issue while changing `pagesizes` issue has been resolved.
 - `#306030` - Filtering numeric columns through enter key issue has been resolved.
 - `#311829` - Records are repeated while doing virtual scrolling when selection or focus applied issue has been fixed.
+- `#312581` - Header `aria-colindex` attribute issue has been fixed.
+- `#313556` - `ExcelFilter` dialog position issue has been fixed.
+- `#308792` - Filter icon update when enable `foreignKey` column, issue has been resolved.
 
 ## 18.4.42 (2021-02-09)
 

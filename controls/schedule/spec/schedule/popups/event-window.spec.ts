@@ -450,7 +450,7 @@ describe('Schedule event window initial load', () => {
             let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
             let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
-            endDate.value = new Date('10/30/2017');
+            endDate.value = new Date('10/31/2017');
             endOnElement.index = 0; endOnElement.dataBind();
             saveButton.click();
             okButton.click();

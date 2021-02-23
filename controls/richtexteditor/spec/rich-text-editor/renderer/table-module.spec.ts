@@ -281,6 +281,71 @@ describe('Table creation', () => {
         });
     });
 
+    describe('Checking the width for the table elements added', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                tableSettings: { width: "500px" }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('2*2 table creation with width configured', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[1],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(tar).not.toBe(null);
+            expect(tar.querySelectorAll('tr').length === 2).toBe(true);
+            expect(tar.querySelectorAll('td').length === 4).toBe(true);
+            expect(tar.querySelectorAll('td')[0].style.width).toBe("50%");
+            expect(tar.querySelectorAll('td')[1].style.width).toBe("50%");
+            done();
+        });
+        it('4*2 table creation with width configured', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-table-row').length === 3).toBe(true);
+            expect(rteObj.tableModule.popupObj.element.querySelectorAll('.e-rte-tablecell').length === 30).toBe(true);
+            let event: any = {
+                target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
+                preventDefault: function () { }
+            };
+            (rteObj as any).tableModule.tableCellSelect(event);
+            (rteObj as any).tableModule.tableCellLeave(event);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            event.target.dispatchEvent(clickEvent);
+            let tar: HTMLElement = rteObj.contentModule.getEditPanel().querySelectorAll('table')[1] as HTMLElement;
+            expect(tar).not.toBe(null);
+            expect(tar.querySelectorAll('tr').length === 2).toBe(true);
+            expect(tar.querySelectorAll('td').length === 8).toBe(true);
+            expect(tar.querySelectorAll('td')[0].style.width).toBe("25%");
+            expect(tar.querySelectorAll('td')[1].style.width).toBe("25%");
+            expect(tar.querySelectorAll('td')[2].style.width).toBe("25%");
+            expect(tar.querySelectorAll('td')[3].style.width).toBe("25%");
+            done();
+        });
+    });
+
     describe('Table properties quicktoolbar ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

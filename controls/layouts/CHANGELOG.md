@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `I310199` - The issue with resize event in the bottom most panel while multiple panels get rendered has been resolved.
+
 ## 18.4.30 (2020-12-17)
 
 ### Dashboard Layout

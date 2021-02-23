@@ -16,6 +16,7 @@ import { DateFilterUI } from './date-filter-ui';
 import { getFilterMenuPostion, parentsUntil, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IXLFilter } from '../common/filter-interface';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 
 /**
  * `filter menu` render boolean column.
@@ -29,12 +30,18 @@ export class FilterMenuRenderer {
     private l10n: L10n;
     public dlgObj: Dialog;
     private valueFormatter: IValueFormatter;
+    private operator: Object[];
     private filterSettings: FilterSettings;
     private customFilterOperators: Object;
     private dropOptr: DropDownList;
     private flMuiObj: FlMenuOptrUI;
     private col: Column;
     private isDialogOpen: boolean = false;
+    /* tslint:disable-next-line:no-any */
+    public menuFilterBase: any;
+    protected options: IFilterArgs;
+    private maxHeight: string = '350px';
+    private isMenuCheck: boolean = false;
 
     private colTypes: Object = {
         'string': StringFilterUI, 'number': NumberFilterUI, 'date': DateFilterUI, 'boolean': BooleanFilterUI, 'datetime': DateFilterUI
@@ -49,9 +56,11 @@ export class FilterMenuRenderer {
         this.filterObj = fltrObj;
         this.flMuiObj = new FlMenuOptrUI(this.parent, this.customFilterOperators, this.serviceLocator);
         this.l10n = this.serviceLocator.getService<L10n>('localization');
+        this.menuFilterBase = new CheckBoxFilterBase(parent as IXLFilter);
     }
 
     private openDialog(args: IFilterArgs): void {
+        this.options = args;
         this.col = this.parent.getColumnByField(args.field);
         if (isNullOrUndefined(this.col.filter) || (isNullOrUndefined(this.col.filter.type) || this.col.filter.type === 'Menu')) {///
             this.renderDlgContent(args.target, this.col);
@@ -80,6 +89,11 @@ export class FilterMenuRenderer {
             this.parent.notify(events.filterMenuClose, argument);
             if ((<{ cancel?: boolean }>argument).cancel) { return; }
             this.isDialogOpen = false;
+            if (this.isMenuCheck) {
+                this.menuFilterBase.unWireEvents();
+                this.parent.off(events.cBoxFltrComplete, this.actionComplete);
+                this.isMenuCheck = false;
+            }
             this.dlgObj.destroy();
             remove(elem);
         }
@@ -135,7 +149,7 @@ export class FilterMenuRenderer {
         }
         this.renderFilterUI(target, column);
         this.parent.notify(events.filterDialogCreated, {});
-        this.dlgObj.element.style.maxHeight = '350px';
+        this.dlgObj.element.style.maxHeight = this.maxHeight;
         this.dlgObj.show();
         if (!column.filterTemplate) {
             this.writeMethod(column, this.dlgObj.element.querySelector('#' + column.uid + '-flmenu'));
@@ -149,7 +163,9 @@ export class FilterMenuRenderer {
             args[filterModel] = this;
         }
         this.isDialogOpen = true;
-        this.parent.trigger(events.actionComplete, args);
+        if (!this.isMenuCheck) {
+            this.parent.trigger(events.actionComplete, args);
+        }
     }
 
     private renderFilterUI(target: Element, col: Column): void {
@@ -161,7 +177,7 @@ export class FilterMenuRenderer {
     }
 
     private renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column): void {
-        this.flMuiObj.renderOperatorUI(dlgConetntEle, target, column, this.dlgObj);
+        this.flMuiObj.renderOperatorUI(dlgConetntEle, target, column, this.dlgObj, this.filterObj.menuOperator);
     }
 
     private renderFlValueUI(dlgConetntEle: Element, target: Element, column: Column): void {
@@ -300,5 +316,36 @@ export class FilterMenuRenderer {
      */
     public getFilterUIInfo(): FilterUI {
         return { field: this.col.field, operator: this.flMuiObj.getFlOperator()};
+    }
+
+    public renderCheckBoxMenu(): void {
+        this.isMenuCheck = true;
+        this.menuFilterBase.updateModel(this.options);
+        this.menuFilterBase.getAndSetChkElem(this.options);
+        (this.dlgObj.content as HTMLElement).lastElementChild.appendChild(this.menuFilterBase.sBox);
+        this.dlgObj.buttons = [{
+            click: this.menuFilterBase.btnClick.bind(this.menuFilterBase),
+            buttonModel: {
+                content: this.menuFilterBase.getLocalizedLabel('FilterButton'),
+                cssClass: 'e-primary', isPrimary: true
+            }
+        },
+        {
+            click: this.menuFilterBase.btnClick.bind(this.menuFilterBase),
+            buttonModel: { cssClass: 'e-flat', content: this.menuFilterBase.getLocalizedLabel('ClearButton') }
+        }];
+        this.menuFilterBase.dialogObj = this.dlgObj;
+        this.menuFilterBase.dlg = this.dlgObj.element;
+        this.menuFilterBase.wireEvents();
+        this.parent.on(events.cBoxFltrComplete, this.actionComplete, this);
+        this.menuFilterBase.getAllData();
+        this.menuFilterBase.dlg.classList.add('e-menucheckbox');
+        this.menuFilterBase.dlg.classList.remove('e-checkboxfilter');
+        this.maxHeight = '800px';
+    }
+    private actionComplete(args: Object): void {
+        if (this.isMenuCheck) {
+            this.parent.trigger(events.actionComplete, args);
+        }
     }
 }

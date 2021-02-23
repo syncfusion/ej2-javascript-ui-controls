@@ -291,10 +291,18 @@ export interface AccumulationSeriesModel {
      * * Pentagon - Renders a pentagon.
      * * InvertedTriangle - Renders a invertedTriangle.
      * * SeriesType -Render a legend shape based on series type.
+     * * Image -Render a image.
      * @default 'SeriesType'
      */
 
     legendShape?: LegendShape;
+
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+
+    legendImageUrl?: string;
 
     /**
      * The DataSource field that contains the color value of point

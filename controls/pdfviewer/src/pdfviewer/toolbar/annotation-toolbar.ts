@@ -3092,11 +3092,13 @@ export class AnnotationToolbar {
         element.classList.add('e-pv-tbar-btn');
         if (element.childNodes.length > 0) {
             let spanElement: HTMLElement = element.childNodes[0] as HTMLElement;
-            spanElement.id = this.pdfViewer.element.id + idString + 'Icon';
-            spanElement.classList.remove('e-icons');
-            spanElement.classList.remove('e-btn-icon');
-            if (this.pdfViewer.enableRtl) {
-                spanElement.classList.add('e-right');
+            if (spanElement && spanElement.classList) {
+                spanElement.id = this.pdfViewer.element.id + idString + 'Icon';
+                spanElement.classList.remove('e-icons');
+                spanElement.classList.remove('e-btn-icon');
+                if (this.pdfViewer.enableRtl) {
+                    spanElement.classList.add('e-right');
+                }
             }
         }
         return element;

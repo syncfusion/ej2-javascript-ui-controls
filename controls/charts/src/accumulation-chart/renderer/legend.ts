@@ -46,7 +46,7 @@ export class AccumulationLegend extends BaseLegend {
             for (let point of series[i].points) {
                 if (!isNullOrUndefined(point.x) && !isNullOrUndefined(point.y)) {
                     this.legendCollections.push(new LegendOptions(
-                        point.x.toString(), point.color, series[i].legendShape, point.visible, seriesType, null, null,
+                        point.x.toString(), point.color, series[i].legendShape, point.visible, seriesType, point.legendImageUrl, null, null,
                         point.index, series[i].index
                     ));
                 }

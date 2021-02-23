@@ -48,7 +48,7 @@ export class Filter implements IAction {
     private nextFlMenuOpen: string = '';
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
     private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function,
-    isresetFocus: boolean, getFilterUIInfo: Function };
+    isresetFocus: boolean, getFilterUIInfo: Function, renderCheckBoxMenu?: Function };
     /** @hidden */
     public filterOperators: IFilterOperator = {
         contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
@@ -68,6 +68,7 @@ export class Filter implements IAction {
     private actualPredicate: { [key: string]: PredicateModel[] } = {};
     public prevFilterObject: PredicateModel;
     public filterObjIndex: number;
+    public menuOperator: { [key: string]: Object }[];
 
     /**
      * Constructor for Grid filtering module
@@ -631,7 +632,8 @@ export class Filter implements IAction {
         if (this.filterModule) {
             this.filterModule.closeDialog();
         }
-        this.filterModule = new this.type[col.filter.type || this.parent.filterSettings.type]
+        let type: string  = col.filter.type || this.parent.filterSettings.type;
+        this.filterModule = new this.type[type]
             (this.parent, gObj.filterSettings, this.serviceLocator, this.customOperators, this);
         let dataSource: Object = col.filter.dataSource || gObj.dataSource && 'result' in gObj.dataSource ? gObj.dataSource :
             gObj.getDataModule().dataManager;
@@ -645,7 +647,8 @@ export class Filter implements IAction {
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
             actualPredicate: this.actualPredicate, localeObj: gObj.localeObj,
-            isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
+            isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity,
+            operator: this.actualPredicate[col.field] && type === 'Menu' ? this.actualPredicate[col.field][0].operator : 'equal'
         });
     }
 
@@ -1216,5 +1219,13 @@ export class Filter implements IAction {
      */
     private getOperatorName(field: string): string {
         return (<EJ2Intance>document.getElementById(this.parent.getColumnByField(field).uid)).ej2_instances[0].value;
+    }
+
+    /**
+     * Renders checkbox items in Menu filter dialog.
+     * @return {void}
+     */
+    public renderCheckboxOnFilterMenu(): void {
+            this.filterModule.renderCheckBoxMenu();
     }
 }

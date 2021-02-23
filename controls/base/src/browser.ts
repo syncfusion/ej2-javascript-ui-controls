@@ -89,7 +89,7 @@ export class Browser {
                 isPointer: 'pointercancel', isTouch: 'touchcancel', isDevice: 'mouseleave'
             }
         };
-        return (Browser.isPointer ? events[event].isPointer :
+        return (Browser.isPointer && !Browser.isWindows ? events[event].isPointer :
             (Browser.isTouch ? events[event].isTouch + (!Browser.isDevice ? ' ' + events[event].isDevice : '')
                 : events[event].isDevice));
     }

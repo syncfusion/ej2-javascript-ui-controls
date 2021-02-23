@@ -530,7 +530,7 @@ export class ConditionalFormatting {
         if (!cFRules || cFRules.length < 1) {
             return;
         }
-        for (let cFRuleIdx: number = 0; cFRuleIdx < cFRules.length; cFRuleIdx++) {
+        for (let cFRuleIdx: number = cFRules.length - 1; cFRuleIdx >= 0; cFRuleIdx--) {
             let cFRanges: string[] = cFRules[cFRuleIdx].range.trim().split(',');
             for (let rangeIdx: number = 0; rangeIdx < cFRanges.length; rangeIdx++) {
                 let range: string = cFRanges[rangeIdx];
@@ -586,6 +586,9 @@ export class ConditionalFormatting {
                     isApply = this.cFRCheck(sheet.conditionalFormats[cFRuleIdx], value, td, args.rowIdx, args.colIdx, false);
                 }
                 result = false;
+            }
+            if (isApply) {
+                break;
             }
         }
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Tab
+
+#### Bug Fixes
+
+- `#311688` - An issue with getting console error in tab navigation has been fixed.
+
 ## 18.4.42 (2021-02-09)
 
 ### Sidebar

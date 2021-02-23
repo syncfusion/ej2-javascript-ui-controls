@@ -677,10 +677,10 @@ export class BaseLegend {
         let regionPadding: number;
         let isCanvas: boolean = (this.chart as Chart).enableCanvas;
         if (!isCanvas) {
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
+            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight),
                 // tslint:disable-next-line:max-line-length
                 // tslint:disable-next-line:align
-                symbolOption, this.accessbilityText , this.chart.renderer, null,
+                legendOption.url, symbolOption, this.accessbilityText , this.chart.renderer, null,
                 this.isBulletChartControl, control
             ));
         } else {
@@ -1000,17 +1000,19 @@ export class LegendOptions {
     public type: ChartSeriesType | AccumulationType;
     public textSize: Size;
     public location: ChartLocation = { x: 0, y: 0 };
+    public url?: string;
     public pointIndex?: number;
     public seriesIndex?: number;
     public markerShape?: ChartShape;
     public markerVisibility?: boolean;
     constructor(
-        text: string, fill: string, shape: LegendShape, visible: boolean, type: ChartSeriesType | AccumulationType,
+        text: string, fill: string, shape: LegendShape, visible: boolean, type: ChartSeriesType | AccumulationType, url?: string,
         markerShape?: ChartShape, markerVisibility?: boolean, pointIndex?: number, seriesIndex?: number
         ) {
         this.text =  text;
         this.fill = fill;
         this.shape = shape;
+        this.url = url;
         this.visible =  visible;
         this.type = type;
         this.markerVisibility = markerVisibility;

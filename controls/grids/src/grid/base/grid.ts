@@ -4871,7 +4871,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public isRowDragable(): boolean {
-        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID && !this.enableVirtualization;
+        return this.allowRowDragAndDrop && !this.rowDropSettings.targetID;
     }
 
 

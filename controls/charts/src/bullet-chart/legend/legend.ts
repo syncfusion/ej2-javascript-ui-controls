@@ -72,7 +72,8 @@ export class BulletChartLegend extends BaseLegend {
             if (range.name !== null) {
                 fill = range.color ? range.color : bulletChart.themeStyle.rangeStrokes[range.index][key];
                 this.legendCollections.push(new LegendOptions(
-                    range.name, fill, range.shape, this.chart.legendSettings.visible, null, null, false, range.index, null
+                    range.name, fill, range.shape, this.chart.legendSettings.visible, null,
+                    range.legendImageUrl, null, false, range.index, null
                 ));
                 count++;
             }
@@ -81,7 +82,7 @@ export class BulletChartLegend extends BaseLegend {
             fill = bulletChart.valueFill || 'black';
             let shape: LegendShape = bulletChart.orientation === 'Vertical' ? 'TargetRect' : 'ActualRect';
             this.legendCollections.push(new LegendOptions(
-                'Actual', fill, shape, this.chart.legendSettings.visible, null, null, false, count++, null
+                'Actual', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
             ));
         }
         if (bulletChart.dataSource !== null && bulletChart.targetField !== '') {
@@ -92,7 +93,7 @@ export class BulletChartLegend extends BaseLegend {
                 || bulletChart.dataSource[i][bulletChart.targetField].length === 1) {
             while (i === 0) {
                     this.legendCollections.push(new LegendOptions(
-                        'Target', fill, shape, this.chart.legendSettings.visible, null, null, false, count++, null
+                        'Target', fill, shape, this.chart.legendSettings.visible, null, '', null, false, count++, null
                     ));
                     break;
                     }
@@ -107,7 +108,8 @@ export class BulletChartLegend extends BaseLegend {
                         'ActualRect' : 'TargetRect' : (targetType[i]);
                         targetType[i] = (targetType[i] === 'Cross') ? 'Multiply' :  targetType[i];
                         this.legendCollections.push(new LegendOptions(
-                        'Target_' + i, fill, <LegendShape>targetType[i], this.chart.legendSettings.visible, null, null, false, count++, null
+                        'Target_' + i, fill, <LegendShape>targetType[i], this.chart.legendSettings.visible,
+                        null, '', null, false, count++, null
                         ));
                     }
                     break;

@@ -527,6 +527,7 @@ export class StampAnnotation {
     public updateDeleteItems(pageNumber: number, annotation: any, opacity?: number): any {
         this.pdfViewer.isDocumentEdited = true;
         let annotationObject: IStampAnnotation = null;
+        let isStampSaved: boolean = false;
         annotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         // tslint:disable-next-line:max-line-length
         annotation.author = (this.pdfViewer.stampSettings.author !== 'Guest') ? this.pdfViewer.stampSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
@@ -607,7 +608,8 @@ export class StampAnnotation {
             annotationObject.bounds.top = annotation.wrapper.bounds.y;
             annotationObject.opacity = opacity;
             if (this.pdfViewerBase.stampAdded) {
-                // tslint:disable-next-line:max-line-length
+                this.storeStampInSession(pageNumber, annotationObject);
+                isStampSaved = true;
                 // tslint:disable-next-line
                 let bounds: any = { left: annotationObject.bounds.left, top: annotationObject.bounds.top, width: annotationObject.bounds.width, height: annotationObject.bounds.height };
                 this.pdfViewer.isDocumentEdited = true;
@@ -624,7 +626,9 @@ export class StampAnnotation {
                 this.pdfViewer.annotation.addAction(pageNumber, null, annotation as PdfAnnotationBase, 'Addition', '', annotation as PdfAnnotationBase, annotationObject);
             }
         }
-        this.storeStampInSession(pageNumber, annotationObject);
+        if (!isStampSaved) {
+            this.storeStampInSession(pageNumber, annotationObject);
+        }
     }
     /**
      * @private

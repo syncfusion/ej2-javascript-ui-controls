@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### MultiSelect
+
+#### New Features
+
+- `#283275`, `#289148`, `#296652` - Now, selection and deselection performance is improved while providing the large data to the component.
+
 ## 18.4.43 (2021-02-16)
 
 ### Dropdown Tree

@@ -1,14 +1,15 @@
 import { MouseEventArgs, Draggable, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
-import { remove, closest as closestElement, classList, BlazorDragEventArgs  } from '@syncfusion/ej2-base';
+import { remove, closest as closestElement, classList, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
-import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent, getGridRowElements } from '../base/util';
-import { gridActionHandler, setRowsInTbody } from '../base/util';
+import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
+import { setRowsInTbody, resetRowIndex } from '../base/util';
+import { Column } from '../models/column';
+import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
 import { Query } from '@syncfusion/ej2-data';
-import { freezeTable } from '../base/enum';
 
 /**
  * 
@@ -60,15 +61,12 @@ export class RowDD {
         let frzCols: boolean = this.parent.isFrozenGrid();
         if (frzCols) {
             let rowIndex: number = parseInt(closestElement(target, 'tr').getAttribute('aria-rowindex'), 10);
-            let rows: Element[][] = getGridRowElements(this.parent);
             this.startedRow.innerHTML = '';
-            gridActionHandler(
-                this.parent,
-                (freezeTable: freezeTable, rows: Element[]) => {
-                    this.startedRow.innerHTML += rows[rowIndex].innerHTML;
-                },
-                rows
-            );
+            this.startedRow.innerHTML += gObj.getRowByIndex(rowIndex).innerHTML;
+            this.startedRow.innerHTML += gObj.getMovableRowByIndex(rowIndex).innerHTML;
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                this.startedRow.innerHTML += gObj.getFrozenRightRowByIndex(rowIndex).innerHTML;
+            }
         }
         this.processArgs(target);
         let args: Object = {
@@ -133,8 +131,8 @@ export class RowDD {
         let dropElem: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
         if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances &&
             (<{getModuleName?: Function}>dropElem.ej2_instances[0]).getModuleName() === 'grid') {
-             dropElem.ej2_instances[0].getContent().classList.add('e-allowRowDrop');
-         }
+            dropElem.ej2_instances[0].getContent().classList.add('e-allowRowDrop');
+        }
     }
 
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
@@ -186,8 +184,16 @@ export class RowDD {
                 parseInt(this.startedRow.getAttribute('aria-rowindex'), 10) !== this.dragTarget) {
                 this.moveDragRows(e, this.startedRow, trElement);
             } else {
-                if (trElement && this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
-                    trElement.getAttribute('data-uid')) {
+                let islastRowIndex: boolean;
+                if (this.parent.enableVirtualization) {
+                    islastRowIndex = trElement && parseInt(trElement.getAttribute('aria-rowindex'), 10) ===
+                        this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
+                } else {
+                    islastRowIndex = trElement &&
+                        this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
+                        trElement.getAttribute('data-uid');
+                }
+                if (islastRowIndex) {
                     let bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
                     let gridcontentEle: Element = this.parent.getContent();
                     bottomborder.style.width = (this.parent.element as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
@@ -222,7 +228,7 @@ export class RowDD {
         let dropElement: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
         if (gObj.rowDropSettings.targetID && dropElement && dropElement.ej2_instances &&
             (<{getModuleName?: Function}>dropElement.ej2_instances[0]).getModuleName() === 'grid') {
-                dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
+            dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
         }
 
         if (gObj.isRowDragable()) {
@@ -280,16 +286,20 @@ export class RowDD {
                 this.dragTarget = null;
                 if (!gObj.rowDropSettings.targetID) {
                     remove(e.helper);
-                    this.rowOrder(args);
+                    if (gObj.frozenRows && gObj.enableVirtualization) {
+                       gObj.refresh();
+                    } else {
+                        this.rowOrder(args);
+                    }
                 }
             }
             this.isRefresh = true;
         });
     }
-    private refreshRow(args: RowDropEventArgs, tbody: Element, mtbody: Element, frTbody: Element): void {
+    private refreshRow(
+        args: RowDropEventArgs, tbody: Element, mtbody: Element, frTbody: Element, target: Element,
+        mTarget: Element, frTarget: Element): void {
         let gObj: IGrid = this.parent;
-        let target: Element;
-        let mTarget: Element; let frTarget: Element;
         let frzCols: boolean = gObj.isFrozenGrid();
         let isLeftRight: boolean = gObj.getFrozenMode() === 'Left-Right';
         let tbodyMovableHeader: Element;
@@ -305,39 +315,7 @@ export class RowDD {
                 frCnt = gObj.getFrozenRightContentTbody();
             }
         }
-        let targetIdx: number = parseInt(args.target.parentElement.getAttribute('aria-rowindex'), 10);
-        if (args.fromIndex < args.dropIndex || args.fromIndex === args.dropIndex) {
-            targetIdx = targetIdx + 1;
-        }
-        target = tbody.querySelectorAll('.e-row')[targetIdx];
-        if (frzCols) {
-            mTarget = mtbody.querySelectorAll('.e-row')[targetIdx];
-            if (isLeftRight) {
-                frTarget = frTbody.querySelectorAll('.e-row')[targetIdx];
-            }
-        }
         let index: number = gObj.getFrozenMode() === 'Left-Right' ? 3 : 2;
-        for (let i: number = 0, len: number = args.rows.length; i < len; i++) {
-            if (frzCols) {
-                if (args.rows.length === 1) {
-                    args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-                    args.rows[i + 1] = mtbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-                    if (isLeftRight) {
-                        args.rows[i + 2] = frTbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-                    }
-                } else {
-                    if (i % index === 0) {
-                        args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-                    } else if (i % index === 1) {
-                        args.rows[i] = mtbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-                    } else if (isLeftRight && i % index === 2) {
-                        args.rows[i] = frTbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-                    }
-                }
-            } else {
-                args.rows[i] = tbody.children[parseInt(args.rows[i].getAttribute('aria-rowindex'), 10)];
-            }
-        }
         for (let i: number = 0, len: number = args.rows.length; i < len; i++) {
             if (frzCols) {
                 if (i % index === 0) {
@@ -351,15 +329,19 @@ export class RowDD {
                 tbody.insertBefore(args.rows[i], target);
             }
         }
-        let tr: HTMLElement[] = [].slice.call(tbody.querySelectorAll('.e-row'));
-        let mtr: HTMLElement[]; let frTr: HTMLElement[];
+        let tr: HTMLTableRowElement[] = [].slice.call(tbody.querySelectorAll('.e-row'));
+        let mtr: HTMLTableRowElement[]; let frTr: HTMLTableRowElement[];
         if (frzCols) {
             mtr = [].slice.call(mtbody.querySelectorAll('.e-row'));
             if (isLeftRight) {
                 frTr = [].slice.call(frTbody.querySelectorAll('.e-row'));
             }
         }
-        this.refreshData(tr, mtr, frTr);
+        if (this.parent.enableVirtualization) {
+            this.refreshVirtualData(tr, mtr, frTr);
+        } else {
+            this.refreshData(tr, mtr, frTr);
+        }
         if (this.parent.frozenRows) {
             for (let i: number = 0, len: number = tr.length; i < len; i++) {
                 if (i < this.parent.frozenRows) {
@@ -395,8 +377,9 @@ export class RowDD {
                 tbodyFrC = gObj.getFrozenRightContentTbody();
             }
         }
-        let tr: Element[] = [].slice.call(tbodyH.querySelectorAll('.e-row')).concat([].slice.call(tbodyC.querySelectorAll('.e-row')));
-        let mtr: Element[]; let frTr: Element[];
+        let tr: HTMLTableRowElement[] = [].slice.call(tbodyH.querySelectorAll('.e-row')).concat(
+            [].slice.call(tbodyC.querySelectorAll('.e-row')));
+        let mtr: HTMLTableRowElement[]; let frTr: HTMLTableRowElement[];
         if (frzCols) {
             mtr = [].slice.call(tbodyMovH.querySelectorAll('.e-row')).concat([].slice.call(tbodyMovC.querySelectorAll('.e-row')));
             if (isLeftRight) {
@@ -407,6 +390,7 @@ export class RowDD {
         let mtbody: Element = gObj.createElement('tbody');
         let frTbody: Element = gObj.createElement('tbody');
         this.parent.clearSelection();
+        let targetRows: {target: Element, mTarget: Element, frTarget: Element} = this.refreshRowTarget(args);
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
             tbody.appendChild(tr[i]);
             if (frzCols) {
@@ -416,8 +400,29 @@ export class RowDD {
                 }
             }
         }
-        this.refreshRow(args, tbody, mtbody, frTbody);
+        this.refreshRow(args, tbody, mtbody, frTbody, targetRows.target, targetRows.mTarget, targetRows.frTarget);
     }
+
+    private refreshRowTarget( args: RowDropEventArgs): {target: Element, mTarget: Element, frTarget: Element} {
+        let gObj: IGrid = this.parent;
+        let tr: Element;
+        let mTr: Element; let frTr: Element;
+        let targetIdx: number = parseInt(args.target.parentElement.getAttribute('aria-rowindex'), 10);
+        if (args.fromIndex < args.dropIndex || args.fromIndex === args.dropIndex) {
+            targetIdx = targetIdx + 1;
+        }
+        tr = gObj.getRowByIndex(targetIdx);
+        if (gObj.isFrozenGrid()) {
+            mTr = gObj.getMovableRowByIndex(targetIdx);
+            if (gObj.getFrozenMode() === 'Left-Right') {
+                frTr = gObj.getFrozenRightRowByIndex(targetIdx);
+            }
+        }
+        let rows: {target: Element, mTarget: Element, frTarget: Element} = {
+            target: tr, mTarget: mTr, frTarget: frTr
+        };
+        return rows;
+    };
 
     private updateFrozenColumnreOrder(args: RowDropEventArgs): void {
         let gObj: IGrid = this.parent;
@@ -431,50 +436,91 @@ export class RowDD {
             }
         }
         this.parent.clearSelection();
-        this.refreshRow(args, tbody, mtbody, frTbody);
+        let targetRows: {target: Element, mTarget: Element, frTarget: Element} = this.refreshRowTarget(args);
+        this.refreshRow(args, tbody, mtbody, frTbody,  targetRows.target, targetRows.mTarget, targetRows.frTarget);
     }
 
-    private refreshData(tr: HTMLElement[], mtr: HTMLElement[], frTr: HTMLElement[]): void {
+    private refreshVirtualData(tr: HTMLTableRowElement[], mtr: HTMLTableRowElement[], frTr: HTMLTableRowElement[]): void {
+        let recordobj: object = {};
+        let currentViewData: Object[] = this.parent.getCurrentViewRecords();
+        let startedRow: Element = this.parent.isFrozenGrid() ? this.parent.getMovableRows()[0] : this.parent.getRows()[0];
+        let startIndex: number = parseInt(startedRow.getAttribute('aria-rowindex'), 10);
+        for (let i: number = 0, len: number = tr.length; i < len; i++) {
+            let index: number = parseInt(tr[i].getAttribute('aria-rowindex'), 10);
+            this.parent.notify(events.refreshVirtualCacheOnRowDD, { objIndex: index, end: i === tr.length - 1, startIndex: startIndex });
+            index = index - startIndex;
+            recordobj[i] = currentViewData[index];
+        }
+        let rowsElem: Element[] = this.parent.getRows();
+        let mvbRows: Element[]; let frRightRow: Element[];
+        if (this.parent.isFrozenGrid()) {
+            mvbRows = this.parent.getMovableRows();
+            if (frTr) {
+                frRightRow = this.parent.getFrozenRightRows();
+            }
+        }
+        for (let i: number = 0, len: number = tr.length; i < len; i++) {
+            tr[i].setAttribute('aria-rowindex', (i + startIndex).toString());
+            rowsElem[i] = tr[i];
+            currentViewData[i] = recordobj[i];
+            if (this.parent.isFrozenGrid()) {
+                mtr[i].setAttribute('aria-rowindex', (i + startIndex).toString());
+                mvbRows[i] = mtr[i];
+                if (frTr) {
+                    frTr[i].setAttribute('aria-rowindex', (i + startIndex).toString());
+                    frRightRow[i] = frTr[i];
+                }
+            }
+        }
+    };
+
+    private refreshData(tr: HTMLTableRowElement[], mtr: HTMLTableRowElement[], frTr: HTMLTableRowElement[]): void {
         let rowObj: object = {};
         let movobj: object = {}; let frObj: object = {};
         let recordobj: object = {};
+        let rowObjects: Row<Column>[] = this.parent.getRowsObject();
+        let movbObject: Row<Column>[] = this.parent.getMovableRowsObject();
+        let frRightObject: Row<Column>[] = this.parent.getFrozenRightRowsObject();
+        let currentViewData: Object[] = this.parent.getCurrentViewRecords();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
             let index: number = parseInt(tr[i].getAttribute('aria-rowindex'), 10);
-            rowObj[i] = this.parent.getRowsObject()[index];
-            recordobj[i] = this.parent.getCurrentViewRecords()[index];
+            rowObj[i] = rowObjects[index];
+            recordobj[i] = currentViewData[index];
             if (this.parent.isFrozenGrid()) {
-                movobj[i] = this.parent.getMovableRowsObject()[index];
+                movobj[i] = movbObject[index];
                 if (frTr) {
-                    frObj[i] = this.parent.getFrozenRightRowsObject()[index];
+                    frObj[i] = frRightObject[index];
                 }
+            }
+        }
+        let rows: Element[] = this.parent.getRows();
+        let movbRows: Element[]; let frRightRows: Element[];
+        if (this.parent.isFrozenGrid()) {
+            movbRows = this.parent.getMovableRows();
+            if (frTr) {
+                frRightRows = this.parent.getFrozenRightRows();
             }
         }
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            tr[i].setAttribute('aria-rowindex', i.toString());
-            tr[i].setAttribute('data-uid', 'grid-row' + i.toString());
-            this.parent.getRows()[i] = tr[i];
-            this.parent.getRowsObject()[i] = rowObj[i];
-            this.parent.getRowsObject()[i].uid = 'grid-row' + i.toString();
-            this.parent.getRowsObject()[i].index = i;
-            this.parent.getCurrentViewRecords()[i] =  recordobj[i];
+            rows[i] = tr[i];
+            rowObjects[i] = rowObj[i];
+            currentViewData[i] = recordobj[i];
             if (this.parent.isFrozenGrid()) {
-                mtr[i].setAttribute('aria-rowindex', i.toString());
-                mtr[i].setAttribute('data-uid', 'grid-row' + (i + tr.length).toString());
-                this.parent.getMovableRows()[i] = mtr[i];
-                this.parent.getMovableRowsObject()[i] = movobj[i];
-                this.parent.getMovableRowsObject()[i].uid = 'grid-row' + (i + tr.length).toString();
-                this.parent.getMovableRowsObject()[i].index = i;
+                movbRows[i] = mtr[i];
+                movbObject[i] = movobj[i];
                 if (frTr) {
-                    frTr[i].setAttribute('aria-rowindex', i.toString());
-                    frTr[i].setAttribute('data-uid', 'grid-row' + (i + tr.length).toString());
-                    this.parent.getFrozenRightRows()[i] = frTr[i];
-                    this.parent.getFrozenRightRowsObject()[i] = frObj[i];
-                    this.parent.getFrozenRightRowsObject()[i].uid = 'grid-row' + (i + tr.length).toString();
-                    this.parent.getFrozenRightRowsObject()[i].index = i;
+                    frRightRows[i] = frTr[i];
+                    frRightObject[i] = frObj[i];
                 }
             }
         }
-
+        resetRowIndex(this.parent, rowObjects, tr);
+        if (this.parent.isFrozenGrid()) {
+            resetRowIndex(this.parent, movbObject, mtr);
+            if (frTr) {
+                resetRowIndex(this.parent, frRightObject, frTr);
+            }
+        }
     }
 
     private rowOrder(args: RowDropEventArgs): void {
@@ -526,13 +572,15 @@ export class RowDD {
         let selectedRecords: object[] = [];
         let draggedRecords: object[] = [];
         let currentViewData: Object[] = this.parent.renderModule.data.dataManager.dataSource.json;
-        let dropIdx: number = toIndex;
-        let actualIdx: number = fromIndexes[0];
+        let skip: number = this.parent.allowPaging ?
+            (this.parent.pageSettings.currentPage * this.parent.pageSettings.pageSize) - this.parent.pageSettings.pageSize : 0;
+        let dropIdx: number = toIndex + skip;
+        let actualIdx: number = fromIndexes[0] + skip;
         for (let i: number = 0, len: number = fromIndexes.length; i < len; i++) {
-            draggedRecords[i] = currentViewData[fromIndexes[i]];
+            draggedRecords[i] = currentViewData[fromIndexes[i] + skip];
         }
         for (let i: number = 0, len: number = selectedIndexes.length; i < len; i++) {
-            selectedRecords[i] = currentViewData[selectedIndexes[i]];
+            selectedRecords[i] = currentViewData[selectedIndexes[i] + skip];
         }
         for (let i: number = 0, len: number = draggedRecords.length; i < len; i++) {
             if (i !== 0) {
@@ -553,7 +601,7 @@ export class RowDD {
                     }
                 }
             }
-            this.reorderRow(actualIdx, dropIdx);
+            this.reorderRow(actualIdx - skip, dropIdx - skip);
         }
         if (this.isRefresh) {
             this.parent.notify(events.modelChanged, {
@@ -564,7 +612,7 @@ export class RowDD {
             for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
                 if (JSON.stringify(
                     this.parent.renderModule.data.dataManager.dataSource.json[j]) === JSON.stringify(selectedRecords[i])) {
-                    selectedIndexes[i] = j;
+                    selectedIndexes[i] = j - skip;
                     break;
                 }
             }
@@ -673,19 +721,23 @@ export class RowDD {
             if (targetRow && targetRowIndex !== 0 && frzCols) {
                 let rowIndex: number = parseInt(element.getAttribute('aria-rowindex'), 10);
                 let selector: string = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
-                rowElement = [];
-                gridActionHandler(
-                    this.parent,
-                    (tableName: freezeTable, rows: Element[]) => {
-                        rowElement = rowElement.concat([].slice.call(rows[rowIndex].querySelectorAll(selector)));
-                    },
-                    getGridRowElements(this.parent)
-                );
+                rowElement = this.borderRowElement(rowIndex, selector);
             }
             if (rowElement.length > 0) {
                 addRemoveActiveClasses(rowElement, true, 'e-dragborder');
             }
         }
+    }
+
+    private borderRowElement(rowIndex: number, selector: string): HTMLElement[] {
+        let lastRow: HTMLElement[] = [];
+        lastRow = [].slice.call(this.parent.getRowByIndex(rowIndex).querySelectorAll(selector)).
+            concat([].slice.call(this.parent.getMovableRowByIndex(rowIndex).querySelectorAll(selector)));
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            lastRow = lastRow.concat([].slice.call(
+                this.parent.getFrozenRightRowByIndex(rowIndex).querySelectorAll(selector)));
+        }
+        return lastRow;
     }
 
     private getScrollWidth(): number {
@@ -701,9 +753,15 @@ export class RowDD {
     }
 
     private removeLastRowBorder(element: Element): void {
-        let islastRowIndex: boolean = element &&
-            this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
-            element.getAttribute('data-uid');
+        let islastRowIndex: boolean;
+        if (this.parent.enableVirtualization) {
+            islastRowIndex = element && parseInt(element.getAttribute('aria-rowindex'), 10) !==
+                this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
+        } else {
+            islastRowIndex = element &&
+                this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
+                element.getAttribute('data-uid');
+        }
         if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
             remove(this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0]);
         }
@@ -712,20 +770,14 @@ export class RowDD {
     private removeBorder(element: Element): void {
         this.removeFirstRowBorder(element);
         this.removeLastRowBorder(element);
-        element = this.parent.getRows().filter((row: Element) =>
+        element = (this.parent.isFrozenGrid() ? this.parent.getMovableRows() : this.parent.getRows()).filter((row: Element) =>
             row.querySelector('td.e-dragborder'))[0];
         if (element) {
             let rowElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-dragborder'));
             if (this.parent.isFrozenGrid()) {
                 let rowIndex: number = parseInt(element.getAttribute('aria-rowindex'), 10);
-                rowElement = [];
-                gridActionHandler(
-                    this.parent,
-                    (tableName: freezeTable, rows: Element[]) => {
-                        rowElement = rowElement.concat([].slice.call(rows[rowIndex].querySelectorAll('.e-dragborder')));
-                    },
-                    getGridRowElements(this.parent)
-                );
+                let selector: string = '.e-dragborder';
+                rowElement = this.borderRowElement(rowIndex, selector);
             }
             addRemoveActiveClasses(rowElement, false, 'e-dragborder');
         }
@@ -825,33 +877,33 @@ export class RowDD {
                 let query: Query = new Query;
                 query[dragDropDestinationIndex] =  targetIndex;
                 gObj.getDataModule().saveChanges(changes, gObj.getPrimaryKeyFieldNames()[0], {}, query)
-                        .then(() => {
-                            gObj.notify(events.modelChanged, {
-                                type: events.actionBegin, requestType: 'rowdraganddrop'
-                            });
-                        }).catch((e: Error) => {
-                            let message: string = 'message';
-                            let error: string = 'error';
-                            if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
-                                e[error] = e[error][message];
-                            }
-                            gObj.trigger(events.actionFailure, e);
+                    .then(() => {
+                        gObj.notify(events.modelChanged, {
+                            type: events.actionBegin, requestType: 'rowdraganddrop'
                         });
+                    }).catch((e: Error) => {
+                        let message: string = 'message';
+                        let error: string = 'error';
+                        if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                            e[error] = e[error][message];
+                        }
+                        gObj.trigger(events.actionFailure, e);
+                    });
                 changes.deletedRecords = records;
                 changes.addedRecords = [];
                 srcControl.getDataModule().saveChanges(changes, srcControl.getPrimaryKeyFieldNames()[0], {}, query)
-                .then(() => {
-                    srcControl.notify(events.modelChanged, {
-                        type: events.actionBegin, requestType: 'rowdraganddrop'
+                    .then(() => {
+                        srcControl.notify(events.modelChanged, {
+                            type: events.actionBegin, requestType: 'rowdraganddrop'
+                        });
+                    }).catch((e: Error) => {
+                        let error: string = 'error';
+                        let msg: string = 'message';
+                        if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][msg])) {
+                            e[error] = e[error][msg];
+                        }
+                        srcControl.trigger(events.actionFailure, e);
                     });
-                }).catch((e: Error) => {
-                    let error: string = 'error';
-                    let msg: string = 'message';
-                    if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][msg])) {
-                        e[error] = e[error][msg];
-                    }
-                    srcControl.trigger(events.actionFailure, e);
-                });
             }
         }
     }
@@ -904,13 +956,33 @@ export class RowDD {
     }
     private processArgs(target: Element): void {
         let gObj: IGrid = this.parent;
+        let dragIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
-         || gObj.getSelectedRecords().length === 0) {
-            this.rows = [this.startedRow];
+            || gObj.getSelectedRecords().length === 0) {
+            this.rows = [this.parent.getRowByIndex(dragIdx)];
+            if (gObj.isFrozenGrid()) {
+                this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx)];
+                if (gObj.getFrozenMode() === 'Left-Right') {
+                    this.rows = [gObj.getRowByIndex(dragIdx), gObj.getMovableRowByIndex(dragIdx), gObj.getFrozenRightRowByIndex(dragIdx)];
+                }
+            }
             this.rowData = [this.parent.getRowInfo((this.startedRow).querySelector('.e-rowcell')).rowData];
         } else {
             this.rows = gObj.getSelectedRows();
             this.rowData = gObj.getSelectedRecords();
+            if (this.parent.enableVirtualization) {
+                this.rows = [];
+                let selIndex: number[] = gObj.getSelectedRowIndexes();
+                for (let i: number = 0, len: number = selIndex.length; i < len; i++) {
+                    this.rows.push(gObj.getRowByIndex(selIndex[i]));
+                    if (gObj.isFrozenGrid()) {
+                        this.rows.push(gObj.getMovableRowByIndex(selIndex[i]));
+                        if (gObj.getFrozenMode() === 'Left-Right') {
+                            this.rows.push(gObj.getFrozenRightRowByIndex(selIndex[i]));
+                        }
+                    }
+                }
+            }
         }
 
     }

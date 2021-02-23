@@ -422,8 +422,8 @@ export class YearEvent extends TimelineEvent {
             let appEnd: Date = new Date(app[this.fields.endTime].getTime());
             if (this.parent.activeViewOptions.orientation === 'Vertical' &&
                 this.parent.activeViewOptions.group.resources.length > 0) {
-                if ((util.resetTime(appStart).getTime() > dateStart)
-                    && (util.resetTime(appEnd).getTime() < dateEnd)) {
+                if ((util.resetTime(appStart).getTime() >= dateStart)
+                    && (util.resetTime(appEnd).getTime() <= dateEnd)) {
                     appointmentsList.push(app);
                 }
             } else {

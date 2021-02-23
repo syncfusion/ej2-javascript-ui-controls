@@ -358,7 +358,8 @@ export class Image {
                 this.cancelResizeAction();
             } else {
                 if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
-                    parseInt(this.parent.getInsertImgMaxWidth() as string, 10) <= parseInt(width, 10))) {
+                    (parseInt(this.parent.getInsertImgMaxWidth() as string, 10) <= parseInt(width, 10) &&
+                    isNOU(this.imgEle.style.width)))) {
                     return;
                 }
                 if (!this.parent.insertImageSettings.resizeByPercent &&

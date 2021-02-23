@@ -8,7 +8,7 @@ import { Row } from './../models/row';
 import * as events from '../base/constant';
 import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfPen, PdfFont, PdfPaddings } from '@syncfusion/ej2-pdf-export';
 import { PdfGridRow, PdfStandardFont, PdfFontFamily, PdfFontStyle, PdfBitmap } from '@syncfusion/ej2-pdf-export';
-import { PdfStringFormat, PdfTextAlignment, PdfColor, PdfSolidBrush } from '@syncfusion/ej2-pdf-export';
+import { PdfStringFormat, PdfTextAlignment, PdfColor, PdfSolidBrush, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfGridCell, RectangleF, PdfPageTemplateElement } from '@syncfusion/ej2-pdf-export';
 import { PointF, PdfPageNumberField, PdfCompositeField, PdfSection } from '@syncfusion/ej2-pdf-export';
 import { PdfPageCountField, SizeF, PdfPageSettings, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -986,11 +986,25 @@ export class PdfExport {
                     column: column,
                     style: undefined,
                     colSpan: 1,
-                    cell: cell
+                    cell: cell,
+                    hyperLink: undefined
                 };
                 args.value = this.exportValueFormatter.formatCellValue(args, gObj.isServerRendered);
                 this.parent.trigger(events.pdfQueryCellInfo, args);
                 cell.value = args.value;
+                if (!isNullOrUndefined(args.hyperLink)) {
+                    // create the Text Web Link
+                    let textLink: PdfTextWebLink = new PdfTextWebLink();
+                    // set the hyperlink
+                    textLink.url = args.hyperLink.target;
+                    // set the link text
+                    textLink.text = args.hyperLink.displayText || args.hyperLink.target;
+                    // set the font
+                    textLink.font = new PdfStandardFont(PdfFontFamily.Helvetica, 9.75);
+                    // set the brush and pen for the text color
+                    textLink.brush = new PdfSolidBrush(new PdfColor(51, 102, 187));
+                    cell.value = textLink;
+                }
                 if (!isNullOrUndefined(args.style)) {
                     this.processCellStyle(cell, args);
                 }

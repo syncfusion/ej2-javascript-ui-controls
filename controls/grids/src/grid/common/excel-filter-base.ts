@@ -270,6 +270,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' }) as HTMLUListElement;
+        this.parent.notify(events.filterDialogCreated, {});
         this.wireExEvents();
     }
 

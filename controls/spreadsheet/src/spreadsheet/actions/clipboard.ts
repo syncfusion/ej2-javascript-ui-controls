@@ -14,7 +14,7 @@ import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
-import {CellStyleExtendedModel, skipDefaultValue, getFilteredCollection, setChart } from '../../workbook/index';
+import {CellStyleExtendedModel, skipDefaultValue, getFilteredCollection, setChart, parseIntValue } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -771,7 +771,10 @@ export class Clipboard {
                         td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                         let cSpan: number = isNaN(parseInt(td.getAttribute('colspan'), 10)) ? 1 : parseInt(td.getAttribute('colspan'), 10);
                         let rSpan: number = isNaN(parseInt(td.getAttribute('rowspan'), 10)) ? 1 : parseInt(td.getAttribute('rowspan'), 10);
-                        cells[j] = { value: td.textContent, style: cellStyle, colSpan: cSpan, rowSpan: rSpan };
+                        cells[j] = {
+                            value: td.textContent ? <string>parseIntValue(td.textContent.trim()) : null, style: cellStyle, colSpan: cSpan,
+                            rowSpan: rSpan
+                        };
                         if ((cellStyle as { whiteSpace: string }).whiteSpace) {
                             cells[j].wrap = true;
                         }
@@ -790,14 +793,16 @@ export class Clipboard {
             }
             text.trim().split('\n').forEach((row: string) => {
                 row.split('\t').forEach((col: string, j: number) => {
-                    cells[j] = { style: cellStyle };
-                    if (cellStyle && (cellStyle as { whiteSpace: string }).whiteSpace) {
-                        cells[j].wrap = true;
-                    }
-                    if (checkIsFormula(col)) {
-                        cells[j].formula = col;
-                    } else {
-                        cells[j].value = col;
+                    if (col) {
+                        cells[j] = { style: cellStyle };
+                        if (cellStyle && (cellStyle as { whiteSpace: string }).whiteSpace) {
+                            cells[j].wrap = true;
+                        }
+                        if (checkIsFormula(col)) {
+                            cells[j].formula = col;
+                        } else {
+                            cells[j].value = <string>parseIntValue(col.trim());
+                        }
                     }
                 });
                 (rows as RowModel[]).push({ cells: cells });

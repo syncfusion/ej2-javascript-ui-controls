@@ -34,12 +34,13 @@ export class FlMenuOptrUI {
     /**
      * @hidden
      */
-    public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog): void {
+    /* tslint:disable-next-line:max-line-length */
+    public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog, operator?: { [key: string]: Object }[]): void {
         this.dialogObj = dlgObj;
         let optr: string = column.type + 'Operator';
-        this.optrData = this.customOptr = (!isNullOrUndefined(this.parent.filterSettings.operators) &&
-            !isNullOrUndefined(this.parent.filterSettings.operators[optr])) ?
-            this.parent.filterSettings.operators[optr] : this.customFilterOperators[optr];
+        this.optrData = this.customOptr = !isNullOrUndefined(operator) ? operator :
+            (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[optr])) ?
+                this.parent.filterSettings.operators[optr] : this.customFilterOperators[optr];
         let dropDatasource: { [key: string]: Object }[] = this.customOptr;
         let selectedValue: string = this.dropSelectedVal(column, optr);
         let optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flm_optrdiv' });

@@ -4,6 +4,7 @@
 import { Gantt, DayMarkers } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
 import { baselineData } from '../base/data-source.spec';
+import { TimelineSettingsModel } from '../../src/gantt/models/timeline-settings-model';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 describe('Gantt spec for weekend', () => {
     describe('Weekend rendering', () => {
@@ -53,6 +54,21 @@ describe('Gantt spec for weekend', () => {
             ganttObj.dataBind();
             expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.nonworkingContainer}`)).toBe(null);
             expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.weekendContainer}`)).toBe(null);
+        });
+        it('Weekend Testing hour Bottom tier weekend highlight', () => {  
+            let timelineObject: TimelineSettingsModel =  {
+                topTier: {
+                    unit: 'Day',
+                },
+                bottomTier: {
+                    unit: 'Hour',
+                    count: 12
+                },
+            };    
+            ganttObj.timelineSettings = timelineObject;
+            ganttObj.dataBind();            
+            let timelineHeaders = ganttObj.ganttChartModule.chartTimelineContainer.querySelectorAll('tr');
+            expect(timelineHeaders[1].querySelectorAll(`.${cls.weekendHeaderCell}`).length).toBe(78);
         });
     });
 });

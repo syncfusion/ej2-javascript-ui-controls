@@ -490,3 +490,5 @@ export const nextCellIndex: string = 'next-cell-index';
 export const refreshInfiniteCurrentViewData: string = 'refresh-infinite-current-view-data';
 /** @hidden */
 export const infiniteCrudCancel: string = 'infinite-crud-cancel';
+/** @hidden */
+export const refreshVirtualCacheOnRowDD: string = 'refresh-Virtual-Cache-On-RowDD';

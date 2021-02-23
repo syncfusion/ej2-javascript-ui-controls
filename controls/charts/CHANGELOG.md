@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Chart
+
+#### New Features
+
+- `#253348` - Icon support for legend space has been provided.
+
 ## 18.4.43 (2021-02-16)
 
 ### Chart

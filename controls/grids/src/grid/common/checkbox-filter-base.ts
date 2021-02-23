@@ -19,7 +19,7 @@ import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCbox
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
-import { DataResult } from '../base/interface';
+import { DataResult, EJ2Intance } from '../base/interface';
 
 /**
  * @hidden
@@ -57,6 +57,7 @@ export class CheckBoxFilterBase {
     protected localeObj: L10n;
     protected valueFormatter: ValueFormatter;
     private searchHandler: Function;
+    private isMenuNotEqual: boolean;
     /**
      * Constructor for checkbox filtering module
      * @hidden
@@ -396,21 +397,26 @@ export class CheckBoxFilterBase {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let check: Element[] = checked;
         let optr: string = 'equal';
+        let ddlValue: EJ2Intance = (this.dialogObj.element.querySelector('.e-dropdownlist') as EJ2Intance);
+        if (ddlValue) {
+            this.options.operator = optr = ddlValue.ej2_instances[0].value as string;
+        }
+        this.isMenuNotEqual = this.options.operator === 'notequal';
         let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
         let caseSen: boolean = this.options.allowCaseSensitive;
         let defaults: {
             predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         } = {
-            field: this.options.field, predicate: 'or', uid: this.options.uid,
+            field: this.options.field, predicate: this.isMenuNotEqual ? 'and' : 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
         let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
         if (isNotEqual && searchInput.value === '') {
-            optr = 'notequal';
+            optr = this.isMenuNotEqual ? 'equal' : 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
-            defaults.predicate = 'and';
-            defaults.operator = 'notequal';
+            defaults.predicate = this.isMenuNotEqual ? 'or' : 'and';
+            defaults.operator = optr;
         }
         let value: string;
         let val: string;
@@ -952,7 +958,8 @@ export class CheckBoxFilterBase {
         if (!this.isFiltered || !isColFiltered) {
             return true;
         } else {
-            return this.result[value];
+            let checkState: boolean = this.result[value];
+            return this.isMenuNotEqual ? !checkState : checkState;
         }
     }
 

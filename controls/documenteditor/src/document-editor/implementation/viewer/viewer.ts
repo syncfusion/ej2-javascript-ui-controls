@@ -2969,13 +2969,17 @@ export class DocumentHelper {
                             page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                             return this.getFieldText(fieldPattern, page.currentPageNum);
                         }
-                        if (previousPage.currentPageNum === 0) {
+                        if (previousPage.currentPageNum === 1) {
                             previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                         }
                         page.currentPageNum = previousPage.currentPageNum + 1;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
+                    } else if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex === 0) {
+                        page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
+                        return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
                     page.currentPageNum = (!isNullOrUndefined(page.previousPage)) ? page.previousPage.currentPageNum + 1 : page.index + 1;
+                    page.currentPageNum = page.index + 1;
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.documentHelper.pages.length);

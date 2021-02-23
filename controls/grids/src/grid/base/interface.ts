@@ -25,7 +25,7 @@ import { NumericTextBoxModel, MaskedTextBoxModel } from '@syncfusion/ej2-inputs'
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage } from '@syncfusion/ej2-pdf-export';
 import { Matrix, FocusStrategy } from '../services/focus-strategy';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
@@ -1287,7 +1287,7 @@ export interface PdfQueryCellInfoEventArgs {
     /** Defines the style of the current cell. */
     style?: PdfStyle;
     /** Defines the value of the current cell. */
-    value?: Date | string | number | boolean;
+    value?: Date | string | number | boolean | PdfTextWebLink | PdfImage;
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
     /** Defines the data of the cell
@@ -1296,6 +1296,8 @@ export interface PdfQueryCellInfoEventArgs {
     data?: Object;
     /** Defines the current PDF cell */
     cell?: PdfGridCell;
+    /** Defines the hyperlink of the cell */
+    hyperLink?: Hyperlink;
 }
 
 export interface ExportDetailDataBoundEventArgs {
@@ -1331,6 +1333,15 @@ export interface PdfHeaderQueryCellInfoEventArgs {
     gridCell?: object;
 }
 
+export interface Image {
+    /**  Defines the base 64 string for image */
+    base64: string;
+    /**  Defines the height for the image */
+    height: number;
+    /**  Defines the height for the image */
+    width: number;
+}
+
 export interface ExcelQueryCellInfoEventArgs {
     /** Defines the row data associated with this cell.
      * @isGenericType true
@@ -1345,7 +1356,11 @@ export interface ExcelQueryCellInfoEventArgs {
     /** Defines the number of columns to be spanned */
     colSpan?: number;
     /** Defines the cell data */
-    cell?: number | ExcelStyle | { name: string };
+    cell?: number | ExcelStyle | { name: string } | ExcelCell;
+    /** Defines the template image details */
+    image?: Image;
+    /** Defines the hyperlink */
+    hyperLink?: Hyperlink;
 }
 export interface ExcelHeaderQueryCellInfoEventArgs {
     /** Defines the cell that contains colspan. */
@@ -1549,6 +1564,8 @@ export interface ExcelExportProperties {
     hierarchyExportMode?: 'Expanded' | 'All' | 'None';
     /** Defines the delimiter for CSV file export */
     separator?: string;
+    /** Defines filter icons while exporting */
+    enableFilter?: boolean;
 }
 
 export interface RowDragEventArgs {
@@ -2244,6 +2261,7 @@ export interface IFilterArgs {
     isForeignKey?: boolean;
     ignoreAccent?: boolean;
     isRemote?: boolean;
+    operator?: string;
 }
 
 export interface PdfExportProperties {

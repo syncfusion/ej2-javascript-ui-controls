@@ -2856,6 +2856,9 @@ export class Selection {
     public getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             let bodyWidget: BodyWidget = this.documentHelper.pages[i].bodyWidgets[0];
+            if (bodyWidget.index === sectionIndex && bodyWidget.childWidgets.length === 1) {
+                return bodyWidget;
+            }
             if (bodyWidget.index === sectionIndex) {
                 if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
                     (bodyWidget.lastChild as Widget).index >= blockIndex) {
@@ -2938,6 +2941,9 @@ export class Selection {
     public getBlockByIndex(container: Widget, blockIndex: number): Widget {
         let childWidget: Widget;
         if (container) {
+            if (container instanceof BodyWidget && container.childWidgets.length === 1) {
+               return container.childWidgets[0] as Widget;
+            }
             for (let j: number = 0; j < container.childWidgets.length; j++) {
                 if ((container.childWidgets[j] as Widget).index === blockIndex) {
                     childWidget = container.childWidgets[j] as Widget;

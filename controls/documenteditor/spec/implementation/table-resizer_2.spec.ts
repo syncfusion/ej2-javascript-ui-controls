@@ -63,7 +63,7 @@ console.log('After merge cell resize cell at middle validation');
         editor.editorModule.tableResize.startingPoint = new Point(408.5, 104);
         documentHelper.currentPage = documentHelper.pages[0];
         editor.editorModule.tableResize.resizeTableCellColumn(-1);
-        expect(editor.editorModule.tableResize.resizerPosition).toBe(2);
+        expect(editor.editorModule.tableResize.resizerPosition).toBe(1);
     });
 
 });

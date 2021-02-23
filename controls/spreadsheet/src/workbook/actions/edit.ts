@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart } from '../common/event';
-import { getRangeIndexes } from '../common/index';
+import { getRangeIndexes, parseIntValue } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
@@ -101,7 +101,7 @@ export class WorkbookEdit {
             let isFormula: boolean = checkIsFormula(value);
             if (!isFormula) {
                 cell.formula = '';
-                cell.value = <string>this.parseIntValue(value);
+                cell.value = <string>parseIntValue(value);
             }
             let eventArgs: { [key: string]: string | number | boolean } = {
                 action: 'refreshCalculate',
@@ -139,9 +139,5 @@ export class WorkbookEdit {
         if (this.parent.allowChart) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
-    }
-
-    private parseIntValue(value: string): string | number {
-        return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
     }
 }

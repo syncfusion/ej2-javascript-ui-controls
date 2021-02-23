@@ -730,8 +730,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.hide(event);
         };
         this.dlgOverlayClickEventHandler = (event: Object): void => {
-            this.trigger('overlayClick', event);
-            this.focusContent();
+            (event as {[key: string]: boolean}).preventFocus = false;
+            this.trigger('overlayClick', event, (overlayClickEventArgs: {[key: string]: object}) => {
+            if (!overlayClickEventArgs.preventFocus) { this.focusContent(); }
+            });
         };
         let localeText: object = { close: 'Close' };
         this.l10n = new L10n('dialog', localeText, this.locale);
@@ -882,6 +884,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.classList.remove(DLG_RESIZABLE);
         }
     }
+    private getFocusElement(target: HTMLElement): Button {
+        let value: string = 'input,select,textarea,button:enabled,a,[contenteditable="true"],[tabindex]';
+        let items: NodeListOf<HTMLElement> = target.querySelectorAll(value);
+        return { element: items[items.length - 1] as HTMLElement } as Button;
+    }
     /* istanbul ignore next */
     private keyDown(event: KeyboardEvent): void {
         if (event.keyCode === 9) {
@@ -891,9 +898,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     buttonObj = this.btnObj[this.btnObj.length - 1];
                 }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
-                    let value: string = 'input,select,textarea,button,a,[contenteditable="true"],[tabindex]';
-                    let items: NodeListOf<HTMLElement> = this.ftrTemplateContent.querySelectorAll(value);
-                    buttonObj = { element: items[items.length - 1] as HTMLElement } as Button;
+                    buttonObj = this.getFocusElement(this.ftrTemplateContent);
+                }
+                if (isNullOrUndefined(this.btnObj) && isNullOrUndefined(this.ftrTemplateContent) && !isNullOrUndefined(this.contentEle)) {
+                    buttonObj = this.getFocusElement(this.contentEle);
                 }
                 if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
                     event.preventDefault();
@@ -1463,11 +1471,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             this.contentEle = this.element.querySelector('.e-dlg-content'); }
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
                             if (!this.isBlazorServerRender()) { this.contentEle.innerHTML = ''; }
-                            typeof (this.content) === 'string' ? (this.isBlazorServerRender()
-                            && (this.contentEle.innerText === '')) ?
+                            if (typeof (this.content) === 'function') {
+                                this.clearTemplate(['content']); detach(this.contentEle); this.contentEle = null; this.setContent();
+                            } else {
+                                typeof (this.content) === 'string' ? (this.isBlazorServerRender() && (this.contentEle.innerText === '')) ?
                                 this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                                this.updateSanitizeContent() :
-                                this.contentEle.appendChild(this.content);
+                                this.updateSanitizeContent() : this.contentEle.appendChild(this.content);
+                            }
                             this.setMaxHeight();
                         } else { if (!this.isBlazorServerRender() ||
                             isNullOrUndefined(this.element.querySelector('.e-dlg-content'))) { this.setContent(); } }
@@ -1532,9 +1542,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'allowDragging':
                     if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                         this.setAllowDragging();
-                    } else {
-                        this.dragObj.destroy();
-                    } break;
+                    } else { this.dragObj.destroy(); } break;
                 case 'target':
                 this.setTarget(newProp.target); break;
                 case 'position':
