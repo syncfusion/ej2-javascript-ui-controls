@@ -1,8 +1,8 @@
 /**
  * Allows to apply sorting to the specified field either by ascending or descending or JSON order. The types are,
- * * Ascending - Allows to display the field members in ascending order. 
+ * * Ascending - Allows to display the field members in ascending order.
  * * Descending - Allows to display the field members in descending order.
- * * None - It allows to display the field members based on JSON order. 
+ * * None - It allows to display the field members based on JSON order.
  */
 export type Sorting =
     /**  Allows to display the field members in ascending order. */
@@ -37,7 +37,7 @@ export type Sorting =
  * * PercentageOfParentColumnTotal - Allows to display the pivot table values with percentage of its parent total in each column.
  * * PercentageOfParentRowTotal - Allows to display the pivot table values with percentage of its parent total in each row.
  * * CalculatedField - Allows to display the pivot table with calculated field values. It allows user to create a new calculated field alone.
- * 
+ *
  * > It is applicable only for relational data source.
  */
 export type SummaryTypes =
@@ -88,7 +88,7 @@ export type SummaryTypes =
     /** Allows to display the pivot table with calculated field values. It allows user to create a new calculated field alone. */
     'CalculatedField';
 
-/** 
+/**
  * Allows you to set the specific filter type to display the filter members in the pivot table. They are:
  * * Include - Specifies the filter type as include for member filter.
  * * Exclude - Specifies the filter type as exclude for member filter.
@@ -304,7 +304,7 @@ export type Condition =
     /** Display the pivot table that does not record between the start and end value. */
     'NotBetween';
 
-/** 
+/**
  * Defines group of date field. They are:
  * * Years - Defines group field as 'Years' for date type field.
  * * Quarters - Defines group field as 'Quarters' for date type field.
@@ -332,7 +332,7 @@ export type DateGroup =
     'Minutes' |
     /**  Defines group field as 'Seconds' for date type field. */
     'Seconds';
-/** 
+/**
  * Defines the group types. They are:
  * * Date - Defines group type as 'Date' for date type field
  * * Number - Defines group type as 'Number' for numeric type field.

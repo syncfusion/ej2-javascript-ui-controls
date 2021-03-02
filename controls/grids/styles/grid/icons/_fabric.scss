@@ -52,6 +52,14 @@
       content: '\e21c';
     }
 
+    .e-resfilter-icon::before {
+      content: '\e250';
+    }
+
+    .e-ressort-icon::before {
+      content: '\e612';
+    }
+
     .e-excl-filter-icon::before {
       content: '\e250';
     }
@@ -88,6 +96,10 @@
 
     .e-add::before {
       content: '\e7d5';
+    }
+
+    .e-resback-icon::before {
+      content: '\e610';
     }
 
     .e-wordexport::before {
@@ -175,6 +187,36 @@
     .e-ccsearch-icon.e-cc-cancel::before,
     .e-chkcancel-icon::before {
       content: '\e7a7';
+    }
+  }
+}
+
+.e-responsive-dialog {
+  & .e-resfilterback::before {
+    content: '\e610';
+  }
+
+  & .e-filterset::before {
+    content: '\e21c';
+  }
+
+  & .e-search-icon::before {
+    content: '\e97d';
+  }
+
+  & .e-chkcancel-icon::before {
+    content: '\e7a7';
+  }
+
+  & .e-icon-filter-clear::before {
+    content: '\e247';
+  }
+}
+
+.e-row-responsive-filter {
+  & .e-dlg-closeicon-btn {
+    & .e-icon-dlg-close::before {
+      content: '\e610';
     }
   }
 }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### Chart
+
+#### Bug Fixes
+
+- `#156827` - Axis line break label alignment issue has been fixed.
+
 ## 18.4.44 (2021-02-23)
 
 ### Chart

@@ -49,10 +49,9 @@ export class MDXQuery {
     private static allowLabelFilter: boolean;
     /** @hidden */
     private static allowValueFilter: boolean;
-    /* tslint:disable:no-any */
-    /* tslint:disable-next-line:max-line-length */
-    public static getCellSets(dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean, drillInfo?: IDrilledItem, isQueryUpdate?: boolean): any {
-        /* tslint:enable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    public static getCellSets(dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean, drillInfo?: IDrilledItem, isQueryUpdate?: boolean): any {  /* eslint-disable-line */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         this.engine = olapEngine;
         this.isMondrian = olapEngine.isMondrian;
         this.isMeasureAvail = olapEngine.isMeasureAvail;
@@ -74,11 +73,12 @@ export class MDXQuery {
         this.filterMembers = extend({}, olapEngine.filterMembers, null, true) as { [key: string]: string[] | IFilter[] };
         this.fieldDataObj = olapEngine.fieldListObj;
         this.fieldList = olapEngine.fieldList;
-        /* tslint:disable-next-line:max-line-length */
         this.cellSetInfo = '\nDIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let measureQuery: string = this.getMeasuresQuery(this.values);
+        /* eslint-disable */
         let rowQuery: string = this.getDimensionsQuery(this.rows, measureQuery, 'rows', drillInfo).replace(/\&/g, '&amp;');
         let columnQuery: string = this.getDimensionsQuery(this.columns, measureQuery, 'columns', drillInfo).replace(/\&/g, '&amp;');
+        /* eslint-enable */
         if (this.isPaging && refPaging && this.pageSettings !== undefined) {
             let pagingQuery: PagingQuery = this.getPagingQuery(rowQuery, columnQuery);
             rowQuery = pagingQuery.rowQuery;
@@ -88,18 +88,20 @@ export class MDXQuery {
             rowQuery = pagingQuery.rowQuery;
             columnQuery = pagingQuery.columnQuery;
         }
+        /* eslint-disable */
         rowQuery = (rowQuery.length > 0 ? rowQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON ROWS') : '');
         columnQuery = (columnQuery.length > 0 ? columnQuery + (this.isPaging && !refPaging ? '' : this.cellSetInfo + ' ON COLUMNS') : '');
         let slicerQuery: string = this.getSlicersQuery(this.filters, 'filters').replace(/\&/g, '&amp;');
-        /* tslint:disable-next-line:max-line-length */
         let filterQuery: string = this.getfilterQuery(this.filterMembers, dataSourceSettings.cube).replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;');
         let caclQuery: string = this.getCalculatedFieldQuery(this.calculatedFieldSettings).replace(/\&/g, '&amp;');
+        /* eslint-enable */
         let query: string = this.frameMDXQuery(rowQuery, columnQuery, slicerQuery, filterQuery, caclQuery, refPaging);
         let args: ConnectionInfo = {
             catalog: dataSourceSettings.catalog,
             cube: dataSourceSettings.cube,
             url: dataSourceSettings.url,
             request: query,
+            /* eslint-disable */
             LCID: dataSourceSettings.localeIdentifier.toString()
         };
         olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"');
@@ -107,14 +109,11 @@ export class MDXQuery {
         if (drillInfo) {
             drillInfo.axis = drillInfo.axis === 'rows' ? 'row' : 'column';
         }
-        /* tslint:disable */
         if (!isQueryUpdate) {
             this.getTableCellData(args, (this.isPaging && !refPaging ? this.engine.generatePagingData.bind(this.engine) : this.engine.generateEngine.bind(this.engine)),
                 drillInfo ? { action: drillInfo.action, drillInfo: drillInfo } : { dataSourceSettings: dataSourceSettings, action: 'loadTableElements' });
         }
-        /* tslint:enable */
     }
-    /* tslint:disable:max-line-length */
     private static getTableCellData(args: ConnectionInfo, successMethod: Function, customArgs: object): void {
         let connectionString: ConnectionInfo = this.engine.getConnectionInfo(args.url, args.LCID);
         let soapMessage: string = '<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"> <Header></Header> <Body> <Execute xmlns="urn:schemas-microsoft-com:xml-analysis"> <Command> <Statement>' +
@@ -123,7 +122,8 @@ export class MDXQuery {
             '</LocaleIdentifier> </PropertyList> </Properties></Execute> </Body> </Envelope>';
         this.engine.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
     }
-    public static frameMDXQuery(rowQuery: string, columnQuery: string, slicerQuery: string, filterQuery: string, caclQuery: string, refPaging?: boolean): string {
+    /* eslint-enable */
+    public static frameMDXQuery(rowQuery: string, columnQuery: string, slicerQuery: string, filterQuery: string, caclQuery: string, refPaging?: boolean): string {  /* eslint-disable-line */
         let query: string = ((this.isPaging && !refPaging) ? caclQuery !== '' ? '' : '\nWITH' : '\nSelect ');
         if (columnQuery.length > 0) {
             query = query + columnQuery;
@@ -164,7 +164,7 @@ export class MDXQuery {
         return axisQuery;
     }
     private static getPagingCountQuery(rowQuery: string, columnQuery: string): PagingQuery {
-        /* tslint:disable */
+        /* eslint-disable */
         rowQuery = rowQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         columnQuery = columnQuery.replace('NON EMPTY ( ', '').slice(0, -1);
         let rowQueryCpy: string = rowQuery;
@@ -175,9 +175,9 @@ export class MDXQuery {
             columnQuery: columnQuery !== '' ? ('\nSET [e16a30d0-2174-4874-8dae-a5085a75a3e2] as ' + (this.isMondrian ? '' : 'NONEMPTY') + ' (' + columnQuery + (!this.isMondrian && rowQueryCpy !== '' ? ',' + rowQueryCpy : '') + ')\n') : ''
         };
         return axisQuery;
-        /* tslint:enable */
+        /* eslint-enable */
     }
-    /* tslint:enable:max-line-length */
+    /* eslint-enable max-len */
     public static getDimensionsQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): string {
         let query: string = '';
         if (dimensions.length > 0) {
@@ -206,34 +206,26 @@ export class MDXQuery {
                 }
                 i++;
             }
-            // if (!this.isMeasureAvail && measureQuery !== '' && this.valueAxis === axis) {
-            //     query = query + ' * ' + measureQuery;
-            // }
-            /* tslint:disable:max-line-length */
-            let drillQueryObj: { query: string, collection: string[] } = this.getDrillQuery(dimensions, measureQuery, axis, drillInfo);
+            let drillQueryObj: { query: string; collection: string[] } = this.getDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (drillInfo && drillInfo.axis === axis ? '\nNON EMPTY ( ' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '') + drillQueryObj.query : query + (drillQueryObj.query !== '' ? ',' : '') + drillQueryObj.query);
             let drillQuery: string = this.getAttributeDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
                 (this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + (this.drilledMembers.length > 0 ? '})' : '') + (!this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + ')';
         }
-        // else if (!this.isMeasureAvail && measureQuery !== '' && this.valueAxis === axis) {
-        //     query = 'NON EMPTY (' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE({' : '') + measureQuery;
-        //     query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
-        //         (this.drilledMembers.length > 0 ? '})' : '') + ') ' + this.cellSetInfo + ' ON ' + axis.toUpperCase();
-        // }
-        /* tslint:enable:max-line-length */
         return query;
     }
-    private static getAttributeDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): string {
+    private static getAttributeDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): string {  /* eslint-disable-line */
         let query: string = '';
         let drilledMembers: IDrillOptions[] = [];
         let isOnDemandDrill: boolean = false;
+        /* eslint-disable */
         if (drillInfo && drillInfo.axis === axis && drillInfo.action.toLowerCase() === 'down') {
             isOnDemandDrill = true;
             drilledMembers = [{ name: drillInfo.fieldName, items: [drillInfo.memberName], delimiter: '~~' }];
         } else {
             drilledMembers = this.drilledMembers;
         }
+        /* eslint-enable */
         let measurePos: number = axis === this.valueAxis ? this.getMeasurePos(axis) : 0;
         for (let field of drilledMembers) {
             let isHierarchy: boolean = this.engine.fieldList[field.name] ? this.engine.fieldList[field.name].isHierarchy : false;
@@ -241,14 +233,13 @@ export class MDXQuery {
                 for (let item of field.items) {
                     let drillQuery: string[] = [];
                     let drillInfo: string[] = item.split(field.delimiter ? field.delimiter : '~~');
-                    let result: { level: number, isDrill: boolean } = this.getDrillLevel(dimensions, drillInfo);
+                    let result: { level: number; isDrill: boolean } = this.getDrillLevel(dimensions, drillInfo);
                     let fieldPosition: number = this.getDimensionPos(axis, field.name);
                     let index: number = dimensions.length - (measurePos > fieldPosition ? 1 : 0);
                     let isExist: boolean = this.isPaging ? this.isAttributeMemberExist(field.name, item.split(field.delimiter ? field.delimiter : '~~'), field.delimiter, drillInfo, axis) : false;
                     while (result.level > 0 && result.isDrill && (fieldPosition + 1) !== measurePos && !isExist) {
                         let levelQuery: string[] = [];
                         let i: number = 0;
-                        /* tslint:disable:max-line-length */
                         while (i < dimensions.length) {
                             if (dimensions[i].name.toLowerCase() === '[measures]') {
                                 if (measureQuery !== '') {
@@ -258,7 +249,7 @@ export class MDXQuery {
                                 (dimensions[i].isNamedSet && this.fieldList[dimensions[i].name] && drillInfo[i].indexOf(this.fieldList[dimensions[i].name].pid.split('Sets_')[1]) !== -1))) {
                                 levelQuery.push(this.getHierarchyQuery(drillInfo[i], false, false, false, result.level, true));
                             } else if (!drillInfo[i] && dimensions[i]) {
-                                levelQuery.push(this.getHierarchyQuery(dimensions[i].name, ((this.isPaging && result.level === 2) || (!this.isPaging && index > i) ? true : false), dimensions[i].isNamedSet, dimensions[i].isCalculatedField, result.level, false));
+                                levelQuery.push(this.getHierarchyQuery(dimensions[i].name, ((this.isPaging && result.level === 2) || (!this.isPaging && index > i) ? true : false), dimensions[i].isNamedSet, dimensions[i].isCalculatedField, result.level, false));   /* eslint-disable-line */
                             } else {
                                 levelQuery = [];
                                 break;
@@ -301,7 +292,7 @@ export class MDXQuery {
         }
         return position;
     }
-    private static getDrillLevel(dimensions: IFieldOptions[], drillInfo: string[]): { level: number, isDrill: boolean } {
+    private static getDrillLevel(dimensions: IFieldOptions[], drillInfo: string[]): { level: number; isDrill: boolean } {
         let level: number = dimensions.length;
         let isDrill: boolean = false;
         let i: number = 0;
@@ -318,23 +309,25 @@ export class MDXQuery {
         }
         return { level: this.isPaging ? 2 : level, isDrill: isDrill };
     }
-    private static getHierarchyQuery(name: string, isChildren: boolean, isNamedSet: boolean, isCalculatedField: boolean, level: number, isDrill: boolean): string {
+    private static getHierarchyQuery(name: string, isChildren: boolean, isNamedSet: boolean, isCalculatedField: boolean, level: number, isDrill: boolean): string { /* eslint-disable-line */
         name = isCalculatedField ? this.fieldList[name].tag : name;
         return ((this.fieldList[name] && !this.fieldList[name].hasAllMember && !isNamedSet && !isCalculatedField) ? '((' + name + ').levels(0).AllMembers)' : (isNamedSet || isCalculatedField) ? ('({' + name + '})') : this.isPaging ? ('({' + name) + (isChildren ? '.CHILDREN})' : (!isDrill && level === 1) ? '.[All]})' : '})') : ('({DrilldownLevel({' + name + (isChildren ? '.CHILDREN' : '') + '},,,INCLUDE_CALC_MEMBERS' + ')})'));
     }
-    private static isAttributeMemberExist(hierarchy: string, item: string[], delimiter: string, drillInfo: string[], axis: string): boolean {
+    private static isAttributeMemberExist(hierarchy: string, item: string[], delimiter: string, drillInfo: string[], axis: string): boolean {   /* eslint-disable-line */
         item.splice(drillInfo.length - 1, 1);
         let isAvailable: boolean = false;
         if (item.join(delimiter) !== '' && !(this.isPaging && item.length === 1 && item.join(delimiter) === '[Measures]') && this.engine.fieldList[hierarchy] && this.engine.fieldList[hierarchy].hasAllMember) {
             let hierarchyPosition: number = this.getDimensionPos(axis, hierarchy);
             for (let i: number = 0; i < this.drilledMembers.length; i++) {
                 if (hierarchy !== this.drilledMembers[i].name) {
-                    let isHierarchy: boolean = this.engine.fieldList[this.drilledMembers[i].name] ? this.engine.fieldList[this.drilledMembers[i].name].isHierarchy : false;
+                    let isHierarchy: boolean =
+                        this.engine.fieldList[this.drilledMembers[i].name] ?
+                            this.engine.fieldList[this.drilledMembers[i].name].isHierarchy : false;
                     if (isHierarchy) {
                         let fieldPosition: number = this.getDimensionPos(axis, this.drilledMembers[i].name);
                         for (let j: number = 0; j < this.drilledMembers[i].items.length; j++) {
-                            let result: { level: number, isDrill: boolean } = this.getDrillLevel(axis === 'rows' ? this.rows : this.columns, this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter ? this.drilledMembers[i].delimiter : '~~'));
-                            if ((this.isPaging ? (fieldPosition < hierarchyPosition && result.isDrill) : true) && (this.drilledMembers[i].items[j].indexOf(item.join(delimiter)) === 0 || item.join(delimiter).indexOf(this.drilledMembers[i].items[j]) === 0)) {
+                            let result: { level: number; isDrill: boolean } = this.getDrillLevel(axis === 'rows' ? this.rows : this.columns, this.drilledMembers[i].items[j].split(this.drilledMembers[i].delimiter ? this.drilledMembers[i].delimiter : '~~'));
+                            if ((this.isPaging ? (fieldPosition < hierarchyPosition && result.isDrill) : true) && (this.drilledMembers[i].items[j].indexOf(item.join(delimiter)) === 0 || item.join(delimiter).indexOf(this.drilledMembers[i].items[j]) === 0)) {   /* eslint-disable-line */
                                 isAvailable = true;
                                 break;
                             }
@@ -345,8 +338,7 @@ export class MDXQuery {
         }
         return isAvailable;
     }
-    /* tslint:disable-next-line:max-line-length */
-    private static getDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): { query: string, collection: string[] } {
+    private static getDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem): { query: string; collection: string[] } {  /* eslint-disable-line */
         let query: string = '';
         let rawDrillQuery: string[] = [];
         let drilledMembers: IDrillOptions[] = [];
@@ -367,7 +359,6 @@ export class MDXQuery {
                     let i: number = 0;
                     let drillInfo: string[] = item.split(field.delimiter ? field.delimiter : '~~');
                     let isExist: boolean = this.isAttributeMemberExist(field.name, item.split(field.delimiter ? field.delimiter : '~~'), (field.delimiter ? field.delimiter : '~~'), drillInfo, axis);
-                    /* tslint:disable:max-line-length */
                     while (i < dimensions.length && !isExist) {
                         if (drillInfo[i] && drillInfo[i].indexOf(dimensions[i].name) !== -1) {
                             if (drillInfo[drillInfo.length - 1].indexOf(dimensions[i].name) !== -1) {
@@ -429,7 +420,7 @@ export class MDXQuery {
                     }
                     // query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString().replace(/\&/g, "&amp;") + ')' : '');
                     query = query + (query !== '' && drillQuery.length > 0 ? ',' : '') + (drillQuery.length > 0 ? '(' + drillQuery.toString() + ')' : '');
-                    /* tslint:enable:max-line-length */
+                    /* eslint-enable max-len */
                     if (rawQuery.length > 0) {
                         rawDrillQuery.push(('(' + rawQuery.toString() + ')'));
                     }
@@ -437,7 +428,7 @@ export class MDXQuery {
             }
         }
         // return (isOnDemandDrill ? onDemandDrillQuery.replace(/\&/g, "&amp;") : query);
-        let queryCollection: { query: string, collection: string[] } = {
+        let queryCollection: { query: string; collection: string[] } = {
             query: (isOnDemandDrill ? onDemandDrillQuery : query),
             collection: (isOnDemandDrill ? [onDemandDrillQuery] : rawDrillQuery)
         };
@@ -465,7 +456,7 @@ export class MDXQuery {
         }
         return query;
     }
-    /* tslint:disable */
+    /* eslint-disable */
     public static getSlicersQuery(slicers: IFieldOptions[], axis: string): string {
         let query: string = '';
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
@@ -494,7 +485,7 @@ export class MDXQuery {
         }
         return query;
     }
-    /* tslint:enable */
+    /* eslint-enable */
     private static getDimensionQuery(dimension: IFieldOptions, axis: string): string {
         let query: string = '';
         let name: string = dimension.isCalculatedField ? this.fieldList[dimension.name].tag : dimension.name;
@@ -564,9 +555,9 @@ export class MDXQuery {
                 if (typeof filters[field.name][0] === 'string') {
                     columnFilter.push(filters[field.name] as string[]);
                 } else {
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     let filter: any = filters[field.name];
-                    /* tslint:enable:no-any */
+                    /* eslint-enable @typescript-eslint/no-explicit-any */
                     filter[1] = (filter[0] as IFilter).type;
                     advancedFilters.push(filters[field.name] as IFilter[]);
                     delete filters[field.name];
@@ -605,7 +596,6 @@ export class MDXQuery {
             }
         }
         for (let i: number = 0, cnt: number = columnFilter.length; i < cnt; i++) {
-            /* tslint:disable-next-line:max-line-length */
             filterQuery = i === 0 ? filterQuery + '{' + columnFilter[i].toString() + '}' : filterQuery + ',{' + columnFilter[i].toString() + '}';
         }
         if (columnFilter.length > 0) {
@@ -628,13 +618,13 @@ export class MDXQuery {
         return (updatedFilterQuery.length > 0) ? updatedFilterQuery : query;
     }
 
-    /* tslint:disable:max-line-length */
     private static getAdvancedFilterQuery(filterItem: IFilter, query: string, currentAxis: string): string {
         let filterQuery: string = '\nFROM (SELECT Filter(' + filterItem.selectedField + '.AllMembers, ' +
-            this.getAdvancedFilterCondtions(filterItem.name, filterItem.condition, filterItem.value1 as string, filterItem.value2 as string, filterItem.type, filterItem.measure) +
+            this.getAdvancedFilterCondtions(filterItem.name, filterItem.condition, filterItem.value1 as string, filterItem.value2 as string, filterItem.type, filterItem.measure) + /* eslint-disable-line */
             ')) on ' + currentAxis;
         return filterQuery;
     }
+    /* eslint-disable */
     private static getAdvancedFilterCondtions(fieldName: string, filterOperator: Operators, value1: string, value2: string, filterType: FilterType, measures: string): string {
         let advancedFilterQuery: string = '';
         switch (filterOperator) {
@@ -687,7 +677,7 @@ export class MDXQuery {
         return advancedFilterQuery;
     }
 
-    /* tslint:enable:max-line-length */
+    /* eslint-enable max-len */
     private static getCalculatedFieldQuery(calcMembers: ICalculatedFieldSettings[]): string {
         let calcQuery: string = '';
         if (calcMembers.length > 0) {
@@ -695,7 +685,6 @@ export class MDXQuery {
             for (let member of calcMembers) {
                 let prefixName: string = (member.formula.indexOf('Measure') > -1 ? '[Measures].' : member.hierarchyUniqueName + '.');
                 let aliasName: string = prefixName + '[' + member.name + ']';
-                /* tslint:disable-next-line:max-line-length */
                 let formatString: string = (!isNullOrUndefined(member.formatString) ? member.formatString : null);
                 calcQuery += ('\nMEMBER ' + aliasName + 'as (' + member.formula + ') ' + (!isNullOrUndefined(formatString) ? ', FORMAT_STRING =\"' + formatString.trim() + '\"' : ''));
             }
@@ -703,6 +692,7 @@ export class MDXQuery {
         return calcQuery;
     }
 }
+/* eslint-enable */
 
 /**
  * @hidden

@@ -520,12 +520,12 @@ export class InfiniteScroll implements IAction {
         this.isInitialCollapse = !isExpand;
     }
 
-    private infiniteScrollHandler(e: Event): void {
+    private infiniteScrollHandler(e: { target: HTMLElement, isLeft: boolean }): void {
         this.restoreInfiniteEdit();
         this.restoreInfiniteAdd();
         let targetEle: HTMLElement = e.target as HTMLElement;
         let isInfinite: boolean = targetEle.classList.contains('e-content');
-        if (isInfinite && this.parent.enableInfiniteScrolling) {
+        if (isInfinite && this.parent.enableInfiniteScrolling && !e.isLeft) {
             let scrollEle: Element = this.parent.getContent().firstElementChild;
             this.prevScrollTop = scrollEle.scrollTop;
             let rows: Element[] = this.parent.getRows();

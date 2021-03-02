@@ -1509,6 +1509,10 @@ export class ListBox extends DropDownBase {
                 case 'moveAllFrom':
                     this.moveAllItemFrom();
                     break;
+                default:
+                    this.trigger('actionBegin', { cancel: false, items: this.getDataByElems(this.getSelectedItems()),
+                        eventName: this.toolbarAction });
+                    break;
             }
         }
     }

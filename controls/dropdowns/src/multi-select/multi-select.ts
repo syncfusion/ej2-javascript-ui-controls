@@ -2877,7 +2877,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.mode === 'CheckBox' && this.showSelectAll && (isNullOrUndefined(this.value) || !this.value.length)) {
                 this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
             }
-            if (this.mode === 'Box') {
+            if (this.mode === 'Box' || (this.mode === 'Default' && this.inputFocus)) {
                 this.chipCollectionWrapper.style.display = '';
             } else if (this.mode === 'Delimiter' || this.mode === 'CheckBox') {
                 this.showDelimWrapper();
@@ -2910,15 +2910,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     };
     protected updateListSelection(li: Element, e: MouseEvent | KeyboardEventArgs, length?: number): void {
         let customVal: string | number | boolean = li.getAttribute('data-value');
-        let value: string | number | boolean;
-        if (this.mode !== 'CheckBox') {
-            value = this.getFormattedValue(customVal);
-            if (this.allowCustomValue && ((customVal !== 'false' && value === false) ||
-                (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
-                value = customVal;
-            }
-            let text: string = this.getTextByValue(value);
-        } else {
+        let value: string | number | boolean = this.getFormattedValue(customVal);
+        if (this.allowCustomValue && ((customVal !== 'false' && value === false) ||
+            (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
             value = customVal;
         }
         this.removeHover();
@@ -4197,7 +4191,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private initialUpdate(): void {
-        if (this.mode !== 'Box') {
+        if (this.mode !== 'Box' && !(this.setDynValue && this.mode === 'Default' && this.inputFocus)) {
             this.updateDelimView();
         }
         this.updateCssClass();

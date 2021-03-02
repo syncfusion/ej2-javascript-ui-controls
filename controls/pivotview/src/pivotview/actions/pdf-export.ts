@@ -23,21 +23,23 @@ export class PDFExport {
 
     /**
      * Constructor for the PivotGrid PDF Export module.
+     * @param {PivotView} parent - Instance of pivot table.
      * @hidden
      */
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
     }
 
     /**
      * For internal use only - Get the module name.
+     * @returns {string} - string.
      * @private
      */
     protected getModuleName(): string {
         return 'pdfExport';
     }
 
-    private addPage(eventParams: { document: PdfDocument, args: BeforeExportEventArgs }): PdfPage {
+    private addPage(eventParams: { document: PdfDocument; args: BeforeExportEventArgs }): PdfPage {
         let page: PdfPage = eventParams.document.pages.add();
         let header: string = eventParams.args.header;
         let footer: string = eventParams.args.footer;
@@ -56,7 +58,7 @@ export class PDFExport {
         return page;
     }
 
-    private hexDecToRgb(hexDec: string): { r: number, g: number, b: number } {
+    private hexDecToRgb(hexDec: string): { r: number; g: number; b: number } {
         if (hexDec === null || hexDec === '' || hexDec.length !== 7) {
             throw new Error('please set valid hex value for color..');
         }
@@ -94,7 +96,7 @@ export class PDFExport {
             // set border color
             let color: PdfColor = new PdfColor(196, 196, 196);
             if (!isNullOrUndefined(borderStyle.color)) {
-                let borderColor: { r: number, g: number, b: number } = this.hexDecToRgb(borderStyle.color);
+                let borderColor: { r: number; g: number; b: number } = this.hexDecToRgb(borderStyle.color);
                 color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
             }
             let pen: PdfPen = new PdfPen(color, width);
@@ -134,7 +136,7 @@ export class PDFExport {
             let fontSize: number = !isNullOrUndefined(this.gridStyle.header.fontSize) ? this.gridStyle.header.fontSize : 10.5;
             let pdfColor: PdfColor = new PdfColor();
             if (!isNullOrUndefined(this.gridStyle.header.fontColor)) {
-                let penBrushColor: { r: number, g: number, b: number } = this.hexDecToRgb(this.gridStyle.header.fontColor);
+                let penBrushColor: { r: number; g: number; b: number } = this.hexDecToRgb(this.gridStyle.header.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
@@ -165,7 +167,7 @@ export class PDFExport {
             row.style.setFont(font);
             let pdfColor: PdfColor = new PdfColor();
             if (!isNullOrUndefined(this.gridStyle.record.fontColor)) {
-                let penBrushColor: { r: number, g: number, b: number } = this.hexDecToRgb(this.gridStyle.record.fontColor);
+                let penBrushColor: { r: number; g: number; b: number } = this.hexDecToRgb(this.gridStyle.record.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             row.style.setTextBrush(new PdfSolidBrush(pdfColor));
@@ -180,7 +182,7 @@ export class PDFExport {
      * Method to perform pdf export.
      * @hidden
      */
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     public exportToPDF(): void {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let eventParams: { document: PdfDocument, args: BeforeExportEventArgs } = this.applyEvent();
@@ -352,7 +354,6 @@ export class PDFExport {
         }
     }
 
-    /* tslint:disable-next-line:no-any */
     private getFont(theme: any): PdfFont {
         if (theme.style.font) {
             return theme.style.font;
@@ -445,11 +446,10 @@ export class PDFExport {
     }
 
     /**
-     * To destroy the pdf export module
-     * @returns void
+     * To destroy the pdf export module.
+     * @returns {void}
      * @hidden
      */
-    /* tslint:disable-next-line:no-empty */
     public destroy(): void {
     }
 }

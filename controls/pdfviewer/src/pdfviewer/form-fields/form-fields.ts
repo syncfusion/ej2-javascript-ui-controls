@@ -1,6 +1,6 @@
 import { PdfViewer, FormFieldModel, FormFieldType } from '../index';
 import { PdfViewerBase } from '../index';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings';
@@ -1283,7 +1283,10 @@ export class FormFields {
         } else {
             span.style.height = height + 'px';
             span.style.width = width + 'px';
-            span.style.fontSize = fontSize;
+            span.style.fontSize = fontSize + 'px';
+            if (isBlazor()) {
+                span.style.fontSize = (fontSize - 1) + 'px';
+            }
         }
         span.style.padding = '2px';
         span.style.textAlign = 'center';

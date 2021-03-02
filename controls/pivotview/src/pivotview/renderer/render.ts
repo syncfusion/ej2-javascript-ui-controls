@@ -1,4 +1,4 @@
-import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings, } from '../../base/engine';
+import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
 import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfExportCompleteArgs } from '@syncfusion/ej2-grids';
@@ -50,8 +50,8 @@ export class Render {
     private aggMenu: AggregateMenu;
     private field: string;
     private fieldCaption: string;
-    private lvlCollection: { [key: string]: { position: number, hasChild: boolean } } = {};
-    private hierarchyCollection: { [key: string]: { lvlPosition: number, hierarchyPOs: number } } = {};
+    private lvlCollection: { [key: string]: { position: number; hasChild: boolean } } = {};
+    private hierarchyCollection: { [key: string]: { lvlPosition: number; hierarchyPOs: number } } = {};
     private lvlPosCollection: { [key: number]: string } = {};
     private hierarchyPosCollection: { [key: number]: string } = {};
     private position: number = 0;
@@ -59,10 +59,13 @@ export class Render {
     private maxMeasurePos: number = 0;
     private hierarchyCount: number = 0;
     private actualText: string = '';
-    /* tslint:disable-next-line */
+    private isInitial: boolean = true;
+    /* eslint-disable-next-line */
     private timeOutObj: any;
-    /** Constructor for render module */
-    constructor(parent: PivotView) {
+    /** Constructor for render module
+     * @param {PivotView} parent - Instance of pivot table.
+     */
+    constructor(parent: PivotView) {    /* eslint-disable-line */
         this.parent = parent;
         this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
             (this.parent.isAdaptive ? 140 : 200);
@@ -72,6 +75,7 @@ export class Render {
         this.aggMenu = new AggregateMenu(this.parent);
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public render(): void {
         let parent: PivotView = this.parent;
@@ -90,18 +94,16 @@ export class Render {
                 }
                 engine.isEngineUpdated = false;
             }
-            /* tslint:disable */
             this.parent.grid.setProperties({
                 columns: this.frameStackedHeaders(), dataSource: (this.parent.dataType === 'olap' ? true :
                     parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData ? engine.valueContent :
                     this.frameDataSource('value')
             }, true);
-            /* tslint:enable */
-            if (this.parent.grid.height == 'auto') {
-                let mCntHeight: number = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as any).offsetHeight;
+            if (this.parent.grid.height === 'auto') {
+                let mCntHeight: number = (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as any).offsetHeight; /* eslint-disable-line */
                 let dataHeight: number = (this.parent.grid.dataSource as []).length * this.parent.gridSettings.rowHeight;
                 if (mCntHeight > 50 && mCntHeight < dataHeight) {
-                    (this.parent.grid.contentModule as any).setHeightToContent(dataHeight);
+                    (this.parent.grid.contentModule as any).setHeightToContent(dataHeight); /* eslint-disable-line */
                 }
             }
             this.parent.grid.notify('datasource-modified', {});
@@ -155,6 +157,7 @@ export class Render {
             mHdr.scrollLeft = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft;
         }
     }
+    /* eslint-disable-next-line */
     /** @hidden */
     public bindGrid(parent: PivotView, isEmpty: boolean): void {
         this.injectGridModules(parent);
@@ -174,10 +177,10 @@ export class Render {
             allowTextWrap: this.gridSettings.allowTextWrap,
             allowReordering: (this.parent.showGroupingBar ? false : this.gridSettings.allowReordering),
             allowSelection: this.gridSettings.allowSelection,
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             contextMenuItems: this.gridSettings.contextMenuItems as any,
             selectedRowIndex: this.gridSettings.selectedRowIndex,
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             selectionSettings: this.gridSettings.selectionSettings as any,
             textWrapSettings: this.gridSettings.textWrapSettings,
             printMode: this.gridSettings.printMode,
@@ -216,14 +219,14 @@ export class Render {
         });
         if (isBlazor()) {
             let isJsComponent: string = 'isJsComponent';
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             (this.parent.grid as any)[isJsComponent] = true;
         }
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
         this.parent.grid.on('export-DataBound', this.excelDataBound.bind(this));
     }
 
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     private headerRefreshed(args: any): void {
         if (this.parent.lastGridSettings && Object.keys(this.parent.lastGridSettings).indexOf('allowResizing') > -1) {
             this.parent.lastGridSettings = undefined;
@@ -234,7 +237,7 @@ export class Render {
         }
     }
 
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     private beforeExcelExport(args: any): void {
         if (!isNullOrUndefined(args.gridObject.columns) && !isNullOrUndefined(this.parent.pivotColumns)) {
             args.gridObject.columns[args.gridObject.columns.length - 1].width =
@@ -297,7 +300,7 @@ export class Render {
         this.parent.renderModule.pdfColumnEvent(args);
     }
 
-    /* tslint:disable */
+    /* eslint-disable */
     private pdfExportComplete(args: PdfExportCompleteArgs): void {
         if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as any).width !== 'auto') {
             (this.parent.lastColumn as any).width = 'auto';
@@ -312,12 +315,12 @@ export class Render {
         }
     }
 
-    /* tslint:enable */
-    private dataBound(args: DataBoundEventArgs): void {
+    /* eslint-enable */
+    private dataBound(args: DataBoundEventArgs): void { /* eslint-disable-line */
         if (this.parent.cellTemplate && !isBlazor()) {
             for (let cell of this.parent.gridHeaderCellInfo) {
                 if (this.parent.cellTemplate) {
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     let element: any = this.parent.getCellTemplate()(
                         cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, cell.targetCell);
                     if (element && element !== '' && element.length > 0) {
@@ -341,15 +344,18 @@ export class Render {
         if (this.parent.grid && this.parent.grid.widthService) {
             this.parent.grid.widthService.setWidthToTable();
         }
-        /* tslint:disable-next-line */
         if (this.parent.notEmpty) {
             this.calculateGridHeight(true);
         }
         this.parent.isScrolling = false;
         this.setFocusOnLastCell();
-        if (!isNullOrUndefined((this.parent as any).renderReactTemplates)) {
-            (this.parent as any).renderReactTemplates();
+        if (!isNullOrUndefined((this.parent as any).renderReactTemplates)) {    /* eslint-disable-line */
+            (this.parent as any).renderReactTemplates();    /* eslint-disable-line */
         }
+        if (this.isInitial) {
+            this.parent.refreshData();
+        }
+        this.isInitial = false;
         this.parent.notify(events.contentReady, {});
     }
 
@@ -364,7 +370,7 @@ export class Render {
             this.parent.keyboardModule.event = undefined;
         }
     }
-    /* tslint:disable */
+    /* eslint-disable */
     private contextMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
         for (let item of args.items) {
             let cellTarget: Element = this.parent.lastCellClicked;
@@ -825,7 +831,7 @@ export class Render {
         return isValueField;
     }
 
-    /* tslint:enable */
+    /* eslint-enable */
     private updateAggregate(aggregate: string): void {
         if (this.parent.getAllSummaryType().indexOf(aggregate as AggregateTypes) > -1) {
             let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -852,6 +858,7 @@ export class Render {
         }
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public updateGridSettings(): void {
         this.injectGridModules(this.parent);
@@ -859,10 +866,10 @@ export class Render {
         this.parent.grid.allowTextWrap = this.gridSettings.allowTextWrap;
         this.parent.grid.allowReordering = (this.parent.showGroupingBar ? false : this.gridSettings.allowReordering);
         this.parent.grid.allowSelection = this.gridSettings.allowSelection;
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems as any;
         this.parent.grid.selectedRowIndex = this.gridSettings.selectedRowIndex;
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         this.parent.grid.selectionSettings = this.gridSettings.selectionSettings as any;
         this.parent.grid.textWrapSettings = this.gridSettings.textWrapSettings;
         this.parent.grid.printMode = this.gridSettings.printMode;
@@ -890,9 +897,9 @@ export class Render {
             let pivotColumn: PivotColumn = this.parent.pivotColumns[colPos];
             for (let keyPos: number = 0; keyPos < keys.length; keyPos++) {
                 let key: string = keys[keyPos];
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 if (!isNullOrUndefined((this.parent.pivotColumns[colPos] as any)[key])) {
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     (pivotColumn as any)[key] = (this.parent.lastGridSettings as any)[key];
                 }
             }
@@ -923,7 +930,7 @@ export class Render {
                     tCell.appendChild(createElement('div', {
                         className: (vSort.sortOrder === 'Descending' ?
                             'e-icon-descending e-icons e-descending e-sortfilterdiv' :
-                            'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
+                            'e-icon-ascending e-icons e-ascending e-sortfilterdiv')
                     }));
                 }
                 if (!isNullOrUndefined(cell.hasChild) && cell.type !== 'grand sum' && tCell.querySelector('.e-expand') &&
@@ -939,7 +946,7 @@ export class Render {
     }
 
     private onResizeStop(args: ResizeArgs): void {
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         let column: string = args.column.field === '0.formattedText' ? '0.formattedText' : (args.column.customAttributes as any).cell.valueSort.levelName;
         this.parent.resizeInfo[column] = Number(args.column.width.toString().split('px')[0]);
         this.setGroupWidth(args);
@@ -969,6 +976,7 @@ export class Render {
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? events.resizeStop : events.resizing, args);
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public selected(): void {
         clearTimeout(this.timeOutObj);
@@ -977,7 +985,7 @@ export class Render {
 
     private onSelect(): void {
         let pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues, currentCell: null };
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         for (let element of selectedElements) {
             let colIndex: number = Number(element.getAttribute('aria-colindex'));
@@ -1016,7 +1024,6 @@ export class Render {
 
     private rowCellBoundEvent(args: QueryCellInfoEventArgs): void {
         let tCell: HTMLElement = args.cell as HTMLElement;
-        /* tslint:disable-next-line */
         if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             let customClass: string = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
@@ -1029,7 +1036,7 @@ export class Render {
                     do {
                         if (level > 0) {
                             tCell.appendChild(createElement('span', {
-                                className: level === 0 ? '' : cls.NEXTSPAN,
+                                className: level === 0 ? '' : cls.NEXTSPAN
                             }));
                         }
                         level--;
@@ -1038,7 +1045,7 @@ export class Render {
                     this.lastSpan = !isValueCell ? level : this.lastSpan;
                     if (!cell.hasChild && level > 0) {
                         tCell.appendChild(createElement('span', {
-                            className: cls.LASTSPAN,
+                            className: cls.LASTSPAN
                         }));
                     }
                     let fieldName: string;
@@ -1075,7 +1082,6 @@ export class Render {
                 }
                 tCell.appendChild(createElement('span', {
                     className: cls.CELLVALUE,
-                    /* tslint:disable-next-line */
                     innerHTML: (this.parent.isRowCellHyperlink || cell.enableHyperlink ? '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>' : localizedText)
                 }));
                 let vSort: IValueSortSettings = this.parent.pivotView.dataSourceSettings.valueSortSettings;
@@ -1125,9 +1131,8 @@ export class Render {
                 let index: string = tCell.getAttribute('index');
                 let colindex: string = tCell.getAttribute('aria-colindex');
                 let templateID: string = index + '_' + colindex;
-                /* tslint:disable-next-line */
                 if (!(window && isBlazor())) {
-                    /* tslint:disable-next-line */
+                    /* eslint-disable-next-line */
                     let element: any = this.parent.getCellTemplate()(
                         { targetCell: tCell, cellInfo: cell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate', null, null, tCell);
                     if (element && element !== '' && element.length > 0) {
@@ -1148,7 +1153,7 @@ export class Render {
         this.parent.trigger(events.queryCellInfo, args);
     }
 
-    /* tslint:disable */
+    /* eslint-disable */
     private onOlapRowCellBoundEvent(tCell: HTMLElement, cell: IAxisSet): HTMLElement {
         tCell.innerText = '';
         let rowMeasurePos: number = (this.engine as OlapEngine).rowMeasurePos;
@@ -1265,7 +1270,7 @@ export class Render {
         }
         return tCell;
     }
-    /* tslint:enable */
+    /* eslint-enable */
     private columnCellBoundEvent(args: HeaderCellInfoEventArgs): void {
         if (args.cell.column && args.cell.column.customAttributes) {
             let cell: IAxisSet = args.cell.column.customAttributes.cell;
@@ -1353,14 +1358,12 @@ export class Render {
                     let index: string = tCell.getAttribute('index');
                     let colindex: string = tCell.getAttribute('aria-colindex');
                     let templateID: string = index + '_' + colindex;
-                    /* tslint:disable-next-line */
                     if (!(window && isBlazor())) {
                         this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
                     } else if (index && colindex) {
                         this.parent.gridCellCollection[templateID] = tCell;
                     }
                 }
-                let field: string;
                 let len: number = this.parent.dataSourceSettings.values.length;
                 for (let vCnt: number = 0; vCnt < len; vCnt++) {
                     if (this.parent.dataSourceSettings.values[vCnt].name === cell.actualText) {
@@ -1480,9 +1483,9 @@ export class Render {
     }
 
     /** @hidden */
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     public frameEmptyData(): any[] {
-        /* tslint:disable-next-line */
+        /* eslint-disable-next-line */
         let dataContent: any = [{
             0: { formattedText: this.parent.localeObj.getConstant('grandTotal') },
             1: { formattedText: this.parent.localeObj.getConstant('emptyData') }
@@ -1529,9 +1532,10 @@ export class Render {
         } else {
             parWidth = this.gridSettings.width;
         }
-        return (!this.isOverflows && !this.gridSettings.allowAutoResizing) ? this.parent.totColWidth : parWidth;
+        return (!this.gridSettings.allowAutoResizing && parWidth > this.parent.totColWidth) ? this.parent.totColWidth : parWidth;
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public calculateGridHeight(elementCreated?: boolean): number | string {
         let gridHeight: number | string = this.parent.height;
@@ -1580,12 +1584,13 @@ export class Render {
 
     public frameStackedHeaders(): ColumnModel[] {
         let singleValueFormat: string = this.parent.dataSourceSettings.values.length === 1 &&
-            !this.parent.dataSourceSettings.alwaysShowValueHeader ? this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
+            !this.parent.dataSourceSettings.alwaysShowValueHeader ?
+            this.formatList[this.parent.dataSourceSettings.values[0].name] : undefined;
         let integrateModel: ColumnModel[] = [];
         if ((this.parent.dataType === 'olap' ? true : this.parent.dataSourceSettings.values.length > 0) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
-            let headerSplit: Object[] = [];
-            let splitPos: Object[] = [];
+            let headerSplit: Object[] = []; /* eslint-disable-line */
+            let splitPos: Object[] = [];    /* eslint-disable-line */
             let colWidth: number = this.calculateColWidth(this.engine.pivotValues ? this.engine.pivotValues[0].length : 0);
             do {
                 let columnModel: ColumnModel[] = [];
@@ -1598,7 +1603,6 @@ export class Render {
                             ((colField[cCnt].memberType !== 3 || headerCnt === 0) ?
                                 colField[cCnt].colSpan : headerSplit[cCnt] as number) : 1;
                         colSpan = this.parent.dataType === 'olap' ? 1 : colSpan;
-                        let rowSpan: number = (colField[cCnt] && colField[cCnt].rowSpan) ? colField[cCnt].rowSpan : 1;
                         let formattedText: string = colField[cCnt] ? (colField[cCnt].type === 'grand sum' ?
                             this.parent.localeObj.getConstant('grandTotal') : (colField[cCnt].type === 'sum' ?
                                 colField[cCnt].formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total') :
@@ -1609,7 +1613,7 @@ export class Render {
                                 field: (cCnt + '.formattedText'),
                                 headerText: formattedText,
                                 customAttributes: { 'cell': colField[cCnt] },
-                                /* tslint:disable-next-line */
+                                /* eslint-disable-next-line */
                                 width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) : this.resColWidth,
                                 minWidth: 30,
                                 format: cCnt === 0 ? '' : (isNullOrUndefined(singleValueFormat) ? this.formatList[colField[cCnt].actualText] : singleValueFormat),
@@ -1632,10 +1636,10 @@ export class Render {
                                 } else {
                                     columnModel[actualCnt] = {
                                         headerText: formattedText,
-                                        /* tslint:disable-next-line */
+                                        /* eslint-disable-next-line */
                                         field: colField[cCnt] ? (colField[cCnt].valueSort as any).levelName : '',
                                         customAttributes: { 'cell': colField[cCnt] },
-                                        /* tslint:disable-next-line */
+                                        /* eslint-disable-next-line */
                                         width: colField[cCnt] ? this.setSavedWidth((colField[cCnt].valueSort as any).levelName, colWidth) :
                                             this.resColWidth,
                                         minWidth: 30,
@@ -1693,22 +1697,24 @@ export class Render {
         }
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public setSavedWidth(column: string, width: number): number {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public frameEmptyColumns(): ColumnModel[] {
         let columns: ColumnModel[] = [];
         let colWidth: number = this.calculateColWidth(2);
         columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: this.resColWidth });
-        /* tslint:disable-next-line */
         columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth });
         return columns;
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public getFormatList(): { [key: string]: string } {
         let formatArray: { [key: string]: string } = {};
@@ -1738,7 +1744,7 @@ export class Render {
         return formatArray;
     }
 
-    /* tslint:disable */
+    /* eslint-disable */
     private excelColumnEvent(args: ExcelHeaderQueryCellInfoEventArgs): void {
         if (args.gridCell !== undefined && (args.gridCell as any).column.width === 'auto') {
             this.parent.lastColumn = (args.gridCell as any).column;
@@ -1756,13 +1762,13 @@ export class Render {
         this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
     }
 
-    /* tslint:enable */
+    /* eslint-enable */
     private excelRowEvent(args: ExcelQueryCellInfoEventArgs): void {
         if (args.column.field === '0.formattedText') {
             let isValueCell: boolean = (args.data as IAxisSet[])[0].type === 'value';
             let level: number = 0;
             if (this.parent.dataType === 'olap') {
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 level = this.indentCollection[((args as any).data as IAxisSet[])[0].rowIndex];
             } else {
                 level = isValueCell ? (this.lastSpan + 1) : (args.data as IAxisSet[])[0].level;
@@ -1772,18 +1778,18 @@ export class Render {
             this.lastSpan = isValueCell ? this.lastSpan : level;
         } else {
             this.colPos++;
-            /* tslint:disable-next-line */
+            /* eslint-disable-next-line */
             if (isNullOrUndefined((<any>args.data)[this.colPos].value) || isNullOrUndefined((<any>args.data)[this.colPos].formattedText)) {
                 args.value = '';
             } else {
-                /* tslint:disable-next-line */
+                /* eslint-disable-next-line */
                 args.value = (<any>args.data)[this.colPos].value || (<any>args.data)[this.colPos].formattedText;
             }
         }
         args = this.exportContentEvent(args);
         this.parent.trigger(events.excelQueryCellInfo, args);
     }
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private pdfRowEvent(args: PdfQueryCellInfoEventArgs): void {
         args = this.exportContentEvent(args);
         if (args.column.field === '0.formattedText') {
@@ -1801,7 +1807,7 @@ export class Render {
         this.parent.trigger(events.pdfQueryCellInfo, args);
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private excelDataBound(args: any): void {
         let excelRows: ExcelRow[] = args.excelRows;
         let rowStartPos: number = Object.keys(this.engine.headerContent).length;
@@ -1815,7 +1821,7 @@ export class Render {
             }
             excelRows[i].cells = tmpCell;
         }
-    };
+    }
 
     private exportHeaderEvent(args: ExcelHeaderQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs): any {
         let rowSpan: number = 1;
@@ -1842,17 +1848,15 @@ export class Render {
         }
         return args;
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): any {
-        args.value = (<any>args).data[Number(args.column.field.split('.formattedText')[0])].type === 'grand sum' ?
+    private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): any {    /* eslint-disable-line */
+        args.value = (<any>args).data[Number(args.column.field.split('.formattedText')[0])].type === 'grand sum' ?  /* eslint-disable-line */
             this.parent.localeObj.getConstant('grandTotal') : args.value;
         return args;
     }
-    /* tslint:disable:no-any */
     private unWireEvents(cell: HTMLElement): void {
         if (cell.querySelector('.e-hyperlinkcell')) {
-            /* tslint:disable-next-line */
             EventHandler.remove(cell.querySelector('.e-hyperlinkcell'), this.parent.isAdaptive ? 'touchend' : 'click', this.onHyperCellClick);
         } else {
             return;
@@ -1861,7 +1865,6 @@ export class Render {
 
     private wireEvents(cell: HTMLElement): void {
         if (cell.querySelector('.e-hyperlinkcell')) {
-            /* tslint:disable-next-line */
             EventHandler.add(cell.querySelector('.e-hyperlinkcell'), this.parent.isAdaptive ? 'touchend' : 'click', this.onHyperCellClick, this);
         } else {
             return;

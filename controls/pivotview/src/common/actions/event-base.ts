@@ -17,17 +17,18 @@ export class EventBase {
 
     /**
      * Constructor for the dialog action.
+     * @param {PivotCommon} parent - parent.
      * @hidden
      */
-    constructor(parent?: PivotCommon) {
+    constructor(parent?: PivotCommon) { /* eslint-disable-line */
         this.parent = parent;
     }
 
     /**
      * Updates sorting order for the selected field.
-     * @method updateSorting
+     * @function updateSorting
      * @param  {Event} args - Contains clicked element information to update dataSource.
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public updateSorting(args: Event): void {
@@ -69,9 +70,11 @@ export class EventBase {
                 //let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending'  };
                 this.parent.dataSourceSettings.sortSettings.push(newSortObj);
             }
+            /* eslint-disable */
             this.parent.control.lastSortInfo =
                 this.parent.dataSourceSettings.sortSettings[this.parent.dataSourceSettings.sortSettings.length - 1];
             isDescending ? removeClass([target], cls.SORT_DESCEND_CLASS) : addClass([target], cls.SORT_DESCEND_CLASS);
+            /* eslint-enable */
             // if (isDescending) {
             //     removeClass([target], cls.SORT_DESCEND_CLASS);
             //     addClass([target], cls.SORTING);
@@ -89,9 +92,9 @@ export class EventBase {
 
     /**
      * Updates sorting order for the selected field.
-     * @method updateFiltering
-     * @param  {Event} args - Contains clicked element information to update dataSource.
-     * @return {void}
+     * @function updateFiltering
+     * @param {Event} args - Contains clicked element information to update dataSource.
+     * @returns {void}
      * @hidden
      */
     public updateFiltering(args: Event): void {
@@ -100,14 +103,14 @@ export class EventBase {
         let fieldCaption: string = target.parentElement.textContent;
         let isInclude: boolean = false;
         let filterItems: string[] = [];
-        let treeData: { [key: string]: Object }[] = [];
+        let treeData: { [key: string]: Object }[] = []; /* eslint-disable-line */
         if (this.parent.dataSourceSettings.allowMemberFilter) {
             if (this.parent.dataType === 'olap') {
                 treeData = this.getOlapData(fieldName, isInclude);
             } else {
                 let members: IAxisSet[] =
                     PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember as []) as IAxisSet[];
-                /* tslint:disable:typedef */
+                /* eslint-disable  */
                 members =
                     this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
                         (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
@@ -116,7 +119,7 @@ export class EventBase {
                             (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
                                 ((b.actualText < a.actualText) ? -1 : 0))) :
                             members;
-                /* tslint:enable:typedef */
+                /* eslint-enable  */
                 let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (!isNullOrUndefined(filterObj)) {
                     isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
@@ -138,9 +141,10 @@ export class EventBase {
     }
     /**
      * Returns boolean by checing the valid filter members from the selected filter settings.
-     * @method isValidFilterItemsAvail
-     * @param  {string} fieldName - Gets filter members for the given field name.
-     * @return {boolean}
+     * @function isValidFilterItemsAvail
+     * @param {string} fieldName - Gets filter members for the given field name.
+     * @param {IFilter} filterObj - filterObj.
+     * @returns {boolean} - boolean.
      * @hidden
      */
     public isValidFilterItemsAvail(fieldName: string, filterObj: IFilter): boolean {
@@ -161,11 +165,13 @@ export class EventBase {
         }
         return isItemAvail;
     }
+    /* eslint-disable */
     private getOlapData(fieldName: string, isInclude: boolean): { [key: string]: Object }[] {
         let treeData: { [key: string]: Object }[] = [];
         let filterItems: string[] = [];
         this.parent.filterDialog.isSearchEnabled = false;
         let updatedTreeData: { [key: string]: Object }[] = [];
+        /* eslint-enable */
         let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
         let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         if (engineModule.fieldList[fieldName].filterMembers.length === 0) {
@@ -182,7 +188,9 @@ export class EventBase {
             engineModule.fieldList[fieldName].searchMembers = [];
         }
         let isHierarchy: boolean = engineModule.fieldList[fieldName].isHierarchy;
+        /* eslint-disable */
         treeData = engineModule.fieldList[fieldName].filterMembers as { [key: string]: Object }[];
+        /* eslint-enable */
         if (!isNullOrUndefined(filterObj)) {
             isInclude = filterObj.type ? filterObj.type === 'Include' ? true : false : true;
             filterItems = filterObj.items ? filterObj.items : [];
@@ -203,28 +211,30 @@ export class EventBase {
         return treeData;
     }
 
+    /* eslint-disable-next-line */
     /**
      * Gets sorted filter members for the selected field.
-     * @method sortFilterData
-     * @param  {{ [key: string]: Object }[]} treeData - Gets filter members for the given field name.
-     * @return {{ [key: string]: Object }[]}
+     * @function sortOlapFilterData
+     * @param {{ [key: string]: Object }[]} treeData - Gets filter members for the given field name.
+     * @param {string} order - order.
+     * @returns {{ [key: string]: Object }[]} - return.
      * @hidden
      */
-    public sortOlapFilterData(treeData: { [key: string]: Object }[], order: string): { [key: string]: Object }[] {
+    public sortOlapFilterData(treeData: { [key: string]: Object }[], order: string): { [key: string]: Object }[] {  /* eslint-disable-line */
         if (treeData.length > 0) {
-            /* tslint:disable:typedef */
             treeData = order === 'Ascending' ?
                 (treeData.sort((a: IOlapField, b: IOlapField) => (a.caption > b.caption) ? 1 :
                     ((b.caption > a.caption) ? -1 : 0))) : order === 'Descending' ?
                     (treeData.sort((a: IOlapField, b: IOlapField) => (a.caption < b.caption) ? 1 :
                         ((b.caption < a.caption) ? -1 : 0))) : treeData;
-            /* tslint:enable:typedef */
         }
         return treeData;
     }
 
     private getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {
+        /* eslint-disable */
         let data: { [key: string]: Object }[] = treeObj.fields.dataSource as { [key: string]: Object }[];
+        /* eslint-enable */
         let pid: string;
         for (let li of data) {
             if (li.id === id) {
@@ -239,7 +249,9 @@ export class EventBase {
         return parent;
     }
     private getChildIDs(treeObj: TreeView, id: string, children: string[]): string[] {
+        /* eslint-disable */
         let data: { [key: string]: Object }[] = treeObj.fields.dataSource as { [key: string]: Object }[];
+        /* eslint-enable */
         let cID: string;
         for (let li of data) {
             if (li.pid === id) {
@@ -257,7 +269,7 @@ export class EventBase {
      * show tree nodes using search text.
      * @hidden
      */
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     public searchTreeNodes(args: MaskChangeEventArgs, treeObj: TreeView, isFieldCollection: boolean, isHierarchy?: boolean): void {
         if (isFieldCollection) {
             let searchList: HTMLElement[] = [];
@@ -394,14 +406,14 @@ export class EventBase {
         }
         for (let member of members) {
             let memberName: string = this.parent.isDateField ? member.formattedText : member.actualText.toString();
-            /* tslint:disable */
+            /* eslint-disable */
             let obj: { [key: string]: Object } = {
                 id: member.actualText.toString(),
                 actualText: member.actualText,
                 name: memberName,
                 isSelected: isInclude ? false : true
             };
-            /* tslint:enable */
+            /* eslint-enable */
             if (filterObj[memberName] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
@@ -419,7 +431,7 @@ export class EventBase {
         this.parent.isDataOverflow = ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor);
         return list;
     }
-    /* tslint:disable-next-line:max-line-length */
+    /* eslint-disable */
     private getOlapTreeData(isInclude: boolean, members: { [key: string]: Object }[], filterObj: { [key: string]: string }, fieldName: string, isHierarchy: boolean, isSearchRender?: boolean): { [key: string]: Object }[] {
         let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
         let fieldList: IOlapField = engineModule.fieldList[fieldName];
@@ -430,6 +442,7 @@ export class EventBase {
         let memberCount: number = 1;
         for (let member of members) {
             let obj: { [key: string]: Object } = member;
+            /* eslint-enable */
             let memberName: string = member.id.toString();
             if (!isSearchRender) {
                 obj.isSelected = isInclude ? false : true;
@@ -455,8 +468,9 @@ export class EventBase {
         this.parent.isDataOverflow = isHierarchy ? ((memberCount - 1) > this.parent.control.maxNodeLimitInMemberEditor) : false;
         return isHierarchy ? list : members;
     }
-    /* tslint:disable-next-line:max-line-length */
+    /* eslint-disable */
     private getOlapSearchTreeData(isInclude: boolean, members: { [key: string]: Object }[], fieldName: string): { [key: string]: Object }[] {
+        /* eslint-enable */
         let cMembers: IMembers = (this.parent.engineModule as OlapEngine).fieldList[fieldName].members;
         for (let member of members) {
             let memberName: string = member.id.toString();
@@ -482,6 +496,8 @@ export class EventBase {
             }
         }
     }
+
+    /* eslint-disable-next-line */
     /**
      * get the parent node of particular filter members.
      * @hidden
@@ -495,8 +511,9 @@ export class EventBase {
         }
         return filterObj;
     }
-    /* tslint:disable-next-line:max-line-length */
+    /* eslint-disable */
     private getFilteredTreeNodes(fieldName: string, members: IOlapField[], filterObj: { [key: string]: string }, treeData: { [key: string]: Object }[], isHierarchy: boolean): { [key: string]: Object }[] {
+        /* eslint-enable */
         let parentNodes: string[] = [];
         let memberObject: IMembers = this.parent.engineModule.fieldList[fieldName].members;
         let selectedNodes: string[] = filterObj ? Object.keys(filterObj) : [];
@@ -507,8 +524,10 @@ export class EventBase {
             }
         }
         for (let member of members) {
+            /* eslint-disable */
             if (isNullOrUndefined(member.pid) || PivotUtil.inArray(member.pid, parentNodes) !== -1) {
                 treeData.push(member as { [key: string]: Object });
+                /* eslint-enable */
                 if (isNullOrUndefined(member.pid) && PivotUtil.inArray(member.id, parentNodes) !== -1) {
                     memberObject[member.id].isNodeExpand = true;
                 } else if (!isNullOrUndefined(member.pid) && PivotUtil.inArray(member.pid, parentNodes) !== -1) {

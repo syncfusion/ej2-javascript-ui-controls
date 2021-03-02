@@ -491,4 +491,22 @@ export const refreshInfiniteCurrentViewData: string = 'refresh-infinite-current-
 /** @hidden */
 export const infiniteCrudCancel: string = 'infinite-crud-cancel';
 /** @hidden */
+export const filterDialogClose: string = 'filter-dialog-close';
+/** @hidden */
+export const setCustomFilterHeader: string = 'set-custom-filter-header';
+/** @hidden */
+export const refreshCustomFilterOkBtn: string = 'refresh-cutsom-filter-ok-button';
+/** @hidden */
+export const refreshCustomFilterClearBtn: string = 'refresh-cutsom-filter-clear-button';
+/** @hidden */
+export const renderResponsiveCmenu: string = 'render-responsive-cmenu';
+/** @hidden */
+export const filterCmenuSelect: string = 'filter-cmenu-select';
+/** @hidden */
+export const customFilterClose: string = 'custom-filter-close';
+/** @hidden */
+export const setFullScreenDialog: string = 'set-fullscreen-dialog';
+/** @hidden */
 export const refreshVirtualCacheOnRowDD: string = 'refresh-Virtual-Cache-On-RowDD';
+/** @hidden */
+export const refreshExpandandCollapse: string = 'refresh-Expand-and-Collapse';

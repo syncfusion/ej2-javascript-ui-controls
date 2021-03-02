@@ -656,7 +656,8 @@ export class DiagramEventHandler {
             this.doingAutoScroll = false;
             clearInterval(this.timeOutValue as number);
         } else if (autoScrollPosition) {
-            if ((this.tool instanceof MoveTool || this.tool instanceof ResizeTool
+            if ((this.tool instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool
+                || this.tool instanceof MoveTool || this.tool instanceof ResizeTool
                 || this.tool instanceof SelectTool) && this.inAction) {
                 let diagram: DiagramEventHandler = this;
                 let delay: number = 100;
@@ -1195,7 +1196,8 @@ export class DiagramEventHandler {
 
     private doAutoScroll(option: string, e: PointerEvent | TouchEvent, delay?: number, autoScroll?: boolean): void {
         let position: string = option;
-        if ((this.tool instanceof MoveTool || this.tool instanceof ResizeTool
+        if ((this.tool instanceof NodeDrawingTool || this.tool instanceof ConnectorDrawingTool
+            || this.tool instanceof MoveTool || this.tool instanceof ResizeTool
             || this.tool instanceof SelectTool) && this.inAction) {
             let diagram: DiagramEventHandler = this;
             let pos: PointModel = this.getMousePosition(e);

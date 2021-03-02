@@ -12,18 +12,20 @@ export class ErrorDialog {
     public parent: PivotCommon;
     /** @hidden */
     public errorPopUp: Dialog;
+    /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
      * @hidden
      */
-    constructor(parent: PivotCommon) {
+    constructor(parent: PivotCommon) {  /* eslint-disable-line */
         this.parent = parent;
     }
 
+    /* eslint-disable-next-line */
     /**
      * Creates the error dialog for the unexpected action done.
-     * @method createErrorDialog
-     * @return {void}
+     * @function createErrorDialog
+     * @returns {void}
      * @hidden
      */
     public createErrorDialog(title: string, description: string, target?: HTMLElement): void {
@@ -48,7 +50,7 @@ export class ErrorDialog {
             width: 'auto',
             height: 'auto',
             zIndex: zIndex,
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     click: this.closeErrorDialog.bind(this),

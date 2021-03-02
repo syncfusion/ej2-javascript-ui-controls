@@ -1,9 +1,9 @@
-import { detach, EventHandler, Browser, extend, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { detach, EventHandler, Browser, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, wrapEvent, inRange } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, inRange } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, workbookEditOperation, getSheetIndexFromId, getSheetName } from '../../workbook/index';
-import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
+import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell, pasteMerge, setMerge, MergeArgs, getCellIndexes, getCellAddress, ChartModel } from '../../workbook/index';
 import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, initiateFilterUI, focus } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, createImageElement } from '../common/index';
@@ -14,7 +14,7 @@ import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, isCellReference, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
-import {CellStyleExtendedModel, skipDefaultValue, getFilteredCollection, setChart, parseIntValue } from '../../workbook/index';
+import { getFilteredCollection, setChart, parseIntValue } from '../../workbook/index';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -310,7 +310,7 @@ export class Clipboard {
                                     if (!isNullOrUndefined(newFormula)) {
                                         cell.formula = newFormula;
                                     }
-                                    this.setCell(x + l, colInd, curSheet, cell, isExtend);
+                                    this.setCell(x + l, colInd, curSheet, cell, isExtend, false, y === selIdx[3]);
                                     let sId : number = this.parent.activeSheetIndex;
                                     let cellElem: HTMLTableCellElement = this.parent.getCell(x + l, colInd) as HTMLTableCellElement;
                                     let address: string = getCellAddress(x + l, colInd);
@@ -327,11 +327,11 @@ export class Clipboard {
                             }
                         } else {
                             if (!hasTemplate(this.parent, i, j, copiedIdx)) {
-                                this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                                this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend, false, j === cIdx[3]);
                             }
                         }
                         if (!isExternal && this.copiedInfo.isCut) {
-                            this.setCell(i, j, prevSheet, null, false, true);
+                            this.setCell(i, j, prevSheet, null, false, true, j === cIdx[3]);
                         }
                     }
                     rowIdx++;
@@ -495,7 +495,8 @@ export class Clipboard {
             return null;
         }
     }
-    private setCell(rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean): void {
+    private setCell(
+        rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean, lastCell?: boolean): void {
         setCell(rIdx, cIdx, sheet, isCut ? null : cell, isExtend);
         if (cell && cell.formula) {
             this.parent.notify(workbookFormulaOperation, {
@@ -511,36 +512,9 @@ export class Clipboard {
                         cIdx], value: cell.value
                 });
         }
-        if (cell) {
-            if (cell.style) {
-                let style: CellStyleModel = {};
-                if ((cell.style as CellStyleExtendedModel).properties) {
-                    style = skipDefaultValue(cell.style, true);
-                } else { style = cell.style; }
-                this.parent.notify(applyCellFormat, {
-                    style: extend({}, this.parent.commonCellStyle, style), rowIdx: rIdx, colIdx: cIdx, cell: null,
-                    lastCell: null, row: null, hRow: null, isHeightCheckNeeded: true, manualUpdate: false
-                });
-            }
-            if (cell.wrap) {
-                this.parent.notify(wrapEvent, { range: [rIdx, cIdx, rIdx, cIdx], wrap: false, sheet: sheet });
-            }
-            if (cell.colSpan > 1) {
-                setCell(rIdx, cIdx + cell.colSpan - 1, sheet, isCut ? null : {colSpan: -1}, isExtend);
-                this.externalMerge = true;
-                this.externalMergeRow = rIdx;
-                this.parent.notify(setMerge, <MergeArgs>{ merge: true, range: [rIdx, cIdx, rIdx, cIdx + cell.colSpan - 1],
-                    type: 'All', isAction: true, refreshRibbon: true });
-            }
+        if (sheet.name && this.parent.getActiveSheet().name) {
+            this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(rIdx, cIdx, lastCell);
         }
-    }
-
-    private getEmptyStyle(cellStyle: CellStyleModel): CellStyleModel {
-        let style: CellStyleModel = {};
-        Object.keys(cellStyle).forEach((key: string) => {
-            style[key] = '';
-        });
-        return style;
     }
 
     private getCopiedIdx(): number {

@@ -432,7 +432,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     protected rfshMovable(): void {
         if (!isBlazor() || this.parent.frozenRows === 0) {
             this.getFrozenHeader().appendChild(this.getTable());
-            this.getMovableHeader().appendChild(this.createTable());
+            this.getMovableHeader().appendChild(this.createHeader(undefined, 'movable'));
         }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();

@@ -1128,7 +1128,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private mouseWheel(event: MouseWheelEvent): void {
         event.preventDefault();
         let delta: number;
-        let rawEvent: WheelEvent = event;
+        // tslint:disable-next-line
+        let rawEvent: any = event;
         if (rawEvent.wheelDelta) {
             delta = rawEvent.wheelDelta / 120;
         } else if (rawEvent.detail) {

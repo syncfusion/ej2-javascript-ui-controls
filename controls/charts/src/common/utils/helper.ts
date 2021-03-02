@@ -3,6 +3,7 @@ import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
 import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
+import { TextAttributes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
 import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
 import { Series, Points } from '../../chart/series/chart-series';
@@ -72,9 +73,18 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
 
     let renderer: SvgRenderer = new SvgRenderer(chart.element.id);
     let box: ClientRect;
-    let options: Object;
+    let options: TextAttributes;
     let htmlObject: HTMLElement;
+    let labelText: string;
+    let textCollection: string[] = [];
+    let height: number;
+    let dy: number;
+    let label: string;
+    let tspanElement: Element;
     options = {
+        id: 'rotate_text',
+        x: chart.initialClipRect.x,
+        y: chart.initialClipRect.y,
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
@@ -82,9 +92,31 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
-    htmlObject = renderer.createText(options, text) as HTMLElement;
+    if (isBreakLabel(text)) {
+        textCollection = text.split('<br>');
+        labelText = textCollection[0];
+    } else {
+        labelText = text as string;
+    }
+    htmlObject = renderer.createText(options, labelText) as HTMLElement;
     if (!chart.delayRedraw && !chart.redraw) {
         chart.element.appendChild(chart.svgObject);
+    }
+    // for line break label
+    if (typeof textCollection !== 'string' && textCollection.length > 1) {
+        for (let i: number = 1, len: number = textCollection.length; i < len; i++) {
+            height = (measureText(textCollection[i], font).height);
+            dy = (options.y) + ((i * height));
+            label = textCollection[i];
+            tspanElement = (renderer as SvgRenderer).createTSpan(
+                {
+                    'x': options.x, 'id': options.id,
+                    'y': dy
+                },
+                label
+            );
+            htmlObject.appendChild(tspanElement);
+        }
     }
     chart.svgObject.appendChild(htmlObject);
     box = htmlObject.getBoundingClientRect();

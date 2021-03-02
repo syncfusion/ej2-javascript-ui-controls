@@ -40,7 +40,7 @@ export interface FieldOptionsModel {
      * * `PercentageOfParentColumnTotal`: Allows to display the pivot table values with percentage of its parent total in each column.
      * * `PercentageOfParentRowTotal`: Allows to display the pivot table values with percentage of its parent total in each row.
      * * `CalculatedField`: Allows to display the pivot table with calculated field values. It allows user to create a new calculated field alone.
-     * 
+     *
      * > It is applicable only for relational data source.
      * @default Sum
      */
@@ -52,21 +52,21 @@ export interface FieldOptionsModel {
     axis?: string;
 
     /**
-     * Allows you to display all members items of a specific field to the pivot table, even doesn't have any data in its row/column intersection in data source. 
+     * Allows you to display all members items of a specific field to the pivot table, even doesn't have any data in its row/column intersection in data source.
      * > It is applicable only for relational data source.
      * @default false
      */
     showNoDataItems?: boolean;
 
     /**
-     * Allows you to set the selective field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom or PercentageOfParentTotal aggregate types. 
+     * Allows you to set the selective field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom or PercentageOfParentTotal aggregate types.
      * > It is applicable only for relational data source.
      */
     baseField?: string;
 
     /**
-     * Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types. 
-     * The selective item should be set the from field specified in the baseField property. 
+     * Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
+     * The selective item should be set the from field specified in the baseField property.
      * > It is applicable only for relational data source.
      */
     baseItem?: string;
@@ -78,8 +78,8 @@ export interface FieldOptionsModel {
     showSubTotals?: boolean;
 
     /**
-     * Allows you to set whether the specified field is a named set or not. 
-     * In general, the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. 
+     * Allows you to set whether the specified field is a named set or not.
+     * In general, the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself.
      * > It is applicable only for OLAP data source.
      * @default false
      */
@@ -93,44 +93,44 @@ export interface FieldOptionsModel {
     isCalculatedField?: boolean;
 
     /**
-     * Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
-     * @default true     
+     * @default true
      */
     showFilterIcon?: boolean;
 
     /**
-     * Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
-     * @default true     
+     * @default true
      */
     showSortIcon?: boolean;
 
     /**
-     * Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
-     * @default true     
+     * @default true
      */
     showRemoveIcon?: boolean;
 
     /**
-     * Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This value type icon helps to select the appropriate aggregation type to specified value field at runtime.
-     * @default true     
+     * @default true
      */
     showValueTypeIcon?: boolean;
 
     /**
-     * Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
-     * @default true     
+     * @default true
      */
     showEditIcon?: boolean;
 
     /**
-     * Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
-     * @default true     
+     * @default true
      */
     allowDragAndDrop?: boolean;
 
@@ -297,9 +297,9 @@ export interface SortModel {
 
     /**
      * Allows to apply sorting to the specified field either by ascending or descending or JSON order. The types are,
-     * * `Ascending`: It allows to display the field members in ascending order. 
+     * * `Ascending`: It allows to display the field members in ascending order.
      * * `Descending`: It allows to display the field members in descending order.
-     * * `None`: It allows to display the field members based on JSON order. 
+     * * `None`: It allows to display the field members based on JSON order.
      * @default Ascending
      */
     order?: Sorting;
@@ -323,7 +323,6 @@ export interface FormatSettingsModel {
 
     /**
      * It allows to specify maximum fraction digits to the  formatted value.
-     * @blazorDefaultValue 10
      */
     maximumFractionDigits?: number;
 
@@ -391,7 +390,7 @@ export interface GroupSettingsModel {
      * * Hours - Defines group field as 'Hours' for date type field.
      * * Minutes - Defines group field as 'Minutes' for date type field.
      * * Seconds - Defines group field as 'Seconds' for date type field.
-     * 
+     *
      * > It is applicable only for date type grouping.
      */
     groupInterval?: DateGroup[];
@@ -465,7 +464,7 @@ export interface CalculatedFieldSettingsModel {
     name?: string;
 
     /**
-     * It allows to set the formula/expression to the specified calculated field. 
+     * It allows to set the formula/expression to the specified calculated field.
      */
     formula?: string;
 
@@ -523,7 +522,7 @@ export interface ValueSortSettingsModel {
 
     /**
      * Allows to apply sorting to the specified field either by ascending or descending. The types are,
-     * * `Ascending`: It allows to display the field members in ascending order. 
+     * * `Ascending`: It allows to display the field members in ascending order.
      * * `Descending`: It allows to display the field members in descending order.
      * @default None
      */
@@ -566,13 +565,13 @@ export interface DataSourceSettingsModel {
     mode?: RenderMode;
 
     /**
-     * Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. 
+     * Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string.
      * > It is applicable only for OLAP data source.
      */
     catalog?: string;
 
     /**
-     * Allows you to set the SSAS cube name as string type that used to retrieve data for pivot table rendering. 
+     * Allows you to set the SSAS cube name as string type that used to retrieve data for pivot table rendering.
      * > It is applicable only for OLAP data source.
      */
     cube?: string;
@@ -586,22 +585,22 @@ export interface DataSourceSettingsModel {
     providerType?: ProviderType;
 
     /**
-     * Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list. 
+     * Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list.
      * > It is applicable only for OLAP data source.
      */
     url?: string;
 
     /**
-     * Allows you to set the specific culture code as number type to render pivot table with desired localization. 
-     * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. 
+     * Allows you to set the specific culture code as number type to render pivot table with desired localization.
+     * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale.
      * > It is applicale only for OLAP data source.
      * @default 1033
      */
     localeIdentifier?: number;
 
     /**
-     * Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list. 
-     * You can fetch JSON data from remote server by using DataManager. 
+     * Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list.
+     * You can fetch JSON data from remote server by using DataManager.
      * > It is applicable only for relational data source.
      * @isGenericType true
      */
@@ -611,22 +610,22 @@ export interface DataSourceSettingsModel {
      * Allows specific fields associated with field information that needs to be displayed in row axis of pivot table. The following configurations which are applicable are as follows:
      * * `name`: Allows you to set the field name that needs to be displayed in row axis of pivot table.
      * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
-     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table, 
+     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table,
      * even doesn't have any data in its row/column intersection in data source. **Note: It is applicable only for relational data source.**
      * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in row axis of the pivot table.
-     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general, 
+     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
      * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
-     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not. 
+     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
-     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
-     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
-     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
-     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
-     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * @default []
      */
@@ -636,22 +635,22 @@ export interface DataSourceSettingsModel {
      * Allows specific fields associated with field information that needs to be displayed in column axis of pivot table. The following configurations which are applicable are as follows:
      * * `name`: Allows you to set the field name that needs to be displayed in column axis of pivot table.
      * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
-     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table, 
+     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table,
      * even doesn't have any data in its row/column intersection in data source. **Note: It is applicable only for relational data source.**
      * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in column axis of the pivot table.
-     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general, 
+     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
      * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
-     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not. 
+     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
-     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
-     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
-     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
-     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
-     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * @default []
      */
@@ -664,17 +663,17 @@ export interface DataSourceSettingsModel {
      * * `type`: Allows to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… **Note: It is applicable only for relational data source.**
      * * `baseField`: Allows you to set the selective field, which used to display the values with either
      *  DifferenceFrom or PercentageOfDifferenceFrom or PercentageOfParentTotal aggregate types. **Note: It is applicable only for relational data source.**
-     * * `baseItem`: Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types. 
+     * * `baseItem`: Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
      * The selective item should be set the from field specified in the baseField property. **Note: It is applicable only for relational data source.**
-     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not. 
+     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
-     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
-     * * `showValueTypeIcon`: Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showValueTypeIcon`: Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This value type icon helps to select the appropriate aggregation type to specified value field at runtime.
-     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
-     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * @default []
      */
@@ -684,17 +683,17 @@ export interface DataSourceSettingsModel {
      * Allows to filter the values in other axis based on the collection of filter fields in pivot table. The following configurations which are applicable are as follows:
      * * `name`: Allows you to set the field name that needs to be displayed in row/column/value/filter axis of pivot table.
      * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
-     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general, 
+     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
      * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
-     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not. 
+     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
-     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
-     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
-     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
-     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * @default []
      */
@@ -704,38 +703,38 @@ export interface DataSourceSettingsModel {
      * Allows specific fields associated with field information that can be used while creating fieldlist. The following configurations which are applicable are as follows:
      * * `name`: Allows you to set the field name which is going to configure while creating the fieldlist.
      * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
-     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table, 
+     * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table,
      * even doesn't have any data in its row/column intersection in data source. **Note: It is applicable only for relational data source.**
      * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in row axis of the pivot table.
-     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general, 
+     * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
      * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
-     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not. 
+     * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
-     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
-     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
-     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI. 
+     * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
      * This remove icon is used to remove the specified field during runtime.
-     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI. 
+     * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
      * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
-     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI. 
+     * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
      * This will prevent you from modifying the current report.
      * @default []
      */
     fieldMapping?: FieldOptionsModel[];
 
     /**
-     * Allows you to restrict the specific field(s) from displaying it in the field list UI. 
-     * You may also be unable to render the pivot table with this field(s) by doing so. 
+     * Allows you to restrict the specific field(s) from displaying it in the field list UI.
+     * You may also be unable to render the pivot table with this field(s) by doing so.
      * > It is applicable only for relational data source.
      * @default []
      */
     excludeFields?: string[];
 
     /**
-     * Allows you to either expand or collapse all the headers that are displayed in the pivot table. 
-     * By default, all the headers are collapsed in the pivot table. 
+     * Allows you to either expand or collapse all the headers that are displayed in the pivot table.
+     * By default, all the headers are collapsed in the pivot table.
      * > It is applicable only for Relational data.
      * @default false
      */
@@ -754,8 +753,8 @@ export interface DataSourceSettingsModel {
     filterSettings?: FilterModel[];
 
     /**
-     * Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table. 
-     * By default, the data source containing fields are display with Ascending order alone. To use this option, it requires the `enableSorting` property to be **true**. 
+     * Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table.
+     * By default, the data source containing fields are display with Ascending order alone. To use this option, it requires the `enableSorting` property to be **true**.
      * @default []
      */
     sortSettings?: SortModel[];
@@ -833,22 +832,22 @@ export interface DataSourceSettingsModel {
     alwaysShowValueHeader?: boolean;
 
     /**
-     * Allows the undefined headers to be displayed in the pivot table, when the specific field(s) are not defined in the raw data. 
+     * Allows the undefined headers to be displayed in the pivot table, when the specific field(s) are not defined in the raw data.
      * For example, if the raw data for the field ‘Country’ is defined as “United Kingdom” and “State” is not defined means, it will be shown as “United Kingdom >> Undefined” in the header section.
      * @default true
      */
     showHeaderWhenEmpty?: boolean;
 
     /**
-     * Allows the pivot button with specific value field caption along with the aggregation type, to be displayed in the grouping bar and field list UI. 
+     * Allows the pivot button with specific value field caption along with the aggregation type, to be displayed in the grouping bar and field list UI.
      * For example, if the value field "Sold Amount" is aggregated with Sum, it will be displayed with caption "Sum of Sold Amount" in its pivot button.
      * @default true
      */
     showAggregationOnValueField?: boolean;
 
     /**
-     * Allows specific fields used to display the values with specific format that used to be displayed in the pivot table. 
-     * For example, to display a specific field with currency formatted values in the pivot table, the set the `format` property to be **C**. 
+     * Allows specific fields used to display the values with specific format that used to be displayed in the pivot table.
+     * For example, to display a specific field with currency formatted values in the pivot table, the set the `format` property to be **C**.
      * @default []
      */
     formatSettings?: FormatSettingsModel[];
@@ -871,7 +870,7 @@ export interface DataSourceSettingsModel {
     calculatedFieldSettings?: CalculatedFieldSettingsModel[];
 
     /**
-     * Allows a collection of values fields to change the appearance of the pivot table value cells with different style properties such as background color, font color, font family, and font size based on specific conditions. 
+     * Allows a collection of values fields to change the appearance of the pivot table value cells with different style properties such as background color, font color, font family, and font size based on specific conditions.
      * @default []
      */
     conditionalFormatSettings?: ConditionalFormatSettingsModel[];
@@ -882,15 +881,15 @@ export interface DataSourceSettingsModel {
     emptyCellsTextContent?: string;
 
     /**
-     * Allows specific fields to group their data on the basis of their type. 
-     * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc. 
+     * Allows specific fields to group their data on the basis of their type.
+     * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc.
      * You can perform custom group to the string type fields that used to displayed in the pivot table.
      * @default []
      */
     groupSettings?: GroupSettingsModel[];
 
     /**
-     * Allows you to set the credential information to access the specified SSAS cube. 
+     * Allows you to set the credential information to access the specified SSAS cube.
      * > It is applicable only for OLAP data source.
      */
     authentication?: AuthenticationModel;

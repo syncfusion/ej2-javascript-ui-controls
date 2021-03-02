@@ -18,21 +18,23 @@ export class ExcelExport {
 
     /**
      * Constructor for the PivotGrid Excel Export module.
+     * @param {PivotView} parent - Instance of pivot table.
      * @hidden
      */
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
     }
 
     /**
      * For internal use only - Get the module name.
+     * @returns {string} - string.
      * @private
      */
     protected getModuleName(): string {
         return 'excelExport';
     }
 
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable */
     /**
      * Method to perform excel export.
      * @hidden
@@ -63,7 +65,6 @@ export class ExcelExport {
         });
 
         /** Fill data and export */
-        /* tslint:disable-next-line:no-any */
         let workSheets: any = [];
         for (let dataColl: number = 0; dataColl < dataCollections.length; dataColl++) {
             let pivotValues: IPivotValues = dataCollections[dataColl]; let colLen: number = 0; let rowLen: number = pivotValues.length;
@@ -152,10 +153,9 @@ export class ExcelExport {
 
     /**
      * To destroy the excel export module
-     * @returns void
+     * @returns {void}
      * @hidden
      */
-    /* tslint:disable-next-line:no-empty */
     public destroy(): void {
     }
 }

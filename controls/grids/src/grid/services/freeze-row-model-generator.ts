@@ -4,7 +4,7 @@ import { Row } from '../models/row';
 import { freezeTable } from '../base/enum';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { isBlazor } from '@syncfusion/ej2-base';
-import { getFrozenTableName, splitFrozenRowObjectCells } from '../base/util';
+import { splitFrozenRowObjectCells } from '../base/util';
 
 /**
  * FreezeRowModelGenerator is used to generate grid data rows with freeze row and column.
@@ -22,7 +22,14 @@ export class FreezeRowModelGenerator implements IModelGenerator<Column> {
 
     public generateRows(data: Object, notifyArgs?: NotifyArgs, virtualRows?: Row<Column>[]): Row<Column>[] {
         let frzCols: number = this.parent.getFrozenColumns();
-        let tableName: freezeTable = getFrozenTableName(this.parent);
+        let tableName: freezeTable;
+        if (notifyArgs.renderFrozenRightContent || (notifyArgs.renderMovableContent && !this.parent.enableVirtualization)) {
+            tableName = 'frozen-right';
+        } else if (notifyArgs.renderMovableContent || notifyArgs.isFrozen) {
+            tableName = 'movable';
+        } else {
+            tableName = this.parent.getFrozenLeftCount() ? 'frozen-left' : 'frozen-right';
+        }
         frzCols = frzCols && this.parent.isRowDragable() ? frzCols + 1 : frzCols;
         if (notifyArgs.requestType === 'virtualscroll' && notifyArgs.virtualInfo.sentinelInfo.axis === 'X') {
             if (tableName !== 'movable') {

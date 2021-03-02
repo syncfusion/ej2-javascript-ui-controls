@@ -32,12 +32,13 @@ export class KeyboardInteraction {
         ctrlShiftF: 'ctrl+shift+f'
     };
     private pivotViewKeyboardModule: KeyboardEvents;
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timeOutObj: any;
     /**
-     * Constructor
+     * Constructor.
+     * @param {PivotView} parent - Instance of pivot table.
      */
-    constructor(parent: PivotView) {
+    constructor(parent: PivotView) {    /* eslint-disable-line */
         this.parent = parent;
         this.event = undefined;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -109,10 +110,10 @@ export class KeyboardInteraction {
         let columnFilterValueGroup: HTMLElement = closest(target, '.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement;
         let rowGroup: HTMLElement = closest(target, '.' + cls.GROUP_PIVOT_ROW) as HTMLElement;
         let chartGroup: HTMLElement = closest(target, '.' + cls.CHART_GROUPING_BAR_CLASS) as HTMLElement;
-        let tableAxis: Boolean = target.classList.contains(cls.ROWSHEADER);
-        let chartAxis: Boolean;
-        let rowAxis: Boolean;
-        let columnFilterValueAxis: Boolean;
+        let tableAxis: boolean = target.classList.contains(cls.ROWSHEADER);
+        let chartAxis: boolean;
+        let rowAxis: boolean;
+        let columnFilterValueAxis: boolean;
         if (columnFilterValueGroup !== null) {
             rowAxis = columnFilterValueGroup.classList.contains(cls.GRID_GROUPING_BAR_CLASS);
         } else if (rowGroup !== null) {
@@ -121,7 +122,7 @@ export class KeyboardInteraction {
             chartAxis = chartGroup.classList.contains(cls.CHART_GROUPING_BAR_CLASS);
         }
         if (rowAxis || columnFilterValueAxis || tableAxis) {
-            /* tslint:disable */
+            /* eslint-disable */
             let groupingbarButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
             let headerButton: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GROUP_PIVOT_ROW).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
             buttons = groupingbarButton.concat(headerButton);
@@ -129,7 +130,7 @@ export class KeyboardInteraction {
         else if (chartAxis) {
             buttons = [].slice.call(this.parent.element.querySelector('.' + cls.CHART_GROUPING_BAR_CLASS).querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
         }
-        /* tslint:enable */
+        /* eslint-enable */
         return buttons;
     }
     private processTab(e: Event): void {
@@ -328,10 +329,8 @@ export class KeyboardInteraction {
     }
     private clearSelection(): void {
         let control: PivotView = this.parent as PivotView;
-        /* tslint:disable */
         removeClass(control.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR), [cls.SELECTED_BGCOLOR, cls.CELL_SELECTED_BGCOLOR, cls.CELL_ACTIVE_BGCOLOR]);
         this.parent.renderModule.selected();
-        /* tslint:enable */
     }
     private processSelection(e: KeyboardEventArgs): void {
         let target: HTMLElement = e.target as HTMLElement;
@@ -341,7 +340,7 @@ export class KeyboardInteraction {
             let colIndex: number = Number((e.target as HTMLElement).getAttribute('aria-colIndex'));
             let rowIndex: number = Number((e.target as HTMLElement).getAttribute('index'));
             let ele: HTMLElement;
-            /* tslint:disable */
+            /* eslint-disable */
             if (target.nodeName === 'TH' || target.nodeName === 'TD') {
                 if (e.action === 'shiftUp' || e.action === 'upArrow') {
                     ele = (rowIndex === 0 || colIndex === 0 || (target.nodeName !== 'TH' &&
@@ -409,7 +408,7 @@ export class KeyboardInteraction {
             (target as HTMLElement).click();
         }
 
-        /* tslint:enable */
+        /* eslint-enable */
     }
     private getParentElement(control: PivotView, ele: HTMLElement, colIndex: number, rowIndex: number): HTMLElement {
         while (!ele) {
@@ -419,7 +418,6 @@ export class KeyboardInteraction {
         return ele;
     }
     private toggleFieldList(e: Event): void {
-        let target: Element = (e.target as HTMLElement);
         if (this.parent && !this.parent.isDestroyed && this.parent.showFieldList &&
             this.parent.pivotFieldListModule && !this.parent.pivotFieldListModule.isDestroyed &&
             this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
@@ -435,8 +433,8 @@ export class KeyboardInteraction {
         }
     }
     /**
-     * To destroy the keyboard module. 
-     * @return {void}
+     * To destroy the keyboard module.
+     * @returns  {void}
      * @private
      */
     public destroy(): void {

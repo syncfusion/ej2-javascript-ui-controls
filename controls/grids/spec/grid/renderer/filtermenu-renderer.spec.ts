@@ -694,8 +694,8 @@ describe('filter menu module =>', () => {
                 { value: 'notequal', text: 'Not Equal' }];
             }
         };
-        (window as any).renderCheckBoxMenu = function (value: any) {
-            gridObj.filterModule.renderCheckboxOnFilterMenu()
+        (window as any).renderCheckBoxMenu = function (value: any): HTMLElement {
+            return gridObj.filterModule.renderCheckboxOnFilterMenu()
         };
         beforeAll((done: Function) => {
             gridObj = createGrid(

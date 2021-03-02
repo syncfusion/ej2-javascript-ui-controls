@@ -19,9 +19,10 @@ export class DrillThrough {
 
     /**
      * Constructor.
+     * @param {PivotView} parent - Instance of pivot table.
      * @hidden
      */
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
         this.drillThroughDialog = new DrillThroughDialog(this.parent);
         this.addInternalEvents();
@@ -29,7 +30,7 @@ export class DrillThrough {
 
     /**
      * It returns the Module name.
-     * @returns string
+     * @returns {string} - string.
      * @hidden
      */
     public getModuleName(): string {
@@ -69,6 +70,7 @@ export class DrillThrough {
         }
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public executeDrillThrough(pivotValue: IAxisSet, rowIndex: number, colIndex: number, element?: Element): void {
         this.parent.drillThroughElement = element;
@@ -106,11 +108,11 @@ export class DrillThrough {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                let currModule: DrillThrough = this;
+                let currModule: DrillThrough = this;    /* eslint-disable-line */
                 if (isBlazor() && this.parent.enableVirtualization) {
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     (currModule.parent as any).interopAdaptor.invokeMethodAsync(
-                        'PivotInteropMethod', 'fetchRawData', { 'RowIndex': rowIndex, 'ColumnIndex': colIndex }).then((data: any) => {
+                        'PivotInteropMethod', 'fetchRawData', { 'RowIndex': rowIndex, 'ColumnIndex': colIndex }).then((data: any) => {  /* eslint-disable-line */
                             rawData = JSON.parse(data.rawData);
                             let parsedObj: any = JSON.parse(data.indexObject);
                             let indexObject: any = {};
@@ -119,7 +121,7 @@ export class DrillThrough {
                             }
                             pivotValue.indexObject = indexObject;
                             currModule.triggerDialog(valueCaption, aggType, rawData, pivotValue, element);
-                            /* tslint:enable:no-any */
+                            /* eslint-enable @typescript-eslint/no-explicit-any */
                         });
                 } else if (this.parent.dataSourceSettings.mode === 'Server') {
                     this.parent.getEngine('fetchRawData', null, null, null, null, null, null, { rowIndex: rowIndex, columnIndex: colIndex });
@@ -147,7 +149,7 @@ export class DrillThrough {
         }
     }
 
-    /* tslint:disable:typedef no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private frameData(eventArgs: DrillThroughEventArgs): DrillThroughEventArgs {
         let keyPos: number = 0;
         let dataPos: number = 0;
@@ -156,7 +158,7 @@ export class DrillThrough {
             let framedHeader: any = {};
             while (keyPos < eventArgs.gridColumns.length) {
                 framedHeader[eventArgs.gridColumns[keyPos].field] = this.parent.dataSourceSettings.mode === 'Server' ?
-                    eventArgs.rawData[dataPos][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) : 0] :
+                    eventArgs.rawData[dataPos][this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) !== -1 ? this.parent.engineModule.fields.indexOf(eventArgs.gridColumns[keyPos].field) : 0] :    /* eslint-disable-line */
                     eventArgs.rawData[dataPos][this.parent.engineModule.fieldKeys[eventArgs.gridColumns[keyPos].field] as any];
                 keyPos++;
             }
@@ -168,6 +170,7 @@ export class DrillThrough {
         return eventArgs;
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
         let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
@@ -186,7 +189,7 @@ export class DrillThrough {
         if (this.parent.dataSourceSettings.type === 'CSV') {
             eventArgs = this.frameData(eventArgs);
         }
-        let drillThrough: DrillThrough = this;
+        let drillThrough: DrillThrough = this;  /* eslint-disable-line */
         let gridColumns: ColumnModel[] = eventArgs.gridColumns;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
             if (isBlazor()) {

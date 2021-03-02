@@ -42,7 +42,7 @@ export class InsertHtml {
         let isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&
         range.startContainer === range.endContainer;
         let isCollapsed: boolean = range.collapsed;
-        let nodes: Node[] = this.getNodeCollection(range, nodeSelection);
+        let nodes: Node[] = this.getNodeCollection(range, nodeSelection, node);
         let closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
         if (isExternal || (!isNOU(node) && !isNOU((node as HTMLElement).classList) &&
         (node as HTMLElement).classList.contains('pasteContent'))) {
@@ -239,10 +239,11 @@ export class InsertHtml {
         this.removeEmptyElements(editNode as HTMLElement);
     }
 
-    private static getNodeCollection (range: Range, nodeSelection: NodeSelection): Node[] {
+    private static getNodeCollection (range: Range, nodeSelection: NodeSelection, node: Node): Node[] {
         let nodes: Node[] = [];
-        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer &&
-            range.startContainer.nodeName === 'TD') {
+        if (range.startOffset === range.endOffset && range.startContainer === range.endContainer
+            && (range.startContainer.nodeName === 'TD' ||
+            ((node as HTMLElement).classList && (node as HTMLElement).classList.contains('pasteContent')))) {
                 nodes.push(range.startContainer.childNodes[range.endOffset]);
         } else {
             nodes = nodeSelection.getInsertNodeCollection(range);

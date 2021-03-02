@@ -1,4 +1,4 @@
-/** 
+/**
  * Specifies pivot external events
  * @hidden
  */
@@ -128,7 +128,7 @@ export const chartPointClick: string = 'chartPointClick';
 /** @hidden */
 export const beforeServiceInvoke: string = 'beforeServiceInvoke';
 
-/** 
+/**
  * Specifies pivot internal events
  */
 

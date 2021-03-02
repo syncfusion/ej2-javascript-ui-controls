@@ -250,6 +250,17 @@ export class DiagramContextMenu {
             }
         }
     }
+    /**
+     * refreshItems method \
+     *
+     * @returns { void } refreshItems method .\
+     *
+     * @private
+     */
+    public refreshItems(): void {
+        this.updateItems();
+        this.contextMenu.refresh();
+    }
 
     private updateItems(): void {
         let canInsert: boolean = true;
@@ -293,10 +304,6 @@ export class DiagramContextMenu {
             this.parent.trigger(contextMenuOpen, diagramArgs);
         }
         let hidden: boolean = true;
-        if (!this.parent.contextMenuSettings.showCustomMenuOnly && this.parent.contextMenuSettings.items) {
-            this.updateItems();
-            this.contextMenu.refresh();
-        }
         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
         this.contextMenu.enableItems(this.disableItems, false, true);
         let contextItems: DiagramContextMenu = this;

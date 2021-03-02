@@ -730,3 +730,40 @@ export type freezeMode =
     'Right' |
     /**  Left and right frozen mode */
     'Left-Right';
+
+/** 
+ * Defines types of responsive dialogs
+ * @hidden
+ */
+export enum ResponsiveDialogAction {
+    /**  Defines dialog type as Edit */
+    isEdit,
+    /**  Defines dialog type as Add */
+    isAdd,
+    /**  Defines dialog type as Sort */
+    isSort,
+    /**  Defines dialog type as Filter */
+    isFilter
+}
+
+/** 
+ * Defines responsive toolbar actions 
+ * @hidden
+ */
+export enum ResponsiveToolbarAction {
+    /**  Defines initial responsive toolbar buttons */
+    isInitial,
+    /**  Defines responsive toolbar search */
+    isSearch
+}
+
+/** 
+ * Defines mode of row rendering.
+ * * Horizontal
+ * * Vertical
+ */
+export type RowRenderingDirection =
+    /**  Defines horizontal row rendeing */
+    'Horizontal' |
+    /**  Defined vertical row rendering */
+    'Vertical';

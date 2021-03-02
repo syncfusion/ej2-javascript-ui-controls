@@ -35,17 +35,16 @@ export namespace ViewHelper {
     };
     export const getWeekNumberContent: Function = (proxy: Schedule, dates: Date[]) => {
         let weekNumber: number;
-        let firstDayOfWeek: number = proxy.currentView === 'TimelineMonth' ? 0 : proxy.firstDayOfWeek;
         if (proxy.weekRule === 'FirstDay') {
-            let weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], firstDayOfWeek);
+            let weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
             weekNumber = util.getWeekNumber(weekNumberDate);
         } else if (proxy.weekRule === 'FirstFourDayWeek') {
-            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], firstDayOfWeek);
-            let weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], firstDayOfWeek);
+            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
+            let weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
             let weekMidDate: Date = util.getWeekMiddleDate(weekFirstDate, weekLastDate);
             weekNumber = util.getWeekNumber(weekMidDate);
         } else if (proxy.weekRule === 'FirstFullWeek') {
-            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], firstDayOfWeek);
+            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
             weekNumber = util.getWeekNumber(weekFirstDate);
         }
         return weekNumber;

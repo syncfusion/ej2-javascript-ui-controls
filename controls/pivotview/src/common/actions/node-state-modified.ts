@@ -10,24 +10,26 @@ import { OlapEngine } from '../../base/olap/engine';
 /** @hidden */
 export class NodeStateModified {
     public parent: PivotCommon;
-
     /**
      * Constructor for the dialog action.
+     * @param {PivotCommon} parent - parent.
      * @hidden
      */
-    constructor(parent?: PivotCommon) {
+    constructor(parent?: PivotCommon) { /* eslint-disable-line */
         this.parent = parent;
     }
 
+    /* eslint-disable-next-line */
     /**
      * Updates the dataSource by drag and drop the selected field from either field list or axis table with dropped target position.
-     * @method onStateModified
+     * @function onStateModified
      * @param  {DragEventArgs & DragAndDropEventArgs} args -  Contains both pivot button and field list drag and drop information.
      * @param  {string} fieldName - Defines dropped field name to update dataSource.
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public onStateModified(args: DragEventArgs & DragAndDropEventArgs, fieldName: string): boolean {
+        /* eslint-enable */
         let droppedClass: string = '';
         let nodeDropped: boolean = true;
         let target: HTMLElement = closest(args.target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;

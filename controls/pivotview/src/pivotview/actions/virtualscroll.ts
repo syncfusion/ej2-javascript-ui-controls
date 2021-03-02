@@ -1,18 +1,17 @@
-import { EventHandler, setStyleAttribute, isBlazor, KeyboardEvents, KeyboardEventArgs, } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute, isBlazor, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { PivotEngine, OlapEngine } from '../../base';
-import { Column } from '@syncfusion/ej2-grids';
 
 /**
  * `VirtualScroll` module is used to handle scrolling behavior.
  */
 export class VirtualScroll {
     private parent: PivotView;
-    private previousValues: { top: number, left: number } = { top: 0, left: 0 };
-    private frozenPreviousValues: { top: number, left: number } = { top: 0, left: 0 };
-    private pageXY: { x: number, y: number };
+    private previousValues: { top: number; left: number } = { top: 0, left: 0 };
+    private frozenPreviousValues: { top: number; left: number } = { top: 0, left: 0 };
+    private pageXY: { x: number; y: number };
     private eventType: string = '';
     private engineModule: PivotEngine | OlapEngine;
     /** @hidden */
@@ -21,9 +20,10 @@ export class VirtualScroll {
 
     /**
      * Constructor for PivotView scrolling.
+     * @param {PivotView} parent - Instance of pivot table.
      * @hidden
      */
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
         this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         this.addInternalEvents();
@@ -31,7 +31,7 @@ export class VirtualScroll {
 
     /**
      * It returns the Module name.
-     * @returns string
+     * @returns {string} - string.
      * @hidden
      */
     public getModuleName(): string {
@@ -59,16 +59,16 @@ export class VirtualScroll {
                 EventHandler.add(mHdr, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(mHdr, 'touchmove pointermove', this.onTouchScroll(mHdr, mCont, fCont), this);
             }
-            this.parent.grid.on('check-scroll-reset', (args: any) => {
+            this.parent.grid.on('check-scroll-reset', (args: any) => {  /* eslint-disable-line */
                 args.cancel = true;
             });
-            this.parent.grid.on('prevent-frozen-scroll-refresh', function (args: any) {
+            this.parent.grid.on('prevent-frozen-scroll-refresh', function (args: any) { /* eslint-disable-line */
                 args.cancel = true;
             });
             this.parent.grid.isPreventScrollEvent = true;
         }
     }
-    private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
+    private onWheelScroll(mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
         let element: HTMLElement = mCont;
         return (e: WheelEvent) => {
             let top: number = element.parentElement.scrollTop + (e.deltaMode === 1 ? e.deltaY * 30 : e.deltaY);
@@ -81,8 +81,8 @@ export class VirtualScroll {
         };
     }
 
-    private getPointXY(e: PointerEvent | TouchEvent): { x: number, y: number } {
-        let pageXY: { x: number, y: number } = { x: 0, y: 0 };
+    private getPointXY(e: PointerEvent | TouchEvent): { x: number; y: number } {
+        let pageXY: { x: number; y: number } = { x: 0, y: 0 };
         if (!((e as TouchEvent).touches && (e as TouchEvent).touches.length)) {
             pageXY.x = (e as PointerEvent).pageX;
             pageXY.y = (e as PointerEvent).pageY;
@@ -93,13 +93,13 @@ export class VirtualScroll {
         return pageXY;
     }
 
-    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+    private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {    /* eslint-disable-line */
         let element: HTMLElement = mCont;
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {
                 return;
             }
-            let pageXY: { x: number, y: number } = this.getPointXY(e);
+            let pageXY: { x: number; y: number } = this.getPointXY(e);
             let top: number = element.parentElement.scrollTop + (this.pageXY.y - pageXY.y);
             let left: number = element.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft + (this.pageXY.x - pageXY.x);
             if (this.parent.element.querySelector('.' + cls.HEADERCONTENT).contains(e.target as Element)) {
@@ -120,7 +120,7 @@ export class VirtualScroll {
         };
     }
 
-    private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
+    private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {  /* eslint-disable-line */
         this.parent.isScrolling = true;
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         if (isBlazor() || this.parent.dataSourceSettings.mode === 'Server') {
@@ -145,19 +145,19 @@ export class VirtualScroll {
                     if (isBlazor()) {
                         let pivot: PivotView = this.parent;
                         let sfBlazor: string = 'sfBlazor';
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         let dataSourceSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         let pageSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         (pivot as any).interopAdaptor.invokeMethodAsync(
                             'PivotInteropMethod', 'generateGridData', {
                             'dataSourceSettings': dataSourceSettings,
                             'pageSettings': pageSettings, 'isScrolling': true
                         }).then(
-                            /* tslint:disable-next-line */
+                            /* eslint-disable-next-line */
                             (data: any) => {
                                 pivot.updateBlazorData(data, pivot);
                                 pivot.pivotValues = engine.pivotValues;
@@ -205,19 +205,19 @@ export class VirtualScroll {
                     if (isBlazor()) {
                         let sfBlazor: string = 'sfBlazor';
                         let pivot: PivotView = this.parent;
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         let pageSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         let dataSourceSettings: any = (window as any)[sfBlazor].
                             copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
-                        /* tslint:disable-next-line */
+                        /* eslint-disable-next-line */
                         (pivot as any).interopAdaptor.invokeMethodAsync(
                             'PivotInteropMethod', 'generateGridData', {
                             'dataSourceSettings': dataSourceSettings,
                             'pageSettings': pageSettings, 'isScrolling': true
                         }).then(
-                            /* tslint:disable-next-line */
+                            /* eslint-disable-next-line */
                             (data: any) => {
                                 pivot.updateBlazorData(data, pivot);
                                 colStartPos = pivot.engineModule.colStartPos;
@@ -248,7 +248,7 @@ export class VirtualScroll {
         }
     }
 
-    private setPageXY(): Function {
+    private setPageXY(): Function { /* eslint-disable-line */
         return (e: PointerEvent | TouchEvent) => {
             if ((e as PointerEvent).pointerType === 'mouse') {
                 return;
@@ -257,7 +257,7 @@ export class VirtualScroll {
         };
     }
 
-    private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
+    private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
         return (e: Event) => {
             this.update(
                 mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale,
@@ -265,21 +265,21 @@ export class VirtualScroll {
         };
     }
 
-    private onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
-        /* tslint:disable-next-line */
+    private onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {   /* eslint-disable-line */
+        /* eslint-disable-next-line */
         let timeOutObj: any;
         return (e: Event) => {
             let left: number = mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
-                /* tslint:disable */
+                /* eslint-disable */
                 timeOutObj = setTimeout(() => {
                     left = e.type === 'touchmove' ? mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft : left;
                     this.update(mHdr, mCont, mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e);
                 }, 300);
             }
             if (this.previousValues.left === left) {
-                 return;
+                return;
             }
             this.parent.scrollDirection = this.direction = 'horizondal';
             let horiOffset: number = -((left - this.parent.scrollPosObject.horizontalSection - mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft));
@@ -346,7 +346,7 @@ export class VirtualScroll {
                         mCont.parentElement.parentElement.querySelector('.' + cls.MOVABLESCROLL_DIV).scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
-            /* tslint:enable */
+            /* eslint-enable */
             if (this.previousValues.top === top) {
                 return;
             }
@@ -411,17 +411,20 @@ export class VirtualScroll {
         };
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
     public removeInternalEvents(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(contentReady, this.wireEvents);
     }
 
     /**
      * To destroy the virtualscrolling event listener
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

@@ -28,19 +28,20 @@ export class DrillThroughDialog {
     private engine: PivotEngine | OlapEngine;
     private gridData: IDataSet[] = [];
     private numericTextBox: NumericTextBox;
+    /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
      * @hidden
      */
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
 
-    private frameHeaderWithKeys(header: any): IDataSet {
+    private frameHeaderWithKeys(header: any): IDataSet {    /* eslint-disable-line */
         let keys: string[] = Object.keys(header);
         let keyPos: number = 0;
-        let framedHeader: any = {};
+        let framedHeader: any = {}; /* eslint-disable-line */
         while (keyPos < keys.length) {
             framedHeader[keys[keyPos]] = header[keys[keyPos]];
             keyPos++;
@@ -48,6 +49,7 @@ export class DrillThroughDialog {
         return framedHeader;
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
         this.gridData = eventArgs.rawData;
@@ -72,7 +74,6 @@ export class DrillThroughDialog {
                 header: this.parent.localeObj.getConstant('details'),
                 content: this.createDrillThroughGrid(eventArgs),
                 beforeOpen: () => {
-                    /* tslint:disable:align */
                     this.drillThroughGrid.setProperties({
                         dataSource: this.parent.editSettings.allowEditing ?
                             this.dataWithPrimarykey(eventArgs) : this.gridData,
@@ -87,13 +88,13 @@ export class DrillThroughDialog {
                         let gridIndexObjectsValue: string[] = Object.keys(this.gridIndexObjects);
                         let previousPosition: number[] = [];
                         for (let value of gridIndexObjectsValue) {
-                            previousPosition.push(this.gridIndexObjects[value])
+                            previousPosition.push(this.gridIndexObjects[value]);
                         }
                         let count: number = Object.keys(this.gridIndexObjects).length;
                         let addItems: IDataSet[] = [];
                         let prevItems: IDataSet[] = [];
                         let index: number = 0;
-                        /* tslint:disable:no-string-literal */
+                        /* eslint-disable @typescript-eslint/dot-notation */
                         for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
                             if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
                                 for (let field of this.engine.fields) {
@@ -123,11 +124,11 @@ export class DrillThroughDialog {
                         }
                         count = 0;
                         if (isBlazor() && this.parent.enableVirtualization) {
-                            let currModule: DrillThroughDialog = this;
-                            /* tslint:disable:no-any */
+                            let currModule: DrillThroughDialog = this;  /* eslint-disable-line */
+                            /* eslint-disable @typescript-eslint/no-explicit-any */
                             (currModule.parent as any).interopAdaptor.invokeMethodAsync(
                                 'PivotInteropMethod', 'updateRawData', {
-                                'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
+                                'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData /* eslint-disable-line */
                             }).then((data: any) => {
                                 currModule.parent.updateBlazorData(data, currModule.parent);
                                 currModule.parent.allowServerDataBinding = false;
@@ -137,18 +138,18 @@ export class DrillThroughDialog {
                                 currModule.isUpdated = false;
                                 currModule.gridIndexObjects = {};
                             });
-                            /* tslint:enable:no-any */
+                            /* eslint-enable @typescript-eslint/no-explicit-any */
                         } else if (this.parent.dataSourceSettings.mode === 'Server') {
-                            let gridIndex: object[] = [];
+                            let gridIndex: object[] = [];   /* eslint-disable-line */
                             let keys: string[] = Object.keys(this.gridIndexObjects);
                             for (let len: number = 0; len < keys.length; len++) {
                                 delete this.parent.drillThroughValue.indexObject[this.gridIndexObjects[keys[len]]];
-                                gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });
+                                gridIndex.push({ Key: keys[len], Value: this.gridIndexObjects[keys[len]] });    /* eslint-disable-line */
                             }
-                            let indexObject: object[] = [];
+                            let indexObject: object[] = []; /* eslint-disable-line */
                             keys = Object.keys(this.parent.drillThroughValue.indexObject);
                             for (let len: number = 0; len < keys.length; len++) {
-                                indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });
+                                indexObject.push({ Key: keys[len], Value: this.parent.drillThroughValue.indexObject[keys[len]] });  /* eslint-disable-line */
                             }
                             this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { 'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems, indexObject: indexObject });
                         } else {
@@ -162,7 +163,7 @@ export class DrillThroughDialog {
                                 }
                                 count++;
                             }
-                            /* tslint:enable:no-string-literal */
+                            /* eslint-enable @typescript-eslint/dot-notation */
                             items = items.concat(addItems);
                             let eventArgs: EditCompletedEventArgs = {
                                 currentData: this.drillThroughGrid.dataSource as IDataSet[],
@@ -189,7 +190,7 @@ export class DrillThroughDialog {
                 locale: this.parent.locale,
                 enableRtl: this.parent.enableRtl,
                 width: this.parent.isAdaptive ? '100%' : '60%',
-                position: { X: 'center', Y: 'center' },
+                position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
                 closeOnEscape: true,
                 target: document.body,
                 close: this.removeDrillThroughDialog.bind(this)
@@ -207,8 +208,10 @@ export class DrillThroughDialog {
         let indexObject: number = Number(Object.keys(eventArgs.currentCell.indexObject));
         (eventArgs.currentTarget.firstElementChild as HTMLElement).style.display = 'none';
         let cellValue: number = Number(eventArgs.rawData[0][actualText]);
+        /* eslint-disable */
         let previousData: any = this.frameHeaderWithKeys(eventArgs.rawData[eventArgs.rawData.length - 1]);
         let currentData: any = eventArgs.rawData[eventArgs.rawData.length - 1];
+        /* eslint-enable */
         if (eventArgs.currentCell.actualText in previousData) {
             currentData[eventArgs.currentCell.actualText] = eventArgs.currentCell.actualValue;
         }
@@ -230,7 +233,7 @@ export class DrillThroughDialog {
                     previousData: previousData,
                     previousPosition: currentData.index,
                     cancel: false
-                }
+                };
                 this.parent.trigger(events.editCompleted, eventArgs);
                 if (!eventArgs.cancel) {
                     this.parent.setProperties({ dataSourceSettings: { dataSource: this.parent.engineModule.data } }, true);
@@ -238,10 +241,10 @@ export class DrillThroughDialog {
                     this.parent.pivotValues = this.engine.pivotValues;
                     this.parent.gridSettings.allowResizing = gridResize;
                 }
-            },
+            }
         });
         let textBoxElement: HTMLElement = createElement('input', {
-            id: this.parent.element.id + '_inputbox',
+            id: this.parent.element.id + '_inputbox'
         });
         eventArgs.currentTarget.appendChild(textBoxElement);
         this.numericTextBox.appendTo(textBoxElement);
@@ -250,7 +253,7 @@ export class DrillThroughDialog {
         this.parent.gridSettings.allowResizing = false;
     }
 
-    /* tslint:disable:typedef no-any */
+    /* eslint-disable , @typescript-eslint/no-explicit-any */
     private updateData(dataSource: IDataSet[]): void {
         let dataPos: number = 0;
         let data: string[][] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
@@ -265,7 +268,7 @@ export class DrillThroughDialog {
                 }
                 keyPos++;
             }
-            data[(dataSource as any)[dataPos]['__index']] = framedSet;
+            data[(dataSource as any)[dataPos]['__index']] = framedSet;  /* eslint-disable-line */
             dataPos++;
         }
         if (this.parent.allowDataCompression && this.parent.enableVirtualization) {
@@ -288,7 +291,7 @@ export class DrillThroughDialog {
         }
     }
 
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private createDrillThroughGrid(eventArgs: DrillThroughEventArgs): HTMLElement {
         let drillThroughBody: HTMLElement =
             createElement('div', { id: this.parent.element.id + '_drillthroughbody', className: cls.DRILLTHROUGH_BODY_CLASS });
@@ -351,7 +354,6 @@ export class DrillThroughDialog {
             rowHeight: this.parent.gridSettings.rowHeight
         });
         if (isBlazor()) {
-            /* tslint:disable-next-line */
             (this.drillThroughGrid as any)['isJsComponent'] = true;
         }
         if (this.parent.dataType === 'olap') {
@@ -387,11 +389,9 @@ export class DrillThroughDialog {
             } else {
                 this.drillThroughGrid.editSettings.allowEditOnDblClick = this.parent.editSettings.allowEditOnDblClick;
             }
-            /* tslint:disable:align */
             (this.drillThroughGrid.columns as ColumnModel[]).push({
                 field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
             });
-            /* tslint:disable-next-line:no-any */
             this.drillThroughGrid.actionComplete = (args: any) => {
                 if (args.requestType === 'batchsave' || args.requestType === 'save' || args.requestType === 'delete') {
                     dialogModule.isUpdated = true;
@@ -405,7 +405,7 @@ export class DrillThroughDialog {
             this.drillThroughGrid.beforeBatchSave = () => {
                 dialogModule.isUpdated = true;
             };
-            /* tslint:enable:align */
+            /* eslint-enable @typescript-eslint/indent */
         } else {
             Grid.Inject(VirtualScroll);
         }
@@ -481,7 +481,6 @@ export class DrillThroughDialog {
         let rawData: IDataSet[] = this.gridData;
         let count: number = 0;
         for (let item of rawData) {
-            /* tslint:disable-next-line:no-string-literal */
             item['__index'] = indexString[count];
             this.gridIndexObjects[indexString[count].toString()] = Number(indexString[count]);
             count++;

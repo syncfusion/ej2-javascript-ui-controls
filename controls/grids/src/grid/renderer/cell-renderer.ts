@@ -256,6 +256,10 @@ export class CellRenderer implements ICellRenderer<Column> {
             setStyleAndAttributes(node, column.customAttributes);
         }
 
+        if (this.parent.rowRenderingMode === 'Vertical') {
+            setStyleAndAttributes(node, { 'data-cell': column.headerText });
+        }
+
         if (column.textAlign) {
             node.style.textAlign = column.textAlign;
         }

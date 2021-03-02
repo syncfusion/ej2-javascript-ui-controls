@@ -149,6 +149,11 @@ describe('RadioButton', () => {
             let htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
+        it('Enable Html Attributes testing', () => {
+            radio = new RadioButton({ htmlAttributes: {'title':'Choose Option'}, label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
+        });
     });
 
     describe('Notify property changes of', () => {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F162436` - This issue "While set the node's isExpanded property true at initial rendering unwanted scroll is take placed" has been fixed.
+
 ## 18.4.43 (2021-02-16)
 
 ### Diagram

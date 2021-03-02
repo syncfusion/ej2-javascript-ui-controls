@@ -41,13 +41,13 @@ export class PivotCommon {
     /** @hidden */
     public control: PivotView | PivotFieldList;
     /** @hidden */
-    public currentTreeItems: { [key: string]: Object }[] = [];
+    public currentTreeItems: { [key: string]: Object }[] = [];  /* eslint-disable-line */
     /** @hidden */
     public savedTreeFilterPos: { [key: number]: string } = {};
     /** @hidden */
     public currentTreeItemsPos: { [key: string]: TreeDataInfo } = {};
     /** @hidden */
-    public searchTreeItems: { [key: string]: Object }[] = [];
+    public searchTreeItems: { [key: string]: Object }[] = [];   /* eslint-disable-line */
     /** @hidden */
     public editorLabelElement: HTMLLabelElement;
     /** @hidden */
@@ -73,11 +73,11 @@ export class PivotCommon {
     public keyboardModule: CommonKeyboardInteraction;
 
     /**
-     * Constructor for Pivot Common class
-     * @param  {CommonArgs} control?
+     * Constructor for Pivot Common class.
+     * @param  {CommonArgs} control - control.
      * @hidden
      */
-    constructor(control: CommonArgs) {
+    constructor(control: CommonArgs) {  /* eslint-disable-line */
         this.element = control.element;
         this.moduleName = control.moduleName;
         this.dataSourceSettings = control.dataSourceSettings;
@@ -98,11 +98,13 @@ export class PivotCommon {
     }
 
     /**
-     * To destroy the groupingbar 
-     * @return {void}
+     * To destroy the groupingbar.
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        if (this.keyboardModule) { this.keyboardModule.destroy(); }
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+        }
     }
 }

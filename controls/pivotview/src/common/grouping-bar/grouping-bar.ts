@@ -31,9 +31,10 @@ export class GroupingBar implements IAction {
     private filterAxisPanel: HTMLElement;
     private touchObj: Touch;
     private resColWidth: number;
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timeOutObj: any;
 
+    /* eslint-disable */
     /**
      * Module declarations
      */
@@ -45,6 +46,7 @@ export class GroupingBar implements IAction {
 
     /** Constructor for GroupingBar module */
     constructor(parent: PivotView) {
+        /* eslint-enable */
         this.parent = parent;
         this.parent.groupingBarModule = this;
         this.resColWidth = (this.parent.isAdaptive ? 180 : 249);
@@ -57,12 +59,14 @@ export class GroupingBar implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     * @returns {string} - Module name.
      * @private
      */
     protected getModuleName(): string {
         return 'groupingbar';
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public renderLayout(): void {
         this.groupingTable = createElement('div', { className: cls.GROUPING_BAR_CLASS });
@@ -135,12 +139,11 @@ export class GroupingBar implements IAction {
             this.groupingTable = undefined;
         }
     }
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private appendToElement(): void {
         if (this.parent.element.querySelector('.' + cls.GRID_CLASS) || this.parent.element.querySelector('.' + cls.PIVOTCHART)) {
             if (this.parent.showGroupingBar) {
                 if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-                    /* tslint:disable-next-line:no-any */
                     for (let element of this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS) as any) {
                         remove(element);
                     }
@@ -366,11 +369,11 @@ export class GroupingBar implements IAction {
                             this.setColWidth((gridColumn[cCnt] as Column).columns as Column[], valueColWidth);
                         } else {
                             if ((gridColumn[cCnt] as Column).width !== 'auto') {
-                                /* tslint:disable:no-any */
+                                /* eslint-disable @typescript-eslint/no-explicit-any */
                                 let levelName: string = gridColumn[cCnt].customAttributes ?
                                     (gridColumn[cCnt].customAttributes as any).cell.valueSort.levelName : '';
                                 gridColumn[cCnt].width = this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
-                                /* tslint:enable:no-any */
+                                /* eslint-enable @typescript-eslint/no-explicit-any */
                             } else {
                                 (gridColumn[cCnt] as Column).minWidth = valueColWidth;
                             }
@@ -473,7 +476,7 @@ export class GroupingBar implements IAction {
 
     /**
      * To destroy the groupingbar 
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

@@ -986,11 +986,13 @@ export class PdfExport {
                     column: column,
                     style: undefined,
                     colSpan: 1,
-                    cell: cell,
-                    hyperLink: undefined
+                    cell: cell
                 };
                 args.value = this.exportValueFormatter.formatCellValue(args, gObj.isServerRendered);
                 this.parent.trigger(events.pdfQueryCellInfo, args);
+                if (!isNullOrUndefined(args.image)) {
+                    args.value = new PdfBitmap(args.image.base64);
+                }
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.hyperLink)) {
                     // create the Text Web Link

@@ -93,9 +93,8 @@ export interface NewReportArgs {
  * The toolbar event arguments provides the necessary information to customize options of the toolbar creating.
  */
 export interface ToolbarArgs {
-    /** 
+    /**
      * Defines the collection of items used to add or remove items to create as toolbar options.
-     * @blazorType List<Syncfusion.Blazor.Navigations.ItemModel>
      */
     customToolbar?: ItemModel[];
 }
@@ -132,9 +131,7 @@ export interface FieldDroppedEventArgs {
     dataSourceSettings?: IDataOptions;
     /** Defines the axis where the field has been dropped */
     droppedAxis?: string;
-    /** Defines the position where the field has been dropped.
-     * @blazorType int
-     */
+    /** Defines the position where the field has been dropped. */
     droppedPosition?: number;
 }
 
@@ -150,9 +147,8 @@ export interface FieldDropEventArgs {
     dataSourceSettings?: IDataOptions;
     /** Defines the axis where the field will drop */
     dropAxis?: string;
-    /** 
+    /**
      * Defines drop field position
-     * @blazorType int
      */
     dropPosition?: number;
     /** Defines the axis where the field has been dragged */
@@ -193,40 +189,33 @@ export interface BeforeExportEventArgs {
     allowRepeatHeader?: boolean;
     /** Defines the theme style for PDF */
     style?: PdfTheme;
-    /** 
+    /**
      * Defines the additional settings for PDF export such as page size, orientation, header, footer, etc.
-     * @blazorType Syncfusion.Blazor.Grids.PdfExportProperties
      */
     pdfExportProperties?: PdfExportProperties;
     /** Defines an option to export multiple pivot table to the same PDF file */
     isMultipleExport?: boolean;
     /** Defines current PDF file that holds the pivot table information which will be used to export */
-    pdfDoc?: Object;
+    pdfDoc?: Object;    /* eslint-disable-line */
     /** A file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system. */
     isBlob?: boolean;
     /** Defines the additional settings for excel export such as multiple export, header, footer, etc.
-     * @blazorType Syncfusion.Blazor.Grids.ExcelExportProperties
      */
     excelExportProperties?: ExcelExportProperties;
     /** Defines current excel work book that holds the pivot table information which will be used to export */
-    /* tslint:disable-next-line */
-    workbook?: any;
-    /** 
+    workbook?: any; /* eslint-disable-line */
+    /**
      * Defines the pivot chart export type
-     * @blazorDefaultValueIgnore
      * @isEnumeration
-     * @blazorType Syncfusion.Blazor.Charts.ExportType
      */
     type?: ExportType;
     /** Defines the page orientation of PDF export */
     orientation?: PdfPageOrientation;
-    /** 
+    /**
      * Defines content width to be export
-     * @blazorType int
      */
     width?: number;
     /** Defines content height to be export
-     * @blazorType int
      */
     height?: number;
 }
@@ -249,9 +238,8 @@ export interface PdfCellRenderArgs {
 export interface PdfStyle {
     /** Defines the font family */
     fontFamily?: string;
-    /** 
+    /**
      * Defines the font size
-     * @blazorType int
      */
     fontSize?: number;
     /** Defines the brush color of font */
@@ -279,7 +267,7 @@ export interface CellClickEventArgs {
     /** Defines the cell element that is clicked. */
     currentCell: Element;
     /** Defines the cell item that is clicked. */
-    data: Object;
+    data: Object;   /* eslint-disable-line */
     /** Defines the native event properties. */
     nativeEvent: MouseEvent;
 }
@@ -291,7 +279,7 @@ export interface HyperCellClickEventArgs {
     /** Defines the cell element that is clicked. */
     currentCell: Element;
     /** Defines the cell item that is clicked. */
-    data: Object;
+    data: Object;   /* eslint-disable-line */
     /** Defines an option to restrict the hyperlink cell click operation. By default, the value is in 'true' state. */
     cancel: boolean;
     /** Defines the native event properties. */
@@ -314,9 +302,8 @@ export interface DrillThroughEventArgs {
     columnHeaders: string;
     /** Defines the actual value of the clicked cell. */
     value: string;
-    /** 
+    /**
      * Defines the grid cell information that used to render multiple header rows(stacked headers) on the Grid header in drill-through popup dialog.
-     * @blazorType List<Syncfusion.Blazor.Grids.ColumnModel>
      */
     gridColumns?: ColumnModel[];
     /** Defines an option to restrict the drill-through operation. */
@@ -369,19 +356,16 @@ export interface MemberFilteringEventArgs {
 export interface CellSelectedObject {
     /** Defines the current cell item. */
     currentCell: IAxisSet;
-    /** 
+    /**
      * Defines the current cell value.
-     * @blazorType string
      */
     value: number | string;
-    /** 
+    /**
      * Defines the row header of the current cell.
-     * @blazorType string
      */
     rowHeaders: string | number | Date;
-    /** 
+    /**
      * Defines the column header of the current cell.
-     * @blazorType string
      */
     columnHeaders: string | number | Date;
     /** Defines the measure of the current cell. */
@@ -430,9 +414,8 @@ export interface PivotColumn {
     allowResizing: boolean;
     /** Defines the header text of the column header. */
     headerText: string;
-    /** 
+    /**
      * Defines the width of the column header.
-     * @blazorType string
      */
     width: string | number;
 }
@@ -463,9 +446,8 @@ export interface BeginDrillThroughEventArgs {
  * The chart series created event arguments provide the necessary information about the chart series that used to create the pivot chart.
  */
 export interface ChartSeriesCreatedEventArgs {
-    /** 
+    /**
      * Defines the collection of chart series information that used to render the pivot chart.
-     * @blazorType List<Syncfusion.Blazor.Charts.SeriesModel>
      */
     series: SeriesModel[];
     /** Defines an option to restrict the pivot chart rendring. */
@@ -478,56 +460,52 @@ export interface ChartSeriesCreatedEventArgs {
 export interface SelectionSettings {
 
     /**
-     * Pivot widget supports row, column, cell, and both (row and column) selection mode. 
+     * Pivot widget supports row, column, cell, and both (row and column) selection mode.
      * @default Row
      */
     mode?: SelectionMode;
 
     /**
-     * The cell selection modes are flow and box. It requires the selection 
+     * The cell selection modes are flow and box. It requires the selection
      * `mode` to be either cell or both.
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
      * @default Flow
      * @isEnumeration
-     * @blazorDefaultValue Syncfusion.Blazor.Grids.CellSelectionMode.Flow
-     * @blazorType Syncfusion.Blazor.Grids.CellSelectionMode
      */
     cellSelectionMode?: CellSelectionMode;
 
     /**
-     * Defines options for selection type. They are 
-     * * `Single`: Allows selection of only a row or a column or a cell. 
-     * * `Multiple`: Allows selection of multiple rows or columns or cells. 
-     * @default Single 
+     * Defines options for selection type. They are
+     * * `Single`: Allows selection of only a row or a column or a cell.
+     * * `Multiple`: Allows selection of multiple rows or columns or cells.
+     * @default Single
      */
     type?: SelectionType;
 
     /**
      * If 'checkboxOnly' set to true, then the selection is allowed only through checkbox.
-     * 
+     *
      * Note: To enable 'checkboxOnly' selection, should specify the column type as`checkbox`.
-     * @default false 
+     * @default false
      */
     checkboxOnly?: boolean;
 
     /**
      * If 'persistSelection' set to true, then the selection is persisted on all operations.
      * For persisting selection, any one of the column should be enabled as a primary key.
-     * @default false 
+     * @default false
      */
     persistSelection?: boolean;
 
     /**
-     * Defines options for checkbox selection Mode. They are 
+     * Defines options for checkbox selection Mode. They are
      * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
      * @default Default
      * @isEnumeration
-     * @blazorDefaultValue Syncfusion.Blazor.Grids.CheckboxSelectionType.Default
-     * @blazorType Syncfusion.Blazor.Grids.CheckboxSelectionType
      */
     checkboxMode?: CheckboxSelectionType;
 
@@ -568,8 +546,8 @@ export interface PivotButtonArgs {
  */
 export interface IAction {
     updateModel?(): void;
-    onActionBegin?(args?: Object, type?: string): void;
-    onActionComplete?(args?: Object, type?: string): void;
+    onActionBegin?(args?: Object, type?: string): void; /* eslint-disable-line */
+    onActionComplete?(args?: Object, type?: string): void;  /* eslint-disable-line */
     addEventListener?(): void;
     removeEventListener?(): void;
 }
@@ -578,9 +556,8 @@ export interface IAction {
  * Defines the row on excel export
  */
 export interface ExcelRow {
-    /**  
+    /**
      * Defines the index for cells
-     * @blazorType int
      */
     index?: number;
     /**  Defines the cells in a row */
@@ -592,14 +569,12 @@ export interface ExcelRow {
  * Defines the column on excel export
  */
 export interface ExcelColumn {
-    /**  
+    /**
      * Defines the index for cells
-     * @blazorType int
      */
     index?: number;
-    /**  
+    /**
      * Defines the width of each column
-     * @blazorType int
      */
     width: number;
 
@@ -609,16 +584,12 @@ export interface ExcelColumn {
  * Defines the style options for excel export
  */
 export interface ExcelStyles extends ExcelStyle {
-    /** 
+    /**
      * Defines the horizontal alignment for cell style
-     * @blazorDefaultValueIgnore
-     * @blazorType Syncfusion.Blazor.Grids.ExcelHAlign
      */
     hAlign?: ExcelHAlign;
-    /** 
+    /**
      * Defines the vertical alignment for cell style
-     * @blazorDefaultValueIgnore
-     * @blazorType Syncfusion.Blazor.Grids.ExcelVAlign
      */
     vAlign?: ExcelVAlign;
     /** Defines the cell number format */
@@ -629,24 +600,20 @@ export interface ExcelStyles extends ExcelStyle {
  * Defines the cell information for excel export
  */
 export interface ExcelCell {
-    /** 
+    /**
      * Defines the index for the cell
-     * @blazorType int
      */
     index?: number;
-    /** 
+    /**
      * Defines the column span for the cell
-     * @blazorType int
      */
     colSpan?: number;
-    /** 
+    /**
      * Defines the column span for the cell
-     * @blazorType int
      */
     rowSpan?: number;
-    /** 
+    /**
      * Defines the value of the cell
-     * @blazorType string
      */
     value?: string | boolean | number | Date;
     /** Defines the style of the cell */
@@ -665,7 +632,7 @@ export interface ResizeInfo {
  */
 export interface ScrollInfo {
     vertical: number; horizontal: number; verticalSection: number; horizontalSection: number;
-    top: number; left: number; scrollDirection: { direction: string, position: number };
+    top: number; left: number; scrollDirection: { direction: string; position: number };
 }
 
 /**
@@ -723,9 +690,8 @@ export interface PdfTheme {
  * Defines the theme options for PDF export
  */
 export interface PdfThemeStyle {
-    /** 
+    /**
      * Defines the font size of theme style.
-     * @blazorType int
      */
     fontSize?: number;
     /** Defines the font of the theme. */
@@ -752,9 +718,8 @@ export interface PdfThemeStyle {
 export interface PdfBorder {
     /** Defines the border color */
     color?: string;
-    /** 
+    /**
      * Defines the border width
-     * @blazorType int
      */
     width?: number;
     /** Defines the border dash style */
@@ -781,9 +746,8 @@ export interface AggregateEventArgs {
     row?: IAxisSet;
     /** Defines the column header information of the value cell. */
     column?: IAxisSet;
-    /** 
+    /**
      * Defines the aggregate cell value of the current cell.
-     * @blazorType Nullable<double>
      */
     value?: number;
     /** Defines the actual data source collection that used to aggregate the value of the current cell. */
@@ -803,29 +767,25 @@ export interface AggregateEventArgs {
  */
 export interface QueryCellInfoEventArgs {
     /** Defines the row data associated with the current cell. */
-    data?: Object;
+    data?: Object;  /* eslint-disable-line */
     /** Defines the cell element. */
     cell?: Element;
-    /** 
+    /**
      * Defines the column information associated with the current cell.
-     * @blazorDefaultValueIgnore
-     * @blazorType Syncfusion.Blazor.Grids.ColumnModel
      */
     column?: Column;
-    /** 
+    /**
      * Defines the number of columns used to span the current cell at column wise.
-     * @blazorType int
      */
     colSpan?: number;
-    /** 
+    /**
      * Defines the number of rows used to span the current cell at row wise.
-     * @blazorType int
      */
     rowSpan?: number;
     /** Defines the current action. */
     requestType?: string;
     /** Define the foreign key row data associated with the current cell. */
-    foreignKeyData?: Object;
+    foreignKeyData?: Object;    /* eslint-disable-line */
     /** Define the pivot table instance object. */
     pivotview?: PivotView;
 }
@@ -848,14 +808,12 @@ export interface OffsetModel {
     /**
      * Defines offset left position of the marker.
      * @default 0
-     * @blazorType int
      */
     x?: number;
 
     /**
      * Defines offset top position of the marker.
      * @default 0
-     * @blazorType int
      */
     y?: number;
 
@@ -867,11 +825,10 @@ export interface OffsetModel {
 export interface MemberEditorOpenEventArgs {
     /** Defines the selected field name to perform filtering */
     fieldName?: string;
-    /** 
+    /**
      * Defines the filter members of the selected field.
-     * @blazorType List<MemberItems>
      */
-    fieldMembers?: { [key: string]: Object; }[];
+    fieldMembers?: { [key: string]: Object }[]; /* eslint-disable-line */
     /** Defines selected field's filter settings */
     filterSetting?: IFilter;
     /** Defines an option to restrict the member editor popup from open. */
@@ -904,9 +861,8 @@ export interface CalculatedFieldCreateEventArgs {
     fieldName?: string;
     /** Defines current calcualted field's infromation that used to modify and update. */
     calculatedField?: ICalculatedFields;
-    /** 
+    /**
      * Defines current calculated fields collection in the current pivot report.
-     * @blazorType List<ICalculatedFieldSettings>
      */
     calculatedFieldSettings?: ICalculatedFieldSettings[];
     /** Defines an option to restrict the calculated field create operation */
@@ -917,9 +873,8 @@ export interface CalculatedFieldCreateEventArgs {
  * The number formatting event arguments provide the necessary information about the format settings of the selected field before it creates to update the pviot table.
  */
 export interface NumberFormattingEventArgs {
-    /** 
+    /**
      * Defines the current format settings collection
-     * @blazorType List<IFormatSettings>
      */
     formatSettings?: IFormatSettings[];
     /** Defines the seledted field name that used to apply the number formatting. */
@@ -932,9 +887,8 @@ export interface NumberFormattingEventArgs {
  * The aggregate menu open event arguments provide the necessary information to customize the aggregate menu options before it opens.
  */
 export interface AggregateMenuOpenEventArgs {
-    /** 
+    /**
      * Defines aggregate types collection that used to show it in the aggregate menu when it opens.
-     * @blazorType List<SummaryTypes>
      */
     aggregateTypes?: AggregateTypes[];
     /** Defines the selected field name to open the aggregate menu. */
@@ -949,11 +903,10 @@ export interface AggregateMenuOpenEventArgs {
 export interface MemberItems {
     /** Defines whether the specific filter member has child(inner level) members or not. */
     hasChildren?: boolean;
-    /** 
+    /**
      * Defines the custom HTML atttribute informations that used to add it specific filter member's DOM element in UI.
-     * @blazorType Dictionary<string, string>
      */
-    htmlAttributes?: { [key: string]: Object; };
+    htmlAttributes?: { [key: string]: Object }; /* eslint-disable-line */
     /** Defines whether the specific filter member is include or not that used to be display in the pivot table. */
     isSelected?: boolean;
     /** Defines the unique name of a specific filter member. */
@@ -987,7 +940,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the action which is being performed. */
     action?: string;
     /** Defines the custom properties which needs to pass to server side. */
-    customProperties?: any;
+    customProperties?: any; /* eslint-disable-line */
     /** Defines the drill item. */
     drillItem?: IDrilledItem;
     /** Defines the sort item. */
@@ -1007,7 +960,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the hash string. */
     hash?: string;
     /** Defines the internal properties. */
-    internalProperties?: any;
+    internalProperties?: any;   /* eslint-disable-line */
 }
 
 /**
@@ -1017,11 +970,11 @@ export interface UpdateRawDataArgs {
     /** Defines the raw data needs to be added. */
     addedData: IDataSet[];
     /** Defines the raw data needs to be removed. */
-    removedData: object[];
+    removedData: object[];  /* eslint-disable-line */
     /** Defines the raw data needs to be updated. */
     updatedData: IDataSet[];
     /** Defines the index object. */
-    indexObject: object[];
+    indexObject: object[];  /* eslint-disable-line */
 }
 
 /**

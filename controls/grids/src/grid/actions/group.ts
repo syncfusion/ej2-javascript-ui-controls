@@ -461,11 +461,22 @@ export class Group implements IAction {
                         break;
                     }
                 }
+                this.updateVisibleexpandCollapseRows();
+                this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
             }
             for (let i: number = 0, len: number = toExpand.length; i < len; i++) {
                 removeClass([toExpand[i]], 'e-recordplusexpand'); addClass([toExpand[i]], 'e-recordpluscollapse');
                 toExpand[i].firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
                 this.expandCollapseRows(toExpand[i]);
+            }
+        }
+    }
+
+    private updateVisibleexpandCollapseRows(): void {
+        let rows: Row<Column>[] = this.parent.getRowsObject();
+        for (let i: number = 0, len: number = rows.length; i < len; i++) {
+            if (rows[i].isDataRow && (this.parent.getRowElementByUID(rows[i].uid) as HTMLTableRowElement).style.display === 'none') {
+                (<{ visible?: boolean }>rows[i]).visible = false;
             }
         }
     }
@@ -506,6 +517,8 @@ export class Group implements IAction {
                 (rowNodes[i] as HTMLElement).style.display = isExpand ? '' : 'none';
             }
         }
+        this.updateVisibleexpandCollapseRows();
+        this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
     }
 
     /** 

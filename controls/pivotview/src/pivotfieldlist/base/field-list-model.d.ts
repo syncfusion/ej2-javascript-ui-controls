@@ -168,21 +168,18 @@ export interface PivotFieldListModel extends ComponentModel{
      * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
      * 'PercentageOfParentTotal']
      */
-    /* tslint:disable-next-line:max-line-length */
     aggregateTypes?: AggregateTypes[];
 
     /**
      * It allows any customization of Pivot Field List properties on initial rendering.
      * Based on the changes, the pivot field list will be redered.
      * @event
-     * @blazorproperty 'OnLoad'
      */
     load?: EmitType<LoadEventArgs>;
 
     /**
      * It triggers before the pivot engine starts to populate and allows to customize the pivot datasource settings. 
      * @event
-     * @blazorproperty 'EnginePopulating'
      */
     enginePopulating?: EmitType<EnginePopulatingEventArgs>;
 
@@ -195,28 +192,24 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers after the pivot engine populated and allows to customize the pivot datasource settings.
      * @event
-     * @blazorproperty 'EnginePopulated'
      */
     enginePopulated?: EmitType<EnginePopulatedEventArgs>;
 
     /**
      * It trigger when a field getting dropped into any axis.
      * @event
-     * @blazorproperty 'FieldDropped'
      */
     onFieldDropped?: EmitType<FieldDroppedEventArgs>;
 
     /**
      * It triggers before a field drops into any axis.
      * @event
-     * @blazorproperty 'fieldDrop'
      */
     fieldDrop?: EmitType<FieldDropEventArgs>;
 
     /**
      * It trigger when a field drag (move) starts.
      * @event
-     * @blazorproperty 'FieldDragStart'
      */
     fieldDragStart?: EmitType<FieldDragStartEventArgs>;
 
@@ -230,28 +223,24 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers before member editor dialog opens.
      * @event
-     * @blazorproperty 'MemberEditorOpen'
      */
     memberEditorOpen?: EmitType<MemberEditorOpenEventArgs>;
 
     /**
      * It triggers before a calculated field created/edited during runtime.
      * @event
-     * @blazorproperty 'CalculatedFieldCreate'
      */
     calculatedFieldCreate?: EmitType<CalculatedFieldCreateEventArgs>;
 
     /**
      * It triggers before aggregate type context menu opens.
      * @event
-     * @blazorproperty 'AggregateMenuOpen'
      */
     aggregateMenuOpen?: EmitType<AggregateMenuOpenEventArgs>;
 
     /**
      * It triggers before removing the field from any axis during runtime.
      * @event
-     * @blazorproperty 'FieldRemove'
      */
     fieldRemove?: EmitType<FieldRemoveEventArgs>;
 

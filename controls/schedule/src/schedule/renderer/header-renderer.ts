@@ -314,36 +314,25 @@ export class HeaderRenderer {
             depth: calendarView,
             start: calendarView,
             calendarMode: this.parent.calendarMode,
-            change: this.calendarChange.bind(this),
-            navigated: this.updateTodayDate.bind(this)
+            change: this.calendarChange.bind(this)
         });
         this.headerCalendar.isStringTemplate = true;
+        this.setCalendarTimezone();
         this.headerCalendar.appendTo(headerCalendarEle);
-        this.updateTodayDate();
         this.headerPopup.hide();
-    }
-    private updateTodayDate(): void {
-        if (this.parent.element.querySelector('.e-cell.e-today')
-            // tslint:disable-next-line:no-any
-            && ((this.headerCalendar as any).todayDate.getDate() !== this.parent.activeCellsData.startTime.getDate())) {
-            let selectAppointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-cell')) as Element[];
-            selectAppointments = selectAppointments.filter((element: HTMLElement) => {
-                return (!element.classList.contains('e-other-month'));
-            });
-            let todayEle: HTMLElement = this.parent.element.querySelector('.e-cell.e-today');
-            todayEle.classList.remove('e-today');
-            let timeZoneName: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
-            let todayDate: Date = this.parent.tzModule.convert(new Date(), this.parent.tzModule.getLocalTimezoneName(), timeZoneName);
-            addClass([selectAppointments[todayDate.getDate() - 1]], 'e-today');
-        }
     }
     private calendarChange(args: ChangedEventArgs & NavigatedEventArgs): void {
         if (args.value.getTime() !== this.parent.selectedDate.getTime()) {
             let calendarDate: Date = util.resetTime(new Date(args.value));
-            this.parent.changeDate(this.parent.getCurrentTime(calendarDate));
+            this.parent.changeDate(calendarDate);
         }
-        this.updateTodayDate();
         this.headerPopup.hide();
+    }
+    public setCalendarTimezone(): void {
+        if (this.headerCalendar) {
+            // tslint:disable-next-line:no-any
+            (this.headerCalendar as any).timezone = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+        }
     }
     private calculateViewIndex(args: ClickEventArgs): number {
         let target: Element = closest(args.originalEvent.target as HTMLElement, '.e-views');
@@ -364,7 +353,6 @@ export class HeaderRenderer {
                     this.headerPopup.hide();
                 } else {
                     this.headerPopup.show();
-                    this.updateTodayDate();
                 }
                 break;
             case 'e-day':

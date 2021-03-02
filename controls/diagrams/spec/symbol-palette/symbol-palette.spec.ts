@@ -450,6 +450,65 @@ describe('Symbol Palette', () => {
             expect(diagram.nodes.length).toBe(2);
             done();
         });
+        it('Checking drag and drop - adding node undo issue', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable[target['id']];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                arg.cancel = true;
+                var x = arg.position.x+100;
+                var y = arg.position.y+100;
+                var id = "node" + diagram.nodes.length + 1;
+                diagram.addNode({
+                  id: id,
+                  data: {
+                    type: "state"
+                  },
+                  offsetY: y,
+                  offsetX: x,
+                  width: 125,
+                  height: 125
+                });
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            expect(palette.selectedSymbols.wrapper.children[0].width === 199).toBe(true);
+            expect(palette.selectedSymbols.wrapper.children[0].height === 199).toBe(true);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 400, 400, false, false);
+            var ele = document.getElementById('diagram_SelectorElement')
+            console.log('symbolpalette');
+            console.log(ele);
+            
+            events.mouseUpEvent(diagram.element, 400, 400, false, false);
+            console.log("Test case check"+diagram.nodes.length)
+            expect(diagram.nodes.length).toBe(3);
+            diagram.undo()
+            expect(diagram.nodes.length).toBe(2);
+            console.log("Test case check1"+diagram.nodes.length)
+            done();
+        });
         it('drag and drop annotation node', (done: Function) => {
             debugger;
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#309809` - The issue with "Unable to resize the image in the Rich Text Editor when width is set" is resolved.
+
+- `#314678` - Resolved the script error raised, when pasting the content after pressing the shift-enter key.
+
+- `F161914` - The issue with "Bold format removed for the content previous to the selection in the Rich Text Editor" is resolved.
+
 ## 18.4.44 (2021-02-23)
 
 ### RichTextEditor

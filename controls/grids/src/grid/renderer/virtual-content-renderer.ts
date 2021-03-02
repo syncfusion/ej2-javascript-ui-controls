@@ -532,10 +532,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let isFrozen: boolean = this.parent.isFrozenGrid();
         let data: Object = this.parent.editModule.getCurrentEditedData(editForms[0], rowData);
         if (isFrozen) {
-            if (this.parent.getTablesCount() === 2) {
+            if (this.parent.getFrozenMode() !== 'Left-Right') {
                 data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
-            }
-            if (this.parent.getTablesCount() === 3) {
+            } else {
                 data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
                 data = this.parent.editModule.getCurrentEditedData(editForms[2], rowData);
             }

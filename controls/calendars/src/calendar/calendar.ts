@@ -102,6 +102,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected isDateSelected: boolean = true;
     private blazorRef: object;
     private serverModuleName: string;
+    protected timezone: string;
     protected defaultKeyConfigs: { [key: string]: string };
     protected previousDateTime: Date;
     protected isTodayClicked: boolean = false;
@@ -974,7 +975,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected renderDays(currentDate: Date, value?: Date, multiSelection?: boolean, values?: Date[], isTodayDate?: boolean): HTMLElement[] {
         let tdEles: HTMLElement[] = [];
         let cellsCount: number = 42;
-        let todayDate: Date = isTodayDate ? new Date(+currentDate) : new Date();
+        let todayDate: Date = isTodayDate ? new Date(+currentDate) : this.getDate(new Date(), this.timezone);
         let localDate: Date = new Date(this.checkValue(currentDate));
         let minMaxDate: Date;
         let numCells: number = this.weekNumber ? 8 : 7;
@@ -2146,6 +2147,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.setProperties({ depth: 'Month' }, true);
         }
     }
+    protected getDate(date: Date, timezone: string): Date {
+        if (timezone) {
+            date = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+        }
+        return date;
+    }
 }
 
 /**
@@ -2288,6 +2295,9 @@ export class Calendar extends CalendarBase {
             let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
             timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
             this.value = new Date(this.value.getTime() + (timeZoneDiff * 60 * 60 * 1000));
+        } else if (!isNullOrUndefined(this.timezone)) {
+            let date: Date = this.value || new Date();
+            this.setProperties({ value: super.getDate(date, this.timezone) }, true);
         }
     }
     protected formResetHandler(): void {
@@ -2346,7 +2356,7 @@ export class Calendar extends CalendarBase {
     protected todayButtonClick(e?: MouseEvent | KeyboardEvent): void {
         if (this.showTodayButton) {
             let tempValue: Date = this.generateTodayVal(this.value);
-            this.setProperties({ value: tempValue }, true);
+            this.setProperties({ value: super.getDate(tempValue, this.timezone) }, true);
             this.isTodayClicked = true;
             this.todayButtonEvent = e;
             if (this.isMultiSelection) {

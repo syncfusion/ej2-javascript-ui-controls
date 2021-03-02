@@ -433,7 +433,7 @@ export class Resize extends ActionBase {
             (this.actionObj.clone.offsetTop + this.actionObj.clone.offsetHeight) > this.scrollArgs.height ?
                 this.actionObj.clone.offsetHeight : clnHeight;
         clnTop = (clnTop < 0) ? 0 : clnTop;
-        clnTop = Math.floor(clnTop / slotInterval) * slotInterval;
+        clnTop = isTop ? Math.floor(clnTop / slotInterval) * slotInterval : clnTop;
         clnHeight = clnTop + clnHeight >= viewElement.scrollHeight ? viewElement.scrollHeight - clnTop :
             Math.ceil(clnHeight / slotInterval) * slotInterval;
         let styles: { [key: string]: Object } = {

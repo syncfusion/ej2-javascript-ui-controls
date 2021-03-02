@@ -23,6 +23,7 @@ export class EventTooltip {
             cssClass: this.parent.cssClass + ' ' + cls.EVENT_TOOLTIP_ROOT_CLASS,
             target: this.getTargets(),
             beforeRender: this.onBeforeRender.bind(this),
+            beforeClose: this.onBeforeClose.bind(this),
             enableRtl: this.parent.enableRtl
         });
         this.tooltipObj.appendTo(this.parent.element);
@@ -65,6 +66,7 @@ export class EventTooltip {
                 [].slice.call(this.parent.getHeaderTooltipTemplate()(data, this.parent, 'headerTooltipTemplate', templateId, false));
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
+            this.parent.renderTemplates();
             return;
         }
         let record: { [key: string]: Object } =
@@ -130,6 +132,10 @@ export class EventTooltip {
             this.setContent(content);
         }
         this.parent.renderTemplates();
+    }
+
+    private onBeforeClose(): void {
+        this.parent.resetTemplates(['tooltipTemplate', 'headerTooltipTemplate']);
     }
 
     private setContent(content: string | HTMLElement): void {

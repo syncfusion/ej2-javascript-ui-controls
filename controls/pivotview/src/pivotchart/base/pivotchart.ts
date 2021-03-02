@@ -1,4 +1,4 @@
-import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings, } from '../../base/engine';
+import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IField, IFormatSettings } from '../../base/engine';
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -16,7 +16,8 @@ import { createElement, remove, isNullOrUndefined, isBlazor, select } from '@syn
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
 import {
-    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo, DrillArgs, MultiLevelLabelClickEventArgs
+    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo,
+    DrillArgs, MultiLevelLabelClickEventArgs
 } from '../../common';
 import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
@@ -30,15 +31,15 @@ export class PivotChart {
     private dataSourceSettings: IDataOptions;
     private accumulationMenu: ContextMenu;
     private currentColumn: string;
-    private pivotIndex: { rIndex: number, cIndex: number };
+    private pivotIndex: { rIndex: number; cIndex: number };
     private chartSettings: ChartSettingsModel;
     private element: HTMLElement;
-    private templateFn: Function;
+    private templateFn: Function;   /* eslint-disable-line */
     private chartElement: HTMLElement;
     private measureList: string[];
     private headerColl: RowHeaderPositionGrouping = {};
     private maxLevel: number = 0;
-    private columnGroupObject: { [key: string]: { x: string, y: number, rIndex: number, cIndex: number }[] } = {};
+    private columnGroupObject: { [key: string]: { x: string; y: number; rIndex: number; cIndex: number }[] } = {};
     private persistSettings: ChartSettingsModel;
     private fieldPosition: string[] = [];
     private measurePos: number = -1;
@@ -56,14 +57,14 @@ export class PivotChart {
 
     /**
      * Get component name.
-     * @returns string
+     * @returns {string} - string
      * @private
      */
     public getModuleName(): string {
         return 'pivotchart';
     }
 
-    /* tslint:disable */
+    /* eslint-disable */
     public loadChart(parent: PivotView, chartSettings: ChartSettingsModel): void {
         this.parent = parent;
         this.measuresNames = {};
@@ -306,7 +307,7 @@ export class PivotChart {
 
     /**
      * Refreshing chart based on the updated chartSettings. 
-     * @returns void  
+     * @returns {void}  
      */
     public refreshChart(): void {
         this.chartSeries = [];
@@ -690,9 +691,9 @@ export class PivotChart {
         }
         this.parent.trigger(events.chartPointClick, args);
     }
-    /* tslint:enable */
+    /* eslint-enable */
 
-    private frameAxesWithRows(): { axes: AxisModel[], rows: RowModel[], columns: ColumnModel[] } {
+    private frameAxesWithRows(): { axes: AxisModel[]; rows: RowModel[]; columns: ColumnModel[] } {
         let axes: AxisModel[] = [];
         let rows: RowModel[] = [];
         let columns: ColumnModel[] = [];
@@ -759,7 +760,7 @@ export class PivotChart {
                     break;
                 }
             }
-            let lengthofFormat: Number;
+            let lengthofFormat: number;
             if (formatSetting) {
                 lengthofFormat = formatSetting.format.length;
             }
@@ -793,6 +794,7 @@ export class PivotChart {
         return format;
     }
 
+    /* eslint-disable-next-line */
     /** @hidden */
     public getColumnTotalIndex(pivotValues: IPivotValues): INumberIndex {
         let colIndexColl: INumberIndex = {};
@@ -818,11 +820,11 @@ export class PivotChart {
         return colIndexColl;
     }
 
-    private groupHierarchyWithLevels(pivotValues: IAxisSet[]): { [key: string]: { start: number, end: number } } {
+    private groupHierarchyWithLevels(pivotValues: IAxisSet[]): { [key: string]: { start: number; end: number } } {
         this.fieldPosition = [];
         let group: { [key: string]: { [key: string]: string } } = {};
         let fieldCount: number = 0;
-        let levelPos: { [key: string]: { start: number, end: number } } = {};
+        let levelPos: { [key: string]: { start: number; end: number } } = {};
         this.measurePos = (this.engineModule as OlapEngine).tupRowInfo[0].measurePosition;
         for (let rowPos: number = 0; rowPos < pivotValues.length; rowPos++) {
             let cell: IAxisSet = (pivotValues[rowPos] as IAxisSet[])[0];
@@ -857,7 +859,7 @@ export class PivotChart {
         }
         return levelPos;
     }
-    /* tslint:disable */
+    /* eslint-disable */
     private frameMultiLevelLabels(): MultiLevelLabelsModel[] {
         let startKeys: string[] = Object.keys(this.headerColl);
         let parentHeaders: RowHeaderLevelGrouping = this.headerColl[-0.5];
@@ -928,7 +930,7 @@ export class PivotChart {
         }
         return multiLevelLabels;
     }
-    /* tslint:enable */
+    /* eslint-enable */
     private getZoomFactor(): number {
         if (!isNaN(Number(this.parent.width))) {
             this.calculatedWidth = Number(this.parent.width);
@@ -966,7 +968,7 @@ export class PivotChart {
         return tooltip;
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private configLegendSettings(): LegendSettingsModel {
         let legendSettings: any = {};
         if (this.chartSettings.legendSettings) {
@@ -984,7 +986,7 @@ export class PivotChart {
         legendSettings.shapePadding = legendSettings.shapePadding ? legendSettings.shapePadding : 10;
         return legendSettings;
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     private configXAxis(): AxisModel {
         let currentXAxis: AxisModel = {};
@@ -992,7 +994,9 @@ export class PivotChart {
         currentXAxis.valueType = 'Category';
         currentXAxis.labelIntersectAction = currentXAxis.labelIntersectAction ? currentXAxis.labelIntersectAction : 'Rotate45';
         currentXAxis.title = currentXAxis.title ? currentXAxis.title :
-            this.dataSourceSettings.rows.map((args: IFieldOptions) => { return args.caption || args.name; }).join(' / ');
+            this.dataSourceSettings.rows.map((args: IFieldOptions) => {
+                return args.caption || args.name;
+            }).join(' / ');
         currentXAxis.zoomFactor = this.getZoomFactor();
         if (!this.parent.chartSettings.zoomSettings.enableScrollbar) {
             currentXAxis.zoomFactor = 1;
@@ -1019,7 +1023,7 @@ export class PivotChart {
                 args.series.name ? args.series.name.split(' | ')[1] : args.data.seriesName ?
                     args.data.seriesName.split(' | ')[1] : this.currentMeasure : this.measuresNames[this.currentMeasure] ?
                     this.measuresNames[this.currentMeasure] : this.currentMeasure);
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let dataSource: any = args.series.dataSource ? args.series.dataSource : this.parent.chart.series[args.data.seriesIndex].dataSource;
         let rowIndex: number = dataSource ? dataSource[args.data.pointIndex].rIndex : undefined;
         let colIndex: number = dataSource ? dataSource[args.data.pointIndex].cIndex : undefined;
@@ -1055,7 +1059,7 @@ export class PivotChart {
                 template = this.tooltipTemplateFn()(
                     templateVariable, this, 'tooltipTemplate', this.element.id + '1tooltipTemplate')[0].outerHTML;
             } else {
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
                 template = this.parent.getTooltipTemplate()(
                     templateVariable, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
             }
@@ -1070,7 +1074,7 @@ export class PivotChart {
         }
     }
 
-    private tooltipTemplateFn(): Function {
+    private tooltipTemplateFn(): Function { /* eslint-disable-line */
         return this.templateFn;
     }
     private loaded(args: ILoadedEventArgs): void {
@@ -1097,7 +1101,7 @@ export class PivotChart {
         }
         this.parent.chart.height = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
             this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultiAxis &&
-            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ?
+            this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) > (this.parent.dataSourceSettings.values.length * 235) + 100 ?  /* eslint-disable-line */
                 isNaN(Number(this.getChartHeight())) ? this.getChartHeight().toString() : (Number(this.getChartHeight()) - 5).toString() :
                 (!isNaN(Number(this.getChartHeight())) || this.parent.dataSourceSettings.values.length > 1) ?
                     ((this.parent.dataSourceSettings.values.length * 235) + 100).toString() :
@@ -1109,6 +1113,7 @@ export class PivotChart {
             this.parent.hideWaitingPopup();
         }
     }
+    /* eslint-disable-next-line */
     /** @hidden */
     public updateView(): void {
         if (this.parent.grid && this.parent.chart && this.parent.showToolbar) {
@@ -1152,10 +1157,10 @@ export class PivotChart {
             option.push({
                 id: this.parent.element.id + '_DrillMenuChart_' + items[i],
                 text: this.parent.localeObj.getConstant(items[i]),
-                items: [],
+                items: []
             });
         }
-        let getString: { key: number, type: string, value: string }[] = this.getMenuItems();
+        let getString: { key: number; type: string; value: string }[] = this.getMenuItems();
         let expand: MenuItemModel[] = [];
         let collapse: MenuItemModel[] = [];
         for (let i: number = 0; i < getString.length; i++) {
@@ -1176,7 +1181,7 @@ export class PivotChart {
             items: option,
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.drillMenuOpen.bind(this),
-            select: this.drillMenuSelect.bind(this),
+            select: this.drillMenuSelect.bind(this)
         };
         this.accumulationMenu = new ContextMenu(menuOptions);
         let contextMenu: HTMLElement;
@@ -1202,9 +1207,9 @@ export class PivotChart {
             this.accumulationMenu.enableItems([this.parent.localeObj.getConstant('collapse')], false);
         }
     }
-    private getMenuItems(): { key: number, type: string, value: string }[] {
+    private getMenuItems(): { key: number; type: string; value: string }[] {
         let rowIndex: number = this.pivotIndex.rIndex;
-        let menuItem: { key: number, type: string, value: string }[] = [];
+        let menuItem: { key: number; type: string; value: string }[] = [];
         let pivotValues: IAxisSet[][] = this.engineModule.pivotValues as IAxisSet[][];
         let levelCol: number[] = [];
         let pivotValue: IAxisSet = pivotValues[rowIndex][this.pivotIndex.cIndex];
@@ -1280,8 +1285,7 @@ export class PivotChart {
                 this.onDrill({ customAttributes });
             }
         } else if (option === 'drillThrough') {
-            /* tslint:disable-next-line:max-line-length */
-            this.parent.drillThroughModule.executeDrillThrough(pivotValues[this.pivotIndex.rIndex][this.pivotIndex.cIndex] as IAxisSet, this.pivotIndex.rIndex, this.pivotIndex.rIndex);
+            this.parent.drillThroughModule.executeDrillThrough(pivotValues[this.pivotIndex.rIndex][this.pivotIndex.cIndex] as IAxisSet, this.pivotIndex.rIndex, this.pivotIndex.rIndex);    /* eslint-disable-line */
         } else if (option === 'exit') {
             this.accumulationMenu.close();
         }
@@ -1341,12 +1345,11 @@ export class PivotChart {
         let eventArgs: MultiLevelLabelClickEventArgs = {
             axis: args.axis,
             text: args.text,
-            cell: !isNullOrUndefined(args.customAttributes) ? (args.customAttributes as any).cell : undefined,
+            cell: !isNullOrUndefined(args.customAttributes) ? (args.customAttributes as any).cell : undefined,  /* eslint-disable-line */
             cancel: false
         };
         this.parent.trigger(events.multiLevelLabelClick, eventArgs);
-        /* tslint:disable-next-line:no-any */
-        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) {
+        if (!eventArgs.cancel && args.customAttributes && (args.customAttributes as any).hasChild && !(args.customAttributes as any).cell.isNamedSet) { /* eslint-disable-line */
             if (this.parent.dataType === 'olap') {
                 this.parent.onDrill(undefined, args.customAttributes as ChartLabelInfo);
             } else {
@@ -1354,11 +1357,11 @@ export class PivotChart {
             }
         }
     }
-    /* tslint:disable:no-any */
+    /* eslint-disable */
     /** @hidden */
     public onDrill(args: IMultiLevelLabelClickEventArgs | any): void {
         let labelInfo: any = args.customAttributes;
-        /* tslint:enable:no-any */
+        /* eslint-enable */
         let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
         let fieldName: string = labelInfo.fieldName;
@@ -1395,7 +1398,7 @@ export class PivotChart {
             }
         }
         this.parent.showWaitingPopup();
-        let pivot: PivotChart = this;
+        let pivot: PivotChart = this;   /* eslint-disable-line */
         //setTimeout(() => {
         let drilledItem: IDrilledItem = {
             fieldName: fieldName, memberName: memberUqName, delimiter: delimiter,
@@ -1410,7 +1413,7 @@ export class PivotChart {
         pivot.parent.trigger(events.drill, drillArgs);
         if (pivot.parent.enableVirtualization) {
             if (isBlazor()) {
-                /* tslint:disable */
+                /* eslint-disable */
                 let sfBlazor: string = 'sfBlazor';
                 let dataSourceSettings: any = (window as any)[sfBlazor].copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
                 let drillItem: any = (window as any)[sfBlazor].copyWithoutCircularReferences([drilledItem], drilledItem);
@@ -1425,7 +1428,7 @@ export class PivotChart {
                         pivot.parent.allowServerDataBinding = true;
                         pivot.parent.renderPivotGrid();
                     });
-                /* tslint:enable */
+                /* eslint-enable */
             } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
                 pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
             } else {
@@ -1439,7 +1442,7 @@ export class PivotChart {
         }
         pivot.parent.allowServerDataBinding = false;
         pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-        /* tslint:disable-next-line:no-any */
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         delete (pivot.parent as any).bulkChanges.pivotValues;
         pivot.parent.allowServerDataBinding = true;
         pivot.parent.renderPivotGrid();
@@ -1451,7 +1454,8 @@ export class PivotChart {
         for (let i: number = 0; i < this.dataSourceSettings.drilledMembers.length; i++) {
             if (this.dataSourceSettings.drilledMembers[i].name === hierarchy) {
                 for (let j: number = 0; j < this.dataSourceSettings.drilledMembers[i].items.length; j++) {
-                    let drillItems: string[] = this.dataSourceSettings.drilledMembers[i].items[j].split(this.dataSourceSettings.drilledMembers[i].delimiter);
+                    let drillItems: string[] =
+                        this.dataSourceSettings.drilledMembers[i].items[j].split(this.dataSourceSettings.drilledMembers[i].delimiter);
                     let levelName: string = '';
                     for (let k: number = 0; k < drillItems.length; k++) {
                         if (drillInfo[k] && drillInfo[k].uName) {
@@ -1490,12 +1494,13 @@ export class PivotChart {
 
     /**
      * To destroy the chart module
-     * @returns void
+     * @returns {void}
      * @hidden
      */
-    /* tslint:disable:no-empty */
     public destroy(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         if (this.parent.chart && !this.parent.chart.isDestroyed) {
             if (this.accumulationMenu && this.accumulationMenu.isDestroyed) {
                 this.accumulationMenu.destroy();
@@ -1505,5 +1510,4 @@ export class PivotChart {
             return;
         }
     }
-    /* tslint:enable:no-empty */
 }

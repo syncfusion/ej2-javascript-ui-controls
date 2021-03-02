@@ -1059,20 +1059,20 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-   /** @private */
+    /** @private */
     public fadeOut(): void {
         let tooltipElement: HTMLElement = (this.isCanvas && !this.template) ? <HTMLElement>getElement(this.element.id + '_svg') :
-        <HTMLElement>getElement(this.element.id);
+            <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
             if (this.isCanvas && !this.template) {
                 tooltipGroup = document.getElementById(this.element.id + '_group') ? document.getElementById(this.element.id + '_group') :
-                               tooltipGroup;
+                    tooltipGroup;
             }
-            let opacity: number;
-            if (tooltipGroup) {
-                opacity = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
+            if (!tooltipGroup) {
+                return null;
             }
+            let opacity: number = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
             new Animation({}).animate(tooltipGroup, {
                 duration: 200,
                 progress: (args: AnimationOptions): void => {
@@ -1145,4 +1145,3 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 }
-

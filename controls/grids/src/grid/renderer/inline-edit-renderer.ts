@@ -2,7 +2,7 @@ import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
 import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
-import { appendChildren, alignFrozenEditForm, getMovableTbody, getFrozenRightTbody } from '../base/util';
+import { appendChildren, alignFrozenEditForm, getMovableTbody, getFrozenRightTbody, setStyleAndAttributes } from '../base/util';
 
 /**
  * Edit render module is used to render grid edit row.
@@ -344,6 +344,12 @@ export class InlineEditRender {
                 });
             if (col.visible) {
                 td.appendChild(elements[col.uid]);
+                if (this.parent.rowRenderingMode === 'Vertical') {
+                    setStyleAndAttributes(td, { 'data-cell': col.headerText });
+                    if (i === 0) {
+                        td.classList.add('e-responsive-editcell');
+                    }
+                }
                 if (col.editType === 'booleanedit') {
                     td.classList.add('e-boolcell');
                 } else if (col.commands || col.commandsTemplate) {

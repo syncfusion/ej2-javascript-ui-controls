@@ -1033,6 +1033,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 select: this.selectBtn.bind(this, groupBtn)
             });
             btnObj.appendTo(groupBtn);
+            let tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('AddButton') });
+            tooltip.appendTo(groupBtn as HTMLElement);
             if (!this.isImportRules) {
                 let grpId: string = target.id.replace(this.element.id + '_', '');
                 let chgrpId: string = groupElem.id.replace(this.element.id + '_', '');
@@ -2711,7 +2713,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             IsNull: 'Is Null',
             IsNotNull: 'Is Not Null',
             True: 'true',
-            False: 'false'
+            False: 'false',
+            AddButton: 'Add Group/Condition'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);

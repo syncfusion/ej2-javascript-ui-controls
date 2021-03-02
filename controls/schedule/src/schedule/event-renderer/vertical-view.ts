@@ -699,11 +699,11 @@ export class VerticalEvent extends EventBase {
         this.parent.uiStateValues.expand = target.classList.contains(cls.APPOINTMENT_ROW_EXPAND_CLASS);
         let rowHeight: number;
         if (this.parent.uiStateValues.expand) {
-            target.setAttribute('title', 'Collapse-all-day-section');
+            target.setAttribute('title', this.parent.localeObj.getConstant('collapseAllDaySection'));
             target.setAttribute('aria-label', 'Collapse section');
             rowHeight = ((this.allDayLevel + 1) * this.getEventHeight()) + 4;
         } else {
-            target.setAttribute('title', 'Expand-all-day-section');
+            target.setAttribute('title', this.parent.localeObj.getConstant('expandAllDaySection'));
             target.setAttribute('aria-label', 'Expand section');
             rowHeight = (3 * this.getEventHeight()) + 4;
         }

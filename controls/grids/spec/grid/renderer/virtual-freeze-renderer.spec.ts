@@ -238,6 +238,19 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
             let len: number = Object.keys(gridObj.dataSource[0]).length;
             let rowObject: Row<Column>[] = gridObj.contentModule.generateRows(pageData, notifyArgs);
             expect(rowObject[0].cells.length).toBe(2);
+            notifyArgs = {
+                focusElement: document.body, requestType: 'virtualscroll',
+                isFrozen: true,
+                virtualInfo: {
+                    block: 1,
+                    blockIndexes: [2, 3, 4],
+                    columnIndexes: [],
+                    direction: 'down', event: 'model-changed', loadNext: true, loadSelf: false, nextInfo: { page: 2 },
+                    offsets: { top: 400, left: 0 },
+                    page: 1,
+                    sentinelInfo: { axis: 'Y', entered: true }
+                }
+            };
             rowObject = gridObj.contentModule.generateRows(pageData, notifyArgs);
             expect(rowObject[0].cells.length).toBe(len - gridObj.frozenColumns);
         });

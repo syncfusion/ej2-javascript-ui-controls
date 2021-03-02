@@ -6,7 +6,7 @@ import { IAction, NumberFormattingEventArgs } from '../base/interface';
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
-import { IFieldListOptions, IFieldOptions, IFormatSettings } from '../../base/engine';
+import { IFieldOptions, IFormatSettings } from '../../base/engine';
 import { PivotUtil } from '../../base/util';
 
 /**
@@ -24,7 +24,7 @@ export class NumberFormatting implements IAction {
     private customLable: HTMLElement;
     private newFormat: IFormatSettings[];
     private lastFormattedValue: IFormatSettings[];
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
         this.parent.numberFormattingModule = this;
         this.removeEventListener();
@@ -35,7 +35,7 @@ export class NumberFormatting implements IAction {
 
     /**
      * To get module name.
-     * @returns string
+     * @returns {string} - string
      */
     protected getModuleName(): string {
         return 'numberformatting';
@@ -43,7 +43,7 @@ export class NumberFormatting implements IAction {
 
     /**
      * To show Number Formatting dialog.
-     * @returns void
+     * @returns {void}
      */
     public showNumberFormattingDialog(): void {
         let valueDialog: HTMLElement = createElement('div', {
@@ -62,20 +62,24 @@ export class NumberFormatting implements IAction {
             enableRtl: this.parent.enableRtl,
             width: 'auto',
             height: 'auto',
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     click: this.updateFormatting.bind(this),
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('apply'), isPrimary: true }
                 },
                 {
-                    click: () => { this.dialog.hide(); },
+                    click: () => {
+                        this.dialog.hide();
+                    },
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
             closeOnEscape: true,
             target: this.parent.element,
-            overlayClick: () => { this.removeDialog(); },
+            overlayClick: () => {
+                this.removeDialog();
+            },
             close: this.removeDialog.bind(this)
         });
         this.dialog.isStringTemplate = true;
@@ -89,7 +93,7 @@ export class NumberFormatting implements IAction {
                 name: this.parent.dataSourceSettings.formatSettings[i].name,
                 format: this.parent.dataSourceSettings.formatSettings[i].format,
                 useGrouping: this.parent.dataSourceSettings.formatSettings[i].useGrouping,
-                type: this.parent.dataSourceSettings.formatSettings[i].type,
+                type: this.parent.dataSourceSettings.formatSettings[i].type
             };
             this.newFormat.push(formatObject);
         }
@@ -101,7 +105,6 @@ export class NumberFormatting implements IAction {
                 formatObject = {
                     name: this.parent.dataSourceSettings.values[j].name, format: 'N0',
                     useGrouping: true,
-                    type: this.parent.dataSourceSettings.values[j].type
                 };
                 this.newFormat.push(formatObject);
             }
@@ -200,7 +203,7 @@ export class NumberFormatting implements IAction {
 
     private renderControls(): void {
         if (select('#' + this.parent.element.id + '_FormatValueDrop', this.dialog.element)) {
-            let valueFields: { [key: string]: Object }[] = [];
+            let valueFields: { [key: string]: Object }[] = [];  /* eslint-disable-line */
             valueFields.push({
                 index: 0, name: this.parent.localeObj.getConstant('AllValues'), field: this.parent.localeObj.getConstant('AllValues')
             });
@@ -219,7 +222,7 @@ export class NumberFormatting implements IAction {
             this.valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
         }
         if (select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element)) {
-            let fields: { [key: string]: Object }[] = [
+            let fields: { [key: string]: Object }[] = [ /* eslint-disable-line */
                 { index: 0, name: this.parent.localeObj.getConstant('number') },
                 { index: 1, name: this.parent.localeObj.getConstant('currency') },
                 { index: 2, name: this.parent.localeObj.getConstant('percentage') },
@@ -234,7 +237,7 @@ export class NumberFormatting implements IAction {
             this.formatDropDown.appendTo('#' + this.parent.element.id + '_FormatDrop');
         }
         if (select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element)) {
-            let fields: { [key: string]: Object }[] = [
+            let fields: { [key: string]: Object }[] = [ /* eslint-disable-line */
                 { index: 0, name: this.parent.localeObj.getConstant('true') },
                 { index: 1, name: this.parent.localeObj.getConstant('false') }
             ];
@@ -247,7 +250,7 @@ export class NumberFormatting implements IAction {
             this.groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
         }
         if (select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element)) {
-            let fields: { [key: string]: Object }[] = [
+            let fields: { [key: string]: Object }[] = [ /* eslint-disable-line */
                 { index: 0, name: 0 },
                 { index: 1, name: 1 },
                 { index: 2, name: 2 },
@@ -258,7 +261,7 @@ export class NumberFormatting implements IAction {
                 { index: 7, name: 7 },
                 { index: 8, name: 8 },
                 { index: 9, name: 9 },
-                { index: 10, name: 10 },
+                { index: 10, name: 10 }
             ];
             this.decimalDropDown = new DropDownList({
                 dataSource: fields, fields: { text: 'name', value: 'name' }, enableRtl: this.parent.enableRtl,
@@ -372,7 +375,9 @@ export class NumberFormatting implements IAction {
     }
 
     private removeDialog(): void {
-        if (this.dialog && !this.dialog.isDestroyed) { this.dialog.destroy(); }
+        if (this.dialog && !this.dialog.isDestroyed) {
+            this.dialog.destroy();
+        }
         if (document.getElementById(this.parent.element.id + '_FormatDialog')) {
             remove(document.getElementById(this.parent.element.id + '_FormatDialog'));
         }
@@ -409,7 +414,6 @@ export class NumberFormatting implements IAction {
                     this.dialog.close();
                 } catch (exception) {
                     this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
-                    /* tslint:disable-next-line:max-line-length */
                     this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormat'), this.dialog.element);
                     this.parent.hideWaitingPopup();
                 }
@@ -443,27 +447,31 @@ export class NumberFormatting implements IAction {
 
     /**
      * To add event listener.
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.initFormatting, this.showNumberFormattingDialog, this);
     }
 
     /**
      * To remove event listener.
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initFormatting, this.showNumberFormattingDialog);
     }
 
     /**
      * To destroy the calculated field dialog
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

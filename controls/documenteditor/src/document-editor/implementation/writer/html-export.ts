@@ -213,7 +213,8 @@ export class HtmlExport {
     public serializeInlines(paragraph: any, blockStyle: string): string {
         let inline: any = undefined;
         let i: number = 0;
-
+        let isMergeField: boolean = false;
+        let tagAttributes: string[] = [];
         while (paragraph.inlines.length > i) {
             inline = paragraph.inlines[i];
             if (inline.hasOwnProperty('inlines')) {
@@ -229,20 +230,44 @@ export class HtmlExport {
                     if (!isNullOrUndefined(fieldCode) && !isNullOrUndefined(fieldCode.text) &&
                         (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
                         this.fieldCheck = 1;
-                        let tagAttributes: string[] = [];
+                        tagAttributes = [];
                         tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
                         blockStyle += this.createAttributesTag('a', tagAttributes);
+                    } else if (fieldCode.text.indexOf('MERGEFIELD') >= 0) {
+                        isMergeField = true;
+                        tagAttributes = [];
+                        tagAttributes.push('style="mso-element:field-begin"');
+                        blockStyle += '<!--[if supportFields]>';
+                        blockStyle += this.createAttributesTag('span', tagAttributes);
+                        blockStyle += this.endTag('span');
+                        tagAttributes = [];
                     } else {
                         this.fieldCheck = undefined;
                     }
                 } else if (inline.fieldType === 2) {
+                    if (isMergeField) {
+                        tagAttributes = [];
+                        tagAttributes.push('style="mso-element:field-separator"');
+                        blockStyle += this.createAttributesTag('span', tagAttributes);
+                        blockStyle += this.endTag('span');
+                        blockStyle += '<![endif]-->';
+                    }
                     if (!isNullOrUndefined(this.fieldCheck)) {
                         this.fieldCheck = 2;
                     } else {
                         this.fieldCheck = 0;
                     }
                 } else {
-                    if (!isNullOrUndefined(this.fieldCheck) && this.fieldCheck !== 0) {
+                    if (isMergeField) {
+                        tagAttributes = [];
+                        blockStyle += '<!--[if supportFields]>';
+                        tagAttributes.push('style="mso-element:field-end"');
+                        blockStyle += this.createAttributesTag('span', tagAttributes);
+                        blockStyle += this.endTag('span');
+                        blockStyle += '<![endif]-->';
+                        isMergeField = false;
+                    } else if (!isNullOrUndefined(this.fieldCheck) && this.fieldCheck !== 0) {
+
                         blockStyle += this.endTag('a');
                     }
                     this.fieldCheck = 0;
@@ -250,16 +275,34 @@ export class HtmlExport {
             } else {
                 let text: string = isNullOrUndefined(inline.text) ? '' : inline.text;
                 if (this.fieldCheck === 0) {
-                    blockStyle += this.serializeSpan(text, inline.characterFormat);
+                    if (text.indexOf('MERGEFIELD') >= 0 && isMergeField) {
+                        tagAttributes = [];
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        blockStyle += this.createAttributesTag('span', tagAttributes);
+                        blockStyle += text;
+                        blockStyle += this.endTag('span');
+                    } else {
+                        blockStyle += this.serializeSpan(text, inline.characterFormat);
+                    }
                 }
-                if (this.fieldCheck === 1) {
+                if (this.fieldCheck === 1 && text.indexOf('MERGEFIELD') === -1) {
                     let hyperLink: string = text.replace(/"/g, '');
                     blockStyle += ' href= \"' + hyperLink.replace('HYPERLINK', '').trim();
                     blockStyle += '\"';
                     blockStyle += '>';
                 }
                 if (this.fieldCheck === 2) {
-                    blockStyle += text;
+                    if (isMergeField) {
+                        tagAttributes = [];
+                        tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
+                        blockStyle += this.createAttributesTag('span', tagAttributes);
+                        blockStyle += text;
+                        blockStyle += this.endTag('span');
+                    } else {
+                        blockStyle += this.createAttributesTag('span', []);
+                        blockStyle += this.endTag('span');
+                        blockStyle += text;
+                    }
                 }
             }
             i++;

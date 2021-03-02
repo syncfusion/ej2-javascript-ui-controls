@@ -399,6 +399,12 @@
     &.e-rtl {
       direction: rtl;
 
+      .e-next.e-icons.e-icon-next.e-nextpagedisabled.e-disable,
+      .e-next.e-icons.e-icon-next.e-nextpage.e-pager-default {
+        margin-left: 0;
+        margin-right: $pager-rtl-nxtpage-margin;
+      }
+
       & .e-pagercontainer,
       & div,
       & a {

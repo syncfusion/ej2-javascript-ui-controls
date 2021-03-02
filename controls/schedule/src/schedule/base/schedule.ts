@@ -1340,7 +1340,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             deleteTitle: 'Delete Event',
             editTitle: 'Edit Event',
             beginFrom: 'Begin From',
-            endAt: 'Ends At'
+            endAt: 'Ends At',
+            expandAllDaySection: 'Expand-all-day-section',
+            collapseAllDaySection: 'Collapse-all-day-section'
         };
     }
 
@@ -1349,8 +1351,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     private wireEvents(): void {
-        EventHandler.add(<HTMLElement & Window>window, 'resize', this.onScheduleResize, this);
-        EventHandler.add(<HTMLElement & Window>window, 'orientationchange', this.onScheduleResize, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.onScheduleResize, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'orientationchange', this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
     }
 
@@ -1632,8 +1634,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     private unwireEvents(): void {
-        EventHandler.remove(<HTMLElement & Window>window, 'resize', this.onScheduleResize);
-        EventHandler.remove(<HTMLElement & Window>window, 'orientationchange', this.onScheduleResize);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.onScheduleResize);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
     }
     /**
@@ -1699,6 +1701,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 case 'readonly':
                 case 'headerRows':
                 case 'showWeekNumber':
+                case 'rowAutoHeight':
                     state.isLayout = true;
                     break;
                 case 'locale':
@@ -1741,13 +1744,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'timezone':
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
+                    this.headerModule.setCalendarTimezone();
                     break;
                 case 'enableRtl':
                     this.setRtlClass();
                     state.isRefresh = true;
-                    break;
-                case 'rowAutoHeight':
-                    state.isLayout = true;
                     break;
                 default:
                     this.extendedPropertyChange(prop, newProp, oldProp, state);

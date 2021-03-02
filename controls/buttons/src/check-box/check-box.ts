@@ -238,7 +238,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private focusOutHandler(): void {
-        this.getWrapper().classList.remove('e-focus');
+        let wrapper: Element = this.getWrapper();
+        if (wrapper) {
+            wrapper.classList.remove('e-focus');
+        }
         this.isFocused = false;
     }
 
@@ -259,7 +262,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private getWrapper(): Element {
-        if (this.element.parentElement) {
+        if (this.element && this.element.parentElement) {
             return this.element.parentElement.parentElement;
         } else {
             return null;
@@ -455,15 +458,19 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private setText(text: string): void {
-        let label: Element = this.getWrapper().getElementsByClassName(LABEL)[0];
+        let wrapper: Element = this.getWrapper();
+        if (!wrapper) {
+            return;
+        }
+        let label: Element = wrapper.getElementsByClassName(LABEL)[0];
         if (label) {
             label.textContent = text;
         } else {
             text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             label = this.createElement('span', { className: LABEL, innerHTML: text });
-            let labelWrap: Element = this.getWrapper().getElementsByTagName('label')[0];
+            let labelWrap: Element = wrapper.getElementsByTagName('label')[0];
             if (this.labelPosition === 'Before') {
-                labelWrap.insertBefore(label, this.getWrapper().getElementsByClassName(FRAME)[0]);
+                labelWrap.insertBefore(label, wrapper.getElementsByClassName(FRAME)[0]);
             } else {
                 labelWrap.appendChild(label);
             }

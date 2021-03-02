@@ -3,7 +3,7 @@ import { IFontMapping } from '@syncfusion/ej2-charts';
 /**
  * Specifies Chart Themes
  */
-export namespace Theme {
+export namespace Theme {    /* eslint-disable-line */
     /** @private */
     export let axisLabelFont: IFontMapping = {
         size: '12px',

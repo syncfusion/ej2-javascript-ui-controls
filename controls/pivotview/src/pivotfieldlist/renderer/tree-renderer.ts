@@ -14,7 +14,6 @@ import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotView } from '../../pivotview';
-import { Deferred } from '@syncfusion/ej2-data';
 
 /**
  * Module to render Field List
@@ -32,14 +31,17 @@ export class TreeViewRenderer implements IAction {
     private selectedNodes: string[] = [];
     private fieldListSort: string;
 
-    /** Constructor for render module */
-    constructor(parent: PivotFieldList) {
+    /** Constructor for render module
+     * @param {PivotFieldList} parent - Instance of field list.
+     */
+    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
         this.parent = parent;
         this.addEventListener();
     }
     /**
      * Initialize the field list tree rendering
-     * @returns void
+     * @param {number} axis - Axis position.
+     * @returns {void}
      * @private
      */
     public render(axis?: number): void {
@@ -80,7 +82,7 @@ export class TreeViewRenderer implements IAction {
         }
     }
     private updateSortElements(headerWrapper: Element): void {
-        let options: { [key: string]: string } = { 'None': 'sortNone', 'Ascend': 'sortAscending', 'Descend': 'sortDescending' };
+        let options: { [key: string]: string } = { 'None': 'sortNone', 'Ascend': 'sortAscending', 'Descend': 'sortDescending' };    /* eslint-disable-line */
         let keys: string[] = Object.keys(options);
         for (let option of keys) {
             let spanElement: Element = createElement('span', {
@@ -101,7 +103,6 @@ export class TreeViewRenderer implements IAction {
     }
     private renderTreeView(): void {
         this.fieldTable = new TreeView({
-            /* tslint:disable-next-line:max-line-length */
             fields: { dataSource: this.getTreeData(), id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
             nodeChecked: this.nodeStateChange.bind(this),
             cssClass: cls.FIELD_LIST_TREE_CLASS,
@@ -124,10 +125,12 @@ export class TreeViewRenderer implements IAction {
         this.treeViewElement.innerHTML = '';
         this.fieldTable.isStringTemplate = true;
         this.fieldTable.appendTo(this.treeViewElement);
-        let dragEle : HTMLElement = this.parent.renderMode === "Fixed" ? this.parent.element : this.parentElement;
-        if(!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))){
+        /* eslint-disable */
+        let dragEle: HTMLElement = this.parent.renderMode === "Fixed" ? this.parent.element : this.parentElement;
+        if (!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))) {
             (dragEle.querySelector('.' + cls.FIELD_LIST_CLASS) as any).ej2_instances[0].dragArea = dragEle;
         }
+        /* eslint-enable */
     }
     private updateNodeIcon(args: NodeExpandEventArgs): void {
         if (this.parent.dataType === 'olap') {
@@ -157,9 +160,9 @@ export class TreeViewRenderer implements IAction {
             liTextElement.insertBefore(liIconElement, args.node.querySelector('.e-list-text'));
         }
         if (allowDrag && !this.parent.isAdaptive) {
-            /* tslint:disable */
+            /* eslint-disable */
             let field: FieldItemInfo = PivotUtil.getFieldInfo((args.nodeData as any).id, this.parent);
-            /* tslint:enable */
+            /* eslint-enable */
             allowDrag = false;
             let dragElement: Element = createElement('span', {
                 attrs: {
@@ -183,7 +186,6 @@ export class TreeViewRenderer implements IAction {
     private updateOlapTreeNode(args: DrawNodeEventArgs): boolean {
         let allowDrag: boolean = false;
         if (this.parent.dataType === 'olap') {
-            /* tslint:disable-next-line:max-line-length */
             if (args.node && args.node.querySelector('.e-calcMemberGroupCDB,.e-measureGroupCDB-icon,.e-folderCDB-icon,.e-folderCDB-open-icon,.e-dimensionCDB-icon,.e-kpiCDB-icon')) {
                 (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
             }
@@ -213,7 +215,7 @@ export class TreeViewRenderer implements IAction {
     private renderTreeDialog(axis?: number): void {
         let fieldListDialog: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_FieldListTreeView',
-            className: cls.ADAPTIVE_FIELD_LIST_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
+            className: cls.ADAPTIVE_FIELD_LIST_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : '')
         });
         this.parentElement.appendChild(fieldListDialog);
         this.fieldDialog = new Dialog({
@@ -227,7 +229,7 @@ export class TreeViewRenderer implements IAction {
             enableRtl: this.parent.enableRtl,
             width: 'auto',
             height: '350px',
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [{
                 click: this.closeTreeDialog.bind(this),
                 buttonModel: {
@@ -255,7 +257,7 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {
+    private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {    /* eslint-disable-line */
         let editorTreeWrapper: HTMLElement = createElement('div', {
             id: this.parent.element.id + 'EditorDiv',
             className: cls.EDITOR_TREE_WRAPPER_CLASS
@@ -288,7 +290,6 @@ export class TreeViewRenderer implements IAction {
         treeOuterDiv.appendChild(treeViewContainer);
         editorTreeWrapper.appendChild(treeOuterDiv);
         this.fieldTable = new TreeView({
-            /* tslint:disable-next-line:max-line-length */
             fields: { dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
             showCheckBox: true,
             autoCheck: false,
@@ -313,7 +314,6 @@ export class TreeViewRenderer implements IAction {
         this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
         let promptDiv: HTMLElement = this.fieldDialog.element.querySelector('.' + cls.EMPTY_MEMBER_CLASS);
         let liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
-        /* tslint:disable-next-line:max-line-length */
         let disabledList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li.' + cls.ICON_DISABLE)) as HTMLElement[];
         if (liList.length === disabledList.length) {
             removeClass([promptDiv], cls.ICON_DISABLE);
@@ -402,9 +402,11 @@ export class TreeViewRenderer implements IAction {
             this.parent.pivotCommon.filterDialog.dialogPopUp.close();
         }
         let fieldName: string = args.draggedNodeData.id.toString();
+        /* eslint-disable */
         if (!this.isNodeDropped(args, fieldName)) { return; }
         let list: { [key: string]: Object } = this.parent.pivotFieldList;
         let selectedNode: { [key: string]: Object } = list[fieldName] as { [key: string]: Object };
+        /* eslint-enable */
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
             ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
@@ -471,8 +473,10 @@ export class TreeViewRenderer implements IAction {
             if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
                 this.parent.pivotCommon.filterDialog.dialogPopUp.close();
             }
+            /* eslint-disable */
             let list: { [key: string]: Object } = this.parent.pivotFieldList;
             let selectedNode: { [key: string]: Object } = list[id] as { [key: string]: Object };
+            /* eslint-enable */
             let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
             let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
             if (args.action === 'check') {
@@ -523,28 +527,28 @@ export class TreeViewRenderer implements IAction {
         let dropClass: string = dropArgs.dropAxis;
         switch (dropClass) {
             case 'filters':
-                dropPosition !== -1 ?
+                dropPosition !== -1 ?   /* eslint-disable-line */
                     this.parent.dataSourceSettings.filters.splice(dropPosition, 0, newField) :
                     this.parent.dataSourceSettings.filters.push(newField);
                 break;
             case 'rows':
-                dropPosition !== -1 ?
+                dropPosition !== -1 ?   /* eslint-disable-line */
                     this.parent.dataSourceSettings.rows.splice(dropPosition, 0, newField) :
                     this.parent.dataSourceSettings.rows.push(newField);
                 break;
             case 'columns':
-                dropPosition !== -1 ?
+                dropPosition !== -1 ?   /* eslint-disable-line */
                     this.parent.dataSourceSettings.columns.splice(dropPosition, 0, newField) :
                     this.parent.dataSourceSettings.columns.push(newField);
                 break;
             case 'values':
-                dropPosition !== -1 ?
+                dropPosition !== -1 ?   /* eslint-disable-line */
                     this.parent.dataSourceSettings.values.splice(dropPosition, 0, newField) :
                     this.parent.dataSourceSettings.values.push(newField);
                 if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
                     !(this.parent.olapEngineModule).isMeasureAvail) {
                     let measureField: IFieldOptions = {
-                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
+                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
                     };
                     let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
                         this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
@@ -554,7 +558,7 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private updateCheckState(selectedNode: { [key: string]: Object }): void {
+    private updateCheckState(selectedNode: { [key: string]: Object }): void {   /* eslint-disable-line */
         let chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-checkbox-wrapper');
         let innerText: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-list-text');
         let checkClass: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-frame');
@@ -571,7 +575,7 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private updateNodeStateChange(id: string, args: NodeCheckEventArgs, selectedNode: { [key: string]: Object }): void {
+    private updateNodeStateChange(id: string, args: NodeCheckEventArgs, selectedNode: { [key: string]: Object }): void {    /* eslint-disable-line */
         if (!this.parent.allowDeferLayoutUpdate) {
             this.parent.updateDataSource(true);
         } else {
@@ -606,8 +610,7 @@ export class TreeViewRenderer implements IAction {
             } else {
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
             }
-            /* tslint:disable-next-line:max-line-length */
-            (this.parent as PivotFieldList).pivotGridModule.setProperties({ dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);
+            (this.parent as PivotFieldList).pivotGridModule.setProperties({ dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions }, true);    /* eslint-disable-line */
             (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
         } else {
             this.parent.triggerPopulateEvent();
@@ -615,8 +618,10 @@ export class TreeViewRenderer implements IAction {
     }
 
     private addNode(args: NodeCheckEventArgs): void {
+        /* eslint-disable */
         let fieldList: { [key: string]: Object } = this.parent.pivotFieldList;
         let selectedNode: { [key: string]: Object } = fieldList[args.data[0].id.toString()] as { [key: string]: Object };
+        /* eslint-enable */
         let fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
         let control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
         if (args.action === 'check') {
@@ -656,7 +661,7 @@ export class TreeViewRenderer implements IAction {
 
     private refreshTreeView(): void {
         if (this.fieldTable) {
-            let treeData: { [key: string]: Object }[] = this.getUpdatedData();
+            let treeData: { [key: string]: Object }[] = this.getUpdatedData();  /* eslint-disable-line */
             this.fieldTable.fields = {
                 dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass'
             };
@@ -664,27 +669,32 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
+    /* eslint-disable */
     private getUpdatedData(): { [key: string]: Object }[] {
         let treeData: { [key: string]: Object }[] = this.getTreeData();
+        /* eslint-enable */
         let expandedNodes: string[] = this.fieldTable.expandedNodes;
         this.updateExpandedNodes(treeData, expandedNodes);
         return this.applySorting(treeData, this.fieldListSort);
     }
+    /* eslint-disable */
     private getTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
+        /* eslint-enable */
         if (this.parent.dataType === 'olap') {
             data = this.getOlapTreeData(axis);
         } else {
             let keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
-            let fieldList: { [key: string]: { id?: string; caption?: string; isSelected?: boolean; } } = {};
+            let fieldList: { [key: string]: { id?: string; caption?: string; isSelected?: boolean } } = {};
             for (let key of keys) {
                 let member: IField = this.parent.pivotFieldList[key];
                 fieldList[key] = { id: member.id, caption: member.caption, isSelected: member.isSelected };
             }
             if (this.parent.isAdaptive) {
-                /* tslint:disable-next-line:max-line-length */
-                let fields: IFieldOptions[][] = [this.parent.dataSourceSettings.filters, this.parent.dataSourceSettings.columns, this.parent.dataSourceSettings.rows,
-                this.parent.dataSourceSettings.values];
+                let fields: IFieldOptions[][] =
+                    [this.parent.dataSourceSettings.filters, this.parent.dataSourceSettings.columns,
+                    this.parent.dataSourceSettings.rows,
+                    this.parent.dataSourceSettings.values];
                 let currentFieldSet: IFieldOptions[] = fields[axis];
                 let len: number = keys.length;
                 while (len--) {
@@ -694,21 +704,24 @@ export class TreeViewRenderer implements IAction {
                     fieldList[item.name].isSelected = true;
                 }
             }
+            /* eslint-disable */
             let list: { [key: string]: Object } = fieldList as { [key: string]: Object };
             for (let member of keys) {
                 let obj: { [key: string]: Object } = list[member] as { [key: string]: Object };
+                /* eslint-enable */
                 data.push(obj);
             }
         }
 
         return data;
     }
+    /* eslint-disable */
     private getOlapTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
+        /* eslint-enable */
         let fieldListData: IOlapField[] =
             this.parent.olapEngineModule.fieldListData ? this.parent.olapEngineModule.fieldListData : [];
         if (this.parent.isAdaptive) {
-            /* tslint:disable-next-line:max-line-length */
             let fields: IFieldOptions[][] = [
                 this.parent.dataSourceSettings.filters, this.parent.dataSourceSettings.columns,
                 this.parent.dataSourceSettings.rows, this.parent.dataSourceSettings.values];
@@ -716,9 +729,9 @@ export class TreeViewRenderer implements IAction {
             let i: number = 0;
             while (i < fieldListData.length) {
                 let item: IOlapField = fieldListData[i];
-                /* tslint:disable */
+                /* eslint-disable */
                 let framedSet: { [key: string]: any };
-                /* tslint:enable */
+                /* eslint-enable */
                 if (axis === 3) {
                     if ((item.id as string).toLowerCase() !== '[measures]' &&
                         ((item.id as string).toLowerCase().indexOf('[measures]') === 0 ||
@@ -765,11 +778,11 @@ export class TreeViewRenderer implements IAction {
                 i++;
             }
         } else {
-            data = PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
+            data = PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);  /* eslint-disable-line */
         }
         return data;
     }
-    private updateExpandedNodes(data: { [key: string]: Object }[], expandedNodes: string[]): void {
+    private updateExpandedNodes(data: { [key: string]: Object }[], expandedNodes: string[]): void { /* eslint-disable-line */
         if (expandedNodes.length > 0) {
             let i: number = 0;
             for (let field of data) {
@@ -814,10 +827,12 @@ export class TreeViewRenderer implements IAction {
             this.refreshTreeView();
         }
     }
+    /* eslint-disable */
     private applySorting(treeData: { [key: string]: Object }[], sortOrder: string): { [key: string]: Object }[] {
         if (this.parent.dataType === 'olap') {
             let measure: { [key: string]: Object };
             let calcMember: { [key: string]: Object };
+            /* eslint-enable */
             if (this.parent.dataSourceSettings.calculatedFieldSettings.length > 0 &&
                 (treeData[0].id as string).toLowerCase() === '[calculated members].[_0]') {
                 calcMember = treeData[0];
@@ -827,13 +842,13 @@ export class TreeViewRenderer implements IAction {
                 measure = treeData[0];
                 treeData.splice(0, 1);
             }
-            /* tslint:disable:typedef */
+            /* eslint-disable  */
             treeData = sortOrder === 'Ascend' ?
                 (treeData.sort((a, b) => (a.caption > b.caption) ? 1 : ((b.caption > a.caption) ? -1 : 0))) :
                 sortOrder === 'Descend' ?
                     (treeData.sort((a, b) => (a.caption < b.caption) ? 1 : ((b.caption < a.caption) ? -1 : 0))) :
                     treeData;
-            /* tslint:enable:typedef */
+            /* eslint-enable  */
             if (calcMember) {
                 treeData.splice(0, 0, calcMember, measure);
             } else {
@@ -844,7 +859,7 @@ export class TreeViewRenderer implements IAction {
         }
         return treeData;
     }
-    private onFieldAdd(e: MouseEventArgs & TouchEventArgs): void {
+    private onFieldAdd(e: MouseEventArgs & TouchEventArgs): void {  /* eslint-disable-line */
         this.parent.dialogRenderer.updateDataSource(this.selectedNodes);
         this.closeTreeDialog();
     }
@@ -854,7 +869,6 @@ export class TreeViewRenderer implements IAction {
         this.fieldDialog.hide();
     }
     private keyPress(e: KeyboardEvent): void {
-        let target: Element = (e.target as HTMLElement);
         if (e.keyCode === 13 && e.target) {
             (e.target as HTMLElement).click();
             e.preventDefault();
@@ -872,6 +886,7 @@ export class TreeViewRenderer implements IAction {
         EventHandler.remove(element, 'click', this.updateSorting);
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
@@ -879,17 +894,20 @@ export class TreeViewRenderer implements IAction {
         this.parent.on(events.treeViewUpdate, this.refreshTreeView, this);
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.treeViewUpdate, this.refreshTreeView);
     }
 
     /**
-     * To destroy the tree view event listener 
-     * @return {void}
+     * To destroy the tree view event listener
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

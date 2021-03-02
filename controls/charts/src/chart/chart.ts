@@ -1351,7 +1351,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public chartAreaType: string = 'Cartesian';
     /** @private */
-    public isRtlEnabled: boolean = (window.getComputedStyle(document.querySelector('body')).direction === 'rtl');
+    public isRtlEnabled: boolean = false;
     /**
      * `markerModule` is used to manipulate and add marker to the series.
      * @private
@@ -1475,6 +1475,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 }
             });
         } else {
+            // The fix is specific for nextjs app, as window is set as not defined for server side application like nextjs.
+            this.isRtlEnabled = (window.getComputedStyle(document.querySelector('body')).direction === 'rtl');
             this.cartesianChartRendering(loadEventData);
         }
     }

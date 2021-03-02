@@ -130,7 +130,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     private changeHandler(event: Event): void {
         this.checked = true; this.dataBind();
-        let value: string = this.isVue ? this.element.value : this.value;
+        let value: string = this.element.getAttribute('value');
+        value = this.isVue && value ? this.element.value : this.value;
         this.trigger('change', <ChangeArgs>{ value: value, event: event });
         if (this.tagName === 'EJS-RADIOBUTTON') {
             event.stopPropagation();
@@ -181,7 +182,10 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private focusOutHandler(): void {
-        this.getLabel().classList.remove('e-focus');
+        let label: Element = this.getLabel();
+        if (label) {
+            label.classList.remove('e-focus');
+        }
     }
 
     protected getModuleName(): string {
@@ -215,7 +219,11 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private getLabel(): Element {
-        return this.element.nextElementSibling;
+        if (this.element) {
+            return this.element.nextElementSibling;
+        } else {
+            return null;
+        }
     }
 
     private initialize(): void {
@@ -227,10 +235,11 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
-        if (this.isVue && this.element.value && this.element.value === this.value) {
+        let value: string = this.element.getAttribute('value');
+        if (this.isVue && value && value === this.value) {
             this.checked = true;
         }
-        if (this.value && (!this.isVue || !this.element.value)) {
+        if (this.isVue ? this.value && !value : this.value) {
             this.element.setAttribute('value', this.value);
         }
         if (this.checked) {
@@ -393,18 +402,20 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     private setText(text: string): void {
         let label: Element = this.getLabel();
-        let textLabel: Element = label.getElementsByClassName(LABEL)[0];
-        if (textLabel) {
-            textLabel.textContent = text;
-        } else {
-            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
-            textLabel = this.createElement('span', { className: LABEL, innerHTML: text });
-            label.appendChild(textLabel);
-        }
-        if (this.labelPosition === 'Before') {
-            this.getLabel().classList.add('e-right');
-        } else {
-            this.getLabel().classList.remove('e-right');
+        if (label) {
+            let textLabel: Element = label.getElementsByClassName(LABEL)[0];
+            if (textLabel) {
+                textLabel.textContent = text;
+            } else {
+                text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
+                textLabel = this.createElement('span', { className: LABEL, innerHTML: text });
+                label.appendChild(textLabel);
+            }
+            if (this.labelPosition === 'Before') {
+                this.getLabel().classList.add('e-right');
+            } else {
+                this.getLabel().classList.remove('e-right');
+            }
         }
     }
 

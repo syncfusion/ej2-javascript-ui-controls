@@ -562,9 +562,10 @@ export class ContentRender implements IRenderer {
                                 tableName: tableName
                             });
                             if (!frzCols && isFrozenGrid) {
-                                let count: number = this.parent.getTablesCount();
-                                if ((count === 2 && (tableName === 'frozen-left' || tableName === 'frozen-right'))
-                                    || (count === 3 && (tableName === 'frozen-left' || tableName === 'movable'))) {
+                                if ((gObj.getFrozenMode() !== 'Left-Right'
+                                    && (tableName === 'frozen-left' || tableName === 'frozen-right'))
+                                    || (gObj.getFrozenMode() === 'Left-Right'
+                                        && (tableName === 'frozen-left' || tableName === 'movable'))) {
                                     this.refreshContentRows(extend({}, args));
                                 }
                             }
@@ -863,7 +864,7 @@ export class ContentRender implements IRenderer {
             let rowLen: number = fRows.length;
             let cellLen: number;
             let rightRows: Row<Column>[] = [];
-            if (gObj.getTablesCount() === 3) {
+            if (gObj.getFrozenMode() === 'Left-Right') {
                 rightRows = gObj.getFrozenRightRowsObject();
             }
             for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {

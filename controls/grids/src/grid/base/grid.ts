@@ -33,7 +33,7 @@ import { Column, ColumnModel, ActionEventArgs } from '../models/column';
 import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
 import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition, freezeTable, ClipMode, freezeMode } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode, ResizeMode } from './enum';
-import { ColumnQueryModeType } from './enum';
+import { ColumnQueryModeType, RowRenderingDirection } from './enum';
 import { Data } from '../actions/data';
 import { Cell } from '../models/cell';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -1269,6 +1269,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(false)
     public allowFiltering: boolean;
+
+    /**   
+     * Defines the grid rows displaying direction. The available modes are, 
+     * * `Horizontal`: Displays the rows horizontally 
+     * * `Vertical`: Displays the rows Vertically
+     * @default Horizontal
+     */
+    @Property('Horizontal')
+    public rowRenderingMode: RowRenderingDirection;
+
+    /**    
+     * If `enableAdaptiveUI` set to true the grid dialogs will be displayed at fullscreen.
+     * @default false    
+     */
+    @Property(false)
+    public enableAdaptiveUI: boolean;
 
     /**    
      * If `allowReordering` is set to true, Grid columns can be reordered. 
@@ -2576,6 +2592,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             FilterFalse: 'False',
             NoResult: 'No Matches Found',
             ClearFilter: 'Clear Filter',
+            Clear: 'Clear',
             NumberFilter: 'Number Filters',
             TextFilter: 'Text Filters',
             DateFilter: 'Date Filters',
@@ -2599,7 +2616,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             SortByOldest: 'Sort by Oldest',
             SortByNewest: 'Sort by Newest',
             SortSmallestToLargest: 'Sort Smallest to Largest',
-            SortLargestToSmallest: 'Sort Largest to Smallest'
+            SortLargestToSmallest: 'Sort Largest to Smallest',
+            Sort: 'Sort'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -2773,6 +2791,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let checkboxColumn: Column[] = this.getColumns().filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length && this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             this.isCheckBoxSelection = false;
+        }
+        if (this.rowRenderingMode === 'Vertical') {
+            if (!this.enableAdaptiveUI) {
+                this.setProperties({ enableAdaptiveUI: true }, true);
+                this.notify(events.setFullScreenDialog, {});
+            }
+            if (this.enableHover) {
+                this.setProperties({ enableAdaptiveUI: true, enableHover: false }, true);
+                removeClass([this.element], 'e-gridhover');
+            }
         }
     }
 
@@ -3101,6 +3129,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.isSelectedRowIndexUpdating = false; break;
             case 'resizeSettings':
                 this.widthService.setWidthToTable(); break;
+            case 'enableAdaptiveUI':
+                this.notify(events.setFullScreenDialog, {});
+                break;
+            case 'rowRenderingMode':
+                this.enableVerticalRendering();
+                this.refresh();
+                break;
 
         }
     }
@@ -5060,8 +5095,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    private enableVerticalRendering(): void {
+        if (this.rowRenderingMode === 'Vertical') {
+            this.element.classList.add('e-row-responsive');
+        } else {
+            this.element.classList.remove('e-row-responsive');
+            this.setProperties({ enableAdaptiveUI: false }, true);
+            this.notify(events.setFullScreenDialog, {});
+        }
+    }
+
     private gridRender(): void {
         this.updateRTL();
+        if (this.rowRenderingMode === 'Vertical') {
+            this.element.classList.add('e-row-responsive');
+        }
         if (this.enableHover) {
             this.element.classList.add('e-gridhover');
         }
@@ -6661,6 +6709,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             tbody = this.getFrozenRightContent().querySelector('tbody')
         }
         return tbody;
+    }
+
+    /** @hidden */
+    public showResponsiveCustomFilter(): void {
+        if (this.filterModule) {
+            this.filterModule.showCustomFilter();
+        }
+    }
+
+    /** @hidden */
+    public showResponsiveCustomSort(): void {
+        if (this.sortModule) {
+            this.sortModule.showCustomFilter();
+        }
     }
 
 

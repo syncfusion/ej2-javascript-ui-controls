@@ -114,7 +114,7 @@ export class LayoutRender extends MobileLayout {
                     addClass([th], cls.TEMPLATE_CLASS);
                     let templateId: string = this.parent.element.id + '_columnTemplate';
                     let templateHeader: HTMLElement[] =
-                        this.parent.templateParser(column.template)(templateArgs, this.parent, 'template', templateId, false);
+                        this.parent.templateParser(column.template)(templateArgs, this.parent, 'columnTemplate', templateId, false);
                     append(templateHeader, headerTitle);
                 } else {
                     let header: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: column.headerText });
@@ -247,7 +247,7 @@ export class LayoutRender extends MobileLayout {
             addClass([td], cls.TEMPLATE_CLASS);
             let templateId: string = this.parent.element.id + '_swimlaneTemplate';
             let swimlaneTemplate: HTMLElement[] = this.parent.templateParser(
-                this.parent.swimlaneSettings.template)(templateArgs, this.parent, 'template', templateId, false);
+                this.parent.swimlaneSettings.template)(templateArgs, this.parent, 'swimlaneTemplate', templateId, false);
             append(swimlaneTemplate, headerWrap);
         } else {
             headerWrap.appendChild(createElement('div', {
@@ -332,7 +332,7 @@ export class LayoutRender extends MobileLayout {
             addClass([cardElement], cls.TEMPLATE_CLASS);
             let templateId: string = this.parent.element.id + '_cardTemplate';
             let cardTemplate: HTMLElement[] = this.parent.templateParser(
-                this.parent.cardSettings.template)(data, this.parent, 'template', templateId, false);
+                this.parent.cardSettings.template)(data, this.parent, 'cardTemplate', templateId, false);
             append(cardTemplate, cardElement);
         } else {
             let tooltipClass: string = this.parent.enableTooltip ? ' ' + cls.TOOLTIP_TEXT_CLASS : '';
@@ -733,9 +733,12 @@ export class LayoutRender extends MobileLayout {
     }
 
     public refreshCards(): void {
+        this.parent.resetTemplates(['cardTemplate']);
         let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
         cards.forEach((card: HTMLElement) => remove(card));
         this.renderCards();
+        this.wireDragEvent();
+        this.parent.renderTemplates();
     }
 
     public refresh(): void {

@@ -4226,7 +4226,7 @@ export class CommandHandler {
         node.isExpanded = expand;
         let fixedNode: string = this.diagram.layout.fixedNode;
         this.diagram.layout.fixedNode = node.id;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
+        if ((this.diagram.diagramActions != DiagramAction.Render) && this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
         this.diagram.blazorActions |= BlazorAction.expandNode;

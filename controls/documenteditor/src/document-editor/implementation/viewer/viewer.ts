@@ -3356,8 +3356,10 @@ export abstract class LayoutViewer {
             let bottom: number = 0.667 + bottomMargin;
             if (!isNullOrUndefined(page.footerWidget)) {
                 isEmptyWidget = page.footerWidget.isEmpty;
+                let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
                 if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                    bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+                    // tslint:disable-next-line:max-line-length
+                    bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height + footnoteHeight, bottomMargin));
                 }
             }
             if (!isNullOrUndefined(sectionFormat)) {

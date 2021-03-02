@@ -247,11 +247,15 @@ export type LegendTitlePosition =
     'Right';
 
 /**
- * Defines the position of the tooltip.
- * *None - Defines the default tooltip placing inside the chart bounds
- * *Auto - Defines the auto tooltip placing based on most available space
- * *Left - Defines the Left side tooltip placing
- * *Right - Defines the Right side tooltip placing
- * *Top - Defines the Top side tooltip placing
- * *Bottom - Defines the Bottom side tooltip placing
+ * Defines the alignment of the line break axis labels. They are
+ * * center - align the label with center.
+ * * left - align the label with left.
+ * * right - align the label with right.
  */
+export type TextAlignment =
+    /** align the label with left. */
+    'Left' |
+    /** align the label with center. */
+    'Center' |
+    /** align the label with right. */
+    'Right';

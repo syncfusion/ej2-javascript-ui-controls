@@ -1448,6 +1448,21 @@
             width: 5px;
           }
         }
+
+        .e-work-cells {
+          &.e-disable-dates {
+            background-color: $schedule-disable-dates-color;
+            cursor: default;
+
+            .e-day {
+              cursor: default;
+            }
+
+            &:hover {
+              background-color: $schedule-disable-dates-color;
+            }
+          }
+        }
       }
 
       .e-date-header-wrap {
@@ -1642,6 +1657,23 @@
 
           &:hover {
             background-color: $schedule-select-bg-color;
+          }
+        }
+
+        &.e-disable-dates {
+          background-color: $schedule-disable-dates-color;
+
+          .e-date-header {
+            cursor: default;
+            opacity: .35;
+
+            &:hover {
+              text-decoration: none;
+            }
+          }
+
+          &:hover {
+            background-color: $schedule-disable-dates-color;
           }
         }
       }

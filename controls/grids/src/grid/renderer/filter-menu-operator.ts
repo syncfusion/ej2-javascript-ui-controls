@@ -57,8 +57,15 @@ export class FlMenuOptrUI {
         this.dropOptr.appendTo('#' + column.uid + '-floptr');
     }
 
+    private renderResponsiveDropDownList(args: { popup: Popup }): void {
+        args.popup.element.style.width = '100%';
+    }
+
     private dropDownOpen(args: { popup: Popup }): void {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+        if (this.parent.enableAdaptiveUI) {
+            this.renderResponsiveDropDownList(args);
+        }
     }
 
     private dropSelectedVal(col: Column, optr: string): string {

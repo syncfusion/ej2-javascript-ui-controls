@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- Copy / paste the merge cells not working properly issue resolved.
+
 ## 18.4.44 (2021-02-23)
 
 ### Spreadsheet

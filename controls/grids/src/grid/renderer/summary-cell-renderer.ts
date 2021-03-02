@@ -28,7 +28,14 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
         let column: AggregateColumn = <AggregateColumn>cell.column;
         this.parent.on(refreshAggregateCell, this.refreshWithAggregate(node, cell), this);
         if (!(column.footerTemplate || column.groupFooterTemplate || column.groupCaptionTemplate)) {
+            if (this.parent.rowRenderingMode === 'Vertical') {
+                (node as HTMLElement).style.display = 'none';
+            }
             return true;
+        } else {
+            if (this.parent.rowRenderingMode === 'Vertical') {
+                (node as HTMLElement).classList.add('e-lastsummarycell');
+            }
         }
         let tempObj: { fn: Function, property: string } = column.getTemplate(cell.cellType);
         let tempID: string = '';

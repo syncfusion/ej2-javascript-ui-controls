@@ -886,6 +886,48 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+    describe('EJ2-46528-The appointments are not rendered when removing the resource dynamically', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2018, 3, 1),
+                group: {
+                    allowGroupEdit: true,
+                    resources: ['Owners']
+                },
+                resources: [ {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, resourceGroupData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking appointment after remove resources dynamically', (done: Function) => {
+            schObj.dataBound = () => {
+                let appElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(appElement.length).toEqual(5);
+                expect((appElement[3].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Conference');
+                expect(appElement[6]).toBeUndefined();
+                done();
+            };
+            let appElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appElement.length).toEqual(7);
+            expect((appElement[3].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Conference');
+            expect((appElement[6].querySelector('.e-subject') as HTMLElement).innerHTML).toBe('Conference');
+            schObj.removeResource(3, 'Owners')
+        });
+
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

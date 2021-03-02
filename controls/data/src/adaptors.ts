@@ -2016,6 +2016,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         data: CrudOptions, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions, e?: RemoteArgs):
         Object {
         let i: number;
+        data = request ? JSON.parse((<{ data?: string }>request).data) : data;
         if (this.updateType === 'add') {
             super.insert(ds as DataManager, data, null, null, this.pvt.position);
         }

@@ -81,7 +81,7 @@ export class KanbanDialog {
                 }
                 let templateId: string = this.parent.element.id + '_dialogTemplate';
                 let dialogTemplate: HTMLElement[] = this.parent.templateParser(
-                    this.parent.dialogSettings.template)(args, this.parent, 'template', templateId, false);
+                    this.parent.dialogSettings.template)(args, this.parent, 'dialogTemplate', templateId, false);
                 append(dialogTemplate, form);
                 this.parent.renderTemplates();
             } else {

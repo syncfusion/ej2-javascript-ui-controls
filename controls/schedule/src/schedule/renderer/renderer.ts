@@ -20,7 +20,7 @@ export class Render {
 
     public render(viewName: View, isDataRefresh: boolean = true): void {
         this.initializeLayout(viewName);
-        if (isDataRefresh && !this.parent.isServerRenderer()) {
+        if (this.parent.activeView && isDataRefresh && !this.parent.isServerRenderer()) {
             this.refreshDataManager();
         }
     }

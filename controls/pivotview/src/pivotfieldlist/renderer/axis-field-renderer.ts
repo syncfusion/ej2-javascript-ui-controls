@@ -13,21 +13,22 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 export class AxisFieldRenderer {
     public parent: PivotFieldList;
 
+    /* eslint-disable-next-line */
     /** Constructor for render module */
-    constructor(parent: PivotFieldList) {
+    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
         this.parent = parent;
     }
     /**
      * Initialize the pivot button rendering
-     * @returns void
+     * @returns {void}
      * @private
      */
     public render(): void {
-        /* tslint:disable */
+        /* eslint-disable */
         let pivotButtonModule: PivotButton =
             ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) ?
                 new PivotButton(this.parent) : this.parent.pivotButtonModule);
-        /* tslint:enable */
+        /* eslint-enable */
         this.createPivotButtons();
     }
     private createPivotButtons(): void {
@@ -52,7 +53,7 @@ export class AxisFieldRenderer {
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values')) {
             parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values').querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
         }
-        let axis: String[] = ['rows', 'columns', 'values', 'filters'];
+        let axis: string[] = ['rows', 'columns', 'values', 'filters'];
         for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
             if (fields[len]) {
                 let args: PivotButtonArgs = {

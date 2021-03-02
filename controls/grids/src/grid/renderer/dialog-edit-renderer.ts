@@ -1,11 +1,13 @@
-import { IGrid } from '../base/interface';
+import { IGrid, ResponsiveDialogArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { remove, extend, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import * as events from '../base/constant';
-import { appendChildren, applyBiggerTheme } from '../base/util';
+import { appendChildren, applyBiggerTheme, addBiggerDialog } from '../base/util';
+import { ResponsiveDialogRenderer } from './responsive-dialog-renderer';
+import { ResponsiveDialogAction } from '../base/enum';
 
 
 /**
@@ -47,12 +49,34 @@ export class DialogEditRender {
         this.createDialog(elements, args);
     }
 
+    private createDialogHeader(args: ResponsiveDialogArgs): Element | string {
+        let gObj: IGrid = this.parent;
+        let header: Element | string;
+        if (this.parent.enableAdaptiveUI) {
+            let responsiveDlgRenderer: ResponsiveDialogRenderer = new ResponsiveDialogRenderer(this.parent, this.serviceLocator);
+            responsiveDlgRenderer.action = this.isEdit ? ResponsiveDialogAction.isEdit : ResponsiveDialogAction.isAdd;
+            return responsiveDlgRenderer.renderResponsiveHeader(args);
+        } else {
+            if (gObj.editSettings.headerTemplate) {
+                header = this.getDialogEditTemplateElement('HeaderTemplate', args);
+            } else if (this.isEdit) {
+                header = this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0];
+            } else {
+                header = this.l10n.getConstant('AddFormTitle');
+            }
+        }
+        return header;
+    }
+
     private createDialog(elements: Element[], args: {
         primaryKeyValue?: string[], rowData?: Object,
         dialog?: DialogModel, target?: HTMLElement
     }): void {
         let gObj: IGrid = this.parent;
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
+        if (gObj.enableAdaptiveUI) {
+            this.dialog.classList.add('e-responsive-dialog');
+        }
         this.dialog.setAttribute('aria-label', 'Dialog edit');
         gObj.element.appendChild(this.dialog);
         this.setLocaleObj();
@@ -60,14 +84,13 @@ export class DialogEditRender {
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
         this.dialogObj = new Dialog(extend(
             {
-                header: gObj.editSettings.headerTemplate ? this.getDialogEditTemplateElement('HeaderTemplate', args) :
-                    this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
-                        this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
+                header: this.createDialogHeader(args), isModal: true, visible: true, cssClass: 'e-edit-dialog',
                 content: this.getEditElement(elements, args) as HTMLElement,
                 showCloseIcon: true,
                 allowDragging: true,
                 // position: position,
                 close: this.dialogClose.bind(this),
+                created: this.dialogCreated.bind(this),
                 closeOnEscape: true, width: gObj.editSettings.template ? 'auto' : '330px',
                 target: args.target ? args.target : document.body, animationSettings: { effect: 'None' },
                 footerTemplate: gObj.editSettings.footerTemplate ? this.getDialogEditTemplateElement('FooterTemplate', args) : null,
@@ -86,8 +109,28 @@ export class DialogEditRender {
         }
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
+        this.renderResponsiveDialog();
         this.dialogObj.appendTo(this.dialog);
         applyBiggerTheme(this.parent.element, this.dialogObj.element.parentElement);
+        if (gObj.enableAdaptiveUI) {
+            this.dialogObj.show(true);
+        }
+    }
+
+    private dialogCreated(): void {
+        addBiggerDialog(this.parent);
+    }
+
+    private renderResponsiveDialog(): void {
+        if (this.parent.enableAdaptiveUI) {
+            this.dialogObj.buttons = [{}];
+            this.dialogObj.showCloseIcon = true;
+            this.dialogObj.visible = false;
+            this.dialogObj.width = '100%';
+            this.dialogObj.open = () => {
+                this.dialogObj.element.style.maxHeight = '100%';
+            };
+        }
     }
 
     private btnClick(e: MouseEvent): void {

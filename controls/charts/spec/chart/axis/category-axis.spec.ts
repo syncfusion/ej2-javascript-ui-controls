@@ -649,6 +649,668 @@ describe('Chart Control', () => {
         });
 
     });
+    describe('Checking line break label alignment', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let label: HTMLElement;
+        let anchor: string
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category', interval: 1,
+                        lineBreakAlignment: 'Left'
+                    },
+                    primaryYAxis: {
+                        minimum: 0, maximum: 300, interval: 50,
+                        labelFormat: '${value}<br>t',
+                        lineBreakAlignment: 'Left',
+                    },
+                    series: [{
+                        dataSource: [
+                            { x: 'America<br>20<br>America', y: 106 },
+                            { x: 'Europe<br>20<br>America', y: 103 },
+                            { x: 'Asia<br>20<br>America', y: 198 },
+                            { x: 'China<br>20<br>America', y: 189 },
+                            { x: 'Australia<br>20<br>America', y: 250 }
+                        ],
+                        xName: 'x', yName: 'y',
+                        opacity: 0.5, fill: '#69D2E7',
+                        name: 'Product A',
+                        type: 'Column'
+                    }],
+                }, '#container');
+
+        });
+
+        afterAll((): void => {
+
+            chart.destroy();
+            ele.remove();
+        });
+        it('left alignment checking for X axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                label = document.getElementById('container0_AxisLabel_4');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('center alignment checking for X axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                label = document.getElementById('container0_AxisLabel_4');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                done();
+            };
+            chart.primaryXAxis.lineBreakAlignment = 'Center';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('right alignment checking for X axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                label = document.getElementById('container0_AxisLabel_4');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                done();
+            };
+            chart.primaryXAxis.lineBreakAlignment = 'Right';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('left alignment checking for Y axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById('container1_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                label = document.getElementById('container1_AxisLabel_4');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryYAxis.lineBreakAlignment = 'Left';
+            chart.refresh();
+        });
+        it('center alignment checking for Y axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById('container1_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                label = document.getElementById('container1_AxisLabel_4');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                done();
+            };
+            chart.primaryYAxis.lineBreakAlignment = 'Center';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('right alignment checking for Y axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById('container1_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                label = document.getElementById('container1_AxisLabel_4');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                done();
+            };
+            chart.primaryYAxis.lineBreakAlignment = 'Right';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+    let normalData: object[] = [
+        { x: "January<br>19", y: 100 },
+        { x: "February<br>19", y: 150 },
+        { x: "March.<br>19", y: 200 },
+        { x: "April.<br>19", y: 250 },
+        { x: "May<br>19", y: 300 },
+        { x: "June<br>19", y: 50 },
+        { x: "July<br>19", y: 105 },
+        { x: "August<br>19", y: 123 },
+        { x: "September<br>19", y: 144 },
+        { x: "October<br>19", y: 175 },
+        { x: "November<br>19", y: 500 }
+    ];
+
+    let wrapData: object[] = [
+        { x: "Janua ry<br>19", y: 100 },
+        { x: "Febru ary<br>19", y: 150 },
+        { x: "March.<br>19", y: 200 },
+        { x: "April.<br>19", y: 250 },
+        { x: "May<br>19", y: 300 },
+        { x: "June<br>19", y: 50 },
+        { x: "July<br>19", y: 105 },
+        { x: "August<br>19", y: 123 },
+        { x: "Septe mber<br>19", y: 144 },
+        { x: "October<br>19", y: 175 },
+        { x: "Novemb er<br>19", y: 500 }
+    ];
+    describe('Label intersect actions checking with line break label Left alignment', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let label: HTMLElement;
+        let anchor: string;
+        let yValue: number;
+        let angle: number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container', styles: 'width: 450px;height: 400px' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        valueType: 'Category',
+                        lineBreakAlignment: 'Left',
+                        labelIntersectAction: 'Trim'
+                    },
+                    primaryYAxis: { },
+
+                    chartArea: {
+                        border: {
+                            width: 1
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Column',
+                            dataSource: normalData,
+                            xName: 'x',
+                            yName: 'y', name: 'Germany',
+                            animation: { enable: false }
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                }, '#container');
+
+        });
+
+        afterAll((): void => {
+
+            chart.destroy();
+            ele.remove();
+        });
+        it('Trim checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                expect(label.innerHTML.split('...')[0] === 'Janu');
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                expect(label.innerHTML.split('...')[0] === 'Nove');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Hide checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 8);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'January');
+                label = document.getElementById('container0_AxisLabel_9');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'October');
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Hide';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Wrap checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                expect(label.innerHTML.slice(0, 5) === 'Janua');
+                expect(label.children[0].innerHTML === 'ry');
+                expect(label.children[1].innerHTML === '19');
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'Nove...');
+                expect(label.children[0].innerHTML === 'er');
+                expect(label.children[1].innerHTML === '19');
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Wrap';
+            chart.series[0].dataSource = wrapData;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Multiple Rows checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                yValue = +label.getAttribute("y");
+                expect(yValue === 337);
+                label = document.getElementById('container0_AxisLabel_1');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                yValue = +label.getAttribute("y");
+                expect(yValue === 363);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'MultipleRows';
+            chart.series[0].dataSource = normalData;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Rotate 45 checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 7);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7,9));
+                expect(angle === 45);
+                label = document.getElementById('container0_AxisLabel_9');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 45);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Rotate45';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Rotate 90 checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 90);
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'start').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 90);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Rotate90';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+    describe('Label intersect actions checking with line break label Center alignment', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let label: HTMLElement;
+        let anchor: string;
+        let yValue: number;
+        let angle: number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container', styles: 'width: 450px;height: 400px' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        valueType: 'Category',
+                        lineBreakAlignment: 'Center',
+                        labelIntersectAction: 'Trim'
+                    },
+                    primaryYAxis: {},
+
+                    chartArea: {
+                        border: {
+                            width: 1
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Column',
+                            dataSource: normalData,
+                            xName: 'x',
+                            yName: 'y', name: 'Germany',
+                            animation: { enable: false }
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                }, '#container');
+
+        });
+
+        afterAll((): void => {
+
+            chart.destroy();
+            ele.remove();
+        });
+        it('Trim checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                expect(label.innerHTML.split('...')[0] === 'Janu');
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                expect(label.innerHTML.split('...')[0] === 'Nove');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Hide checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 8);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                expect(label.innerHTML.slice(0,7) === 'January');
+                label = document.getElementById('container0_AxisLabel_9');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'October');
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Hide';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Wrap checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                expect(label.innerHTML.slice(0, 5) === 'Janua');
+                expect(label.children[0].innerHTML === 'ry');
+                expect(label.children[1].innerHTML === '19');
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'Nove...');
+                expect(label.children[0].innerHTML === 'er');
+                expect(label.children[1].innerHTML === '19');
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Wrap';
+            chart.series[0].dataSource = wrapData;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Multiple Rows checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                yValue = +label.getAttribute("y");
+                expect(yValue === 337);
+                label = document.getElementById('container0_AxisLabel_1');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                yValue = +label.getAttribute("y");
+                expect(yValue === 363);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'MultipleRows';
+            chart.series[0].dataSource = normalData;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Rotate 45 checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 7);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 45);
+                label = document.getElementById('container0_AxisLabel_9');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 45);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Rotate45';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Rotate 90 checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 90);
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'middle').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 90);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Rotate90';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+
+    describe('Label intersect actions checking with line break label Right alignment', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let label: HTMLElement;
+        let anchor: string;
+        let yValue: number;
+        let angle: number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container', styles: 'width: 450px;height: 400px' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        valueType: 'Category',
+                        lineBreakAlignment: 'Right',
+                        labelIntersectAction: 'Trim'
+                    },
+                    primaryYAxis: {},
+
+                    chartArea: {
+                        border: {
+                            width: 1
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Column',
+                            dataSource: normalData,
+                            xName: 'x',
+                            yName: 'y', name: 'Germany',
+                            animation: { enable: false }
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                }, '#container');
+
+        });
+
+        afterAll((): void => {
+
+            chart.destroy();
+            ele.remove();
+        });
+        it('Trim checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                expect(label.innerHTML.split('...')[0] === 'Janu');
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                expect(label.innerHTML.split('...')[0] === 'Nove');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Hide checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 8);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'January');
+                label = document.getElementById('container0_AxisLabel_9');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'October');
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Hide';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Wrap checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                expect(label.innerHTML.slice(0, 5) === 'Janua');
+                expect(label.children[0].innerHTML === 'ry');
+                expect(label.children[1].innerHTML === '19');
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                expect(label.innerHTML.slice(0, 7) === 'Nove...');
+                expect(label.children[0].innerHTML === 'er');
+                expect(label.children[1].innerHTML === '19');
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Wrap';
+            chart.series[0].dataSource = wrapData;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Multiple Rows checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                yValue = +label.getAttribute("y");
+                expect(yValue === 337);
+                label = document.getElementById('container0_AxisLabel_1');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                yValue = +label.getAttribute("y");
+                expect(yValue === 363);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'MultipleRows';
+            chart.series[0].dataSource = normalData;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Rotate 45 checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 7);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 45);
+                label = document.getElementById('container0_AxisLabel_9');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 45);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Rotate45';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Rotate 90 checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 11);
+                label = document.getElementById('container0_AxisLabel_0');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 90);
+                label = document.getElementById('container0_AxisLabel_10');
+                anchor = label.getAttribute('text-anchor');
+                expect(anchor === 'end').toBe(true);
+                angle = +(label.getAttribute("transform").slice(7, 9));
+                expect(angle === 90);
+                done();
+            };
+            chart.primaryXAxis.labelIntersectAction = 'Rotate90';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
