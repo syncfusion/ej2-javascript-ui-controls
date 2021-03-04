@@ -432,7 +432,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     protected rfshMovable(): void {
         if (!isBlazor() || this.parent.frozenRows === 0) {
             this.getFrozenHeader().appendChild(this.getTable());
-            this.getMovableHeader().appendChild(this.createTable());
+            this.getMovableHeader().appendChild(this.createHeader(undefined, 'movable'));
         }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
@@ -571,7 +571,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
-        if (isWrap) {
+        if (isWrap && this.parent.height !== 'auto') {
             this.setFrozenHeight();
         }
     }

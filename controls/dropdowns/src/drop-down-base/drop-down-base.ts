@@ -784,9 +784,21 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             let items: HTMLOptionElement[] = <HTMLOptionElement[] & NodeListOf<HTMLOptionElement>>element.querySelectorAll('select>option');
         }
-        this.fields.text = fields.text;
-        this.fields.value = fields.value;
+        this.updateFields(fields.text, fields.value, this.fields.groupBy, this.fields.htmlAttributes, this.fields.iconCss);
         this.resetList(jsonElement, fields);
+    }
+
+    private updateFields(text?: string, value?: string, groupBy?: string, htmlAttributes?: string, iconCss?: string): void {
+        let field: Object = {
+            'fields': {
+                text: text,
+                value: value,
+                groupBy: !isNullOrUndefined(groupBy) ? groupBy : this.fields && this.fields.groupBy,
+                htmlAttributes: !isNullOrUndefined(htmlAttributes) ? htmlAttributes : this.fields && this.fields.htmlAttributes,
+                iconCss: !isNullOrUndefined(iconCss) ? iconCss : this.fields && this.fields.iconCss
+            }
+        };
+        this.setProperties(field, true);
     }
 
     private getJSONfromOption(
@@ -1220,11 +1232,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected setFields(): void {
         if (this.fields.value && !this.fields.text) {
-            this.fields.text = this.fields.value;
+            this.updateFields(this.fields.value, this.fields.value);
         } else if (!this.fields.value && this.fields.text) {
-            this.fields.value = this.fields.text;
+            this.updateFields(this.fields.text, this.fields.text);
         } else if (!this.fields.value && !this.fields.text) {
-            this.fields.value = this.fields.text = 'text';
+            this.updateFields('text', 'text');
         }
     }
     /**
@@ -1268,6 +1280,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         for (let j: number = 0; props.length > j; j++) {
             if ((newProp as { [key: string]: string; })[props[j]] && props[j] === 'fields') {
                 this.setFields();
+                (updateData as { [key: string]: string; })[props[j]] = (newProp as { [key: string]: string; })[props[j]];
             } else if ((newProp as { [key: string]: string; })[props[j]]) {
                 (updateData as { [key: string]: string; })[props[j]] = (newProp as { [key: string]: string; })[props[j]];
             }

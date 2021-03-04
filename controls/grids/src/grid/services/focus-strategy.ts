@@ -33,6 +33,7 @@ export class FocusStrategy {
     private activeKey: string;
     private empty: string;
     private actions: string[] = ['downArrow', 'upArrow'];
+    private isVirtualScroll: boolean = false;
     constructor(parent: IGrid) {
         this.parent = parent;
         this.rowModelGen = new RowModelGenerator(this.parent);
@@ -130,7 +131,7 @@ export class FocusStrategy {
             this.prevIndexes = {};
         }
         this.setActiveByKey(e.action, this.getContent());
-        let returnVal: boolean = this.getContent().onKeyPress(e);
+        let returnVal: boolean = this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
         if (returnVal === false) { this.clearIndicator(); return; }
         e.preventDefault();
         this.focus(e);
@@ -182,9 +183,15 @@ export class FocusStrategy {
                 // tslint:disable-next-line:no-any
                 (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
             } else {
-                this.currentInfo.elementToFocus.focus();
+                if (this.isVirtualScroll) {
+                    // tslint:disable-next-line:no-any
+                    (this.currentInfo.elementToFocus as any).focus({ preventScroll: true });
+                } else {
+                    this.currentInfo.elementToFocus.focus();
+                }
             }
         }
+        this.isVirtualScroll = false;
     }
 
     public getFocusedElement(): HTMLElement {
@@ -358,6 +365,7 @@ export class FocusStrategy {
                                     document.documentElement.clientWidth) &&
                                 cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
                                     document.documentElement.clientHeight)) {
+                                this.isVirtualScroll = true;
                                 this.focus();
                             }
                         }
@@ -382,6 +390,7 @@ export class FocusStrategy {
         this.parent.on(event.click, this.onClick, this);
         this.parent.on(event.contentReady, this.refMatrix, this);
         this.parent.on(event.partialRefresh, this.refMatrix, this);
+        this.parent.on(event.refreshExpandandCollapse, this.refMatrix, this);
         this.parent.on(event.headerRefreshed, this.refreshMatrix(), this);
         this.parent.on('close-edit', this.restoreFocus, this);
         this.parent.on('restore-Focus', this.restoreFocus, this);
@@ -419,6 +428,7 @@ export class FocusStrategy {
         this.parent.off(event.click, this.onClick);
         this.parent.off(event.contentReady, this.refMatrix);
         this.parent.off(event.partialRefresh, this.refMatrix);
+        this.parent.off(event.refreshExpandandCollapse, this.refMatrix);
         this.parent.off(event.headerRefreshed, this.refreshMatrix());
         this.parent.off('close-edit', this.restoreFocus);
         this.parent.off('restore-focus', this.restoreFocus);
@@ -585,7 +595,7 @@ export class Matrix {
             let cells: Cell<Column>[] = rows[i].cells.filter((c: Cell<Column>) => c.isSpanned !== true);
             this.columns = Math.max(cells.length - 1, this.columns | 0);
             for (let j: number = 0; j < cells.length; j++) {
-                this.set(i, j, selector(rows[i], cells[j], isRowTemplate));
+                this.set(i, j, rows[i].visible === false ? false : selector(rows[i], cells[j], isRowTemplate));
             }
         }
         return this.matrix;
@@ -602,6 +612,7 @@ export class ContentFocus implements IFocus {
     public matrix: Matrix = new Matrix();
     public parent: IGrid;
     public keyActions: { [x: string]: number[] };
+    public lastIdxCell: boolean = false;
     public indexesByKey: (action: string) => number[];
     constructor(parent: IGrid) {
         this.parent = parent;
@@ -736,6 +747,35 @@ export class ContentFocus implements IFocus {
             && !(row.edit === 'delete' && row.isDirty);
     }
 
+    public nextRowFocusValidate(index: number): number {
+        let lastIndex: number = index;
+        for (let i: number = index, len: number = this.matrix.rows; i < len; i++) {
+            if (this.matrix.matrix[index].indexOf(1) === -1) {
+                index = index + 1;
+            } else {
+                return index;
+            }
+        }
+        this.lastIdxCell = true;
+        return lastIndex;
+    }
+
+    public previousRowFocusValidate(index: number): number {
+        let firstIndex: number = index;
+        for (let i: number = index, len: number = 0; i >= len; i--) {
+            if (this.matrix.matrix[index].indexOf(1) === -1) {
+                index = index - 1;
+                if (index < 0) {
+                    this.lastIdxCell = true;
+                    return firstIndex;
+                }
+            } else {
+                return index;
+            }
+        }
+        return firstIndex;
+    }
+
     public jump(action: string, current: number[]): SwapInfo {
         let frozenSwap: boolean = this.parent.getFrozenLeftCount() &&
             ((action === 'leftArrow' || action === 'shiftTab') && current[1] === 0);
@@ -744,16 +784,17 @@ export class ContentFocus implements IFocus {
         if (this.parent.getFrozenMode() === 'Right') {
             frozenSwap = right;
         }
+        this.lastIdxCell = false;
         let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
         if (action === 'tab' && !this.parent.isEdit &&
             current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
-            this.matrix.current[0] = this.matrix.current[0] + 1;
+            this.matrix.current[0] = this.nextRowFocusValidate(this.matrix.current[0] + 1);
             this.matrix.current[1] = -1;
             frozenSwap = this.parent.isFrozenGrid();
         }
         if (action === 'shiftTab' && !this.parent.isEdit &&
             current[0] !== 0 && this.matrix.matrix[current[0]].indexOf(1) === current[1]) {
-            this.matrix.current[0] = this.matrix.current[0] - 1;
+            this.matrix.current[0] = this.previousRowFocusValidate(this.matrix.current[0] - 1);
             this.matrix.current[1] = this.matrix.matrix[current[0]].length;
         }
         let isHeaderFocus: boolean = false;
@@ -1093,8 +1134,9 @@ export class SearchBox {
         this.searchBox = searchBox;
     }
 
-    protected searchFocus(args: Event): void {
-        (<HTMLInputElement>args.target).parentElement.classList.add('e-input-focus');
+    /** @hidden */
+    public searchFocus(args: { target: HTMLInputElement }): void {
+        args.target.parentElement.classList.add('e-input-focus');
     }
 
     protected searchBlur(args: Event): void {

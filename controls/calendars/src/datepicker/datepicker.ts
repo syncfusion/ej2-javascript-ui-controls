@@ -1307,7 +1307,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
                 if (this.isAngular && this.preventChange) {
                     this.preventChange = false;
-                } else if (!this.isDynamicValueChanged) {
+                } else {
                     this.trigger('change', this.changedArgs);
                 }
                 this.previousElementValue = this.inputElement.value;
@@ -1326,7 +1326,9 @@ export class DatePicker extends Calendar implements IInput {
             this.changedArgs.event = event ? event : null;
             this.changedArgs.element = this.element;
             this.changedArgs.isInteracted = this.isInteracted;
-            this.trigger('change', this.changedArgs);
+            if (!this.isDynamicValueChanged) {
+                this.trigger('change', this.changedArgs);
+            }
             this.previousDate = this.value && new Date(+this.value);
             if (!this.isDynamicValueChanged) {
                 this.hide(event);
@@ -1967,9 +1969,7 @@ export class DatePicker extends Calendar implements IInput {
                             this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
                         }
                         this.updateInput();
-                        if (+this.previousDate !== +this.value) {
-                            this.changeTrigger(null);
-                        }
+                        if (+this.previousDate !== +this.value) { this.changeTrigger(null); }
                     }
                     this.isInteracted = true;
                     break;
@@ -2044,6 +2044,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.hide(null);
             }
             this.isDynamicValueChanged = false;
+            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
 }

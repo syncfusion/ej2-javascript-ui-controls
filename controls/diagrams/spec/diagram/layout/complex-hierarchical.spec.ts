@@ -768,6 +768,131 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    describe('EJ2-46383 - nodes isExpanded property true at initial rendering unwanted scroll ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items1: DataManager = new DataManager(complexData as JSON[], new Query().take(3));
+        let data: any = [
+            {
+                "Name": "Diagram",
+                "fillColor": "#916DAF"
+            },
+            {
+                "Name": "Layout",
+                "Category": "Diagram"
+            },
+            {
+                "Name": "Tree Layout",
+                "Category": "Layout"
+            },
+            {
+                "Name": "Organizational Chart",
+                "Category": "Layout"
+            },
+            {
+                "Name": "Hierarchical Tree",
+                "Category": "Tree Layout"
+            },
+            {
+                "Name": "Radial Tree",
+                "Category": "Tree Layout"
+            },
+            {
+                "Name": "Mind Map",
+                "Category": "Hierarchical Tree"
+            },
+            {
+                "Name": "Family Tree",
+                "Category": "Hierarchical Tree"
+            },
+            {
+                "Name": "Management",
+                "Category": "Organizational Chart"
+            },
+            {
+                "Name": "Human Resources",
+                "Category": "Management"
+            },
+            {
+                "Name": "University",
+                "Category": "Management"
+            },
+            {
+                "Name": "Business",
+                "Category": "Management"
+            }
+        ];
+		let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 900, height: 1000,created :created,
+                layout: { type: 'HierarchicalTree', horizontalSpacing: 30, verticalSpacing: 40, enableAnimation:true },
+                dataSourceSettings: {
+                    id: 'Name', parentId: 'Category', dataSource: items,
+                    doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                        nodeModel.shape = { type: "Text", content: (data as EmployeeInfo).Name };
+                        if ((data as EmployeeInfo).Name === "Diagram") {
+                          nodeModel.isExpanded = false;
+                        }
+                      }
+                },
+            snapSettings:{constraints:SnapConstraints.None},
+                getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                    obj.style = {
+                        fill: "#659be5",
+                        strokeColor: "none",
+                        color: "white",
+                        strokeWidth: 2
+                      };
+                      obj.borderColor = "#3a6eb5";
+                      obj.backgroundColor = "#659be5";
+                      (obj.shape as TextModel).margin = { left: 5, right: 5, bottom: 5, top: 5 };
+                      obj.expandIcon = {
+                        height: 10,
+                        width: 10,
+                        shape: "Plus",
+                        fill: "lightgray",
+                        offset: { x: 0.5, y: 1 }
+                      };
+                      obj.expandIcon.verticalAlignment = "Auto";
+                      obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                      obj.collapseIcon.offset = { x: 0.5, y: 1 };
+                      obj.collapseIcon.verticalAlignment = "Auto";
+                      obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                      obj.collapseIcon.height = 10;
+                      obj.collapseIcon.width = 10;
+                      obj.collapseIcon.padding.top = 5;
+                      obj.collapseIcon.shape = "Minus";
+                      obj.collapseIcon.fill = "lightgray";
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.targetDecorator.shape = "None";
+                    connector.type = "Orthogonal";
+                    connector.style.strokeColor = "#6d6d6d";
+                    connector.constraints = 0;
+                    connector.cornerRadius = 5;
+                    return connector;
+                },
+            });
+            diagram.appendTo('#diagram');
+            function created() {
+				diagram.nodes[0].offsetY = 200;
+                diagram.dataBind();
+            }
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('EJ2-46383 - nodes isExpanded property true at initial rendering unwanted scroll', (done: Function) => {
+            var node = diagram.nodes[0];
+            expect(diagram.scrollSettings.horizontalOffset == 0 && diagram.scrollSettings.verticalOffset == 0).toBe(true);
+            done();
+        });
+    });
     describe('Complex Tree Layout', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#311306` - Position of Tooltip template has been changed.
+
 ## 18.3.51 (2020-11-24)
 
 ### Svg Base

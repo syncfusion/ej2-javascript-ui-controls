@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.42 (2021-02-09)
+## 18.4.46 (2021-03-02)
+
+### DataManager
+
+#### Bug Fixes
+
+- `312017` - `RemoteSaveAdaptor` with batch editing issue has been fixed has been fixed.
+
+## 18.4.33 (2021-01-05)
 
 ### DataManager
 

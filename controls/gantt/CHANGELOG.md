@@ -2,7 +2,32 @@
 
 ## [Unreleased]
 
-## 18.4.42 (2021-02-09)
+## 18.4.46 (2021-03-02)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#315501` - Error on closing filter menu while focusing out has been resolved.
+
+## 18.4.43 (2021-02-16)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#306101` - Rendered milestone at default end time on taskbar editing.
+- `#313819` - Highlighted bottom tier weekend header cell.
+
+### Gantt
+
+#### Bug Fixes
+
+- `#311841` - Duplicating records issue while indent action has been resolved.
+- `F160722` - Error on rendering editing tooltip has been resolved.
+- `F161444` - Error while hiding context menu items has been resolved.
+
+## 18.4.41 (2021-02-02)
 
 ### Gantt
 

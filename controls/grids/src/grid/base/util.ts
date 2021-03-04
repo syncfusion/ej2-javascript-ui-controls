@@ -11,12 +11,13 @@ import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
-import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode } from './enum';
-import { Dialog, calculateRelativeBasedPosition, Popup, calculatePosition } from '@syncfusion/ej2-popups';
+import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode, ResponsiveDialogAction } from './enum';
+import { Dialog, calculateRelativeBasedPosition, Popup } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 import { Cell } from '../models/cell';
+import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 
 //https://typescript.codeplex.com/discussions/401501
 /**
@@ -623,26 +624,14 @@ export function getFilterMenuPostion(target: Element, dialogObj: Dialog, grid: I
     dialogObj.element.style.display = 'block';
     let dlgWidth: number = dialogObj.width as number;
     let newpos: { top: number, left: number };
-    if (!grid.enableRtl) {
-        newpos = calculateRelativeBasedPosition((<HTMLElement>target), dialogObj.element);
-        dialogObj.element.style.display = elementVisible;
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
-        let leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
-        } else {
-            dialogObj.element.style.left = leftPos + -4 + 'px';
-        }
+    newpos = calculateRelativeBasedPosition((<HTMLElement>target), dialogObj.element);
+    dialogObj.element.style.display = elementVisible;
+    dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
+    let leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
+    if (leftPos < 1) {
+        dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
     } else {
-        newpos = calculatePosition((<HTMLElement>target), 'left', 'bottom');
-        dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 35 + 'px';
-        dialogObj.element.style.display = elementVisible;
-        let leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
-        if (leftPos < 1) {
-            dialogObj.element.style.left = (dlgWidth + leftPos) + - 16 + 'px';
-        } else {
-            dialogObj.element.style.left = leftPos - 16 + 'px';
-        }
+        dialogObj.element.style.left = leftPos + -4 + 'px';
     }
 }
 
@@ -1108,6 +1097,15 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
 }
 
 /** @hidden */
+export function resetRowObjectIndex(gObj: IGrid, rows: Row<Column>[], index?: number): void {
+    let startIndex: number = index ? index : 0;
+    for (let i: number = 0; i < rows.length; i++) {
+            rows[i].index = startIndex;
+            startIndex++;
+    }
+}
+
+/** @hidden */
 export function compareChanges(gObj: IGrid, changes: Object, type: string, keyField: string): void {
     let newArray: Object[] = (<{ dataToBeUpdated?: Object }>gObj).dataToBeUpdated[type].concat(changes[type]).reduce(
         (r: Object, o: Object) => {
@@ -1135,70 +1133,6 @@ export function setRowElements(gObj: IGrid): void {
         (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
             [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
     }
-}
-
-/** @hidden */
-export function getCurrentTableIndex(gObj: IGrid): number {
-    if (gObj.tableIndex === gObj.getTablesCount()) {
-        gObj.tableIndex = 0;
-    }
-    return ++gObj.tableIndex;
-}
-
-/** @hidden */
-export function getFrozenTableName(gObj: IGrid, index?: number): freezeTable {
-    let frozenCols: number = gObj.getFrozenColumns();
-    let frozenLeft: number = gObj.getFrozenLeftColumnsCount();
-    let frozenRight: number = gObj.getFrozenRightColumnsCount();
-    let tableName: freezeTable;
-    if (frozenCols && !frozenLeft && !frozenRight) {
-        tableName = getFreezeTableName(gObj, index);
-    } else if (!frozenCols && (frozenLeft || frozenRight)) {
-        tableName = getColumnLevelFreezeTableName(gObj, index);
-    }
-    return tableName;
-}
-
-/** @hidden */
-export function getFreezeTableName(gObj: IGrid, index?: number): freezeTable {
-    let tableIndex: number = isNullOrUndefined(index) ? getCurrentTableIndex(gObj) : index;
-    let tableName: freezeTable;
-    if (tableIndex === 1) {
-        tableName = 'frozen-left';
-    } else if (tableIndex === 2) {
-        tableName = 'movable';
-    }
-    return tableName;
-}
-
-/** @hidden */
-export function getColumnLevelFreezeTableName(gObj: IGrid, index?: number): freezeTable {
-    let frozenLeft: number = gObj.getFrozenLeftColumnsCount();
-    let frozenRight: number = gObj.getFrozenRightColumnsCount();
-    let tableIndex: number = isNullOrUndefined(index) ? getCurrentTableIndex(gObj) : index;
-    let tableName: freezeTable;
-    if (frozenLeft && !frozenRight) {
-        if (tableIndex === 1) {
-            tableName = 'frozen-left';
-        } else if (tableIndex === 2) {
-            tableName = 'movable';
-        }
-    } else if (frozenRight && !frozenLeft) {
-        if (tableIndex === 1) {
-            tableName = 'frozen-right';
-        } else if (tableIndex === 2) {
-            tableName = 'movable';
-        }
-    } else {
-        if (tableIndex === 1) {
-            tableName = 'frozen-left';
-        } else if (tableIndex === 2) {
-            tableName = 'movable';
-        } else if (tableIndex === 3) {
-            tableName = 'frozen-right';
-        }
-    }
-    return tableName;
 }
 
 /** @hidden */
@@ -1359,4 +1293,27 @@ export function getNumberFormat(numberFormat: string, type: string): string {
         });
     }
     return format;
+}
+
+/** @hidden */
+export function addBiggerDialog(gObj: IGrid): void {
+    if (gObj.enableAdaptiveUI) {
+        let dialogs: HTMLCollectionOf<Element> = document.getElementsByClassName('e-responsive-dialog');
+        for (let i: number = 0; i < dialogs.length; i++) {
+            dialogs[i].classList.add('e-bigger');
+        }
+    }
+}
+
+/** @hidden */
+export function enableDisableResponsiveRenderer(instance: any, action: ResponsiveDialogAction): void {
+    if (instance.parent.enableAdaptiveUI) {
+        instance.responsiveDialogRenderer = new ResponsiveDialogRenderer(instance.parent, instance.serviceLocator);
+        instance.responsiveDialogRenderer.action = action;
+    } else {
+        if (instance.responsiveDialogRenderer) {
+            instance.responsiveDialogRenderer.removeEventListener();
+            instance.responsiveDialogRenderer = undefined;
+        }
+    }
 }

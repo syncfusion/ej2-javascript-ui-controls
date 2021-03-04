@@ -17,14 +17,16 @@ export class PivotContextMenu {
     /** @hidden */
     public fieldElement: HTMLElement;
 
+    /* eslint-disable */
     /** Constructor for render module */
     constructor(parent: PivotView | PivotFieldList) {
+        /* eslint-enable */
         this.parent = parent;
         this.parent.contextMenuModule = this;
     }
     /**
      * Initialize the pivot table rendering
-     * @returns void
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -93,11 +95,13 @@ export class PivotContextMenu {
 
     /**
      * To destroy the pivot button event listener
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
-        if (!this.parent.isDestroyed) { return; }
+        if (!this.parent.isDestroyed) {
+            return;
+        }
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
             if (select('#' + this.parent.element.id + '_PivotContextMenu', document)) {

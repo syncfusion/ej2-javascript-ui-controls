@@ -766,8 +766,11 @@ export class QuickPopups {
                 let resNames: string[] = [];
                 let lastResourceData: { [key: string]: Object }[] = lastResource.dataSource as { [key: string]: Object }[];
                 (resourceData as Object[]).map((value: string | number) => {
+                    let text: string;
                     let i: number = util.findIndexInData(lastResourceData, lastResource.idField, value as string);
-                    let text: string = lastResourceData[i][lastResource.textField] as string;
+                    if (i > -1) {
+                        text = lastResourceData[i][lastResource.textField] as string;
+                    }
                     if (text) { resNames.push(text); }
                 });
                 resourceValue = resNames.join(', ');

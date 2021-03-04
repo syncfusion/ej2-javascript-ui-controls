@@ -185,7 +185,7 @@ export class WSectionFormat {
                 value = false;
                 break;
             case 'pageStartingNumber':
-                value = 0;
+                value = 1;
                 break;
             case 'footnotePosition':
                 value = 'PrintAtBottomOfPage';

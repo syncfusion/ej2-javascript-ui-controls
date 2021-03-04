@@ -762,16 +762,16 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     /**
-     * Update the header count value in header template.
-     * @method renderHeader
+     * Method to refresh the column header.
+     * @method refreshHeader
      * @return {void}
      */
-    public renderHeader(): void {
-        this.clearTemplate();
+    public refreshHeader(): void {
+        this.resetTemplates(['columnTemplate']);
         if (this.layoutModule) {
             this.layoutModule.refreshHeaders();
         }
-        this.renderReactTemplates();
+        this.renderTemplates();
     }
 
 }

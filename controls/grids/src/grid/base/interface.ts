@@ -17,6 +17,7 @@ import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineSty
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
 import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode } from './enum';
+import { ResponsiveDialogAction, RowRenderingDirection } from './enum';
 import { Edit } from '../actions/edit';
 import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
@@ -25,7 +26,7 @@ import { NumericTextBoxModel, MaskedTextBoxModel } from '@syncfusion/ej2-inputs'
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
 import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
-import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
+import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfTextWebLink, PdfImage } from '@syncfusion/ej2-pdf-export';
 import { Matrix, FocusStrategy } from '../services/focus-strategy';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import {
@@ -421,6 +422,18 @@ export interface IGrid extends Component<HTMLElement> {
     frozenRows?: number;
 
     /**
+     * Defines the grid rows displaying direction.
+     * @default 'Horizontal'
+     */
+    rowRenderingMode?: RowRenderingDirection;
+
+    /**
+     * If `enableAdaptiveUI` set to true the grid dialogs will be displayed at fullscreen.
+     * @default false
+     */
+    enableAdaptiveUI?: boolean;
+
+    /**
      * Defines the frozen columns for the grid content
      * @default 0
      */
@@ -530,6 +543,8 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenRightRowByIndex?(index: number): Element;
     getFrozenRightRowByIndex?(index: number): Element;
     getFrozenRowByIndex?(index: number): Element;
+    showResponsiveCustomFilter?(): void;
+    showResponsiveCustomSort?(): void;
     getRowInfo?(target: Element): RowInfo;
     selectRow?(index: number, isToggle?: boolean): void;
     getColumnHeaderByIndex?(index: number): Element;
@@ -567,6 +582,7 @@ export interface IGrid extends Component<HTMLElement> {
     getEditHeaderTemplate?(): Function;
     getFilterTemplate?(): Function;
     sortColumn?(columnName: string, sortDirection: SortDirection, isMultiSort?: boolean): void;
+    clearSorting?(): void;
     removeSortColumn?(field: string): void;
     getColumnHeaderByUid?(uid: string): Element;
     getColumnHeaderByField?(field: string): Element;
@@ -1287,7 +1303,7 @@ export interface PdfQueryCellInfoEventArgs {
     /** Defines the style of the current cell. */
     style?: PdfStyle;
     /** Defines the value of the current cell. */
-    value?: Date | string | number | boolean;
+    value?: Date | string | number | boolean | PdfTextWebLink | PdfImage;
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
     /** Defines the data of the cell
@@ -1296,6 +1312,10 @@ export interface PdfQueryCellInfoEventArgs {
     data?: Object;
     /** Defines the current PDF cell */
     cell?: PdfGridCell;
+    /** Defines the image details */
+    image?: { base64: string};
+    /** Defines the hyperlink of the cell */
+    hyperLink?: Hyperlink;
 }
 
 export interface ExportDetailDataBoundEventArgs {
@@ -1331,6 +1351,15 @@ export interface PdfHeaderQueryCellInfoEventArgs {
     gridCell?: object;
 }
 
+export interface Image {
+    /**  Defines the base 64 string for image */
+    base64: string;
+    /**  Defines the height for the image */
+    height: number;
+    /**  Defines the height for the image */
+    width: number;
+}
+
 export interface ExcelQueryCellInfoEventArgs {
     /** Defines the row data associated with this cell.
      * @isGenericType true
@@ -1345,7 +1374,11 @@ export interface ExcelQueryCellInfoEventArgs {
     /** Defines the number of columns to be spanned */
     colSpan?: number;
     /** Defines the cell data */
-    cell?: number | ExcelStyle | { name: string };
+    cell?: number | ExcelStyle | { name: string } | ExcelCell;
+    /** Defines the image details */
+    image?: Image;
+    /** Defines the hyperlink */
+    hyperLink?: Hyperlink;
 }
 export interface ExcelHeaderQueryCellInfoEventArgs {
     /** Defines the cell that contains colspan. */
@@ -1549,6 +1582,8 @@ export interface ExcelExportProperties {
     hierarchyExportMode?: 'Expanded' | 'All' | 'None';
     /** Defines the delimiter for CSV file export */
     separator?: string;
+    /** Defines filter icons while exporting */
+    enableFilter?: boolean;
 }
 
 export interface RowDragEventArgs {
@@ -2118,6 +2153,7 @@ export interface IFocus {
     onKeyPress?: Function;
     onClick?: Function;
     onFocus?: Function;
+    lastIdxCell: boolean;
     jump?: (action: string, current: number[]) => SwapInfo;
     getFocusInfo?: () => FocusInfo;
     getFocusable?: (element: HTMLElement) => HTMLElement;
@@ -2127,6 +2163,8 @@ export interface IFocus {
     validator?: () => Function;
     getNextCurrent?: (previous: number[], swap?: SwapInfo, active?: IFocus, action?: string) => number[];
     preventDefault?: (e: BaseKeyboardEventArgs, info: FocusInfo) => void;
+    nextRowFocusValidate?: (index: number) => number;
+    previousRowFocusValidate?: (index: number) => number;
 }
 /**
  * @hidden
@@ -2244,6 +2282,8 @@ export interface IFilterArgs {
     isForeignKey?: boolean;
     ignoreAccent?: boolean;
     isRemote?: boolean;
+    isResponsiveFilter?: boolean;
+    operator?: string;
 }
 
 export interface PdfExportProperties {
@@ -2595,4 +2635,16 @@ export interface ColumnSelectingEventArgs extends ColumnSelectEventArgs {
     isCtrlPressed?: boolean;
     /** Defines whether SHIFT key is pressed. */
     isShiftPressed?: boolean;
+}
+
+/**
+ * @hidden
+ */
+export interface ResponsiveDialogArgs {
+    primaryKeyValue?: string[];
+    rowData?: Object;
+    dialog?: DialogModel;
+    target?: HTMLElement;
+    col?: Column;
+    action?: ResponsiveDialogAction;
 }

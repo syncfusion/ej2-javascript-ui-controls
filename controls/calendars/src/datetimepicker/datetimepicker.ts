@@ -1751,6 +1751,7 @@ export class DateTimePicker extends DatePicker {
             }
             if (!this.isDynamicValueChanged) { this.hide(null); }
             this.isDynamicValueChanged = false;
+            this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
         }
     }
     /**

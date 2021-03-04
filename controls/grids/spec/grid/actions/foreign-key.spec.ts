@@ -550,3 +550,39 @@ describe('EJ2-41126 - foreignkey search =>', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-46161 - foreignkey column filter when grouping is enabled =>', () => {
+    let gridObj: Grid;
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        let options: Object = {
+            dataSource: fdata,
+            allowSorting: true,
+            allowGrouping: true,
+            allowFiltering: true,
+            filterSettings: { type: "Menu" },
+            groupSettings: { columns: ['OrderID'] },
+            columns: [
+                { field: 'OrderID', width: 120 },
+                { field: 'ShipCity', width: 120 },
+                { field: 'CustomerID', width: 100, foreignKeyValue: 'City',  foreignKeyField: 'CustomerID', dataSource: fCustomerData },
+            ]
+        };
+        gridObj = createGrid(options, done);
+    });
+    it('Filter the foreignkey column and sort a column', (done: Function) => {
+        actionComplete = (args: Object): void => {
+            done();
+        };
+        gridObj.filterByColumn('CustomerID', 'equal', 'HANAR', 'and', true);
+        gridObj.actionComplete = actionComplete;
+        gridObj.sortColumn('ShipCity', 'Ascending');
+    });
+    it('Filter icon for foreignkey column check', () => {
+        expect(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv').classList.contains('e-filtered')).toBeTruthy();
+    });
+    afterAll((done) => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend, isBlazor } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';import { Mode, AggregateTypes } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../pivotview/model/datasourcesettings-model';import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';
+import { Property, Event, Component, EmitType, Internationalization, extend, isBlazor } from '@syncfusion/ej2-base';import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration, getInstance } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs } from '../../common/base/interface';import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';import { Mode, AggregateTypes } from '../../common/base/enum';import { PivotCommon } from '../../common/base/pivot-common';import { Render } from '../renderer/renderer';import { DialogRenderer } from '../renderer/dialog-renderer';import { TreeViewRenderer } from '../renderer/tree-renderer';import { AxisTableRenderer } from '../renderer/axis-table-renderer';import { AxisFieldRenderer } from '../renderer/axis-field-renderer';import { PivotButton } from '../../common/actions/pivot-button';import { PivotView } from '../../pivotview/base/pivotview';import { DataSourceSettingsModel, FieldOptionsModel } from '../../pivotview/model/datasourcesettings-model';import { DataSourceSettings } from '../../pivotview/model/datasourcesettings';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { PivotContextMenu } from '../../common/popups/context-menu';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { PivotUtil } from '../../base/util';import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -168,21 +168,18 @@ export interface PivotFieldListModel extends ComponentModel{
      * 'PercentageOfParentColumnTotal', 'PercentageOfParentRowTotal', 'DifferenceFrom', 'PercentageOfDifferenceFrom',
      * 'PercentageOfParentTotal']
      */
-    /* tslint:disable-next-line:max-line-length */
     aggregateTypes?: AggregateTypes[];
 
     /**
      * It allows any customization of Pivot Field List properties on initial rendering.
      * Based on the changes, the pivot field list will be redered.
      * @event
-     * @blazorproperty 'OnLoad'
      */
     load?: EmitType<LoadEventArgs>;
 
     /**
      * It triggers before the pivot engine starts to populate and allows to customize the pivot datasource settings. 
      * @event
-     * @blazorproperty 'EnginePopulating'
      */
     enginePopulating?: EmitType<EnginePopulatingEventArgs>;
 
@@ -195,28 +192,24 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers after the pivot engine populated and allows to customize the pivot datasource settings.
      * @event
-     * @blazorproperty 'EnginePopulated'
      */
     enginePopulated?: EmitType<EnginePopulatedEventArgs>;
 
     /**
      * It trigger when a field getting dropped into any axis.
      * @event
-     * @blazorproperty 'FieldDropped'
      */
     onFieldDropped?: EmitType<FieldDroppedEventArgs>;
 
     /**
      * It triggers before a field drops into any axis.
      * @event
-     * @blazorproperty 'fieldDrop'
      */
     fieldDrop?: EmitType<FieldDropEventArgs>;
 
     /**
      * It trigger when a field drag (move) starts.
      * @event
-     * @blazorproperty 'FieldDragStart'
      */
     fieldDragStart?: EmitType<FieldDragStartEventArgs>;
 
@@ -230,28 +223,24 @@ export interface PivotFieldListModel extends ComponentModel{
     /**
      * It triggers before member editor dialog opens.
      * @event
-     * @blazorproperty 'MemberEditorOpen'
      */
     memberEditorOpen?: EmitType<MemberEditorOpenEventArgs>;
 
     /**
      * It triggers before a calculated field created/edited during runtime.
      * @event
-     * @blazorproperty 'CalculatedFieldCreate'
      */
     calculatedFieldCreate?: EmitType<CalculatedFieldCreateEventArgs>;
 
     /**
      * It triggers before aggregate type context menu opens.
      * @event
-     * @blazorproperty 'AggregateMenuOpen'
      */
     aggregateMenuOpen?: EmitType<AggregateMenuOpenEventArgs>;
 
     /**
      * It triggers before removing the field from any axis during runtime.
      * @event
-     * @blazorproperty 'FieldRemove'
      */
     fieldRemove?: EmitType<FieldRemoveEventArgs>;
 
@@ -272,5 +261,11 @@ export interface PivotFieldListModel extends ComponentModel{
      * @event
      */
     destroyed?: EmitType<Object>;
+
+    /**
+     * It triggers before service get invoked from client.
+     * @event
+     */
+    beforeServiceInvoke?: EmitType<BeforeServiceInvokeEventArgs>;
 
 }

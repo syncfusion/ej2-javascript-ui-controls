@@ -4,13 +4,15 @@ import { closest, classList } from '@syncfusion/ej2-base';
 import { SortSettings } from '../base/grid';
 import { Column } from '../models/column';
 import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
-import { SortDirection } from '../base/enum';
+import { SortDirection, ResponsiveDialogAction } from '../base/enum';
 import { setCssInGridPopUp, getActualPropFromColl, isActionPrevent, iterateExtend, parentsUntil } from '../base/util';
+import { enableDisableResponsiveRenderer } from '../base/util';
 import * as events from '../base/constant';
 import { SortDescriptorModel } from '../base/grid-model';
 import { AriaService } from '../services/aria-service';
 import { ServiceLocator } from '../services/service-locator';
 import { FocusStrategy } from '../services/focus-strategy';
+import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 
 /**
  * 
@@ -35,6 +37,7 @@ export class Sort implements IAction {
     //Module declarations   
     private parent: IGrid;
     private currentTarget: Element = null;
+    private responsiveDialogRenderer: ResponsiveDialogRenderer;
 
     /**
      * Constructor for Grid sorting module
@@ -46,6 +49,7 @@ export class Sort implements IAction {
         this.sortedColumns = sortedColumns;
         this.focus = locator.getService<FocusStrategy>('focus');
         this.addEventListener();
+        this.setFullScreenDialog();
     }
 
     /**
@@ -139,6 +143,10 @@ export class Sort implements IAction {
         let column: Element = gObj.getColumnHeaderByField(columnName);
         this.updateSortedCols(columnName, isMultiSort);
         this.updateModel();
+    }
+
+    private setFullScreenDialog(): void {
+        enableDisableResponsiveRenderer(this, ResponsiveDialogAction.isSort);
     }
 
     private backupSettings(): void {
@@ -306,6 +314,7 @@ export class Sort implements IAction {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
         this.parent.on(events.contentReady, this.initialEnd, this);
         this.parent.on(events.sortComplete, this.onActionComplete, this);
         this.parent.on(events.inBoundModelChanged, this.onPropertyChanged, this);
@@ -319,6 +328,7 @@ export class Sort implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
         this.parent.off(events.sortComplete, this.onActionComplete);
         this.parent.off(events.inBoundModelChanged, this.onPropertyChanged);
         this.parent.off(events.click, this.clickHandler);
@@ -524,6 +534,15 @@ export class Sort implements IAction {
         this.updateAriaAttr();
     }
 }
+
+    /** 
+     * To show the responsive custom sort dialog
+     * @return {void}
+     * @hidden
+     */
+    public showCustomFilter(): void {
+        this.responsiveDialogRenderer.showResponsiveDialog();
+    }
 
 
 }

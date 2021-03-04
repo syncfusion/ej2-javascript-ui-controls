@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues } from '../base/util';
+import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues, resetRowObjectIndex } from '../base/util';
 import { isBlazor, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 /**
@@ -83,6 +83,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private vfColIndex: number[] = [];
     private frzIdx: number = 1;
     private initialRowTop: number;
+    private orderRowObj: Row<Column>[] = [];
+    private mvbOrderRowObj: Row<Column>[] = [];
+    private frOrderRowObj: Row<Column>[] = [];
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -111,6 +114,24 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     public renderEmpty(tbody: HTMLElement): void {
         this.getTable().appendChild(tbody);
         this.virtualEle.adjustTable(0, 0);
+    }
+
+    public getReorderedFrozenRows(args: NotifyArgs): Row<Column>[] {
+        let blockIndex: number[] = args.virtualInfo.blockIndexes;
+        let colsIndex: number[] = args.virtualInfo.columnIndexes;
+        let page: number = args.virtualInfo.page;
+        args.virtualInfo.blockIndexes = [1, 2];
+        args.virtualInfo.page = 1;
+        if (!args.renderMovableContent) {
+            args.virtualInfo.columnIndexes = [];
+        }
+        let recordslength: number = this.parent.getCurrentViewRecords().length;
+        let firstRecords: object[] = this.parent.renderModule.data.dataManager.dataSource.json.slice(0, recordslength);
+        let virtualRows: Row<Column>[] = this.vgenerator.generateRows(firstRecords, args);
+        args.virtualInfo.blockIndexes = blockIndex;
+        args.virtualInfo.columnIndexes = colsIndex;
+        args.virtualInfo.page = page;
+        return virtualRows.splice(0, this.parent.frozenRows);
     }
 
     private scrollListener(scrollArgs: ScrollArg): void {
@@ -511,10 +532,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let isFrozen: boolean = this.parent.isFrozenGrid();
         let data: Object = this.parent.editModule.getCurrentEditedData(editForms[0], rowData);
         if (isFrozen) {
-            if (this.parent.getTablesCount() === 2) {
+            if (this.parent.getFrozenMode() !== 'Left-Right') {
                 data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
-            }
-            if (this.parent.getTablesCount() === 3) {
+            } else {
                 data = this.parent.editModule.getCurrentEditedData(editForms[1], rowData);
                 data = this.parent.editModule.getCurrentEditedData(editForms[2], rowData);
             }
@@ -679,6 +699,46 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         return index >= startIdx;
     }
 
+    private refreshVirtualCacheOnRowDD(args: { objIndex: number, end: boolean, startIndex: number }): void {
+        let blockSize: number = this.getBlockSize();
+        let currentblk: number = Math.ceil((args.objIndex + 1) / blockSize);
+        let secondBlock: number = args.objIndex - args.startIndex >= blockSize ? blockSize : 0;
+        let thirdBlock: number = args.objIndex - args.startIndex >= (blockSize + blockSize) ? blockSize : 0;
+        this.orderRowObj.push(this.vgenerator.cache[currentblk][args.objIndex - args.startIndex - secondBlock - thirdBlock]);
+        if (this.parent.isFrozenGrid()) {
+            this.mvbOrderRowObj.push(this.vgenerator.movableCache[currentblk][args.objIndex - args.startIndex - secondBlock - thirdBlock]);
+            if (this.parent.getFrozenMode() === 'Left-Right') {
+                this.frOrderRowObj.push(this.vgenerator.frozenRightCache[currentblk]
+                    [args.objIndex - args.startIndex - secondBlock - thirdBlock]);
+            }
+        }
+        if (args.end === true) {
+            let currentBlocks: number[] = this.currentInfo.blockIndexes;
+            if (!currentBlocks) {
+                currentBlocks = [1, 2];
+            }
+            resetRowObjectIndex(this.parent, this.orderRowObj, args.startIndex);
+            if (this.parent.isFrozenGrid()) {
+                resetRowObjectIndex(this.parent, this.mvbOrderRowObj, args.startIndex);
+                if (this.parent.getFrozenMode() === 'Left-Right') {
+                    resetRowObjectIndex(this.parent, this.frOrderRowObj, args.startIndex);
+                }
+            }
+            for (let i: number = 0; i < currentBlocks.length; i++) {
+                this.vgenerator.cache[currentBlocks[i]] = this.orderRowObj.splice(0, blockSize);
+                if (this.parent.isFrozenGrid()) {
+                    this.vgenerator.movableCache[currentBlocks[i]] = this.mvbOrderRowObj.splice(0, blockSize);
+                    if (this.parent.getFrozenMode() === 'Left-Right') {
+                        this.vgenerator.frozenRightCache[currentBlocks[i]] = this.frOrderRowObj.splice(0, blockSize);
+                    }
+                }
+            }
+            this.orderRowObj = [];
+            this.orderRowObj = [];
+            this.mvbOrderRowObj = [];
+        }
+    }
+
     public eventListener(action: string): void {
         this.parent[action](dataReady, this.onDataReady, this);
         this.parent.addEventListener(events.dataBound, this.dataBound.bind(this));
@@ -696,6 +756,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent[action](events.editReset, this.resetIsedit, this);
         this.parent[action](events.getVirtualData, this.getVirtualData, this);
         this.parent[action](events.virtualScrollEditCancel, this.editCancel, this);
+        this.parent[action](events.refreshVirtualCacheOnRowDD, this.refreshVirtualCacheOnRowDD, this);
         let event: string[] = this.actions;
         for (let i: number = 0; i < event.length; i++) {
             this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);

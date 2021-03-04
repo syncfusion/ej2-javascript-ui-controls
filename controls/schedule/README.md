@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-schedule/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-schedule)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-schedule)](https://www.npmjs.com/package/@syncfusion/ej2-schedule)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-schedule/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-schedule)
 
 # ej2-schedule
 

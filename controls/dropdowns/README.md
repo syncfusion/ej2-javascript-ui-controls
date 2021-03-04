@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-dropdowns/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-dropdowns)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-dropdowns)](https://www.npmjs.com/package/@syncfusion/ej2-dropdowns)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-dropdowns/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-dropdowns)
 
 # ej2-dropdowns
 

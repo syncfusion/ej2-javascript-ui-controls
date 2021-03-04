@@ -47,24 +47,26 @@ export class FilterDialog {
     /** @hidden */
     public isSearchEnabled: boolean;
     public filterObject: IFilter;
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     private timeOutObj: any;
 
+    /* eslint-disable-next-line */
     /**
      * Constructor for the dialog action.
      * @hidden
      */
-    constructor(parent?: PivotCommon) {
+    constructor(parent?: PivotCommon) { /* eslint-disable-line */
         this.parent = parent;
     }
 
+    /* eslint-disable-next-line */
     /**
      * Creates the member filter dialog for the selected field.
-     * @method createFilterDialog
-     * @return {void}
+     * @function createFilterDialog
+     * @returns {void}
      * @hidden
      */
-    public createFilterDialog(treeData: { [key: string]: Object }[], fieldName: string, fieldCaption: string, target: HTMLElement): void {
+    public createFilterDialog(treeData: { [key: string]: Object }[], fieldName: string, fieldCaption: string, target: HTMLElement): void {  /* eslint-disable-line */
         let editorDialog: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_EditorTreeView',
             className: cls.MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
@@ -90,7 +92,7 @@ export class FilterDialog {
             width: 'auto',
             height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
                 (this.allowExcelLikeFilter ? '400px' : '350px'),
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line  */
             buttons: [
                 {
                     buttonModel: {
@@ -139,17 +141,17 @@ export class FilterDialog {
                     (this.dialogPopUp.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).focus();
                 }
                 this.parent.control.pivotButtonModule.memberTreeView = this.parent.filterDialog.memberTreeView;
-                /* tslint:disable-next-line:max-line-length */
-                this.memberTreeView.nodeChecked = this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
-                /* tslint:disable-next-line:max-line-length */
-                this.allMemberSelect.nodeChecked = this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
+                this.memberTreeView.nodeChecked =
+                    this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
+                this.allMemberSelect.nodeChecked =
+                    this.parent.control.pivotButtonModule.nodeStateModified.bind(this.parent.control.pivotButtonModule);
             } else {
                 this.dialogPopUp.close();
                 this.dialogPopUp = undefined;
             }
         });
     }
-    /* tslint:disable */
+    /* eslint-disable */
     private createTreeView(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName?: string): HTMLElement {
         let editorTreeWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + 'EditorDiv',
@@ -397,8 +399,8 @@ export class FilterDialog {
             popupInstance.updateCheckedState(fieldCaption);
         }, 500);
     }
-    /* tslint:enable */
-    /* tslint:disable:no-any */
+    /* eslint-enable */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private nodeCheck(isAllMember: boolean, args: NodeClickEventArgs): void {
         let checkedNode: any = [args.node];
         let target: Element = args.event.target as Element;
@@ -415,7 +417,7 @@ export class FilterDialog {
             addClass(checkedNode, 'e-prev-active-node');
         }
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     private applySorting(fieldName: string, args: Event): void {
         let target: Element = closest(args.target as Element, '.' + cls.MEMBER_SORT_CLASS) as Element;
         if (target) {
@@ -437,22 +439,22 @@ export class FilterDialog {
     }
 
     private updateFilterMembers(order: string, fieldName: string): void {
-        let members: { [key: string]: Object; }[] = order === 'None' ?
+        let members: { [key: string]: Object; }[] = order === 'None' ?  /* eslint-disable-line  */
             PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember as []) :
             [...this.parent.currentTreeItems];
         this.parent.currentTreeItems = [];
         this.parent.searchTreeItems = [];
+        /* eslint-disable  */
         let treeData: { [key: string]: Object; }[] = [];
-        /* tslint:disable:typedef */
         members = order === 'Ascending' ? (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
             ((b.actualText > a.actualText) ? -1 : 0))) : order === 'Descending' ?
                 (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
                     ((b.actualText < a.actualText) ? -1 : 0))) : members;
-        /* tslint:enable:typedef */
+        /* eslint-enable  */
         for (let i: number = 0, lnt: number = members.length; i < lnt; i++) {
             if (order === 'None') {
                 let memberName: string = (this.parent.isDateField ? members[i].formattedText : members[i].actualText).toString();
-                let obj: { [key: string]: Object } = {
+                let obj: { [key: string]: Object } = {  /* eslint-disable-line */
                     id: members[i].actualText.toString(),
                     actualText: members[i].actualText,
                     name: memberName,
@@ -483,7 +485,6 @@ export class FilterDialog {
             this.parent.currentTreeItemsPos[members[i].actualText as string].index = i;
         }
         let dataCount: number = (this.memberTreeView.fields.dataSource as []).length;
-        /* tslint:disable-next-line:max-line-length */
         this.memberTreeView.fields = { dataSource: treeData.slice(0, dataCount), id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' };
         this.memberTreeView.dataBind();
     }
@@ -507,8 +508,10 @@ export class FilterDialog {
                     childNodes = fieldList.childMembers;
                     fieldList.childMembers = [];
                 }
+                /* eslint-disable */
                 let treeData: { [key: string]: Object }[] = PivotUtil.getClonedData(childNodes as { [key: string]: Object }[]);
                 let curTreeData: { [key: string]: Object }[] = (this.memberTreeView.fields.dataSource as { [key: string]: Object }[]);
+                /* eslint-enable */
                 let isInclude: boolean = false;
                 if (!isNullOrUndefined(this.filterObject)) {
                     isInclude = this.filterObject.type === 'Include' ? true : false;
@@ -524,14 +527,13 @@ export class FilterDialog {
             }
         }
     }
-    /* tslint:disable-next-line:max-line-length */
-    private updateChildData(isInclude: boolean, members: { [key: string]: Object }[], filterItems: string[], fieldName: string, parentNode: { [key: string]: Object }): { [key: string]: Object }[] {
+    private updateChildData(isInclude: boolean, members: { [key: string]: Object }[], filterItems: string[], fieldName: string, parentNode: { [key: string]: Object }): { [key: string]: Object }[] {   /* eslint-disable-line */
         let memberCount: number = Object.keys(this.parent.currentTreeItemsPos).length;
         let fieldList: IOlapField = this.parent.engineModule.fieldList[fieldName];
-        let list: { [key: string]: Object }[] = [];
+        let list: { [key: string]: Object }[] = []; /* eslint-disable-line */
         let childMemberCount: number = 1;
         for (let member of members) {
-            let obj: { [key: string]: Object } = member;
+            let obj: { [key: string]: Object } = member;    /* eslint-disable-line */
             let memberName: string = member.id.toString();
             fieldList.members[memberName].isNodeExpand = false;
             member.isSelected = (parentNode.isChecked === 'true');
@@ -547,7 +549,7 @@ export class FilterDialog {
         this.parent.isDataOverflow = false;
         return list;
     }
-    private createTabMenu(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName: string): void {
+    private createTabMenu(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName: string): void {   /* eslint-disable-line */
         let wrapper: HTMLElement = createElement('div', {
             className: 'e-filter-tab-wrapper'
         });
@@ -581,8 +583,7 @@ export class FilterDialog {
                             this.parent.localeObj.getConstant(filterType.toLowerCase())),
                         iconCss: (this.filterObject && this.filterObject.type === filterType ? cls.SELECTED_OPTION_ICON_CLASS : '')
                     },
-                    /* tslint:disable-next-line:max-line-length */
-                    content: this.createCustomFilter(fieldName, (this.filterObject && this.filterObject.type === filterType ? this.filterObject : undefined), filterType.toLowerCase())
+                    content: this.createCustomFilter(fieldName, (this.filterObject && this.filterObject.type === filterType ? this.filterObject : undefined), filterType.toLowerCase()) /* eslint-disable-line */
                 };
                 items.push(item);
             }
@@ -605,12 +606,11 @@ export class FilterDialog {
             this.tabObj.hideTab(0);
         }
         if (selectedIndex > 0) {
-            /* tslint:disable-next-line:max-line-length */
             addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
         }
 
     }
-    /* tslint:disable */
+    /* eslint-disable */
     private createCustomFilter(fieldName: string, filterObject: IFilter, type: string): HTMLElement {
         let dataSource: { [key: string]: Object }[] = [];
         let valueOptions: { [key: string]: Object }[] = [];
@@ -782,9 +782,7 @@ export class FilterDialog {
                             let inputObj1: MaskedTextBox | NumericTextBox;
                             let inputObj2: MaskedTextBox | NumericTextBox;
                             if (type === 'value') {
-                                /* tslint:disable-next-line:no-any */
                                 inputObj1 = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as NumericTextBox;
-                                /* tslint:disable-next-line:no-any */
                                 inputObj2 = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as NumericTextBox;
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1 as string, 10) : undefined;
@@ -793,9 +791,7 @@ export class FilterDialog {
                                     inputObj2.value = filterObj.value2 ? parseInt(filterObj.value2 as string, 10) : undefined;
                                 }
                             } else {
-                                /* tslint:disable-next-line:no-any */
                                 inputObj1 = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as MaskedTextBox;
-                                /* tslint:disable-next-line:no-any */
                                 inputObj2 = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as MaskedTextBox;
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? filterObj.value1 as string : '';
@@ -969,11 +965,11 @@ export class FilterDialog {
             inputObj2.appendTo(inputDiv2);
         }
     }
-    /* tslint:enable */
+    /* eslint-enable */
     private updateInputValues(element: Element, type: string, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement): void {
         let value1: string;
         let value2: string;
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         if (type === 'date') {
             let inputObj1: DateTimePicker = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as DateTimePicker;
             let inputObj2: DateTimePicker = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as DateTimePicker;
@@ -985,7 +981,7 @@ export class FilterDialog {
             value1 = inputObj1.value;
             value2 = inputObj2.value;
         }
-        /* tslint:enable:no-any */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
     }
     private validateTreeNode(e: NodeCheckEventArgs): void {
@@ -995,11 +991,12 @@ export class FilterDialog {
             return;
         }
     }
+    /* eslint-disable-next-line */
     /**
      * Update filter state while Member check/uncheck.
      * @hidden
      */
-    public updateCheckedState(fieldCaption?: string): void {
+    public updateCheckedState(fieldCaption?: string): void {    /* eslint-disable-line */
         let filterDialog: Element = this.dialogPopUp.element;
         setStyleAndAttributes(filterDialog, { 'role': 'menu', 'aria-haspopup': 'true' });
         let list: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
@@ -1034,7 +1031,7 @@ export class FilterDialog {
     private getCheckedNodes(fieldName: string): number {
         let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
         let nodeList: string[] = [];
-        let checkeNodes: { [key: string]: object }[] = [];
+        let checkeNodes: { [key: string]: object }[] = [];  /* eslint-disable-line */
         if (this.parent.dataType === 'olap' && engineModule &&
             !engineModule.fieldList[fieldName].isHierarchy) {
             nodeList = this.memberTreeView.getAllCheckedNodes();
@@ -1049,12 +1046,12 @@ export class FilterDialog {
         }
     }
     private getUnCheckedNodes(fieldName: string): number {
-        let unCheckeNodes: { [key: string]: object }[] = [];
+        let unCheckeNodes: { [key: string]: object }[] = [];    /* eslint-disable-line */
         let nodeList: string[] = [];
         let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
         if (this.parent.dataType === 'olap' && engineModule && !engineModule.fieldList[fieldName].isHierarchy) {
             nodeList = this.memberTreeView.getAllCheckedNodes();
-            return ((this.memberTreeView.fields.dataSource as { [key: string]: object }[]).length -
+            return ((this.memberTreeView.fields.dataSource as { [key: string]: object }[]).length - /* eslint-disable-line */
                 nodeList.length);
         } else {
             // unCheckeNodes = this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
@@ -1083,8 +1080,8 @@ export class FilterDialog {
         }
     }
     private getFilterObject(fieldName: string): IFilter {
-        /* tslint:disable-next-line:max-line-length */
-        let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, PivotUtil.cloneFilterSettings(this.parent.dataSourceSettings.filterSettings));
+        let filterObj: IFilter =
+            PivotUtil.getFilterItemByName(fieldName, PivotUtil.cloneFilterSettings(this.parent.dataSourceSettings.filterSettings));
         if (filterObj && ((((['Label', 'Date', 'Number'] as FilterType[]).indexOf(filterObj.type) >= 0) &&
             this.parent.dataSourceSettings.allowLabelFilter) ||
             (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||
@@ -1097,9 +1094,10 @@ export class FilterDialog {
     private wireEvent(element: HTMLElement, fieldName: string): void {
         EventHandler.add(element, 'click', this.applySorting.bind(this, fieldName), this);
     }
-    private unWireEvent(element: HTMLElement, fieldName: string): void {
+    private unWireEvent(element: HTMLElement, fieldName: string): void {    /* eslint-disable-line */
         EventHandler.remove(element, 'click', this.applySorting);
     }
+    /* eslint-disable-next-line */
     /**
      * To close filter dialog.
      * @hidden

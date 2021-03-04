@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-gantt/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-gantt)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-gantt)](https://www.npmjs.com/package/@syncfusion/ej2-gantt)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-gantt/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-gantt)
 
 # ej2-gantt
 

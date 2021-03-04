@@ -671,6 +671,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         let currentRule: { [key: string]: Object } = <IKeyValue>this.rules[name][rule];
         let args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element };
         this.trigger('validationBegin', args);
+        if (!args.param && rule === 'required') { return true; }
         if (currentRule && typeof currentRule[0] === 'function') {
             let fn: () => boolean = <() => boolean>currentRule[0];
             return fn.call(this, { element: this.inputElement, value: this.inputElement.value });

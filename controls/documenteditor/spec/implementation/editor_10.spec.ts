@@ -383,7 +383,7 @@ console.log('Insert Field at begin of RTL paragraph');
         let text = 'Lead#Email';
 
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[8] instanceof FieldElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[8] instanceof FieldElementBox).toBe(false);
     });
     it('Insert field at middle of RTL paragraph', () => {
 console.log('Insert field at middle of RTL paragraph');
@@ -398,7 +398,7 @@ console.log('Insert field at middle of RTL paragraph');
         let text = 'Lead#Email';
 
         editor.editor.insertField('MERGEFIELD ' + text + ' \\* MERGEFORMAT');
-        expect(editor.selection.start.currentWidget.children[10] instanceof FieldElementBox).toBe(true);
+        expect(editor.selection.start.currentWidget.children[10] instanceof FieldElementBox).toBe(false);
     });
     it('Insert field at last of RTL paragraph', () => {
 console.log('Insert field at last of RTL paragraph');

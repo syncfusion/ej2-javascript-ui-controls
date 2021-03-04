@@ -599,7 +599,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         }
         if (this.disableRangeSelector) {
             this.bounds.y = 0;
-            this.bounds.height = this.periodSelectorSettings.height;
+            this.bounds.height = this.periodSelectorSettings.periods.length > 0 ? this.periodSelectorSettings.height : 0;
         }
     }
 

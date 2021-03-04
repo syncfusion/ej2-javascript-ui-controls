@@ -363,7 +363,9 @@ export class Tooltip extends BaseTooltip {
             this.createTooltip(chart, isFirst, this.findSharedLocation(),
                                this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,  null,
                                this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                               chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
+                               chart.chartAxisLayoutPanel.seriesClipRect, extraPoints,
+                               this.chart.tooltip.template ? this.getTemplateText(data) : null,
+                               this.chart.tooltip.template ? argument.template : '' );
         } else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
@@ -418,6 +420,9 @@ export class Tooltip extends BaseTooltip {
         };
         sharedTooltipSuccess.bind(this, point, extraPoints);
         this.chart.trigger(tooltipRender, argsData, sharedTooltipSuccess);
+        if (argsData.template) {
+            this.chart.tooltip.template = argsData.template;
+        }
     }
 
     private findSharedLocation(): ChartLocation {

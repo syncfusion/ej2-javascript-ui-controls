@@ -2178,7 +2178,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     let item: Element = compiledTemplate[i] as Element;
                     append([item], this.element);
                 }
+                if (this.element.innerHTML.trim() !== '') {
                 this.setProperties({ value: this.element.innerHTML.trim() });
+                }
             }
         } else {
             let  innerHtml: string = !isNOU(this.element.innerHTML) && this.element.innerHTML.replace(/<(\/?|\!?)(!--!--)>/g, '').trim();
@@ -2378,6 +2380,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private resizeHandler(): void {
         let isExpand: boolean = false;
+        if (!document.body.contains(this.element)) {
+            document.defaultView.removeEventListener('resize', this.onResizeHandler, true);
+            return;
+        }
         if (this.toolbarSettings.enable && !this.inlineMode.enable) {
             this.toolbarModule.refreshToolbarOverflow();
             isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(classes.CLS_EXPAND_OPEN);

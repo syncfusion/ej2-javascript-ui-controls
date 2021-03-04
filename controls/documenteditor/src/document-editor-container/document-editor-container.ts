@@ -533,10 +533,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         for (let prop of Object.keys(newModel)) {
             switch (prop) {
                 case 'restrictEditing':
-                    this.documentEditor.isReadOnly = newModel.restrictEditing;
-                    if (this.toolbarModule) {
-                        this.toolbarModule.enableDisableToolBarItem(!newModel.restrictEditing, false);
-                    }
+                    this.restrictEditingToggleHelper(newModel.restrictEditing);
                     break;
                 case 'showPropertiesPane':
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
@@ -674,10 +671,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
         if (this.restrictEditing) {
-            if (this.toolbarModule) {
-                this.toolbarModule.enableDisableToolBarItem(this.restrictEditing, false);
-            }
-            this.documentEditor.isReadOnly = this.restrictEditing;
+            this.restrictEditingToggleHelper(this.restrictEditing);
         }
         this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
@@ -690,6 +684,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.setserverActionSettings();
         this.customizeDocumentEditorSettings();
         this.renderComplete();
+    }
+    private restrictEditingToggleHelper(restrictEditing: boolean): void {
+        this.documentEditor.isReadOnly = restrictEditing;
+        if (this.toolbarModule) {
+            this.toolbarModule.enableDisableToolBarItem(!restrictEditing, false);
+        }
+        this.showPropertiesPane = !restrictEditing;
+        this.showHidePropertiesPane(!restrictEditing);
     }
 
     private setFormat(): void {

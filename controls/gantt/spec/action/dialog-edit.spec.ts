@@ -179,32 +179,32 @@ describe('Gantt dialog module', () => {
                 triggerMouseEvent(saveRecord, 'click');
             }
         });
-        it('Unschedule validation- StartDate', () => {
-            ganttObj.dataBind();
-            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-            SD.value = null;
-            SD.dataBind();
-            let rowData: IGanttData = getValue('rowData', ganttObj.editModule.dialogModule);
-            let validEndDate = rowData.ganttProperties.endDate;
-            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
-            expect(ED.value).toEqual(validEndDate);
-            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
-            expect(textObj.value).toBe('');
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
-            triggerMouseEvent(cancelRecord, 'click');
-        });
-        it('Unschedule validation- endDate', () => {
-            ganttObj.dataBind();
-            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
-            ED.value = null;
-            ED.dataBind();
-            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
-            expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
-            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
-            expect(textObj.value).toBe('');
-            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
-            triggerMouseEvent(cancelRecord, 'click');
-        });
+        // it('Unschedule validation- StartDate', () => {
+        //     ganttObj.dataBind();
+        //     let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+        //     SD.value = null;
+        //     SD.dataBind();
+        //     let rowData: IGanttData = getValue('rowData', ganttObj.editModule.dialogModule);
+        //     let validEndDate = rowData.ganttProperties.endDate;
+        //     let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+        //     expect(ED.value).toEqual(validEndDate);
+        //     let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+        //     expect(textObj.value).toBe('');
+        //     let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        // });
+        // it('Unschedule validation- endDate', () => {
+        //     ganttObj.dataBind();
+        //     let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+        //     ED.value = null;
+        //     ED.dataBind();
+        //     let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+        //     expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
+        //     let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+        //     expect(textObj.value).toBe('');
+        //     let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        // });
         it('Unschedule validation- Duration', () => {
             ganttObj.dataBind();
             let durationField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];

@@ -1,7 +1,7 @@
 import { Droppable, DropEventArgs, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
-import { getUpdateUsingRaf, appendChildren, parentsUntil } from '../base/util';
+import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
 import { VirtualInfo } from '../base/interface';
@@ -17,6 +17,7 @@ import { GroupModelGenerator } from '../services/group-model-generator';
 import { getScrollBarWidth, isGroupAdaptive } from '../base/util';
 import { Grid } from '../base/grid';
 import { VirtualFreezeRenderer } from './virtual-freeze-renderer';
+import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { GroupLazyLoadRenderer } from './group-lazy-load-renderer';
 import { FreezeContentRender } from './freeze-renderer';
 import { freezeTable } from '../base/enum';
@@ -48,10 +49,8 @@ export class ContentRender implements IRenderer {
     private droppable: Droppable;
     private viewColIndexes: number[] = [];
     private drop: Function = (e: DropEventArgs) => {
-        if (parentsUntil(e.target, 'e-row') || parentsUntil(e.target, 'e-emptyrow')) {
-            this.parent.notify(events.columnDrop, { target: e.target, droppedElement: e.droppedElement });
-            remove(e.droppedElement);
-        }
+        this.parent.notify(events.columnDrop, { target: e.target, droppedElement: e.droppedElement });
+        remove(e.droppedElement);
     }
     private args: NotifyArgs;
     private infiniteCache: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] } = {};
@@ -563,9 +562,10 @@ export class ContentRender implements IRenderer {
                                 tableName: tableName
                             });
                             if (!frzCols && isFrozenGrid) {
-                                let count: number = this.parent.getTablesCount();
-                                if ((count === 2 && (tableName === 'frozen-left' || tableName === 'frozen-right'))
-                                    || (count === 3 && (tableName === 'frozen-left' || tableName === 'movable'))) {
+                                if ((gObj.getFrozenMode() !== 'Left-Right'
+                                    && (tableName === 'frozen-left' || tableName === 'frozen-right'))
+                                    || (gObj.getFrozenMode() === 'Left-Right'
+                                        && (tableName === 'frozen-left' || tableName === 'movable'))) {
                                     this.refreshContentRows(extend({}, args));
                                 }
                             }
@@ -698,16 +698,24 @@ export class ContentRender implements IRenderer {
     private getReorderedVFRows(args: NotifyArgs): Row<Column>[] {
         return (this.parent.contentModule as VirtualFreezeRenderer).getReorderedFrozenRows(args);
     }
+    private getReorderedRows(args: NotifyArgs): Row<Column>[] {
+        return (this.parent.contentModule as VirtualContentRenderer).getReorderedFrozenRows(args);
+    }
 
     private virtualFrozenHdrRefresh(
         hdrfrag: DocumentFragment, modelData: Row<Column>[],
         row: RowRenderer<Column>, args: NotifyArgs, dataSource: Object, columns: Column[]
     ): void {
-        if (this.parent.frozenRows && this.parent.isFrozenGrid() && this.parent.enableVirtualization
+        if (this.parent.frozenRows && this.parent.enableVirtualization
             && (args.requestType === 'reorder' || args.requestType === 'refresh')) {
             let tr: Element;
-            this.currentMovableRows = dataSource as Object[];
-            let fhdrData: Row<Column>[] = this.getReorderedVFRows(args);
+            let fhdrData: Row<Column>[] = [];
+            if (this.parent.isFrozenGrid()) {
+                this.currentMovableRows = dataSource as Object[];
+                fhdrData = this.getReorderedVFRows(args);
+            } else {
+                fhdrData = this.getReorderedRows(args);
+            }
             for (let i: number = 0; i < fhdrData.length; i++) {
                 tr = row.render(fhdrData[i], columns);
                 hdrfrag.appendChild(tr);
@@ -856,7 +864,7 @@ export class ContentRender implements IRenderer {
             let rowLen: number = fRows.length;
             let cellLen: number;
             let rightRows: Row<Column>[] = [];
-            if (gObj.getTablesCount() === 3) {
+            if (gObj.getFrozenMode() === 'Left-Right') {
                 rightRows = gObj.getFrozenRightRowsObject();
             }
             for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {

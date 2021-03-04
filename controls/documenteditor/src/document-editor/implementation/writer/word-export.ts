@@ -3472,7 +3472,9 @@ export class WordExport {
     // Serialize the graphics element for pictures.
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
         let id: string = '';
-
+        if (picture.isMetaFile && !isNullOrUndefined(picture.metaFileImageString)) {
+            picture.imageString = picture.metaFileImageString;
+        }
         id = this.updateShapeId(picture);
         // picture.ShapeId = this.getNextDocPrID();
         // Processing picture
@@ -3828,6 +3830,19 @@ export class WordExport {
         }
         writer.writeEndElement(); //end of table cell 'tc' 
         let increment: number = 1;
+        // let count: number = 0;
+        if (mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment) && this.row.cells.length === 1) {
+            let length: number = mVerticalMerge.keys[mVerticalMerge.keys.length - 1];
+            while (increment <= length) {
+                increment = this.createCellForMerge(writer, cell, mVerticalMerge, increment);
+                increment++;
+            }
+        } else {
+            this.createCellForMerge(writer, cell, mVerticalMerge, increment);
+        }
+        this.blockOwner = owner;
+    }
+    private createCellForMerge(writer: XmlWriter, cell: any, mVerticalMerge: Dictionary<number, number>, increment: number): number {
         while (mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + increment)
             && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
             && cell.nextNode === undefined) {
@@ -3845,6 +3860,11 @@ export class WordExport {
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
             writer.writeEndElement();
+            if (isNullOrUndefined(this.spanCellFormat)) {
+                writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
+                this.serializeBorders(writer, cell.cellFormat.borders, 8);
+                writer.writeEndElement();
+            }
             if (!endProperties) {
                 writer.writeEndElement();
             }
@@ -3853,8 +3873,9 @@ export class WordExport {
             writer.writeEndElement(); //end of P
             writer.writeEndElement(); //end of table cell 'tc'  
             increment++;
+            //count++;
         }
-        this.blockOwner = owner;
+        return increment;
     }
     // Serialize the cell formatting
     // tslint:disable-next-line:max-line-length
@@ -3984,9 +4005,9 @@ export class WordExport {
             for (let i: number = prevIndex; i < currentIndex; i++) {
                 collKey = prevIndex + 1;
                 prevIndex += 1;
-                if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
-                    mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
-                }
+            }
+            if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
+                mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
             }
         }
         if (cellFormat.rowSpan > 1) {

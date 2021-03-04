@@ -542,6 +542,9 @@ export class ColumnMenu implements IAction {
         if (window.innerHeight < ul.offsetHeight + top + gridPos.top) {
             top = window.innerHeight - ul.offsetHeight - gridPos.top;
         }
+        if (top + gridPos.top < 0) {
+            top = 0;
+        }
         left += (this.parent.enableRtl ? - ul.offsetWidth : liPos.width);
         if (gridPos.width <= left + ul.offsetWidth) {
             left -= liPos.width + ul.offsetWidth;

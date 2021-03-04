@@ -9,21 +9,20 @@ import { Browser } from '@syncfusion/ej2-base';
  */
 /** @hidden */
 export class Common implements IAction {
-    /**
-     * Module declarations
-     */
+    /* eslint-disable */
     private parent: PivotView;
     private handlers: {
-        load: Function
+        load: Function;
     };
 
-    /** Constructor for Common module */
     constructor(parent: PivotView) {
+        /* eslint-enable */
         this.parent = parent;
         this.parent.commonModule = this;
         this.addEventListener();
     }
 
+    /* eslint-disable-next-line */
     /**
      * For internal use only - Get the module name.
      * @private
@@ -34,6 +33,7 @@ export class Common implements IAction {
 
     private initiateCommonModule(): void {
         if (!this.parent.pivotCommon) {
+            /* eslint-disable */
             let args: CommonArgs = {
                 pivotEngine: this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule,
                 dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
@@ -47,14 +47,17 @@ export class Common implements IAction {
                 localeObj: this.parent.localeObj,
                 dataType: this.parent.dataType
             };
+            /* eslint-enable */
             this.parent.pivotCommon = new PivotCommon(args);
         } else {
             this.parent.pivotCommon.element = this.parent.element;
             this.parent.pivotCommon.engineModule = this.parent.dataType === 'olap' ?
                 this.parent.olapEngineModule : this.parent.engineModule;
             this.parent.pivotCommon.parentID = this.parent.element.id;
+            /* eslint-disable */
             this.parent.pivotCommon.dataSourceSettings = (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
                 (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties : this.parent.dataSourceSettings;
+            /* eslint-enable */
             this.parent.pivotCommon.moduleName = this.parent.getModuleName();
             this.parent.pivotCommon.enableRtl = this.parent.enableRtl;
             this.parent.pivotCommon.isAdaptive = Browser.isDevice as boolean;
@@ -65,6 +68,7 @@ export class Common implements IAction {
         this.parent.pivotCommon.control = this.parent;
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
@@ -72,27 +76,34 @@ export class Common implements IAction {
         this.handlers = {
             load: this.initiateCommonModule
         };
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.initialLoad, this.handlers.load, this);
         this.parent.on(events.uiUpdate, this.handlers.load, this);
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initialLoad, this.handlers.load);
         this.parent.off(events.uiUpdate, this.handlers.load);
     }
 
     /**
-     * To destroy the groupingbar 
-     * @return {void}
+     * To destroy the groupingbar
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {
         this.removeEventListener();
-        if (this.parent.pivotCommon) { this.parent.pivotCommon.destroy(); }
+        if (this.parent.pivotCommon) {
+            this.parent.pivotCommon.destroy();
+        }
     }
 }

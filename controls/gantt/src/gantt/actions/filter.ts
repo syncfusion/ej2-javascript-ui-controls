@@ -192,8 +192,10 @@ export class Filter {
     }
     public closeFilterOnContextClick(element: Element): void {
         if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
-            let ganttElement: Element = closest(element, '#' + this.parent.element.id);
-            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || element.nodeName === 'HTML') {
+            let ganttElement: Element = closest(element, '#' + this.parent.element.id)
+                || element.querySelector('#' + this.parent.element.id);
+            if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || element.nodeName === 'HTML'
+                || element.nodeName === 'DIV') {
                 remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;

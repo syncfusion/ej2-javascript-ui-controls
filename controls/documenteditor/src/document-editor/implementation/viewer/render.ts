@@ -1264,8 +1264,11 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
         }
-        if (elementBox.isMetaFile) {
+        if (elementBox.isMetaFile && !isNullOrUndefined(elementBox.metaFileImageString)) {
             /* tslint:disable:no-empty */
+            this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1),
+                this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width),
+                this.getScaledValue(elementBox.height));
         } else {
             try {
                 if (!elementBox.isCrop) {
@@ -1383,7 +1386,7 @@ export class Renderer {
         this.renderCellBackground(height, cellWidget, cellLeftMargin, lineWidth);
         let leftBorderWidth: number = lineWidth;
         // tslint:disable-next-line:max-line-length 
-        if (tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
+        if (tableCell.index === 0 || tableCell.cellFormat.rowSpan === 1 || (tableCell.cellFormat.rowSpan > 1 && tableCell.columnIndex === 0)) {
             this.renderSingleBorder(border.color, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y - cellTopMargin, cellWidget.x - cellLeftMargin - lineWidth, cellWidget.y + cellWidget.height + cellBottomMargin, lineWidth);
         } else {
             for (let i: number = 0; i < tableCell.ownerTable.childWidgets.length; i++) {

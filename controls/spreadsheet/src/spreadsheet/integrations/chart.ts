@@ -520,7 +520,7 @@ export class SpreadsheetChart {
     // tslint:disable-next-line:max-func-body-length
     private initiateChartHandler(argsOpt: {
         option: ChartModel, chartCount?: number, isRefresh?: boolean, isInitCell?: boolean,
-        isUndoRedo?: boolean, dataSheetIdx?: number, range?: string
+        isUndoRedo?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean
     }): SeriesModel[] | AccumulationSeriesModel[] {
         let isRangeSelect: boolean = true;
         isRangeSelect = isNullOrUndefined(argsOpt.isInitCell) ? true : !argsOpt.isInitCell;
@@ -596,24 +596,25 @@ export class SpreadsheetChart {
             return chartOptions.series;
         }
         if (argsOpt.isUndoRedo) {
-        eventArgs = {
-            type: argsOpt.option.type, theme: argsOpt.option.theme, isSeriesInRows: argsOpt.option.isSeriesInRows,
-            range: argsOpt.option.range, height: argsOpt.option.height, width: argsOpt.option.width, id: argsOpt.option.id,
-            posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
-        };
-        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
-        if (eventArgs.cancel) { return []; }
-        argsOpt.option.type = eventArgs.type;
-        argsOpt.option.theme = eventArgs.theme;
-        argsOpt.option.isSeriesInRows = eventArgs.isSeriesInRows;
-        argsOpt.option.range = eventArgs.range;
-        argsOpt.option.id = eventArgs.id;
-        argsOpt.option.height = eventArgs.height;
-        argsOpt.option.width = eventArgs.width;
+            eventArgs = {
+                type: argsOpt.option.type, theme: argsOpt.option.theme, isSeriesInRows: argsOpt.option.isSeriesInRows,
+                range: argsOpt.option.range, height: argsOpt.option.height, width: argsOpt.option.width, id: argsOpt.option.id,
+                posRange: argsOpt.range, isInitCell: argsOpt.isInitCell, cancel: false
+            };
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
+            if (eventArgs.cancel) { return []; }
+            argsOpt.option.type = eventArgs.type;
+            argsOpt.option.theme = eventArgs.theme;
+            argsOpt.option.isSeriesInRows = eventArgs.isSeriesInRows;
+            argsOpt.option.range = eventArgs.range;
+            argsOpt.option.id = eventArgs.id;
+            argsOpt.option.height = eventArgs.height;
+            argsOpt.option.width = eventArgs.width;
         }
         let id: string = argsOpt.option.id + '_overlay';
-        let sheetIndex: number = (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
-            getSheetIndex(this.parent, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
+        let sheetIndex: number = argsOpt.isPaste ? this.parent.getActiveSheet().index :
+            (argsOpt.option.range && argsOpt.option.range.indexOf('!') > 0) ?
+                getSheetIndex(this.parent, argsOpt.option.range.split('!')[0]) : this.parent.activeSheetIndex;
         let overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         let eleRange: string = !isNullOrUndefined(argsOpt.isInitCell) && argsOpt.isInitCell ? argsOpt.range : range;
         let element: HTMLElement = overlayObj.insertOverlayElement(id, eleRange, sheetIndex);
@@ -677,7 +678,7 @@ export class SpreadsheetChart {
         }
         element.appendChild(chartContent);
         if (argsOpt.isUndoRedo) {
-        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'insertChart' });
         }
         return seriesModel;
     }
@@ -690,8 +691,8 @@ export class SpreadsheetChart {
             chartElements = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
             args.id = chartElements ? chartElements.getElementsByClassName('e-control')[0].id : null;
         } else {
-        args.id = args.id.includes('overlay') ? args.id : args.id + '_overlay';
-        chartElements = document.getElementById(args.id);
+            args.id = args.id.includes('overlay') ? args.id : args.id + '_overlay';
+            chartElements = document.getElementById(args.id);
         }
         if (isNullOrUndefined(args.id) || isNullOrUndefined(chartElements)) {
             return;

@@ -140,8 +140,9 @@ export class Data {
                     this.parent.kanbanData = this.dataManager.dataSource.json;
                     this.refreshUI(offlineArgs, index);
                 } else {
-                    promise.then((e: ReturnType) => {
+                    promise.then((e: Object[]) => {
                         if (this.parent.isDestroyed) { return; }
+                        this.parent.kanbanData = e;
                         this.refreshUI(offlineArgs, index);
                     }).catch((e: ReturnType) => {
                         this.dataManagerFailure(e);

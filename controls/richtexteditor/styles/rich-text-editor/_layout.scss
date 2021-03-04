@@ -1387,7 +1387,10 @@
   }
 
   .e-hide.e-rte-quick-popup-hide {
-    display: none;
+    border: 0;
+    height: 0;
+    position: absolute;
+    width: 0;
   }
 
   .e-rte-popup-hide {

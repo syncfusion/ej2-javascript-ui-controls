@@ -17,9 +17,11 @@ import { CellType, MultipleExportType, ExcelHAlign, ExportType } from '../base/e
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
-import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportColumns, prepareColumns } from '../base/util';
+import { getPrintGridModel, getUid, isExportColumns, updateColumnTypeForExportColumns, prepareColumns,
+    measureColumnDepth } from '../base/util';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
+import { AutoFilters } from '@syncfusion/ej2-excel-export/src/auto-filters';
 
 /**
  * @hidden
@@ -52,6 +54,7 @@ export class ExcelExport {
     private gridPool: Object = {};
     private locator: ServiceLocator;
     private l10n: L10n;
+    private sheet: Worksheet = {} as Worksheet;
 
     /**
      * Constructor for the Grid Excel Export module.
@@ -143,6 +146,7 @@ export class ExcelExport {
         this.parent.trigger(events.excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
         this.parent.log('exporting_complete', this.getModuleName());
         resolve(this.book);
+        this.sheet.images = [];
     }
 
     /* tslint:disable-next-line:no-any */
@@ -196,6 +200,7 @@ export class ExcelExport {
         let blankRows: number = 5;
         let separator: string;
         let rows: ExcelRow[] = [];
+        const colDepth: number = measureColumnDepth(gObj.columns as Column[]);
         let isExportPropertiesPresent: boolean = !isNullOrUndefined(exportProperties);
         if (isExportPropertiesPresent && !isNullOrUndefined(exportProperties.multipleExport)) {
             /* tslint:disable-next-line:max-line-length */
@@ -265,14 +270,21 @@ export class ExcelExport {
                 }
             }
 
-            let sheet: Worksheet = {} as Worksheet;
             if (this.columns.length > 0) {
-                sheet.columns = this.columns;
+                this.sheet.columns = this.columns;
             }
             /* tslint:disable-next-line:no-any */
-            sheet.rows = this.rows as any;
-            sheet.enableRtl = this.parent.enableRtl;
-            this.workSheet.push(sheet);
+            this.sheet.rows = this.rows as any;
+            this.sheet.enableRtl = this.parent.enableRtl;
+            if (this.parent.allowFiltering && gObj.getVisibleColumns().length && isExportPropertiesPresent &&
+                exportProperties.enableFilter) {
+                let autoFilters: AutoFilters = {
+                    row: colDepth, column: this.groupedColLength ? this.groupedColLength + 1 :
+                        this.sheet.columns[0].index, lastRow: this.sheet.rows.length, lastColumn: this.sheet.columns.length
+                };
+                this.sheet.autoFilters = autoFilters;
+            }
+            this.workSheet.push(this.sheet);
 
             this.book.worksheets = this.workSheet;
             this.book.styles = this.styles;
@@ -481,6 +493,7 @@ export class ExcelExport {
         }
     }
 
+    /* tslint:disable-next-line:max-func-body-length */
     private processRecordRows(gObj: IGrid, record: Object[], headerRow: IHeader, level: number, startIndex: number,
                               excelExportProperties: ExcelExportProperties, excelRows: ExcelRow[], helper: ExportHelper): number {
         let index: number = 1;
@@ -491,6 +504,7 @@ export class ExcelExport {
             cells = [];
             startIndex++;
             index = 1;
+            let templateRowHeight: number;
             for (let c: number = 0, len: number = row.cells.length; c < len; c++) {
                 let gCell: Cell<Column> = row.cells[c];
                 if (gCell.cellType !== CellType.Data) {
@@ -507,14 +521,33 @@ export class ExcelExport {
                 }
                 if (!isNullOrUndefined(value)) {
                     let cell: ExcelCell = {};
+                    let idx: number = index + level + (<{childGridLevel?: number}>gObj).childGridLevel;
                     /* tslint:disable-next-line:no-any */
                     let excelCellArgs: any = {
                         data: row.data, column: column, foreignKeyData: fkData,
                         value: value, style: undefined, colSpan: 1, cell: cell
                     };
                     gObj.trigger(events.excelQueryCellInfo, excelCellArgs);
+                    if (!isNullOrUndefined(excelCellArgs.image) && !isNullOrUndefined(excelCellArgs.image.base64)) {
+                        if (isNullOrUndefined(this.sheet.images)) {
+                            this.sheet.images = [];
+                        }
+                        /* tslint:disable-next-line:no-any */
+                        let excelImage: any = {
+                            image: excelCellArgs.image.base64, row: this.rowLength, column: idx,
+                            lastRow: this.rowLength, lastColumn: idx
+                        };
+                        this.sheet.images.push(excelImage);
+                        templateRowHeight = excelCellArgs.image.height || 50;
+                        this.columns[idx - 1].width = excelCellArgs.image.width || this.columns[idx - 1].width;
+                    }
+
+                    if (!isNullOrUndefined(excelCellArgs.hyperLink)) {
+                        (excelCellArgs.cell as ExcelCell).hyperlink = { target: excelCellArgs.hyperLink.target };
+                        excelCellArgs.value = excelCellArgs.hyperLink.displayText || excelCellArgs.value;
+                    }
                     cell = excelCellArgs.cell;
-                    cell.index = index + level + (<{childGridLevel?: number}>gObj).childGridLevel;
+                    cell.index = idx;
                     cell.value = excelCellArgs.value;
                     if (excelCellArgs.data === '' && (<{childGridLevel?: number}>gObj).childGridLevel && index === 1) {
                         let style: ExcelStyle = {};
@@ -538,6 +571,10 @@ export class ExcelExport {
 
             }
             let excelRow: ExcelRow = { index: this.rowLength++, cells: cells };
+            if (!isNullOrUndefined(templateRowHeight)) {
+                /* tslint:disable-next-line:no-any */
+                (excelRow as any).height = templateRowHeight;
+            }
             if (this.groupedColLength < 8 && level > 0) {
                 excelRow.grouping = { outlineLevel: level, isCollapsed: true };
                 excelRows.push(excelRow);

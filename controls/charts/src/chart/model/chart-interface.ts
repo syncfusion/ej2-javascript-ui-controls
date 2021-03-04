@@ -77,6 +77,8 @@ export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
     headerText ?: string;
     /** point informations */
     data ?: IPointInformation[];
+    /** Defines the tooltip template */
+    template ?: string;
 }
 
 /**

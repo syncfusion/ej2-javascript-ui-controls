@@ -2016,6 +2016,7 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         data: CrudOptions, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions, e?: RemoteArgs):
         Object {
         let i: number;
+        data = request ? JSON.parse((<{ data?: string }>request).data) : data;
         if (this.updateType === 'add') {
             super.insert(ds as DataManager, data, null, null, this.pvt.position);
         }
@@ -2071,6 +2072,31 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
         urlParams.addParams(options);
     }
 }
+
+/**
+ * Ajax Adaptor that is extended from URL Adaptor, is used for handle data operations with user defined functions. 
+ * @hidden
+ */
+export class AjaxAdaptor extends UrlAdaptor {
+
+    protected getModuleName(): string {
+        return 'AjaxAdaptor';
+    }
+
+    // options replaced the default adaptor options
+    protected options: RemoteOptions = extend({}, this.options, {
+        getData: new Function(),
+        addRecord: new Function(),
+        updateRecord: new Function(),
+        deleteRecord: new Function(),
+        batchUpdate: new Function()
+    });
+    constructor(props?: RemoteOptions) {
+        super();
+        extend(this.options, props || {});
+    }
+}
+
 
 /**
  * Cache Adaptor is used to cache the data of the visited pages. It prevents new requests for the previously visited pages.
@@ -2379,6 +2405,11 @@ export interface RemoteOptions {
     updateType?: string;
     localTime?: boolean;
     apply?: string;
+    getData?: Function;
+    updateRecord?: Function;
+    addRecord?: Function;
+    deleteRecord?: Function;
+    batchUpdate?: Function;
 }
 
 /**

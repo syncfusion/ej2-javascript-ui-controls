@@ -312,6 +312,13 @@
     .e-group-rows {
       background: $pivotgrid-grp-bg-color;
       vertical-align: top;
+      display: inline-table;
+      flex: auto;
+      height: $pivotgrid-grouping-height;
+      min-height: $pivotgrid-grouping-height;
+      overflow: hidden;
+      padding-left: $pivotview-axis-indent-padding;
+      scroll-behavior: smooth;
 
       &.e-drag-restrict {
         cursor: no-drop;
@@ -333,17 +340,8 @@
       }
     }
 
-    .e-group-filters,
-    .e-group-values,
-    .e-group-columns,
+    .e-grouping-bar,
     .e-group-rows {
-      display: inline-table;
-      flex: auto;
-      height: $pivotgrid-grouping-height;
-      min-height: $pivotgrid-grouping-height;
-      overflow: hidden;
-      padding-left: $pivotview-axis-indent-padding;
-      scroll-behavior: smooth;
 
       .e-pvt-btn-div {
         display: inline-flex;
@@ -365,116 +363,41 @@
             border-left: 1px dashed $pivotgrid-drop-hover-color;
           }
         }
+      }
 
-        // sass-lint:disable-all
-        .e-pivot-button {
-          background-color: $pivotgrid-button-background-color;
-          border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-button-border-color;
-          border-radius: $pivotgrid-button-border-radius;
-          box-shadow: none;
-          color: $pivotgrid-button-font-color;
-          cursor: default;
-          display: flex;
-          font-weight: normal;
-          height: 24px;
-          line-height: .9em;
-          padding: $pivotgrid-button-inner-padding 8px;
-          text-transform: none;
-          vertical-align: bottom;
-          z-index: 1;
+      .e-pivot-button {
+        background-color: $pivotgrid-button-background-color;
+        border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-button-border-color;
+        border-radius: $pivotgrid-button-border-radius;
+        box-shadow: none;
+        color: $pivotgrid-button-font-color;
+        cursor: default;
+        display: flex;
+        font-weight: normal;
+        height: 24px;
+        line-height: .9em;
+        padding: $pivotgrid-button-inner-padding 8px;
+        text-transform: none;
+        vertical-align: bottom;
+        z-index: 1;
+        @if ($pivotgrid-skin == 'bootstrap4') {
+          font-weight: 400;
+          padding: 5px 8px;
+        }
+
+        &.e-list-selected {
+          opacity: .5;
           @if ($pivotgrid-skin == 'bootstrap4') {
-            font-weight: 400;
-            padding: 5px 8px;
+            opacity: .7;
           }
+        }
 
-          &.e-list-selected {
-            opacity: .5;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              opacity: .7;
-            }
-          }
-
-          &:hover {
-            background-color: $pivotgrid-hover-color;
-            border-color:$pivotgrid-hover-color;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #5a6268;
-              border-color: #545b62;
-            }
-
-            .e-sort,
-            .e-dropdown-icon,
-            .e-pv-filter,
-            .e-pv-filtered,
-            .e-remove,
-            .e-edit {
-              color: $pivotgrid-icon-hover-color !important;
-            }
-          }
-
-          &.e-btn-focused {
-            background-color: $pivotgrid-focus-color;
-            color: $pivotgrid-button-acitve-font-color;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #545b62;
-              border-color: #4e555b;
-              box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
-            }
-
-            .e-sort,
-            .e-dropdown-icon,
-            .e-pv-filter,
-            .e-pv-filtered,
-            .e-remove,
-            .e-edit {
-              color: $pivotgrid-icon-focus-color !important;
-            }
-          }
-
-          &:focus,
-          &:active {
-            background-color: $pivotgrid-focus-color;
-            color: $pivotgrid-button-acitve-font-color;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              background-color: #545b62;
-              border-color: #4e555b;
-              box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
-            }
-
-            .e-sort,
-            .e-dropdown-icon,
-            .e-pv-filter,
-            .e-pv-filtered,
-            .e-remove,
-            .e-edit {
-              color: $pivotgrid-icon-focus-color !important;
-            }
-          }
-
-          .e-content {
-            background-color: transparent;
-            cursor: move;
-            flex: auto;
-            font-size: $pivotgrid-button-font-size;
-            margin-right: 4px;
-            overflow: hidden;
-            text-align: left;
-            text-overflow: ellipsis;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              margin-right: 4px;
-            }
-
-            &.e-disable-drag {
-              cursor: auto;
-            }
-          }
-
-          .e-draggable {
-            height: inherit;
-          }
-
-          .e-drag {
-            display: none;
+        &:hover {
+          background-color: $pivotgrid-hover-color;
+          border-color:$pivotgrid-hover-color;
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            background-color: #5a6268;
+            border-color: #545b62;
           }
 
           .e-sort,
@@ -483,41 +406,114 @@
           .e-pv-filtered,
           .e-remove,
           .e-edit {
-            color: $pivotgrid-button-icon-color !important;
-            cursor: pointer;
-            display: inline-block;
-            font-size: $pivotgrid-button-icon-size;
-            height: 18px;
+            color: $pivotgrid-icon-hover-color !important;
+          }
+        }
+
+        &.e-btn-focused {
+          background-color: $pivotgrid-focus-color;
+          color: $pivotgrid-button-acitve-font-color;
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            background-color: #545b62;
+            border-color: #4e555b;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
+          }
+
+          .e-sort,
+          .e-dropdown-icon,
+          .e-pv-filter,
+          .e-pv-filtered,
+          .e-remove,
+          .e-edit {
+            color: $pivotgrid-icon-focus-color !important;
+          }
+        }
+
+        &:focus,
+        &:active {
+          background-color: $pivotgrid-focus-color;
+          color: $pivotgrid-button-acitve-font-color;
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            background-color: #545b62;
+            border-color: #4e555b;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
+          }
+
+          .e-sort,
+          .e-dropdown-icon,
+          .e-pv-filter,
+          .e-pv-filtered,
+          .e-remove,
+          .e-edit {
+            color: $pivotgrid-icon-focus-color !important;
+          }
+        }
+
+        .e-content {
+          background-color: transparent;
+          cursor: move;
+          flex: auto;
+          font-size: $pivotgrid-button-font-size;
+          margin-right: 4px;
+          overflow: hidden;
+          text-align: left;
+          text-overflow: ellipsis;
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            margin-right: 4px;
+          }
+
+          &.e-disable-drag {
+            cursor: auto;
+          }
+        }
+
+        .e-draggable {
+          height: inherit;
+        }
+
+        .e-drag {
+          display: none;
+        }
+
+        .e-sort,
+        .e-dropdown-icon,
+        .e-pv-filter,
+        .e-pv-filtered,
+        .e-remove,
+        .e-edit {
+          color: $pivotgrid-button-icon-color !important;
+          cursor: pointer;
+          display: inline-block;
+          font-size: $pivotgrid-button-icon-size;
+          height: 18px;
+          margin-left: 4px;
+          width: 18px;
+          @if ($pivotgrid-skin == 'bootstrap4') {
             margin-left: 4px;
-            width: 18px;
-            @if ($pivotgrid-skin == 'bootstrap4') {
-              margin-left: 4px;
-            }
-
-            &:hover {
-              color: $pivotgrid-icon-hover-color !important;
-            }
-
-            &.e-disable {
-              display: none;
-            }
-          }
-          // sass-lint:enable-all
-
-          .e-sort {
-            height: $pivotgrid-button-icon-size;
-            transform: rotateX(0deg);
-            transition: transform 200ms ease-in-out;
-
-            &.e-descend {
-              transform: rotateX(180deg);
-            }
           }
 
-          .e-dropdown-icon {
-            margin-top: 1px;
+          &:hover {
+            color: $pivotgrid-icon-hover-color !important;
           }
 
+          &.e-disable {
+            display: none;
+          }
+        }
+        // sass-lint:enable-all
+
+        .e-sort {
+          height: $pivotgrid-button-icon-size;
+          transform: rotateX(0deg);
+          transition: transform 200ms ease-in-out;
+
+          &.e-descend {
+            transform: rotateX(180deg);
+          }
+        }
+
+        .e-dropdown-icon {
+          margin-top: 1px;
         }
       }
     }
@@ -535,23 +531,28 @@
       width: 100%;
     }
 
-    // sass-lint:disable-all
     .e-group-row {
       padding: 0 !important;
-
       .e-group-rows {
         display: table;
         flex: none;
         width: 100%;
-
+  
         .e-pvt-btn-div {
           max-width: unset;
           width: 100%;
-
+  
           .e-indent-div {
             pointer-events: none;
           }
+        }
+      }
+    }
 
+    // sass-lint:disable-all
+    .e-group-row {
+      .e-group-rows {
+        .e-pvt-btn-div {
           .e-pivot-button {
             padding: $pivotgrid-button-inner-padding 8px;
             width: 180px;
@@ -559,14 +560,14 @@
               font-weight: 400;
               padding: 5px 8px;
             }
-
+    
             &:hover {
               background-color: $pivotgrid-hover-color;
               @if ($pivotgrid-skin == 'bootstrap4') {
                 background-color: #5a6268;
                 border-color: #545b62;
               }
-
+    
               .e-sort,
               .e-dropdown-icon,
               .e-pv-filter,
@@ -576,7 +577,7 @@
                 color: $pivotgrid-icon-hover-color !important;
               }
             }
-
+    
             &.e-btn-focused {
               background-color: $pivotgrid-focus-color;
               color: $pivotgrid-button-acitve-font-color;
@@ -585,7 +586,7 @@
                 border-color: #4e555b;
                 box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
               }
- 
+    
               .e-sort,
               .e-dropdown-icon,
               .e-pv-filter,
@@ -595,7 +596,7 @@
                 color: $pivotgrid-icon-focus-color !important;
               }
             }
-
+    
             &:focus,
             &:active {
               background-color: $pivotgrid-focus-color;
@@ -605,7 +606,7 @@
                 border-color: #4e555b;
                 box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
               }
-
+    
               .e-sort,
               .e-dropdown-icon,
               .e-pv-filter,
@@ -615,7 +616,7 @@
                 color: $pivotgrid-icon-focus-color !important;
               }
             }
-
+    
             .e-sort,
             .e-dropdown-icon,
             .e-pv-filter,
@@ -630,25 +631,25 @@
               @if ($pivotgrid-skin == 'bootstrap4') {
                 margin-left: 4px;
               }
-
+    
               &:hover {
                 color: $pivotgrid-icon-hover-color;
               }
-
+    
               &.e-disable {
                 display: none;
               }
             }
-
+    
             .e-sort {
               height: $pivotgrid-button-icon-size;
               width: 18px;
-
+    
               &.e-descend {
                 transform: rotateX(180deg);
               }
             }
-
+    
             .e-dropdown-icon {
               margin-top: 1px;
             }
@@ -794,6 +795,34 @@
         text-align: left;
       }
 
+      .e-group-rows,
+      .e-grouping-bar {
+        padding-left: 0;
+        padding-right: $pivotview-axis-indent-padding;
+
+        .e-pvt-btn-div {
+          padding-left: $pivotgrid-horizontal-button-padding;
+          padding-right: 0;
+
+          .e-pivot-button {
+            .e-content {
+              margin-left: 4px;
+              text-align: right;
+            }
+
+            .e-sort,
+            .e-dropdown-icon,
+            .e-pv-filter,
+            .e-pv-filtered,
+            .e-remove,
+            .e-edit {
+              padding-left: 0;
+              padding-right: 4px;
+            }
+          }
+        }
+      }
+
       .e-grouping-bar {
         .e-left-axis-fields {
           border-left-width: 0;
@@ -802,36 +831,6 @@
 
         .e-right-axis-fields {
           border-left-width: $pivotgrid-border-size;
-        }
-
-        .e-group-rows,
-        .e-group-columns,
-        .e-group-values,
-        .e-group-filters {
-          padding-left: 0;
-          padding-right: $pivotview-axis-indent-padding;
-
-          .e-pvt-btn-div {
-            padding-left: $pivotgrid-horizontal-button-padding;
-            padding-right: 0;
-
-            .e-pivot-button {
-              .e-content {
-                margin-left: 4px;
-                text-align: right;
-              }
-
-              .e-sort,
-              .e-dropdown-icon,
-              .e-pv-filter,
-              .e-pv-filtered,
-              .e-remove,
-              .e-edit {
-                padding-left: 0;
-                padding-right: 4px;
-              }
-            }
-          }
         }
       }
 
@@ -1010,8 +1009,6 @@
     margin-right: 5px;
   }
 
-  .e-bigger .e-pivotview,
-  .e-bigger.e-pivotview,
   .e-bigger .e-pivotview,
   .e-bigger.e-pivotview {
 

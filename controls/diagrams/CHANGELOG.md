@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `F162436` - This issue "While set the node's isExpanded property true at initial rendering unwanted scroll is take placed" has been fixed.
+
+## 18.4.43 (2021-02-16)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#314224` - This issue "Shapes getting disappear after adding Swimlane shape " has been fixed.
+
 ## 18.4.42 (2021-02-09)
 
 ### Diagram
@@ -10,6 +26,9 @@
 
 - `#312744` - This issue "Exception occurs when mouse over the node with  many connector " has been fixed.
 - `#301792` - This issue "Alignment of connector is misplaced in balanced layout " has been fixed.
+- `#311219` - This issue "z order Commands not working for child node in group " has been fixed.
+- `#312725` - This issue "Expand collapse icon cannot export properly " has been fixed.
+- `#314224` - This issue "Shapes getting disappear after adding Swimlane shape " has been fixed.
 
 ## 18.4.41 (2021-02-02)
 

@@ -1402,7 +1402,7 @@ export class EventWindow {
             if (isNullOrUndefined(alertMessage)) {
                 switch (recEditor.value.split(';')[0].split('=')[1]) {
                     case 'DAILY':
-                        if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) >= (interval * 24))) {
+                        if ((((endDate.getTime() - startDate.getTime()) / (1000 * 3600)) > (interval * 24))) {
                             alertMessage = 'createError';
                         }
                         break;

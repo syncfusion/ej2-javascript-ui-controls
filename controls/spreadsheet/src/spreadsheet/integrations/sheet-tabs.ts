@@ -52,7 +52,7 @@ export class SheetTabs {
         addBtn.addEventListener('click', this.addSheetTab.bind(this));
         (addBtn as HTMLButtonElement).disabled = !this.parent.allowInsert;
         panel.appendChild(addBtn);
-        if (this.parent.allowInsert) { this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' }); }
+        this.addBtnRipple = rippleEffect(panel, { selector: '.e-add-sheet-tab' });
         let ddb: HTMLElement = this.parent.createElement('button', { attrs: { 'title': l10n.getConstant('ListAllSheets') } });
         panel.appendChild(ddb);
         this.parent.element.appendChild(panel);
@@ -267,6 +267,13 @@ export class SheetTabs {
         if (target) {
             target = target.querySelector('.e-text-wrap');
             let value: string = target.querySelector('.e-tab-text').textContent;
+            let args: { eventArgs: { name: string, index: number }, action: string, cancel: boolean } = {
+                eventArgs: {
+                    name: value, index: this.parent.getActiveSheet().id
+                },
+                action: 'renameSheet', cancel: false
+            };
+            this.parent.trigger('actionBegin', args);
             let input: HTMLElement = this.parent.createElement('input', {
                 id: this.parent.element.id + '_rename_input',
                 className: 'e-input e-sheet-rename', styles: `width: ${target.getBoundingClientRect().width}px`, attrs: {

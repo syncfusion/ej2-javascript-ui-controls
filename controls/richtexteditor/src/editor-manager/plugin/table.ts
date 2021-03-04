@@ -42,7 +42,8 @@ export class TableCommand {
         if (!isNOU(e.item.width.maxWidth)) {
             table.style.maxWidth = this.calculateStyleValue(e.item.width.maxWidth);
         }
-        let tdWid: number = parseInt(e.item.width.width as string, 10) / e.item.columns;
+        let tdWid: number = parseInt(e.item.width.width as string, 10) > 100 ?
+        100 / e.item.columns : parseInt(e.item.width.width as string, 10) / e.item.columns;
         for (let i: number = 0; i < e.item.row; i++) {
             let row: HTMLElement = createElement('tr');
             for (let j: number = 0; j < e.item.columns; j++) {

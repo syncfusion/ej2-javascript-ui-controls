@@ -184,16 +184,16 @@ export class Scroll implements IAction {
                 return;
             }
 
+            let target: HTMLElement = (<HTMLElement>e.target);
+            let left: number = target.scrollLeft;
             if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
-                this.parent.notify(infiniteScrollHandler, e);
+                this.parent.notify(infiniteScrollHandler, { target: e.target, isLeft: this.previousValues.left !== left });
             }
             if (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
                 let isDown: boolean = this.previousValues.top < this.parent.getContent().firstElementChild.scrollTop;
                 this.parent.notify(lazyLoadScrollHandler, { scrollDown: isDown });
             }
             this.parent.notify(virtualScrollEdit, {});
-            let target: HTMLElement = (<HTMLElement>e.target);
-            let left: number = target.scrollLeft;
             let sLimit: number = target.scrollWidth;
             let isFooter: boolean = target.classList.contains('e-summarycontent');
 

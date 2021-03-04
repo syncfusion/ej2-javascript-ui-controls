@@ -67,10 +67,20 @@ export class SaveWorker {
                 let reader: FileReader = new FileReader();
                 reader.onload = () => {
                     let result: string = reader.result.toString();
-                    if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1) {
+                    if (result.indexOf('data:text/plain;base64,') > -1 || result.indexOf('data:text/html;base64,') > -1 ||
+                        result.indexOf('data:application/json;base64,') > -1) {
+                        let str: string[];
                         result = result.replace('data:text/plain;base64,', ''); result = result.replace('data:text/html;base64,', '');
-                        let str: string[] = atob(result).split(/(\r\n|\n|\r)/gm);
-                        if (str.length) { (postMessage as Function)({ dialog: str[0] }); }
+                        if (result.indexOf('data:application/json;base64,') > -1) {
+                            result = result.replace('data:application/json;base64,', '');
+                            str = atob(result).split('.');
+                        } else {
+                            str = atob(result).split(/(\r\n|\n|\r)/gm);
+                        }
+                        if (str.length) {
+                            let text: string = str[0].length > 1 && str[0][0] === '"' ? str[0].split('"')[1] + '.' : str[0];
+                            (postMessage as Function)({ dialog: text });
+                        }
                     } else {
                         (postMessage as Function)(data);
                     }

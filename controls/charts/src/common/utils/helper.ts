@@ -3,6 +3,7 @@ import { merge, Effect, extend, isNullOrUndefined, resetBlazorTemplate } from '@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
 import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
+import { TextAttributes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
 import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
 import { Series, Points } from '../../chart/series/chart-series';
@@ -17,6 +18,7 @@ import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
+import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -71,9 +73,18 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
 
     let renderer: SvgRenderer = new SvgRenderer(chart.element.id);
     let box: ClientRect;
-    let options: Object;
+    let options: TextAttributes;
     let htmlObject: HTMLElement;
+    let labelText: string;
+    let textCollection: string[] = [];
+    let height: number;
+    let dy: number;
+    let label: string;
+    let tspanElement: Element;
     options = {
+        id: 'rotate_text',
+        x: chart.initialClipRect.x,
+        y: chart.initialClipRect.y,
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
@@ -81,9 +92,31 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
-    htmlObject = renderer.createText(options, text) as HTMLElement;
+    if (isBreakLabel(text)) {
+        textCollection = text.split('<br>');
+        labelText = textCollection[0];
+    } else {
+        labelText = text as string;
+    }
+    htmlObject = renderer.createText(options, labelText) as HTMLElement;
     if (!chart.delayRedraw && !chart.redraw) {
         chart.element.appendChild(chart.svgObject);
+    }
+    // for line break label
+    if (typeof textCollection !== 'string' && textCollection.length > 1) {
+        for (let i: number = 1, len: number = textCollection.length; i < len; i++) {
+            height = (measureText(textCollection[i], font).height);
+            dy = (options.y) + ((i * height));
+            label = textCollection[i];
+            tspanElement = (renderer as SvgRenderer).createTSpan(
+                {
+                    'x': options.x, 'id': options.id,
+                    'y': dy
+                },
+                label
+            );
+            htmlObject.appendChild(tspanElement);
+        }
     }
     chart.svgObject.appendChild(htmlObject);
     box = htmlObject.getBoundingClientRect();
@@ -1025,10 +1058,37 @@ export function getTemplateFunction(template: string): Function {
     return templateFn;
 }
 /** @private */
+export function accReactTemplate(
+    childElement: HTMLElement, chart: AccumulationChart, isTemplate: boolean, points: AccPoints[],
+    argsData: IAccTextRenderEventArgs, point?: AccPoints, datalabelGroup?: Element, id?: string,
+    dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
+    ): void {
+    let clientRect: ClientRect = childElement.getBoundingClientRect();
+    chart.accumulationDataLabelModule.calculateLabelSize(
+        isTemplate, childElement, point, points, argsData, datalabelGroup, id, dataLabel, redraw, clientRect, true
+    );
+}
+/** @private */
+export function chartReactTemplate(
+    childElement: HTMLElement, chart: Chart, point: Points, series: Series,
+    labelIndex: number, redraw?: boolean
+    ): void {
+    let parentElement: HTMLElement = document.getElementById(
+        chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) + '_DataLabelCollections'
+        );
+    if (parentElement) {
+        chart.dataLabelModule.calculateTemplateLabelSize(
+            parentElement, childElement, point, series, series.marker.dataLabel,
+            labelIndex, series.clipRect, redraw, true
+            );
+    }
+}
+/** @private */
 export function createTemplate(
-    childElement: HTMLElement, pointIndex: number, content: string,
-    chart: Chart | AccumulationChart | RangeNavigator,
-    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string
+    childElement: HTMLElement, pointIndex: number, content: string, chart: Chart | AccumulationChart | RangeNavigator,
+    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string, labelIndex?: number,
+    argsData?: IAccTextRenderEventArgs, isTemplate?: boolean, points?: AccPoints[], datalabelGroup?: Element, id?: string,
+    dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
 ): HTMLElement {
     let templateFn: Function;
     let templateElement: HTMLCollection;
@@ -1046,8 +1106,21 @@ export function createTemplate(
                 childElement.appendChild(templateElement[i]);
             }
         }
-        // tslint:disable-next-line:no-any
-        if ((chart as any).isReact) { (chart as any).renderReactTemplates(); }
+        let reactCallback: Function;
+        if (chart.getModuleName() === 'accumulationchart') {
+            reactCallback = accReactTemplate.bind(
+                this, childElement, chart, isTemplate, points, argsData, points[pointIndex],
+                datalabelGroup, id, dataLabel, redraw
+                );
+            // tslint:disable-next-line:no-any
+            if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
+        } else if (chart.getModuleName() === 'chart') {
+            reactCallback = chartReactTemplate.bind(
+                this, childElement, chart, point, series, labelIndex, redraw
+                );
+            // tslint:disable-next-line:no-any
+            if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
+        }
     } catch (e) {
         return childElement;
     }
@@ -1612,6 +1685,7 @@ export function textElement(
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
     htmlObject.style.color = font.color;
+    htmlObject.style.textAnchor = option.anchor;
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);

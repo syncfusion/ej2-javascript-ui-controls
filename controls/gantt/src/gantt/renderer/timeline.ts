@@ -864,7 +864,8 @@ export class Timeline {
      * @param day 
      */
     private isWeekendHeaderCell(mode: string, tier: string, day: Date): boolean {
-        return mode === 'Day' && this.customTimelineSettings[tier].count === 1 &&
+        return (mode === 'Day' || mode === 'Hour' || mode === 'Minutes') && (this.customTimelineSettings[tier].count === 1 ||
+            mode === 'Hour' || mode === 'Minutes') &&
             this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
     }
 

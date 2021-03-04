@@ -130,6 +130,12 @@ export class VirtualScroll {
         //code
     }
 
+    private renderEvents(): void {
+        this.parent.notify(events.dataReady, {});
+        this.parent.notify(events.contentReady, {});
+        this.parent.hideSpinner();
+    }
+
     public virtualScrolling(): void {
         this.parent.quickPopup.quickPopupHide();
         this.parent.quickPopup.morePopup.hide();
@@ -161,7 +167,7 @@ export class VirtualScroll {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
             window.clearTimeout(this.timeValue);
-            this.timeValue = window.setTimeout(() => { this.parent.hideSpinner(); this.parent.notify(events.dataReady, {}); }, 250);
+            this.timeValue = window.setTimeout(() => { this.renderEvents(); }, 250);
         }
     }
 

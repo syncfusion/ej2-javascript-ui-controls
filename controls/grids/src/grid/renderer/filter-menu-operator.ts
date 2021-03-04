@@ -34,12 +34,13 @@ export class FlMenuOptrUI {
     /**
      * @hidden
      */
-    public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog): void {
+    /* tslint:disable-next-line:max-line-length */
+    public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog, operator?: { [key: string]: Object }[]): void {
         this.dialogObj = dlgObj;
         let optr: string = column.type + 'Operator';
-        this.optrData = this.customOptr = (!isNullOrUndefined(this.parent.filterSettings.operators) &&
-            !isNullOrUndefined(this.parent.filterSettings.operators[optr])) ?
-            this.parent.filterSettings.operators[optr] : this.customFilterOperators[optr];
+        this.optrData = this.customOptr = !isNullOrUndefined(operator) ? operator :
+            (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[optr])) ?
+                this.parent.filterSettings.operators[optr] : this.customFilterOperators[optr];
         let dropDatasource: { [key: string]: Object }[] = this.customOptr;
         let selectedValue: string = this.dropSelectedVal(column, optr);
         let optrDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flm_optrdiv' });
@@ -56,8 +57,15 @@ export class FlMenuOptrUI {
         this.dropOptr.appendTo('#' + column.uid + '-floptr');
     }
 
+    private renderResponsiveDropDownList(args: { popup: Popup }): void {
+        args.popup.element.style.width = '100%';
+    }
+
     private dropDownOpen(args: { popup: Popup }): void {
         args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+        if (this.parent.enableAdaptiveUI) {
+            this.renderResponsiveDropDownList(args);
+        }
     }
 
     private dropSelectedVal(col: Column, optr: string): string {

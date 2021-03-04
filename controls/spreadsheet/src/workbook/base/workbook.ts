@@ -645,10 +645,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/insertRow/index.md' %}{% endcodeBlock %}
      * @param {number | RowModel[]} startRow? - Specifies the start row index / row model which needs to be inserted.
      * @param {number} endRow? - Specifies the end row index.
+     * @param {number | string} sheet? - Specifies the sheet name or index in which the insert operation will perform. By default,
+     * active sheet will be considered.
      * @returns void
      */
-    public insertRow(startRow?: number | RowModel[], endRow?: number): void {
-        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getActiveSheet(), start: startRow, end: endRow, modelType: 'Row' });
+    public insertRow(startRow?: number | RowModel[], endRow?: number, sheet?: number | string): void {
+        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getSheetModel(sheet), start: startRow, end: endRow,
+            modelType: 'Row' });
     }
 
     /**
@@ -656,13 +659,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='spreadsheet/insertColumn/index.md' %}{% endcodeBlock %}
      * @param {number | ColumnModel[]} startColumn? - Specifies the start column index / column model which needs to be inserted.
      * @param {number} endColumn? - Specifies the end column index.
+     * @param {number | string} sheet? - Specifies the sheet name or index in which the insert operation will perform. By default,
+     * active sheet will be considered.
      * @returns void
      */
-    public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number): void {
-        this.notify(insertModel, <InsertDeleteModelArgs>{
-            model: this.getActiveSheet(), start: startColumn, end: endColumn,
-            modelType: 'Column'
-        });
+    public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number, sheet?: number | string): void {
+        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getSheetModel(sheet), start: startColumn, end: endColumn,
+            modelType: 'Column' });
     }
 
     /**
@@ -679,20 +682,37 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * Used to delete rows, columns and sheets from the spreadsheet.
      * {% codeBlock src='spreadsheet/delete/index.md' %}{% endcodeBlock %}
-     * @param {number | RowModel[]} startIndex? - Specifies the start sheet / row / column index.
+     * @param {number} startIndex? - Specifies the start sheet / row / column index.
      * @param {number} endIndex? - Specifies the end sheet / row / column index.
      * @param {ModelType} model? - Specifies the delete model type. By default, the model is considered as `Sheet`. The possible values are,
      * - Row: To delete rows.
      * - Column: To delete columns.
      * - Sheet: To delete sheets.
+     * @param {number | string} sheet? - Specifies the sheet name or index in which the delete operation will perform. By default,
+     * active sheet will be considered. It is applicable only for model type Row and Column.
      * @returns void
      */
-    public delete(startIndex?: number, endIndex?: number, model?: ModelType): void {
-        startIndex = startIndex || 0;
+    public delete(startIndex?: number, endIndex?: number, model?: ModelType, sheet?: number | string): void {
+        startIndex = startIndex || 0; let sheetModel: SheetModel | WorkbookModel;
+        if (!model || model === 'Sheet') {
+            sheetModel = this;
+        } else {
+            sheetModel = this.getSheetModel(sheet);
+            if (!sheetModel) { return; }
+        }
         this.notify(deleteModel, <InsertDeleteModelArgs>{
-            model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex,
-            end: isNullOrUndefined(endIndex) ? startIndex : endIndex, modelType: model || 'Sheet'
+            model: sheetModel, start: startIndex, end: isNullOrUndefined(endIndex) ? startIndex : endIndex, modelType: model || 'Sheet'
         });
+    }
+
+    private getSheetModel(sheet: number | string): SheetModel {
+        if (isNullOrUndefined(sheet)) {
+            return this.getActiveSheet();
+        } else {
+            let index: number = typeof sheet === 'string' ? getSheetIndex(this, sheet) : sheet;
+            if (isNullOrUndefined(index) || index >= this.sheets.length) { return null; }
+            return this.sheets[index];
+        }
     }
 
     /**
@@ -761,15 +781,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * Used for setting the used range row and column index.
      * @hidden
      */
-    public setUsedRange(rowIdx: number, colIdx: number): void {
-        let sheet: SheetModel = this.getActiveSheet();
+    public setUsedRange(rowIdx: number, colIdx: number, sheet: SheetModel = this.getActiveSheet()): void {
         if (rowIdx > sheet.usedRange.rowIndex) {
             sheet.usedRange.rowIndex = rowIdx;
-            this.notify(updateUsedRange, { index: rowIdx, update: 'row' });
+            if (sheet === this.getActiveSheet()) { this.notify(updateUsedRange, { index: rowIdx, update: 'row' }); }
         }
         if (colIdx > sheet.usedRange.colIndex) {
             sheet.usedRange.colIndex = colIdx;
-            this.notify(updateUsedRange, { index: colIdx, update: 'col' });
+            if (sheet === this.getActiveSheet()) { this.notify(updateUsedRange, { index: colIdx, update: 'col' }); }
         }
     }
 

@@ -2399,8 +2399,8 @@ export class Edit {
             if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
                 dataSource.push(addedRecord.taskData);
             } else {
-                this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
-            }
+            this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+        }
         }
         this.isBreakLoop = false;
     }
@@ -3108,8 +3108,14 @@ export class Edit {
                     if ((dataSource as IGanttData[]).length > 0) {
                         (dataSource as IGanttData[]).splice(indx, 1);
                     }
-                    this.treeGridData.splice(indx, 1);
-                    this.parent.ids.splice(indx, 1);
+                    let gridIndx: number;
+                    for (let i: number = 0; i < this.treeGridData.length; i++) {
+                        if (this.treeGridData[i][this.parent.taskFields.id] === delRow.taskData[this.parent.taskFields.id]) {
+                            gridIndx = i;
+                        }
+                    }
+                    this.treeGridData.splice(gridIndx, 1);
+                    this.parent.ids.splice(gridIndx, 1);
                     if (this.parent.treeGrid.parentData.indexOf(delRow) !== -1) {
                         this.parent.treeGrid.parentData.splice(this.parent.treeGrid.parentData.indexOf(delRow), 1);
                     }
@@ -3152,8 +3158,14 @@ export class Edit {
                 if ((data as IGanttData[]).length > 0) {
                     (data as IGanttData[]).splice(indx, 1);
                 }
-                this.treeGridData.splice(indx, 1);
-                this.parent.ids.splice(indx, 1);
+                let gridIndx: number;
+                for (let i: number = 0; i < this.treeGridData.length; i++) {
+                    if (this.treeGridData[i][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
+                        gridIndx = i;
+                    }
+                }
+                this.treeGridData.splice(gridIndx, 1);
+                this.parent.ids.splice(gridIndx, 1);
             }
             if (currentRec.hasChildRecords) {
                 this.removeChildItem(currentRec);

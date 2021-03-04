@@ -1,11 +1,11 @@
 import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
+import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue, enableDisableResponsiveRenderer } from '../base/util';
 import { remove, matches, isBlazor } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings, Grid } from '../base/grid';
 import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
-import { CellType } from '../base/enum';
+import { CellType, ResponsiveDialogAction } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { RowRenderer } from '../renderer/row-renderer';
 import { ServiceLocator } from '../services/service-locator';
@@ -18,6 +18,7 @@ import { parentsUntil } from '../base/util';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
 import { CheckBoxFilter } from '../actions/checkbox-filter';
 import { ExcelFilter } from '../actions/excel-filter';
+import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 
 /**
  *
@@ -47,8 +48,12 @@ export class Filter implements IAction {
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
-    private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function,
-    isresetFocus: boolean, getFilterUIInfo: Function };
+    /** @hidden */
+    public filterModule: {
+        openDialog: Function, closeDialog: Function, destroy: Function
+        isresetFocus: boolean, getFilterUIInfo: Function, clearCustomFilter: Function,
+        closeResponsiveDialog: Function, applyCustomFilter: Function, renderCheckBoxMenu?: Function
+    };
     /** @hidden */
     public filterOperators: IFilterOperator = {
         contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
@@ -68,6 +73,8 @@ export class Filter implements IAction {
     private actualPredicate: { [key: string]: PredicateModel[] } = {};
     public prevFilterObject: PredicateModel;
     public filterObjIndex: number;
+    private responsiveDialogRenderer: ResponsiveDialogRenderer;
+    public menuOperator: { [key: string]: Object }[];
 
     /**
      * Constructor for Grid filtering module
@@ -78,6 +85,7 @@ export class Filter implements IAction {
         this.filterSettings = filterSettings;
         this.serviceLocator = serviceLocator;
         this.addEventListener();
+        this.setFullScreenDialog();
     }
 
     /** 
@@ -133,6 +141,22 @@ export class Filter implements IAction {
     }
 
     /** 
+     * To show the responsive custom filter dialog
+     * @return {void}
+     * @hidden
+     */
+    public showCustomFilter(): void {
+        this.responsiveDialogRenderer.showResponsiveDialog(this.column);
+    }
+
+    /** @hidden */
+    public setFilterModel(col: Column): void {
+        let type: string = col.filter.type || this.parent.filterSettings.type;
+        this.filterModule = new this.type[type]
+            (this.parent, this.parent.filterSettings, this.serviceLocator, this.customOperators, this);
+    }
+
+    /** 
      * To destroy the filter bar. 
      * @return {void} 
      * @hidden
@@ -163,6 +187,10 @@ export class Filter implements IAction {
                 remove(filterBarElement);
             }
         }
+    }
+
+    private setFullScreenDialog(): void {
+        enableDisableResponsiveRenderer(this, ResponsiveDialogAction.isFilter);
     }
 
     private generateRow(index?: number): Row<Column> {
@@ -314,6 +342,7 @@ export class Filter implements IAction {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
         this.parent.on(events.filterComplete, this.onActionComplete, this);
         this.parent.on(events.inBoundModelChanged, this.onPropertyChanged, this);
@@ -335,6 +364,7 @@ export class Filter implements IAction {
     public removeEventListener(): void {
         EventHandler.remove(document, 'click', this.clickHandler);
         if (this.parent.isDestroyed) { return; }
+        this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
         this.parent.off(events.uiUpdate, this.enableAfterRender);
         this.parent.off(events.filterComplete, this.onActionComplete);
         this.parent.off(events.inBoundModelChanged, this.onPropertyChanged);
@@ -485,6 +515,7 @@ export class Filter implements IAction {
                             return;
                         }
                         this.addFilteredClass((<{currentFilteringColumn?: string}>args).currentFilteringColumn);
+                        this.updateFilterIcon();
                         this.refreshFilterSettings();
                         this.updateFilterMsg();
                         this.updateFilter();
@@ -538,6 +569,16 @@ export class Filter implements IAction {
                         delete this.values[col[i].field];
                     }
                 }
+            }
+        }
+    }
+
+    private updateFilterIcon(): void {
+        if (this.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
+            let fltrIconElement: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
+            for (let i: number = 0, len: number = fltrIconElement.length; i < len; i++) {
+                fltrIconElement[i].removeAttribute('aria-filtered');
+                fltrIconElement[i].classList.remove('e-filtered');
             }
         }
     }
@@ -627,15 +668,20 @@ export class Filter implements IAction {
     }
 
     private filterDialogOpen(col: Column, target: Element, left?: number, top?: number): void {
-        let gObj: IGrid = this.parent;
         if (this.filterModule) {
             this.filterModule.closeDialog();
         }
-        this.filterModule = new this.type[col.filter.type || this.parent.filterSettings.type]
-            (this.parent, gObj.filterSettings, this.serviceLocator, this.customOperators, this);
+        this.setFilterModel(col);
+        this.filterModule.openDialog(this.createOptions(col, target, left, top));
+    }
+
+    /** @hidden */
+    public createOptions(col: Column, target: Element, left?: number, top?: number): Object {
+        let gObj: IGrid = this.parent;
         let dataSource: Object = col.filter.dataSource || gObj.dataSource && 'result' in gObj.dataSource ? gObj.dataSource :
             gObj.getDataModule().dataManager;
-        this.filterModule.openDialog({
+        let type: string = col.filter.type || this.parent.filterSettings.type;
+        let options: object = {
             type: col.type, field: col.field, displayName: col.headerText,
             dataSource: dataSource, format: col.format, height: 800, columns: gObj.getColumns(),
             filteredColumns: gObj.filterSettings.columns, target: target, dataManager: gObj.getDataModule().dataManager,
@@ -645,8 +691,11 @@ export class Filter implements IAction {
             handler: this.filterHandler.bind(this), localizedStrings: gObj.getLocaleConstants(),
             position: { X: left, Y: top }, column: col, foreignKeyValue: col.foreignKeyValue,
             actualPredicate: this.actualPredicate, localeObj: gObj.localeObj,
-            isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity
-        });
+            isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity,
+            isResponsiveFilter: this.parent.enableAdaptiveUI,
+            operator: this.actualPredicate[col.field] && type === 'Menu' ? this.actualPredicate[col.field][0].operator : 'equal'
+        };
+        return options;
     }
 
 
@@ -1035,6 +1084,10 @@ export class Filter implements IAction {
     /** @hidden */
     public openMenuByField(field: string): void {
         let gObj: IGrid = this.parent;
+        if (gObj.enableAdaptiveUI) {
+            this.showCustomFilter();
+            return;
+        }
         let column: Column = gObj.getColumnByField(field);
         let header: Element = gObj.getColumnHeaderByField(field);
         let target: Element = header.querySelector('.e-filtermenudiv');
@@ -1216,5 +1269,13 @@ export class Filter implements IAction {
      */
     private getOperatorName(field: string): string {
         return (<EJ2Intance>document.getElementById(this.parent.getColumnByField(field).uid)).ej2_instances[0].value;
+    }
+
+    /**
+     * Renders checkbox items in Menu filter dialog.
+     * @return {void}
+     */
+    public renderCheckboxOnFilterMenu(): HTMLElement {
+            return this.filterModule.renderCheckBoxMenu();
     }
 }

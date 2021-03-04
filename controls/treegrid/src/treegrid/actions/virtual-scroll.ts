@@ -102,9 +102,10 @@ export class VirtualScroll {
           pageingDetails.result = dm.executeLocal(query);
         } else {
           let requestType: string = pageingDetails.actionArgs.requestType;
-          if (requestType === 'filtering') {
+          if (requestType === 'filtering' || (requestType === 'refresh' && this.parent.enableCollapseAll && endIndex > visualData.length)) {
             startIndex = 0;
             endIndex = this.parent.grid.pageSettings.pageSize - 1;
+            (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;
             this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
           }
           //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) && 

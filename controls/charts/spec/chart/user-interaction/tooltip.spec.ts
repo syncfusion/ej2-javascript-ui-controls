@@ -606,6 +606,91 @@ describe('Chart Control', () => {  beforeAll(() => {
         });
     });
 
+    describe('Chart template', () => {
+        let chartObj: Chart;
+        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let targetElement: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let pointEvent: EmitType<IPointEventArgs>;
+        let loaded1: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'PrimaryXAxis', valueType: 'Category' },
+                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal', labelFormat: '{value}°C' },
+
+                    series: [{
+                        dataSource: [
+                            { x: 'Sun', y: 15 }, { x: 'Mon', y: 22 },
+                            { x: 'Tue', y: 32 },
+                            { x: 'Wed', y: 31 },
+                            { x: 'Thu', y: 29 }, { x: 'Fri', y: 24 },
+                            { x: 'Sat', y: 18 },
+                        ], xName: 'x', yName: 'y', animation: { enable: false },
+                        name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
+                        marker: {
+                            shape: 'Circle', visible: true, width: 10, height: 10, opacity: 1,
+                            border: { width: 1, color: null }
+                        }
+                    },
+                    {
+                        dataSource: [
+                            { x: 'Sun', y: 10 }, { x: 'Mon', y: 18 },
+                            { x: 'Tue', y: 28 },
+                            { x: 'Wed', y: 28 },
+                            { x: 'Thu', y: 26 }, { x: 'Fri', y: 20 },
+                            { x: 'Sat', y: 15 }
+                        ], xName: 'x', yName: 'y', animation: { enable: false },
+                        name: 'ChartSeriesNameSilver', fill: 'rgba(135,206,235,1)',
+                        marker: {
+                            shape: 'Circle', visible: true, width: 10, height: 10, opacity: 1,
+                            border: { width: 1, color: null }
+                        }
+                    }], width: '800',
+                    tooltip: { enable: true, shared: true },
+                    title: 'Chart TS Title', loaded: loaded, legendSettings: { visible: false }
+                });
+            chartObj.appendTo('#container');
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            elem.remove();
+        });
+        it('Checking with shared template', (done: Function) => {
+            let tooltip: HTMLElement;            
+            loaded1 = (args: Object): void => {
+                let target: HTMLElement;
+                target = document.getElementById('container_Series_0_Point_1_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                tooltip = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                //done();
+                chartArea = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('height')) + parseFloat(chartArea.getAttribute('y')) + 200 + elem.offsetTop;
+                x = parseFloat(chartArea.getAttribute('width')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                //trigger.mouseleavetEvent(elem, Math.ceil(x), Math.ceil(y));
+                done();
+            };
+            let animate: EmitType<IAnimationCompleteEventArgs> = (args: Object): void => {
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip == null).toBe(true);
+                done();
+            };
+            chartObj.animationComplete = null;
+            chartObj.tooltip.template = '<div>${x}</div><div>${y}</div>';
+            chartObj.title = 'Template';
+            chartObj.loaded = loaded1;
+            chartObj.dataBind();
+        });
+    });
+
     describe('customer issue: Tooltip on property change console error checking', () => {
         let chartObj: Chart;
         let div: HTMLElement = createElement('div', { id: 'mainDiv' });

@@ -104,7 +104,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let ul: Element = this.parent.createElement('ul');
         let icon: string = isFiltered ? 'e-excl-filter-icon e-filtered' : 'e-excl-filter-icon';
         // tslint:disable-next-line:no-any
-        if (this.parent.allowSorting && (this.parent as any).getModuleName() === 'grid') {
+        if (this.parent.allowSorting && (this.parent as any).getModuleName() === 'grid'
+            && !this.options.isResponsiveFilter) {
             let hdrele: string = this.parent.getColumnHeaderByUid(eleOptions.uid).getAttribute('aria-sort');
             let colIsSort: object = this.parent.getColumnByField(eleOptions.field).allowSorting;
             let isAsc: string = (!colIsSort || hdrele === 'Ascending') ? 'e-disabled e-excel-ascending' : 'e-excel-ascending';
@@ -118,7 +119,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             let separator: Element = this.parent.createElement('li', { className: 'e-separator e-menu-item e-excel-separator'});
             ul.appendChild(separator);
         }
-        ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
+        if (!this.options.isResponsiveFilter) {
+            ul.appendChild(this.createMenuElem(this.getLocalizedLabel('ClearFilter'), isFiltered ? '' : 'e-disabled', icon));
+        }
         if (type !== 'boolean') {
             ul.appendChild(this.createMenuElem(
                 this.getLocalizedLabel(options[type]), 'e-submenu',
@@ -126,6 +129,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         this.menu.appendChild(ul);
         this.parent.notify(events.beforeFltrcMenuOpen, { element: this.menu });
+        this.parent.notify(events.refreshCustomFilterClearBtn, { isFiltered: isFiltered });
     }
 
     private createMenuElem(val: string, className?: string, iconName?: string, isSubMenu?: boolean): Element {
@@ -149,21 +153,31 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private clickExHandler(e: MouseEvent): void {
+        let options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
         let menuItem: HTMLElement = parentsUntil(e.target as Element, 'e-menu-item') as HTMLElement;
-        if (menuItem && this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
-            this.clearFilter();
-            this.closeDialog();
+        if (menuItem) {
+            if (this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
+                this.clearFilter();
+                this.closeDialog();
+            } else if (this.options.isResponsiveFilter
+                && this.getLocalizedLabel(options[this.options.type]) === menuItem.innerText.trim()) {
+                this.hoverHandler(e);
+            }
         }
     }
 
-
     private destroyCMenu(): void {
+        this.isCMenuOpen = false;
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
             remove(this.cmenu);
+            this.parent.notify(events.renderResponsiveCmenu, { target: null, header: '', isOpen: false });
         }
     }
     private hoverHandler(e: MouseEvent): void {
+        if (this.options.isResponsiveFilter && e.type === 'mouseover') {
+            return;
+        }
         let target: Element = (e.target as Element).querySelector('.e-contextmenu');
         let li: Element = parentsUntil(e.target as Element, 'e-menu-item');
         let focused: Element = this.menu.querySelector('.e-focused');
@@ -183,7 +197,6 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             if (!isNullOrUndefined(submenu)) {
                 submenu.classList.remove('e-selected');
             }
-            this.isCMenuOpen = false;
             this.destroyCMenu();
         }
         let selectedMenu: string = this.ensureTextFilter();
@@ -195,22 +208,35 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 select: this.selectHandler.bind(this),
                 onClose: this.destroyCMenu.bind(this),
                 enableRtl: this.parent.enableRtl,
-                beforeClose: this.preventClose
+                beforeClose: this.preventClose.bind(this),
+                cssClass: this.options.isResponsiveFilter ? 'e-res-contextmenu-wrapper' : ''
             };
             this.parent.element.appendChild(this.cmenu);
             this.menuObj = new ContextMenu(menuOptions, this.cmenu);
             let client: ClientRect = this.menu.querySelector('.e-submenu').getBoundingClientRect();
             let pos: OffsetPosition = { top: 0, left: 0 };
-            if (Browser.isDevice) {
-                let contextRect: ClientRect = this.getContextBounds(this.menuObj);
-                pos.top = (window.innerHeight - contextRect.height) / 2;
-                pos.left = (window.innerWidth - contextRect.width) / 2;
-                this.closeDialog();
+            if (this.options.isResponsiveFilter) {
+                let options: Object = { string: 'TextFilter', date: 'DateFilter', datetime: 'DateTimeFilter', number: 'NumberFilter' };
+                let content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
+                let height: number = content.offsetHeight + 4;
+                this.menuObj.element.style.height = 'calc(100% - ' + height + 'px)';
+                this.menuObj.open(height, 0, document.body);
+                let header: string = this.getLocalizedLabel(options[this.options.type]);
+                this.parent.notify(events.renderResponsiveCmenu, {
+                    target: this.menuObj.element.parentElement, header: header, isOpen: true
+                });
             } else {
-                pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
-                pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
+                if (Browser.isDevice) {
+                    let contextRect: ClientRect = this.getContextBounds(this.menuObj);
+                    pos.top = (window.innerHeight - contextRect.height) / 2;
+                    pos.left = (window.innerWidth - contextRect.width) / 2;
+                    this.closeDialog();
+                } else {
+                    pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
+                    pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
+                }
+                this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);
             }
-            this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);
             applyBiggerTheme(this.parent.element, this.menuObj.element.parentElement);
         }
     }
@@ -234,8 +260,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private preventClose(args: BeforeOpenCloseMenuEventArgs): void {
-        if (args.event instanceof MouseEvent && (<Element>args.event.target).classList.contains('e-submenu')) {
-            args.cancel = true;
+        if (this.options && this.options.isResponsiveFilter && args.event) {
+            let target: Element = (<Element>args.event.target);
+            let isFilterBack: boolean = target.classList.contains('e-resfilterback')
+                || target.classList.contains('e-res-back-btn') || target.classList.contains('e-menu-item');
+            args.cancel = !isFilterBack;
+        } else {
+            if (args.event instanceof MouseEvent && (<Element>args.event.target).classList.contains('e-submenu')) {
+                args.cancel = true;
+            }
         }
     }
 
@@ -270,6 +303,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' }) as HTMLUListElement;
+        this.parent.notify(events.filterDialogCreated, {});
         this.wireExEvents();
     }
 
@@ -279,12 +313,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private selectHandler(e: MenuEventArgs): void {
         if (e.item) {
+            this.parent.notify(events.filterCmenuSelect, {});
             this.menuItem = e.item;
             this.renderDialogue(e);
         }
     }
-    private renderDialogue(e: MenuEventArgs): void {
-        let target: HTMLElement = e.element as HTMLElement;
+
+    /** @hidden */
+    public renderDialogue(e?: MenuEventArgs): void {
+        let target: HTMLElement = e ? e.element as HTMLElement : undefined;
         let column: string = this.options.field;
         let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
         let complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
@@ -296,7 +333,12 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             className: 'e-xlflmenu',
             id: isComplex ? complexFieldName + '-xlfldlg' : column + '-xlfldlg'
         });
-        this.parent.element.appendChild(this.dlgDiv);
+        if (this.options.isResponsiveFilter) {
+            let responsiveCnt: HTMLElement = document.querySelector('.e-resfilter > .e-dlg-content > .e-xl-customfilterdiv');
+            responsiveCnt.appendChild(this.dlgDiv);
+        } else {
+            this.parent.element.appendChild(this.dlgDiv);
+        }
         this.dlgObj = new Dialog({
             header: this.getLocalizedLabel('CustomFilter'),
             isModal: true,
@@ -335,10 +377,29 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         });
         let isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;
+        this.renderResponsiveDialog();
         this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
         this.dlgObj.appendTo(this.dlgDiv);
     }
-    private removeDialog(): void {
+
+    private renderResponsiveDialog(): void {
+        if (this.options.isResponsiveFilter) {
+            let rowResponsiveDlg: Element = document.querySelector('.e-row-responsive-filter');
+            if (rowResponsiveDlg) {
+                rowResponsiveDlg.classList.remove('e-row-responsive-filter');
+            }
+            this.dlgObj.buttons = [{}];
+            this.dlgObj.header = undefined;
+            this.dlgObj.position = { X: '', Y: '' };
+            this.dlgObj.target = document.querySelector('.e-resfilter > .e-dlg-content > .e-xl-customfilterdiv') as HTMLElement;
+            this.dlgObj.width = '100%';
+            this.dlgObj.isModal = false;
+            this.dlgObj.showCloseIcon = false;
+        }
+    }
+
+    /** @hidden */
+    public removeDialog(): void {
         if (isBlazor()) {
             let columns: Column[] = this.options.columns as Column[] || [];
             for (let i: number = 0; i < columns.length; i++) {
@@ -348,25 +409,35 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 }
             }
         }
+        this.parent.notify(events.customFilterClose, {});
         if (this.parent.isReact) {
             this.parent.destroyTemplate(['filterTemplate']);
             this.parent.renderTemplates();
         }
         this.removeObjects([this.dropOptr, this.datePicker, this.dateTimePicker, this.actObj, this.numericTxtObj, this.dlgObj]);
         remove(this.dlgDiv);
+        this.parent.notify(events.filterDialogClose, {});
     }
 
     private createdDialog(target: Element, column: string): void {
         this.renderCustomFilter(target, column);
         this.dlgObj.element.style.left = '0px';
-        this.dlgObj.element.style.top = '0px';
-        if (Browser.isDevice && window.innerWidth < 440) {
+        if (!this.options.isResponsiveFilter) {
+            this.dlgObj.element.style.top = '0px';
+        } else {
+            let content: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-header-content');
+            let height: number = content.offsetHeight + 4;
+            this.dlgObj.element.style.top = height + 'px';
+        }
+        if (!this.options.isResponsiveFilter && Browser.isDevice && window.innerWidth < 440) {
             this.dlgObj.element.style.width = '90%';
         }
         this.parent.notify(events.beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
         this.dlgObj.show();
         applyBiggerTheme(this.parent.element, this.dlgObj.element.parentElement);
+        this.parent.notify(events.setCustomFilterHeader, { title: this.getLocalizedLabel('CustomFilter') });
     }
+
     private renderCustomFilter(target: Element, column: string): void {
         let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-xlfl-maindiv');
 
@@ -380,7 +451,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
         this.renderFilterUI(column, dlgConetntEle);
     }
-    private filterBtnClick(col: string): void {
+
+    /** @hidden */
+    public filterBtnClick(col: string): void {
         let isComplex: boolean = !isNullOrUndefined(col) && isComplexField(col);
         let complexFieldName: string = !isNullOrUndefined(col) && getComplexFieldID(col);
         let colValue: string = isComplex ? complexFieldName : col;

@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart } from '../common/event';
-import { getRangeIndexes } from '../common/index';
+import { getRangeIndexes, parseIntValue } from '../common/index';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { checkIsFormula } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
@@ -101,7 +101,7 @@ export class WorkbookEdit {
             let isFormula: boolean = checkIsFormula(value);
             if (!isFormula) {
                 cell.formula = '';
-                cell.value = <string>this.parseIntValue(value);
+                cell.value = <string>parseIntValue(value);
             }
             let eventArgs: { [key: string]: string | number | boolean } = {
                 action: 'refreshCalculate',
@@ -111,11 +111,6 @@ export class WorkbookEdit {
                 sheetIndex: sheetIdx,
                 isFormula: isFormula
             };
-            this.parent.notify(workbookFormulaOperation, eventArgs);
-            if (isFormula) {
-                cell.formula = <string>eventArgs.value;
-                value = cell.value;
-            }
             if (getTypeFromFormat(cell.format) !== 'Text') {
                 let dateEventArgs: { [key: string]: string | number } = {
                     value: value,
@@ -125,10 +120,14 @@ export class WorkbookEdit {
                     updatedVal: ''
                 };
                 this.parent.notify(checkDateFormat, dateEventArgs);
-
                 if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                     cell.value = <string>dateEventArgs.updatedVal;
                 }
+            }
+            this.parent.notify(workbookFormulaOperation, eventArgs);
+            if (isFormula) {
+                cell.formula = <string>eventArgs.value;
+                value = cell.value;
             }
         } else {
             if (value && value.toString().indexOf(this.decimalSep) > -1) {
@@ -140,9 +139,5 @@ export class WorkbookEdit {
         if (this.parent.allowChart) {
             this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
         }
-    }
-
-    private parseIntValue(value: string): string | number {
-        return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
     }
 }

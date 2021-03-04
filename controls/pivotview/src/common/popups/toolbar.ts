@@ -1,6 +1,6 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass, closest, select } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, isBlazor, getInstance, addClass, removeClass, select } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs } from '../base/interface';
@@ -46,7 +46,7 @@ export class Toolbar {
     private showLableState: boolean;
     private chartLableState: boolean;
 
-    constructor(parent: PivotView) {
+    constructor(parent: PivotView) {    /* eslint-disable-line */
         this.parent = parent;
         this.parent.toolbarModule = this;
         this.addEventListener();
@@ -54,7 +54,7 @@ export class Toolbar {
 
     /**
      * It returns the Module name.
-     * @returns string
+     * @returns {string} - string
      * @hidden
      */
     public getModuleName(): string {
@@ -93,10 +93,12 @@ export class Toolbar {
         this.toolbar.isStringTemplate = true;
         let viewStr: string = 'viewContainerRef';
         let registerTemp: string = 'registeredTemplate';
+        /* eslint-disable */
         if ((this.parent as any)[viewStr]) {
             (this.toolbar as any)[registerTemp] = {};
             (this.toolbar as any)[viewStr] = (this.parent as any)[viewStr];
         }
+        /* eslint-enable */
         if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
             this.toolbar.appendTo(this.parent.toolbarTemplate);
             this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + cls.GRID_TOOLBAR));
@@ -117,9 +119,9 @@ export class Toolbar {
     }
 
     private fetchReports(): FetchReportArgs {
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let reports: any = { reportName: [] };
-        let tool: Toolbar = this;
+        let tool: Toolbar = this;   /* eslint-disable-line */
         if (isBlazor()) {
             reports = this.fetchReportsArgs();
             reports.then((e: any) => {
@@ -127,7 +129,7 @@ export class Toolbar {
                 return e;
             });
         } else {
-            /* tslint:enable:no-any */
+            /* eslint-enable @typescript-eslint/no-explicit-any */
             this.parent.trigger(events.fetchReport, reports);
         }
         return reports;
@@ -142,7 +144,7 @@ export class Toolbar {
         return callbackPromise;
     }
 
-    /* tslint:disable */
+    /* eslint-disable */
     private getItems(): ItemModel[] {
         let toolbar: (ToolbarItems | ItemModel)[] = this.parent.toolbar.filter((v: ToolbarItems, i: number, a: ToolbarItems[]) => a.indexOf(v) === i);
         let items: ItemModel[] = [];
@@ -268,7 +270,7 @@ export class Toolbar {
         this.parent.trigger(events.toolbarRender, toolbarArgs);
         return items;
     }
-    /* tslint:enable */
+    /* eslint-enable */
 
     private reportChange(args: ChangeEventArgs): void {
         this.dropArgs = args;
@@ -310,7 +312,7 @@ export class Toolbar {
         }
     }
 
-    private mdxQueryDialog(args: ClickEventArgs): void {
+    private mdxQueryDialog(args: ClickEventArgs): void {    /* eslint-disable-line */
         if (!(this.mdxDialog && !this.mdxDialog.isDestroyed)) {
             this.renderMDXDialog();
         }
@@ -343,7 +345,7 @@ export class Toolbar {
                 attrs: {
                     'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
                     'value': (action && action === 'rename' ? this.currentReport : '')
-                },
+                }
             });
             (input as HTMLTextAreaElement).setSelectionRange(input.textContent.length, input.textContent.length);
             outerDiv.appendChild(label);
@@ -431,7 +433,7 @@ export class Toolbar {
         this.dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     click: this.okBtnClick.bind(this),
@@ -472,7 +474,7 @@ export class Toolbar {
         this.mdxDialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     click: this.copyMDXQuery.bind(this),
@@ -520,9 +522,9 @@ export class Toolbar {
             this.action = 'Save';
             this.currentReport = reportInput.value;
             let isExist: boolean = false;
-            /* tslint:disable */
+            /* eslint-disable */
             let _this: any = this;
-            /* tslint:enable */
+            /* eslint-enable */
             let reports: FetchReportArgs = { reportName: [] };
             this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
                 for (let i: number = 0; i < observedArgs.reportName.length; i++) {
@@ -552,9 +554,9 @@ export class Toolbar {
             this.action = 'New';
             this.currentReport = reportInput.value;
             let isExist: boolean = false;
-            /* tslint:disable */
+            /* eslint-disable */
             let _this: any = this;
-            /* tslint:enable */
+            /* eslint-enable */
             let reports: FetchReportArgs = { reportName: [] };
             this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
                 for (let i: number = 0; i < observedArgs.reportName.length; i++) {
@@ -590,9 +592,9 @@ export class Toolbar {
             }
             this.action = 'Rename';
             let isExist: boolean = false;
-            /* tslint:disable */
+            /* eslint-disable */
             let _this: any = this;
-            /* tslint:enable */
+            /* eslint-enable */
             let reports: FetchReportArgs = { reportName: [] };
             this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
                 _this.renameText = reportInput.value;
@@ -651,7 +653,7 @@ export class Toolbar {
             target: document.body,
             width: 'auto',
             height: 'auto',
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     buttonModel: {
@@ -764,6 +766,7 @@ export class Toolbar {
         }
         this.confirmPopUp.hide();
     }
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
@@ -775,14 +778,14 @@ export class Toolbar {
                 let type: ChartSeriesType = types[i];
                 menuItems.push({
                     text: this.parent.localeObj.getConstant(type.toLowerCase()),
-                    id: this.parent.element.id + '_' + type,
+                    id: this.parent.element.id + '_' + type
                 });
             }
             if (menuItems.length === 7) {
                 menuItems.splice(6);
                 menuItems.push({
                     text: this.parent.localeObj.getConstant('MoreOption'),
-                    id: this.parent.element.id + '_' + 'ChartMoreOption',
+                    id: this.parent.element.id + '_' + 'ChartMoreOption'
                 });
             }
             let toDisable: boolean = (menuItems.length <= 0 || this.parent.displayOption.view === 'Table');
@@ -799,7 +802,7 @@ export class Toolbar {
             });
             let menu: MenuItemModel[] = [{
                 iconCss: cls.TOOLBAR_CHART + ' ' + cls.ICON,
-                items: toDisable ? [] : menuItems,
+                items: toDisable ? [] : menuItems
             }];
             if (this.chartMenu && !this.chartMenu.isDestroyed) {
                 this.chartMenu.destroy();
@@ -809,7 +812,7 @@ export class Toolbar {
                     items: menu, enableRtl: this.parent.enableRtl,
                     select: this.menuItemClick.bind(this),
                     beforeOpen: this.whitespaceRemove.bind(this),
-                    onClose: (args: OpenCloseMenuEventArgs) => {
+                    onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
                         this.focusToolBar();
                     },
                     beforeItemRender: this.multipleAxesCheckbox.bind(this)
@@ -818,7 +821,7 @@ export class Toolbar {
             this.chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
         }
     }
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private create(): void {
         if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
             this.createChartMenu();
@@ -1086,7 +1089,6 @@ export class Toolbar {
             removeClass(items.slice(3), cls.MENU_HIDE);
         }
     }
-    /* tslint:disable:max-line-length */
     private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
         if (!select('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
             select('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
@@ -1133,13 +1135,13 @@ export class Toolbar {
             select('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.remove(cls.PIVOT_DISABLE_ICON);
         }
     }
-    /* tslint:enable:max-line-length */
+    /* eslint-enable max-len */
     private updateReportList(): void {
         let reports: FetchReportArgs;
         if (isBlazor()) {
-            /* tslint:disable */
+            /* eslint-disable */
             let _this: any = this;
-            /* tslint:enable */
+            /* eslint-enable */
             reports = { reportName: [] };
             this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
                 _this.reportList.dataSource = observedArgs.reportName;
@@ -1167,7 +1169,7 @@ export class Toolbar {
             this.reportList.refresh();
         }
     }
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private menuItemClick(args: ClickEventArgs): void {
         let exportArgs: BeforeExportEventArgs = {};
         let type: string;
@@ -1177,7 +1179,6 @@ export class Toolbar {
             (args.item.id.split(this.parent.element.id + '_')[1] === 'showLegend')) {
             type = args.item.id.split(this.parent.element.id + '_')[1];
         }
-        /* tslint:disable:max-line-length */
         switch (args.item.id) {
             case (this.parent.element.id + 'grid'):
                 if (this.parent.grid && this.parent.chart) {
@@ -1380,7 +1381,7 @@ export class Toolbar {
                 }
                 break;
         }
-        /* tslint:enable:max-line-length */
+        /* eslint-enable max-len */
     }
     /**
      * @hidden
@@ -1442,7 +1443,6 @@ export class Toolbar {
         }
     }
     private chartTypeDialogUpdate(): void {
-        /* tslint:disable-next-line:max-line-length */
         let chartType: ChartSeriesType = (getInstance('#' + this.parent.element.id + '_ChartTypeOption', DropDownList) as DropDownList).value as ChartSeriesType;
         let checked: boolean = (getInstance('#' + this.parent.element.id + '_DialogMultipleAxis', CheckBox) as CheckBox).checked;
         let checkedShow: boolean = (getInstance('#' + this.parent.element.id + '_DialogShowLabel', CheckBox) as CheckBox).checked;
@@ -1464,9 +1464,8 @@ export class Toolbar {
             if (this.parent.chart) {
                 this.parent.currentView = 'Chart';
                 this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
-                /* tslint:disable:max-line-length */
-                this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
-                this.parent.chart.setProperties({ width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()) }, true);
+                this.parent.chart.element.style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()); /* eslint-disable-line */
+                this.parent.chart.setProperties({ width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()) }, true);   /* eslint-disable-line */
                 if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
                     this.parent.chartModule.updateView();
                 } else {
@@ -1553,7 +1552,7 @@ export class Toolbar {
     }
     /**
      * To refresh the toolbar 
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public refreshToolbar(): void {
@@ -1570,7 +1569,7 @@ export class Toolbar {
 
     /**
      * To destroy the toolbar 
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

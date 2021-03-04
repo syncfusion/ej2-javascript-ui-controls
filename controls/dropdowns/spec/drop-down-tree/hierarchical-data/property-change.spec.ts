@@ -262,6 +262,18 @@ describe('DropDownTree control', () => {
         });
 
         /**
+         * autocheck
+         */
+
+        it('dynamic autocheck', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", selected: "isSelected" , text: "name", expanded: 'expanded', child: "child" }, allowMultiSelection: true, showCheckBox:true, mode: 'Box' }, '#ddtree');
+            ddtreeObj.treeSettings.autoCheck = true;
+            ddtreeObj.dataBind();
+            expect(ddtreeObj.element.parentElement.querySelector(".e-chips-wrapper").classList.contains("e-icon-hide")).toBe(true);
+            expect(ddtreeObj.value.length).toBe(2);
+        });
+
+        /**
         * Width property
         */
 

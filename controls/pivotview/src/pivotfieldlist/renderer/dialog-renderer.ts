@@ -9,6 +9,7 @@ import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+
 /**
  * Module to render Pivot Field List Dialog
  */
@@ -26,13 +27,15 @@ export class DialogRenderer {
     private deferUpdateApplyButton: Button;
     private deferUpdateCancelButton: Button;
 
-    /** Constructor for render module */
-    constructor(parent: PivotFieldList) {
+    /** Constructor for render module
+     * @param {PivotFieldList} parent - Instance of field list.
+     */
+    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
         this.parent = parent;
     }
     /**
      * Initialize the field list layout rendering
-     * @returns void
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -184,24 +187,20 @@ export class DialogRenderer {
         }
         this.parent.updateDataSource(false);
         let parent: PivotFieldList = this.parent;
-        //setTimeout(() => {
         parent.axisFieldModule.render();
         parent.clonedDataSource = extend({}, parent.dataSourceSettings, null, true) as IDataOptions;
         parent.clonedFieldList = extend({}, parent.pivotFieldList, null, true) as IFieldListOptions;
-        //});
     }
     private cancelButtonClick(): void {
-        /* tslint:disable:align */
         if (isBlazor() && !this.parent.isPopupView) {
-            /* tslint:disable-next-line:max-line-length */
-            PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings((<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions));
+            PivotUtil.updateDataSourceSettings(this.parent, PivotUtil.getClonedDataSourceSettings((<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions));   /* eslint-disable-line */
         } else {
             this.parent.
                 setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
                 }, true);
         }
-        /* tslint:enable:align */
+        /* eslint-enable @typescript-eslint/indent */
         if (this.parent.dataType === 'olap') {
             this.parent.olapEngineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
             for (let name of Object.keys(this.parent.clonedFieldList)) {
@@ -256,7 +255,7 @@ export class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 width: '100%',
                 height: '100%',
-                position: { X: 'center', Y: 'center' },
+                position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
                 buttons: buttons,
                 target: document.body,
                 close: this.removeFieldListIcon.bind(this),
@@ -288,7 +287,7 @@ export class DialogRenderer {
                 allowDragging: true,
                 enableRtl: this.parent.enableRtl,
                 width: this.parent.element.style.width,
-                position: { X: 'center', Y: this.parent.element.offsetTop },
+                position: { X: 'center', Y: this.parent.element.offsetTop },    /* eslint-disable-line */
                 footerTemplate: template,
                 closeOnEscape: false,
                 target: !isNullOrUndefined(this.parent.target) ? ((typeof this.parent.target) === 'string') ?
@@ -311,6 +310,8 @@ export class DialogRenderer {
 
     /**
      * Called internally if any of the field added to axis.
+     * @param {string[]} selectedNodes - selectedNodes
+     * @returns {void}
      * @hidden
      */
     public updateDataSource(selectedNodes: string[]): void {
@@ -460,7 +461,7 @@ export class DialogRenderer {
         return footerContainer;
     }
 
-    private createAxisTable(axis: String): HTMLElement {
+    private createAxisTable(axis: string): HTMLElement {
         let axisWrapper: HTMLElement = createElement('div', {
             className: cls.FIELD_LIST_CLASS + '-' + axis
         });
@@ -474,7 +475,7 @@ export class DialogRenderer {
         return axisWrapper;
     }
 
-    private showCalculatedField(event: Event): void {
+    private showCalculatedField(event: Event): void {   /* eslint-disable-line */
         if (!this.parent.isAdaptive) {
             if (this.parent.dialogRenderer.fieldListDialog) {
                 this.parent.dialogRenderer.fieldListDialog.hide();
@@ -484,7 +485,7 @@ export class DialogRenderer {
         this.parent.notify(events.initCalculatedField, {});
     }
 
-    private showFieldListDialog(event: Event): void {
+    private showFieldListDialog(event: Event): void {   /* eslint-disable-line */
         let activeindex: number = this.adaptiveElement.selectedItem;
         this.parent.treeViewModule.render(activeindex);
     }
@@ -507,17 +508,15 @@ export class DialogRenderer {
     private onCloseFieldList(): void {
         if (this.parent.allowDeferLayoutUpdate) {
             this.parent.dataSourceSettings =
-                extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;
+                extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;   /* eslint-disable-line */
             this.parent.pivotGridModule.engineModule = this.parent.engineModule;
             this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
-            /* tslint:disable:align */
             this.parent.pivotGridModule.
                 setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions
+                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
                 }, true);
-            /* tslint:enable:align */
             if (Object.keys(this.parent.clonedFieldList).length > 0) {
-                this.parent.dataType === 'olap' ? this.parent.olapEngineModule.fieldList =
+                this.parent.dataType === 'olap' ? this.parent.olapEngineModule.fieldList =  /* eslint-disable-line */
                     extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions :
                     this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
             }
@@ -531,10 +530,10 @@ export class DialogRenderer {
         if (this.parent.isAdaptive && this.parent.allowCalculatedField && this.parent.calculatedFieldModule) {
             if (this.adaptiveElement && this.adaptiveElement.selectedItem === 4) {
                 if (select('#' + this.parent.element.id + 'droppable', this.adaptiveElement.element)) {
-                    /* tslint:disable */
+                    /* eslint-disable */
                     (this.parent.calculatedFieldModule as any)
                         .updateAdaptiveCalculatedField(false);
-                    /* tslint:enable */
+                    /* eslint-enable */
                 } else {
                     this.parent.notify(events.initCalculatedField, { edit: false });
                 }
@@ -546,7 +545,6 @@ export class DialogRenderer {
     }
 
     private keyPress(e: KeyboardEvent): void {
-        let target: Element = (e.target as HTMLElement);
         if (e.keyCode === 13 && e.target) {
             (e.target as HTMLElement).click();
             e.preventDefault();

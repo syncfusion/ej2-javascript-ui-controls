@@ -881,10 +881,18 @@ export interface SeriesModel extends SeriesBaseModel{
      * * Pentagon
      * * InvertedTriangle
      * * SeriesType
+     * * Image
      * @default 'SeriesType'
      */
 
     legendShape?: LegendShape;
+
+    /**
+     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * @default ''
+     */
+
+    legendImageUrl?: string;
 
     /**
      * Custom style for the selected series or points.

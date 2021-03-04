@@ -95,9 +95,11 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             node.classList.add('e-fltr-icon');
             let matchFlColumns: Object[] = [];
             if (this.parent.filterSettings.columns.length && this.parent.filterSettings.columns.length !== matchFlColumns.length) {
+                let foreignColumn: Column[] = this.parent.getForeignKeyColumns();
                 for (let index: number = 0; index < this.parent.columns.length; index++) {
                     for (let count: number = 0; count < this.parent.filterSettings.columns.length; count++) {
-                        if (this.parent.filterSettings.columns[count].field === column.field) {
+                        if (this.parent.filterSettings.columns[count].field === column.field || (foreignColumn.length
+                            && column.foreignKeyValue === this.parent.filterSettings.columns[count].field)) {
                             fltrMenuEle.classList.add('e-filtered');
                             matchFlColumns.push(column.field);
                             break;

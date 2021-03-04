@@ -16,7 +16,7 @@ import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import * as events from '../base/constant';
-import { getFrozenTableName, splitFrozenRowObjectCells } from '../base/util';
+import { splitFrozenRowObjectCells } from '../base/util';
 import { ColumnWidthService } from '../services/width-controller';
 
 /**
@@ -256,7 +256,7 @@ export class VirtualFreezeHdrRenderer extends FreezeRender implements IRenderer 
         this.getFrozenHeader().appendChild(this.getTable());
         this.virtualHdrRenderer.virtualEle.wrapper.appendChild(this.getFrozenHeader());
         if (this.parent.enableColumnVirtualization) {
-            this.virtualHdrRenderer.virtualEle.movableWrapper.appendChild(this.createTable());
+            this.virtualHdrRenderer.virtualEle.movableWrapper.appendChild(this.createHeader(undefined, 'movable'));
         } else {
             this.getMovableHeader().appendChild(this.createTable());
         }
@@ -409,8 +409,10 @@ export function getReorderedFrozenRows(
     if (!args.renderMovableContent) {
         args.virtualInfo.columnIndexes = [];
     }
+    let firstRecordslength: number = parent.getCurrentViewRecords().length;
+    firstPageRecords = parent.renderModule.data.dataManager.dataSource.json.slice(0, firstRecordslength);
     let virtualRows: Row<Column>[] = virtualRenderer.vgenerator.generateRows(firstPageRecords, args);
-    rows = splitReorderedRows(virtualRows, parent, freezeRowGenerator);
+    rows = splitReorderedRows(virtualRows, parent, args, freezeRowGenerator);
     args.virtualInfo.blockIndexes = bIndex;
     args.virtualInfo.columnIndexes = colIndex;
     args.virtualInfo.page = page;
@@ -418,8 +420,17 @@ export function getReorderedFrozenRows(
 }
 
 /** @hidden */
-export function splitReorderedRows(rows: Row<Column>[], parent: IGrid, freezeRowGenerator: FreezeRowModelGenerator): Row<Column>[] {
-    let tableName: freezeTable = getFrozenTableName(parent, parent.tableIndex);
+export function splitReorderedRows(
+    rows: Row<Column>[], parent: IGrid, args: NotifyArgs, freezeRowGenerator: FreezeRowModelGenerator
+): Row<Column>[] {
+    let tableName: freezeTable;
+    if (args.renderMovableContent) {
+        tableName = 'movable';
+    } else if (args.renderFrozenRightContent) {
+        tableName = 'frozen-right';
+    } else {
+        tableName = 'frozen-left';
+    }
     for (let i: number = 0, len: number = rows.length; i < len; i++) {
         rows[i].cells = splitFrozenRowObjectCells(parent, rows[i].cells, tableName);
     }
@@ -571,19 +582,11 @@ export class ColumnVirtualFreezeRenderer extends ColumnFreezeContentRenderer imp
         this.virtualRenderer.getVirtualData(data);
     }
 
-    public renderNextFrozentPart(e: NotifyArgs): void {
-        if (this.parent.getFrozenMode() === 'Left' || this.parent.getFrozenMode() === 'Right') {
-            if (this.parent.tableIndex === 1) {
-                e.renderMovableContent = true;
-                this.refreshContentRows(extend({}, e));
-            }
-        }
-        if (this.parent.getFrozenMode() === 'Left-Right') {
-            if (this.parent.tableIndex === 1 || this.parent.tableIndex === 2) {
-                e.renderMovableContent = this.parent.tableIndex === 1;
-                e.renderFrozenRightContent = this.parent.tableIndex === 2;
-                this.refreshContentRows(extend({}, e));
-            }
+    public renderNextFrozentPart(e: NotifyArgs, tableName: freezeTable): void {
+        e.renderMovableContent = this.parent.getFrozenLeftCount() ? tableName === 'frozen-left' : tableName === 'frozen-right';
+        e.renderFrozenRightContent = this.parent.getFrozenMode() === 'Left-Right' && tableName === 'movable';
+        if (e.renderMovableContent || e.renderFrozenRightContent) {
+            this.refreshContentRows(extend({}, e));
         }
     }
 

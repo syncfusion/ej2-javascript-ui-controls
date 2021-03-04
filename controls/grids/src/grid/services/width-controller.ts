@@ -222,47 +222,44 @@ export class ColumnWidthService {
         return headerCol;
     }
 
+    /** @hidden */
     public refreshFrozenScrollbar(): void {
         let args: NotifyArgs = { cancel: false };
         this.parent.notify(preventFrozenScrollRefresh, args);
         if (args.cancel) {
             return;
         }
-        let left: HTMLElement = this.parent.getHeaderContent().querySelector('.e-frozenheader').querySelector('table');
-        let movable: HTMLElement = this.parent.getContent().querySelector('.e-movablecontent').querySelector('table');
-        let right: HTMLElement = this.parent.getHeaderContent().querySelector('.e-frozen-right-header');
-        if (movable && left) {
-            let leftScrollbar: HTMLElement = this.parent.getContent().querySelector('.e-frozenscrollbar');
-            let movableScrollbar: HTMLElement = this.parent.getContent().querySelector('.e-movablescrollbar');
-            let rightScrollbar: HTMLElement = this.parent.getContent().querySelector('.e-frozen-right-scrollbar');
-            let movableChild: HTMLElement = this.parent.getContent().querySelector('.e-movablechild');
-            let content: HTMLElement = this.parent.getContent() as HTMLElement;
-            let scrollbarWidth: number = getScrollBarWidth();
-            let frzHdrWidth: number = left.offsetWidth;
-            let mvblHdrWidth: number = movable.offsetWidth;
+        let scrollWidth: number = getScrollBarWidth();
+        let frozenScrollbar: HTMLElement = this.parent.element.querySelector('.e-frozenscrollbar');
+        let movableScrollbar: HTMLElement = this.parent.element.querySelector('.e-movablescrollbar');
+        let frozencontent: HTMLElement = this.parent.getContent().querySelector('.e-frozencontent');
+        let movableContent: HTMLElement = this.parent.getContent().querySelector('.e-movablecontent');
+        let frozenWidth: number = frozencontent.firstElementChild.getBoundingClientRect().width;
+        let movableWidth: number = movableContent.firstElementChild.getBoundingClientRect().width;
+        if (this.parent.getFrozenMode() === 'Right') {
+            frozenWidth = frozenWidth + scrollWidth;
+        }
+        frozenScrollbar.style.width = frozenWidth + 'px';
+        if (this.parent.getFrozenMode() === 'Left-Right') {
+            let frozenRightScrollbar: HTMLElement = this.parent.element.querySelector('.e-frozen-right-scrollbar');
+            let frozenRightWidth: number = this.parent.getContent().querySelector('.e-frozen-right-content')
+                .firstElementChild.getBoundingClientRect().width;
+            if (this.parent.height !== 'auto') {
+                frozenRightWidth = frozenRightWidth + scrollWidth;
+            }
+            frozenRightScrollbar.style.width = frozenRightWidth + 'px';
+        } else {
             if (this.parent.enableColumnVirtualization) {
                 let placeHolder: HTMLElement = this.parent.getMovableVirtualContent().querySelector('.e-virtualtrack');
                 if (placeHolder) {
-                    mvblHdrWidth = placeHolder.scrollWidth;
+                    movableWidth = placeHolder.scrollWidth;
                 }
             }
-            leftScrollbar.style.width = frzHdrWidth.toString() + 'px';
-            let movableWidth: number = (this.parent.getContent().querySelector('.e-movablecontent') as HTMLElement).offsetWidth;
-            if (right) {
-                let rightwidth: number = right.offsetWidth;
-                if ((content.firstChild as HTMLElement).scrollHeight > (content.firstChild as HTMLElement).clientHeight) {
-                    rightwidth = right.offsetWidth + scrollbarWidth;
-                }
-                rightScrollbar.style.width = rightwidth.toString() + 'px';
-                movableWidth = movableWidth - rightwidth;
+            if (this.parent.getFrozenMode() !== 'Right' && this.parent.height !== 'auto') {
+                movableWidth = movableWidth + scrollWidth;
             }
-            if (this.parent.height !== 'auto' && (this.parent.getFrozenMode() === 'Left' || this.parent.getFrozenColumns())
-                && (content.firstChild as HTMLElement).scrollHeight >= (content.firstChild as HTMLElement).clientHeight) {
-                mvblHdrWidth = mvblHdrWidth + scrollbarWidth;
-            }
-            movableScrollbar.style.width = movableWidth.toString() + 'px';
-            movableChild.style.width = mvblHdrWidth.toString() + 'px';
         }
+        (movableScrollbar.firstElementChild as HTMLElement).style.width = movableWidth + 'px';
     }
 
     public getSiblingsHeight(element: HTMLElement): number {

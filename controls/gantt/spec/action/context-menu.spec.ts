@@ -1,7 +1,7 @@
-import { ContextMenuClickEventArgs } from './../../src/gantt/base/interface';
+import { ContextMenuClickEventArgs, IGanttData, ITaskData } from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize } from '../../src/index';
-import { projectData1, scheduleModeData } from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 describe('Context-', () => {
     Gantt.Inject(Edit, Selection, ContextMenu, Sort, Resize);
@@ -57,6 +57,70 @@ describe('Context-', () => {
         rowHeight: 40,
         taskbarHeight: 30,
     };
+    let selfGanttModel: GanttModel = {
+        dataSource: selfReference,
+        allowSelection: true,
+        allowResizing: true,
+        allowSorting: true,
+        enableContextMenu: true,
+        contextMenuItems: menuItem,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            parentID: 'parentID',
+            dependency: 'Predecessor'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Delete'],
+        projectStartDate: new Date('02/01/2017'),
+        projectEndDate: new Date('12/30/2017'),
+        rowHeight: 40,
+        taskbarHeight: 30,
+    };
+    describe('Content menu -', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(selfGanttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+        it('Empty', (done: Function) => {
+            expect(true).toBeTruthy();
+            done();
+        });      
+        it('indent record', () => {
+            ganttObj.selectionModule.selectRow(8);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Below' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData.length).toBe(16);
+            let indent: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Indent' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+            expect((ganttObj.flatData[10] as IGanttData).taskData[ganttObj.taskFields.id]).toBe(10);
+        });
+    });
     describe('header menu -', () => {
         beforeAll((done: Function) => {
             ganttObj = createGantt(ganttModel, done);

@@ -28,15 +28,17 @@ export class PivotUtil {
         return date;
     }
 
+    /* eslint-disable */
     public static getClonedData(data: { [key: string]: Object }[]): { [key: string]: Object }[] {
         let clonedData: { [key: string]: Object }[] = [];
         if (data) {
             for (let item of data as { [key: string]: Object }[]) {
                 let fields: string[] = Object.keys(item);
+                /* eslint-enable */
                 let keyPos: number = 0;
-                /* tslint:disable:no-any */
+                /* eslint-disable @typescript-eslint/no-explicit-any */
                 let framedSet: any = {};
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
                 while (keyPos < fields.length) {
                     framedSet[fields[keyPos]] = item[fields[keyPos]];
                     keyPos++;
@@ -54,7 +56,9 @@ export class PivotUtil {
                 clonedSets[i] = [];
                 for (let j: number = 0; j < pivotValues[i].length; j++) {
                     if (pivotValues[i][j]) {
+                        /* eslint-disable */
                         clonedSets[i][j] = this.getClonedPivotValueObj(pivotValues[i][j] as { [key: string]: Object });
+                        /* eslint-enable */
                     }
                 }
             }
@@ -62,11 +66,13 @@ export class PivotUtil {
         return clonedSets;
     }
 
+    /* eslint-disable */
     private static getClonedPivotValueObj(data: { [key: string]: Object }): { [key: string]: Object } {
+        /* eslint-enable */
         let keyPos: number = 0;
-        /* tslint:disable:no-any */
+        /* eslint-disable @typescript-eslint/no-explicit-any */
         let framedSet: any = {};
-        /* tslint:enable:no-any */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         if (!(data === null || data === undefined)) {
             let fields: string[] = Object.keys(data);
             while (keyPos < fields.length) {
@@ -79,11 +85,11 @@ export class PivotUtil {
         return framedSet;
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     private static getDefinedObj(data: { [key: string]: any }): { [key: string]: any } {
         let keyPos: number = 0;
         let framedSet: any = {};
-        /* tslint:enable:no-any */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         if (!(data === null || data === undefined)) {
             let fields: string[] = Object.keys(data);
             while (keyPos < fields.length) {
@@ -98,7 +104,9 @@ export class PivotUtil {
         return framedSet;
     }
 
+    /* eslint-disable */
     public static inArray(value: Object, collection: Object[]): number {
+        /* eslint-enable */
         if (collection) {
             for (let i: number = 0, cnt: number = collection.length; i < cnt; i++) {
                 if (collection[i] === value) {
@@ -109,8 +117,9 @@ export class PivotUtil {
         return -1;
     }
 
+    /* eslint-disable */
     public static isContainCommonElements(collection1: Object[], collection2: Object[]): boolean {
-        let isContain: boolean = false;
+        /* eslint-enable */
         for (let i: number = 0, cnt: number = collection1.length; i < cnt; i++) {
             for (let j: number = 0, lnt: number = collection2.length; j < lnt; j++) {
                 if (collection2[j] === collection1[i]) {
@@ -121,8 +130,9 @@ export class PivotUtil {
         return false;
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable */
     public static setPivotProperties(control: any, properties: any): void {
+        /* eslint-enable */
         control.allowServerDataBinding = false;
         if (control.pivotGridModule) {
             control.pivotGridModule.allowServerDataBinding = false;
@@ -133,7 +143,7 @@ export class PivotUtil {
             control.pivotGridModule.allowServerDataBinding = true;
         }
     }
-    /* tslint:enable:no-any */
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     public static getClonedDataSourceSettings(dataSourceSettings: IDataOptions): IDataOptions {
         let clonesDataSource: IDataOptions = this.getDefinedObj({
@@ -173,10 +183,10 @@ export class PivotUtil {
             emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
             groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings),
             showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
-            authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication),
-            /* tslint:disable:no-any */
+            authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication)
+            /* eslint-disable @typescript-eslint/no-explicit-any */
         } as { [key: string]: any });
-        /* tslint:enable:no-any */
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         return clonesDataSource;
     }
 
@@ -220,10 +230,10 @@ export class PivotUtil {
                     emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
                     groupSettings: dataSourceSettings.groupSettings,
                     showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
-                    authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication),
-                    /* tslint:disable:no-any */
+                    authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication)
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any })
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             });
         }
     }
@@ -232,7 +242,6 @@ export class PivotUtil {
         if (collection) {
             let clonedCollection: IFieldOptions[] = [];
             for (let set of collection) {
-                let field: IFieldOptions = {};
                 clonedCollection.push(this.getDefinedObj({
                     name: set.name,
                     caption: set.caption,
@@ -251,9 +260,9 @@ export class PivotUtil {
                     showValueTypeIcon: set.showValueTypeIcon,
                     showEditIcon: set.showEditIcon,
                     allowDragAndDrop: set.allowDragAndDrop
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -278,9 +287,9 @@ export class PivotUtil {
                     showNumberFilter: set.showNumberFilter,
                     value1: set.value1,
                     value2: set.value2
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -295,9 +304,9 @@ export class PivotUtil {
                 clonedCollection.push(this.getDefinedObj({
                     name: set.name,
                     order: set.order
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -313,9 +322,9 @@ export class PivotUtil {
                     name: set.name,
                     delimiter: set.delimiter,
                     items: set.items ? [...set.items] : set.items
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -340,9 +349,9 @@ export class PivotUtil {
                     skeleton: set.skeleton,
                     type: set.type,
                     useGrouping: set.useGrouping
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -350,7 +359,9 @@ export class PivotUtil {
         }
     }
 
+    /* eslint-disable */
     private static CloneValueSortObject(collection: IValueSortSettings): IValueSortSettings {
+        /* eslint-enable */
         if (collection) {
             let clonedCollection: IValueSortSettings = {
                 columnIndex: collection.columnIndex,
@@ -365,7 +376,9 @@ export class PivotUtil {
         }
     }
 
+    /* eslint-disable */
     private static CloneAuthenticationObject(collection: IAuthenticationInfo): IAuthenticationInfo {
+        /* eslint-enable */
         if (collection) {
             let clonedCollection: IAuthenticationInfo = {
                 userName: collection.userName,
@@ -386,9 +399,9 @@ export class PivotUtil {
                     formatString: set.formatString,
                     formula: set.formula,
                     hierarchyUniqueName: set.hierarchyUniqueName
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -413,9 +426,9 @@ export class PivotUtil {
                     } : set.style,
                     value1: set.value1,
                     value2: set.value2
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -436,9 +449,9 @@ export class PivotUtil {
                     groupInterval: set.groupInterval,
                     rangeInterval: set.rangeInterval,
                     type: set.type
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
 
             }
             return clonedCollection;
@@ -454,9 +467,9 @@ export class PivotUtil {
                 clonedCollection.push(this.getDefinedObj({
                     groupName: set.groupName,
                     items: set.items ? [...set.items] : set.items
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                 } as { [key: string]: any }));
-                /* tslint:enable:no-any */
+                /* eslint-enable @typescript-eslint/no-explicit-any */
             }
             return clonedCollection;
         } else {
@@ -472,8 +485,7 @@ export class PivotUtil {
         return undefined;
     }
 
-    /* tslint:disable-next-line:max-line-length */
-    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] | IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings | ICalculatedFieldSettings {
+    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] | IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings | ICalculatedFieldSettings { /* eslint-disable-line */
         return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
     }
 
@@ -486,7 +498,6 @@ export class PivotUtil {
         for (let i: number = 0, len: number = fields.length; i < len; i++) {
             for (let j: number = 0, cnt: number = (fields[i] ? fields[i].length : 0); j < cnt; j++) {
                 if (fields[i][j] && fields[i][j].name === fieldName) {
-                    /* tslint:disable-next-line:max-line-length */
                     return { fieldName: fieldName, fieldItem: fields[i][j], axis: i === 0 ? 'rows' : i === 1 ? 'columns' : i === 2 ? 'values' : 'filters', position: j };
                 }
             }
@@ -513,8 +524,7 @@ export class PivotUtil {
         return { fieldName: fieldName, fieldItem: fieldItem, axis: 'fieldlist', position: -1 };
     }
 
-    /* tslint:disable-next-line:max-line-length */
-    public static isButtonIconRefesh(prop: string, oldProp: PivotViewModel | PivotFieldListModel, newProp: PivotViewModel | PivotFieldListModel): boolean {
+    public static isButtonIconRefesh(prop: string, oldProp: PivotViewModel | PivotFieldListModel, newProp: PivotViewModel | PivotFieldListModel): boolean { /* eslint-disable-line */
         let isButtonRefresh: boolean = false;
         try {
             if (prop === 'dataSourceSettings' && oldProp.dataSourceSettings && newProp.dataSourceSettings) {
@@ -523,13 +533,14 @@ export class PivotUtil {
                 let newAxesProp: string[] = Object.keys(newProp.dataSourceSettings);
                 if (oldAxesProp && newAxesProp && newAxesProp.length > 0 && oldAxesProp.length === newAxesProp.length) {
                     let axes: string[] = ['rows', 'columns', 'values', 'filters'];
-                    /* tslint:disable:no-any */
+                    /* eslint-disable @typescript-eslint/no-explicit-any */
                     for (let i: number = 0; i < newAxesProp.length; i++) {
-                        let oldAxis: string[] = (newAxesProp[i] in oldProp.dataSourceSettings && !isNullOrUndefined((oldProp.dataSourceSettings as any)[newAxesProp[i]])) ? Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i]]) : [];
-                        let newAxis: string[] = (newAxesProp[i] in newProp.dataSourceSettings && !isNullOrUndefined((newProp.dataSourceSettings as any)[newAxesProp[i]])) ? Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i]]) : [];
+                        let oldAxis: string[] = (newAxesProp[i] in oldProp.dataSourceSettings && !isNullOrUndefined((oldProp.dataSourceSettings as any)[newAxesProp[i]])) ? Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i]]) : [];  /* eslint-disable-line */
+                        let newAxis: string[] =
+                            (newAxesProp[i] in newProp.dataSourceSettings && !isNullOrUndefined((newProp.dataSourceSettings as any)[newAxesProp[i]])) ? /* eslint-disable-line */
+                                Object.keys((newProp.dataSourceSettings as any)[newAxesProp[i]]) : [];
                         if (axes.indexOf(newAxesProp[i]) !== -1 && axes.indexOf(oldAxesProp[i]) !== -1 &&
                             oldAxis && newAxis && newAxis.length > 0 && oldAxis.length === newAxis.length) {
-                            /* tslint:disable-next-line:max-line-length */
                             let options: string[] = ['showFilterIcon', 'showSortIcon', 'showRemoveIcon', 'showValueTypeIcon', 'showEditIcon', 'allowDragAndDrop'];
                             for (let j: number = 0; j < newAxis.length; j++) {
                                 let oldAxisProp: string[] = Object.keys((oldProp.dataSourceSettings as any)[newAxesProp[i]][newAxis[j]]);
@@ -553,7 +564,7 @@ export class PivotUtil {
                             break;
                         }
                     }
-                    /* tslint:enable:no-any */
+                    /* eslint-enable @typescript-eslint/no-explicit-any */
                 }
                 let a: number = 0; let b: number = 0; let c: number = 0;
                 for (let validation of propValidation) {
@@ -575,9 +586,10 @@ export class PivotUtil {
         return isButtonRefresh;
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable */
     public static formatPivotValues(pivotValues: any): any {
         let values: any = [];
+        /* eslint-enable */
         for (let i: number = 0; i < pivotValues.length; i++) {
             if (pivotValues[i]) {
                 values[i] = [];
@@ -614,12 +626,14 @@ export class PivotUtil {
         return values;
     }
 
+    /* eslint-disable */
     public static formatPdfHeaderFooter(pdf: any): any {
         let contents: any = [];
         if (!isNullOrUndefined(pdf)) {
             for (let i: number = 0; i < pdf.length; i++) {
                 let a = pdf[i];
                 let content = {
+                    /* eslint-enable */
                     type: a.Type,
                     pageNumberType: a.PageNumberType,
                     style: a.Style ? {
@@ -641,11 +655,11 @@ export class PivotUtil {
                     format: a.Format,
                     position: a.Position !== null ? {
                         x: a.Position.X,
-                        y: a.Position.Y,
+                        y: a.Position.Y
                     } : null,
                     size: a.Size !== null ? {
                         height: a.Size.Height,
-                        width: a.Size.Width,
+                        width: a.Size.Width
                     } : null,
                     src: a.Src,
                     value: a.Value,
@@ -657,22 +671,23 @@ export class PivotUtil {
         return contents;
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable */
     public static formatPdfExportProperties(pdf: any): any {
         let values: any;
+        /* eslint-enable */
         values = this.getDefinedObj({
             pageOrientation: typeof pdf.PageOrientation === 'string' ? pdf.PageOrientation : null,
             pageSize: typeof pdf.PageSize === 'string' ? pdf.PageSize : null,
             header: !isNullOrUndefined(pdf.Header) ? {
                 fromTop: pdf.Header.FromTop,
                 height: pdf.Header.Height,
-                contents: this.formatPdfHeaderFooter(pdf.Header.Contents),
+                contents: this.formatPdfHeaderFooter(pdf.Header.Contents)
             } : null,
             columns: pdf.Columns,
             footer: !isNullOrUndefined(pdf.Footer) ? {
                 fromTop: pdf.Footer.FromBottom,
                 height: pdf.Footer.Height,
-                contents: this.formatPdfHeaderFooter(pdf.Footer.Contents),
+                contents: this.formatPdfHeaderFooter(pdf.Footer.Contents)
             } : null,
             includeHiddenColumn: pdf.IncludeHiddenColumn,
             dataSource: pdf.DataSource,
@@ -688,8 +703,10 @@ export class PivotUtil {
         });
         return values;
     }
+    /* eslint-disable */
     public static formatExcelStyle(style: any): any {
         let prop;
+        /* eslint-enable */
         if (!isNullOrUndefined(style)) {
             prop = this.getDefinedObj({
                 fontColor: style.FontColor,
@@ -711,11 +728,12 @@ export class PivotUtil {
         return prop;
     }
 
+    /* eslint-disable */
     public static formatExcelCell(cell: any): any {
         let cells: ExcelRow[] = [];
         if (!isNullOrUndefined(cell)) {
             for (let i: number = 0; i < cell.length; i++) {
-                let prop = this.getDefinedObj({
+                this.getDefinedObj({
                     index: !isNullOrUndefined(cell[i].Index) ? cell[i].Index : null,
                     colSpan: !isNullOrUndefined(cell[i].ColSpan) ? cell[i].ColSpan : null,
                     value: !isNullOrUndefined(cell[i].Value) ? cell[i].Value : null,
@@ -726,11 +744,13 @@ export class PivotUtil {
                     styles: this.formatExcelStyle(cell[i].Style),
                     rowSpan: !isNullOrUndefined(cell[i].RowSpan) ? cell[i].RowSpan : null
                 });
+                /* eslint-enable */
             }
         }
         return cells;
     }
 
+    /* eslint-disable */
     public static formatExcelHeaderFooter(excel: any): any {
         let rows: ExcelRow[] = [];
         if (!isNullOrUndefined(excel)) {
@@ -748,6 +768,7 @@ export class PivotUtil {
     }
 
     public static formatExcelExportProperties(excel: any): any {
+        /* eslint-enable */
         let prop: ExcelExportProperties;
         prop = this.getDefinedObj({
             dataSource: excel.DataSource,
@@ -778,11 +799,12 @@ export class PivotUtil {
         return prop;
     }
 
-    /* tslint:disable:no-any */
+    /* eslint-disable */
     public static formatFieldList(fieldList: any): any {
         let keys: string[] = Object.keys(fieldList);
         let fList: any = {};
         for (let i: number = 0; i < keys.length; i++) {
+            /* eslint-enable */
             if (fieldList[keys[i]]) {
                 fList[keys[i]] = {
                     id: fieldList[keys[i]].Id,
@@ -813,12 +835,13 @@ export class PivotUtil {
                     allowDragAndDrop: fieldList[keys[i]].AllowDragAndDrop,
                     isCalculatedField: fieldList[keys[i]].IsCalculatedField,
                     showSubTotals: fieldList[keys[i]].ShowSubTotals
-                }
+                };
             }
         }
         return fList;
     }
 
+    /* eslint-disable */
     public static frameContent(pivotValues: IPivotValues, type: string, rowPosition: number, control: PivotView | PivotFieldList): IGridValues {
         let dataContent: IGridValues = [];
         var pivot = control;
@@ -864,6 +887,7 @@ export class PivotUtil {
     }
 
     public static updateReport(control: PivotView | PivotFieldList, report: any): void {
+        /* eslint-enable */
         control.setProperties({ dataSourceSettings: { rows: [] } }, true);
         control.setProperties({ dataSourceSettings: { columns: [] } }, true);
         control.setProperties({ dataSourceSettings: { formatSettings: [] } }, true);
@@ -925,6 +949,7 @@ export class PivotUtil {
     }
 
     public static generateUUID(): string {
+        /* eslint-disable */
         let d: number = new Date().getTime();
         let d2: number = (performance && performance.now && (performance.now() * 1000)) || 0;
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -938,5 +963,6 @@ export class PivotUtil {
             }
             return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
         });
+        /* eslint-enable */
     }
 }

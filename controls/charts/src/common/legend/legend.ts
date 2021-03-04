@@ -2,9 +2,9 @@ import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart, ILegendRegions } from '../../chart';
 import { LegendSettingsModel, LocationModel } from './legend-model';
-import { Font, Border, Margin } from '../model/base';
+import { Font, Border, Margin, ContainerPadding } from '../model/base';
 import { Theme } from '../model/theme';
-import { MarginModel, FontModel, BorderModel } from '../model/base-model';
+import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';
 import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim } from '../utils/helper';
 import { RectOption, textElement, stringToNumber } from '../utils/helper';
 import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';
@@ -145,6 +145,13 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     @Complex<MarginModel>({left: 0, right: 0, top: 0, bottom: 0}, Margin)
     public margin: MarginModel;
+
+    /**
+     *  Options to customize left, right, top and bottom padding for legend container of the chart.
+     */
+
+    @Complex<ContainerPaddingModel>({ left: 0, right: 0, top: 0, bottom: 0 }, ContainerPadding)
+    public containerPadding: ContainerPaddingModel;
 
     /**
      * Padding between the legend shape and text.
@@ -313,6 +320,10 @@ export class BaseLegend {
             this.legendBounds.height = stringToNumber(legend.height || defaultValue, availableSize.height);
         }
         this.library.getLegendBounds(availableSize, this.legendBounds, legend);
+        if (!this.isBulletChartControl) {
+            this.legendBounds.width += (this.legend.containerPadding.left + this.legend.containerPadding.right);
+            this.legendBounds.height += (this.legend.containerPadding.top + this.legend.containerPadding.bottom);
+        }
         this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize, maxLabelSize);
     }
     /**
@@ -463,8 +474,10 @@ export class BaseLegend {
             let legendSeriesGroup: Element; // legendItem group for each series group element
             let start: ChartLocation; // starting shape center x,y position && to resolve lint error used new line for declaration
             start = new ChartLocation(
-                legendBounds.x + titlePlusArrowWidth + padding + (legend.shapeWidth / 2),
-                legendBounds.y + titleHeight + upArrowHeight + padding + this.maxItemHeight / 2
+                this.isBulletChartControl ? legendBounds.x + titlePlusArrowWidth + padding + (legend.shapeWidth / 2) :
+                    legendBounds.x + titlePlusArrowWidth + padding + (legend.shapeWidth / 2) + legend.containerPadding.left,
+                this.isBulletChartControl ? legendBounds.y + titleHeight + upArrowHeight + padding + (this.maxItemHeight / 2) :
+                    legendBounds.y + titleHeight + upArrowHeight + padding + (this.maxItemHeight / 2) + legend.containerPadding.top
             );
             let anchor: string = (chart as Chart).isRtlEnabled ? 'end' : 'start';
             let textOptions: TextOption = new TextOption('', start.x, start.y, anchor);
@@ -624,8 +637,8 @@ export class BaseLegend {
         options.id += '_clipPath_rect';
         options.width = (
             (!this.isChartControl && chart.getModuleName() !== 'bulletChart'
-            ) && this.isVertical) ? this.maxWidth - padding : legendBounds.width;
-
+            ) && this.isVertical) ? this.maxWidth - padding + legend.containerPadding.left + legend.containerPadding.right
+            : legendBounds.width;
         if (!isCanvas) {
             this.clipRect = chart.renderer.drawRectangle(options);
             clippath.appendChild(this.clipRect);
@@ -664,10 +677,10 @@ export class BaseLegend {
         let regionPadding: number;
         let isCanvas: boolean = (this.chart as Chart).enableCanvas;
         if (!isCanvas) {
-            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight), '',
+            group.appendChild(drawSymbol(legendOption.location, shape, new Size(this.legend.shapeWidth, this.legend.shapeHeight),
                 // tslint:disable-next-line:max-line-length
                 // tslint:disable-next-line:align
-                symbolOption, this.accessbilityText , this.chart.renderer, null,
+                legendOption.url, symbolOption, this.accessbilityText , this.chart.renderer, null,
                 this.isBulletChartControl, control
             ));
         } else {
@@ -987,17 +1000,19 @@ export class LegendOptions {
     public type: ChartSeriesType | AccumulationType;
     public textSize: Size;
     public location: ChartLocation = { x: 0, y: 0 };
+    public url?: string;
     public pointIndex?: number;
     public seriesIndex?: number;
     public markerShape?: ChartShape;
     public markerVisibility?: boolean;
     constructor(
-        text: string, fill: string, shape: LegendShape, visible: boolean, type: ChartSeriesType | AccumulationType,
+        text: string, fill: string, shape: LegendShape, visible: boolean, type: ChartSeriesType | AccumulationType, url?: string,
         markerShape?: ChartShape, markerVisibility?: boolean, pointIndex?: number, seriesIndex?: number
         ) {
         this.text =  text;
         this.fill = fill;
         this.shape = shape;
+        this.url = url;
         this.visible =  visible;
         this.type = type;
         this.markerVisibility = markerVisibility;

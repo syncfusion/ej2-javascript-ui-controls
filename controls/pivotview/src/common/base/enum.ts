@@ -2,33 +2,33 @@
  * Specifies common enumerations
  */
 
-/** 
+/**
  * It defines the field list render modes. The available modes are:
  * * Fixed - To display the field list icon in pivot table UI to invoke the built-in dialog.
  * * Popup - To display the field list in a static position within a web page.
  */
 export type Mode =
-    /** 
-     * To display the field list icon in pivot table UI to invoke the built-in dialog. 
+    /**
+     * To display the field list icon in pivot table UI to invoke the built-in dialog.
      * It hepls to display over the pivot table UI without affecting any form of UI shrink within a web page.
      */
     'Fixed' |
     /** To display the field list in a static position within a web page. */
     'Popup';
 
-/** Allow options for performing CRUD operations with different modes in the data grid that used to update the appropriate cells in the pivot table. 
+/** Allow options for performing CRUD operations with different modes in the data grid that used to update the appropriate cells in the pivot table.
  * The available modes are as follows:
  * * Normal - Allows the currently selected row alone will be completely changed to edit state. You can change the cell values and save it to the data source by clicking “Update” toolbar button.
  * * Dialog - Allows the currently selected row data will be shown in an exclusive dialog. You can change the cell values and save it to the data source by clicking “Save” button in the dialog.
- * * Batch - Allows you to perform double-click on any data specific cell in the data grid, the state of that selected cell will be changed to edit state. 
+ * * Batch - Allows you to perform double-click on any data specific cell in the data grid, the state of that selected cell will be changed to edit state.
  */
 export type EditMode =
     /** Allows the currently selected row alone will be completely changed to edit state. You can change the cell values and save it to the data source by clicking “Update” toolbar button. */
     'Normal' |
     /** Allows the currently selected row data will be shown in an exclusive dialog. You can change the cell values and save it to the data source by clicking “Save” button in the dialog. */
     'Dialog' |
-    /** 
-     * Allows you to perform double-click on any data specific cell in the data grid, the state of that selected cell will be changed to edit state. 
+    /**
+     * Allows you to perform double-click on any data specific cell in the data grid, the state of that selected cell will be changed to edit state.
      * You can perform bulk changes like add, edit and delete data of the cells and finally save to the data source by clicking “Update” toolbar button.
      */
     'Batch';
@@ -71,7 +71,7 @@ export type PdfBorderStyle =
     'DashDotDot';
 
 /**
- * Allows the built-in toolbar options that used to access features like switching between pivot table and pivot chart, changing chart types, conditional formatting, number formatting, exporting, etc… with ease at runtime. 
+ * Allows the built-in toolbar options that used to access features like switching between pivot table and pivot chart, changing chart types, conditional formatting, number formatting, exporting, etc… with ease at runtime.
  * The available toolbar options are:
  * * New - Allows to create a new report.
  * * Save - Allows to save the current report.
@@ -80,14 +80,14 @@ export type PdfBorderStyle =
  * * Remove - Allows to delete the current report.
  * * Load - Allows to load any report from the report list.
  * * Grid - Allows to show the pivot table.
- * * Chart - Allows to show the pivot chart with specific type from the built-in list. 
+ * * Chart - Allows to show the pivot chart with specific type from the built-in list.
  * * Exporting - Allow set of options to export the pivot table as PDF/Excel/CSV and the pivot chart as PDF and image format such as PNG, JPEG, SVG.
  * * Sub-total - Allow set of options to show or hide the sub totals in the pivot table. The subtotals will not be displayed in the pivot chart by default.
  * * Grand Total - Allow set of options to show or hides the grand totals in the pivot table. By default, the grand totals will not be displayed in the pivot chart.
  * * Conditional Formatting - Allows to show the conditional formatting pop-up to apply formatting to the values.
  * * Number Formatting - Allows to show the number formatting pop-up to apply number formatting to the values.
  * * Formatting - Allow options to show the conditional formatting and the number formatting pop-up that used to apply formatting to the values in the component.
- * * Field List - Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop, 
+ * * Field List - Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop,
  * add new fields to report, remove any fields from report, filtering and sorting a specific field members, etc., that are used to update the pivot table during runtime.
  * * MDX - Allows ro show the MDX query that was run to retrieve data from the OLAP data source. **Note: It is applicable only for OLAP data source.**
  */
@@ -106,9 +106,9 @@ export type ToolbarItems =
     'Remove' |
     /** Allows to show the pivot table. */
     'Grid' |
-    /** 
-     * Allows to show the pivot chart with specific type from the built-in list. 
-     * It also has the option to show the chart with multiple axes based on the value fields bound to the report. 
+    /**
+     * Allows to show the pivot chart with specific type from the built-in list.
+     * It also has the option to show the chart with multiple axes based on the value fields bound to the report.
      * You can do this by selecting the checkbox at the bottom of the list.
      */
     'Chart' |
@@ -120,15 +120,15 @@ export type ToolbarItems =
     'GrandTotal' |
     /** Shows the fieldlist pop-up. */
     'FieldList' |
-    /** 
-     * Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop, 
+    /**
+     * Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop,
      * add new fields to report, remove any fields from report, filtering and sorting a specific field members, etc., that are used to update the pivot table during runtime.
      */
     'ConditionalFormatting' |
     /** Shows the MDX query that was run to retrieve data from the OLAP data source. */
     'MDX' |
-    /** 
-     * Allows ro show the MDX query that was run to retrieve data from the OLAP data source. 
+    /**
+     * Allows ro show the MDX query that was run to retrieve data from the OLAP data source.
      * > It is applicable only for OLAP data source.
      */
     'NumberFormatting' |
@@ -137,7 +137,7 @@ export type ToolbarItems =
 
 /**
  * It defines the view port as either table or chart or both table and chart. The available options are:
- * * Table - To render the component as tabular form. 
+ * * Table - To render the component as tabular form.
  * * Chart - To render the component as graphical format.
  * * Both - To render the component as both table and chart.
  */
@@ -162,7 +162,7 @@ export type Primary =
 
 /**
  * Defines the pivot chart types.
- * The available chart types are: 
+ * The available chart types are:
  * * Line - Allows to display the pivot chart with line series.
  * * Column - Allows to display the pivot chart with column series.
  * * Area - Allows to display the pivot chart with area series.
@@ -257,7 +257,7 @@ export type ChartSelectionMode =
     /** To select points, by dragging with respect to horizontal axis. */
     'DragX';
 
-/** 
+/**
  * Defines the pivot table context menu items. They are
  * * Drillthrough - Enables drill through for the cell.
  * * Expand - Expands the cell.
@@ -666,11 +666,11 @@ export type PivotAccumulationChartSelectionMode =
     'Point';
 
 /**
-* Defines the ConnectorType for chart types pie, doughnut, Funnel and pyramid. They are
-* * Line - Accumulation series Connector line type as Straight line.
-* * Curve - Accumulation series Connector line type as Curved line.
-* *
-*/
+ * Defines the ConnectorType for chart types pie, doughnut, Funnel and pyramid. They are
+ * * Line - Accumulation series Connector line type as Straight line.
+ * * Curve - Accumulation series Connector line type as Curved line.
+ * *
+ */
 export type PivotChartConnectorType =
     /** Accumulation series Connector line type as Straight line */
     'Line' |
@@ -701,7 +701,7 @@ export type PivotChartGroupModes =
     'Value';
 
 /**
- * Defines the mode of the pyramid 
+ * Defines the mode of the pyramid
  * * Linear - Height of the pyramid segments reflects the values
  * * Surface - Surface/Area of the  pyramid segments reflects the values
  */
@@ -954,7 +954,7 @@ export declare type LabelPosition =
  * * PercentageOfParentTotal - Allows to display the pivot table values with percentage of total of all values based on selected field.
  * * PercentageOfParentColumnTotal - Allows to display the pivot table values with percentage of its parent total in each column.
  * * PercentageOfParentRowTotal - Allows to display the pivot table values with percentage of its parent total in each row.
- * 
+ *
  * > It is applicable only for relational data source.
  */
 export type AggregateTypes =

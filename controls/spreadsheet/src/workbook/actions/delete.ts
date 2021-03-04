@@ -35,7 +35,9 @@ export class WorkbookDelete {
             if (args.end > args.model.usedRange.rowIndex) { args.end -= (args.end - args.model.usedRange.rowIndex); }
             args.model.usedRange.rowIndex -= ((args.end - args.start) + 1);
             if (args.model.usedRange.rowIndex < 0) { args.model.usedRange.rowIndex = 0; }
-            this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
+            if (args.model !== this.parent.getActiveSheet()) {
+                this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
+            }
             let curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             if (args.model.rows[args.start] && args.model.rows[args.start].cells) {
                 for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
@@ -57,7 +59,7 @@ export class WorkbookDelete {
                             mergeArgs = null;
                         }
                     }
-                    if (args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
+                    if (args.model.rows[curIdx] && args.model.rows[curIdx].cells && args.model.rows[curIdx].cells[i] &&
                         args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
                         args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
                         if (!mergeArgs) {
@@ -94,7 +96,9 @@ export class WorkbookDelete {
             args.model.usedRange.colIndex -= count;
             if (args.model.usedRange.colIndex < 0) { args.model.usedRange.colIndex = 0; }
             //this.setDeleteInfo(args.start, args.end, 'fldLen', 'Column');
-            this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
+            if (args.model !== this.parent.getActiveSheet()) {
+                this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
+            }
             deletedCells = []; let curIdx: number = args.end + 1; let cell: CellModel; let mergeArgs: MergeArgs;
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 deletedCells.push({});
@@ -179,6 +183,7 @@ export class WorkbookDelete {
         };
         this.parent.notify(workbookFormulaOperation, insertArgs);
         this.parent.notify(workbookFormulaOperation, eventArgs);
+        if (args.modelType !== 'Sheet' && args.model !== this.parent.getActiveSheet()) { return; }
         this.parent.notify(deleteAction, {
             startIndex: args.start, endIndex: args.end, modelType: args.modelType,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells,

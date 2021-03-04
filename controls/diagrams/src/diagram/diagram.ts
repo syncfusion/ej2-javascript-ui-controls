@@ -1781,6 +1781,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 let index: number = Number(key);
                                 this.contextMenuSettings.items[index] = items[index];
                             }
+                            if (this.contextMenuModule) {
+                                this.contextMenuModule.refreshItems();
+                            }
                         }
                         break;
                     case 'serializationSettings':
@@ -3151,7 +3154,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {HistoryEntry} entry - Defines the entry/information about a change in diagram
      */
     public addHistoryEntry(entry: HistoryEntry): void {
-        if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo) && !this.currentSymbol) {
+        if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)
+            && (!this.currentSymbol || this.checkCurrentSymbol(this.currentSymbol, entry))) {
             if (entry.undoObject && (entry.undoObject as Node).id === 'helper') {
                 return;
             }
@@ -3160,6 +3164,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.historyChangeTrigger(entry, 'CustomAction');
             }
         }
+    }
+
+    private checkCurrentSymbol(currentSymbol: Node | Connector, entry: HistoryEntry): boolean {
+        let check: boolean = false;
+        if (entry.undoObject && entry.redoObject) {
+            const undoObjects: NodeModel | ConnectorModel = entry.undoObject as NodeModel | ConnectorModel;
+            const redoObject: NodeModel | ConnectorModel = entry.undoObject as NodeModel | ConnectorModel;
+            if (redoObject.id && undoObjects.id && redoObject.id !== currentSymbol.id && undoObjects.id !== currentSymbol.id) {
+                return check = true;
+            } else {
+                return check;
+            }
+        }
+        return check;
     }
 
     /**
@@ -9451,11 +9469,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let z: number = 0; z < preview.children.length; z++) {
                 let previewChildId: string = preview.children[z];
                 let previewIndex: number = this.nodes.indexOf(this.nameTable[previewChildId]);
-                this.nodes.splice(previewIndex, 1);
+                if (previewIndex >= 0) {
+                    this.nodes.splice(previewIndex, 1);
+                }
                 delete this.nameTable[previewChildId];
             }
             let previewIndex: number = this.nodes.indexOf(this.nameTable[this.currentSymbol.id]);
-            this.nodes.splice(previewIndex, 1);
+            if (previewIndex >= 0) {
+                this.nodes.splice(previewIndex, 1);
+            }
         }
     }
 
@@ -9781,7 +9803,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     newObj.processId = (clonedObject as Node).processId;
                     this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
                 }
-                this.endGroupAction();
+                if (!arg.cancel) {
+                    this.endGroupAction();
+                }
                 if (this.mode !== 'SVG') { this.refreshDiagramLayer(); }
                 delete this.droppable[source];
             }

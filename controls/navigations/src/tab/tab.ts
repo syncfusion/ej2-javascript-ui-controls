@@ -994,6 +994,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
     private getTabHeader(): HTMLElement {
+        if (isNOU(this.element)) {
+            return undefined;
+        }
         let headers: HTMLElement[] = [].slice.call(this.element.children).filter((e: HTMLElement) => e.classList.contains(CLS_HEADER));
         if (headers.length > 0) {
             return headers[0];

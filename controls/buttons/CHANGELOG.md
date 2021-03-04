@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### CheckBox
+
+#### Bug Fixes
+
+- Issue with destroy has been fixed.
+
 ## 18.4.41 (2021-02-02)
 
 ### CheckBox

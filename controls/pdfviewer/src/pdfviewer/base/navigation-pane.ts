@@ -1153,7 +1153,9 @@ export class NavigationPane {
             }
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.viewerContainer.style.width = (this.pdfViewer.element.clientWidth - this.sideToolbarWidth - this.getViewerContainerRight()) + 'px';
-            this.pdfViewerBase.pageContainer.style.width = this.pdfViewerBase.viewerContainer.clientWidth + 'px';
+            if (this.pdfViewerBase.pageContainer) {
+                this.pdfViewerBase.pageContainer.style.width = this.pdfViewerBase.viewerContainer.clientWidth + 'px';
+            }
             this.thumbnailButton.setAttribute('disabled', 'disabled');
             this.removeThumbnailSelectionIconTheme();
             this.resetThumbnailIcon();

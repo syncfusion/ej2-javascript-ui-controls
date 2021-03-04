@@ -2,7 +2,7 @@
  * Test case for dataManager
  */
 import { DataManager, ReturnOption, RequestOptions } from '../src/manager';
-import { JsonAdaptor, RemoteSaveAdaptor, WebMethodAdaptor, UrlAdaptor } from '../src/adaptors';
+import { JsonAdaptor, RemoteSaveAdaptor, WebMethodAdaptor, UrlAdaptor, AjaxAdaptor } from '../src/adaptors';
 import { ODataAdaptor, ODataV4Adaptor, WebApiAdaptor, CacheAdaptor } from '../src/adaptors';
 import { Query, Predicate } from '../src/query';
 import { DataUtil } from '../src/util';
@@ -3545,3 +3545,413 @@ describe('EJ2-37998 - Provide support for delete action while using complex data
         });
     });
 });
+
+    describe('AjaxAdaptor Adaptor', () => {
+        let dataManager: DataManager;
+        let result: any;
+        let data: Object[] = [
+            { OrderID: 10248, CustomerID: 'VINET', EmployeeID: 7, Freight: 32.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' },
+            { OrderID: 10249, CustomerID: 'AANAR', EmployeeID: 2, Freight: 11.61, Guid: 'db2d2186-1c29-4d1e-88ef-a127f521b9c6' },
+            { OrderID: 10250, CustomerID: 'VICTE', EmployeeID: 7, Freight: 65.83, Guid: '6F9619FF-8B86-D011-B42D-00C04FC964FF' },
+            { OrderID: 10251, CustomerID: 'VINET', EmployeeID: 7, Freight: 70.63, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' },
+            { OrderID: 10252, CustomerID: 'SUPRD', EmployeeID: 6, Freight: 45.45, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c9' }
+        ];
+        let createRequest: Function = (url: string, option: any, isCrud?: boolean) => {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    //success range should be 200 to 299
+                    if ((xhttp.status >= 200 && xhttp.status <= 299) || xhttp.status === 304) {
+                        var request = extend({}, option, { httpRequest: xhttp });
+                        var data = JSON.parse(xhttp.responseText);
+                        if (isCrud) {
+                            data = JSON.parse(option.data);
+                        }
+                        option.onSuccess(data, request);
+                    } else {
+                        option.onFailure(request);
+                    }
+                }
+            };
+            xhttp.open("POST", url, true);
+            xhttp.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+            xhttp.send(option.data);
+        };
+        describe('page method', () => {
+            let adaptor = new AjaxAdaptor({
+                getData: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = dataManager.executeQuery(new Query().page(2, 3).take(5));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify(data)
+                });
+                promise.then((e: { result: Object[] }) => {
+                    result = e.result;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check length of the data', () => {
+                expect(result.length).toBe(5);
+                expect(adaptor.convertToQueryString({}, null, null)).toBe('');
+            });
+        });
+
+        describe('where method', () => {
+            let adaptor = new AjaxAdaptor({
+                getData: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = dataManager.executeQuery(new Query().where('CustomerID', 'equal', 'VINET', true).take(5));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify(data)
+                });
+                promise.then((e: { result: Object[] }) => {
+                    result = e.result;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('generated data properly', () => {
+                expect(result.length).toBe(5);
+            });
+        });
+        describe('group column', () => {
+            let result: any;
+            let adaptor = new AjaxAdaptor({
+                getData: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = dataManager.executeQuery(new Query().group('EmployeeID').group('CustomerID'));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify(data)
+                });
+                promise.then((e: Object) => {
+                    result = e;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data grouped properly', () => {
+                expect(result.result[0]["items"].length).toBe(2);
+            });
+        });
+        describe('group column with group data source', () => {
+            let result: any;
+            let adaptor = new AjaxAdaptor({
+                getData: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = dataManager.executeQuery(new Query().group('EmployeeID').group('CustomerID').group('Guid'));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({ result: data, groupDs: data })
+                });
+                promise.then((e: Object) => {
+                    result = e;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data filtered properly', () => {
+                expect(result.result[0]["items"].length).toBe(2);
+            });
+        });
+        describe('aggregate method', () => {
+            let result: any;
+            let adaptor = new AjaxAdaptor({
+                getData: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = dataManager.executeQuery(new Query().take(10).requiresCount().
+                    aggregate('count', 'EmployeeID'));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({ result: data, count: 5 })
+                });
+                promise.then((e: Object) => {
+                    result = e;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data aggregate properly', () => {
+                expect(result.aggregates['EmployeeID - count']).toBe(5);
+            });
+        });
+        describe('aggregate method with return options', () => {
+            let result: any;
+            let adaptor = new AjaxAdaptor({
+                getData: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = dataManager.executeQuery(new Query().take(10).requiresCount().
+                    aggregate('count', 'EmployeeID'));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({ result: data, count: 5, aggregate: { 'EmployeeID - count': 5 } })
+                });
+                promise.then((e: Object) => {
+                    result = e;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data result properly', () => {
+                expect(result.result.length).toBe(5);
+            });
+            it('check data count properly', () => {
+                expect(result.count).toBe(5);
+            });
+        });
+        describe('insert method', () => {
+            let adaptor = new AjaxAdaptor({
+                addRecord: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            let record: Object = { EmployeeId: 10, LastName: 'John', FirstName: 'Stephen' };
+            let result: string;
+            let query: Query = new Query();
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = (<Promise<Object>>dataManager.insert(record, query));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({ d: data })
+                });
+                promise.then((e: any) => {
+                    result = 'Inserted successfully';
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data added properly', () => {
+                expect(result).toBe('Inserted successfully');
+            });
+        });
+        describe('update method', () => {
+            let adaptor = new AjaxAdaptor({
+                updateRecord: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            let record: Object = { _id: 9, EmployeeId: 1009, LastName: 'John', FirstName: 'Smith' };
+            let result: string;
+            let query: Query = new Query();
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = (<Promise<Object>>dataManager.update('_id', record, query));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify(data)
+                });
+                promise.then((e: any) => {
+                    result = 'Updated successfully';
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check updated data', () => {
+                expect(result).toBe('Updated successfully');
+            });
+        });
+        describe('remove method', () => {
+            let adaptor = new AjaxAdaptor({
+                deleteRecord: function(option: object) {
+                    createRequest('/Home/Employees', option);  
+                }
+            });
+            let result: string;
+            let query: Query = new Query();
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = (<Promise<Object>>dataManager.remove('EmployeeID', 4, query));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify(data)
+                });
+                promise.then((e: any) => {
+                    result = 'Removed successfully';
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data Removed properly', () => {
+                expect(result).toBe('Removed successfully');
+            });
+        });
+        describe('failure method', () => {
+            let adaptor = new AjaxAdaptor({
+                batchUpdate: function(option: object) {
+                    (option as any).onFailure(undefined);
+                }
+            });
+            let result: any;
+            let changes: any = { changedRecords: [], addedRecords: [], deletedRecords: [] };
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                changes.changedRecords.push(
+                    { OrderID: 10248, CustomerID: 'AANAR', EmployeeID: 7, Freight: 23.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' });
+                changes.addedRecords.push(
+                    { OrderID: 10253, CustomerID: 'VINET', EmployeeID: 4, Freight: 35.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' });
+                changes.deletedRecords.push(
+                    { OrderID: 10253, CustomerID: 'VINET', EmployeeID: 4, Freight: 35.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' });
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = (<Promise<Object>>dataManager.saveChanges(changes, 'OrderID', new Query()));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({
+                        result: data,
+                        addedRecords: [{
+                            OrderID: 10253, CustomerID: 'VINET', EmployeeID: 4,
+                            Freight: 35.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7'
+                        }]
+                    })
+                });
+                promise.then((e: any) => {
+                    result = e;
+                    done();
+                }).catch((e: any) => {
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+            it('check data updated properly', () => {
+                expect(result).not.toBeNull;
+            });
+        });
+
+        describe('batchRequest method', () => {
+            let adaptor = new AjaxAdaptor({
+                batchUpdate: function(option: object) {
+                    createRequest('/Home/Employees', option, true)
+                }
+            });
+            let changes: any = { changedRecords: [], addedRecords: [], deletedRecords: [] };
+            beforeAll((done: Function) => {
+                jasmine.Ajax.install();
+                changes.changedRecords.push(
+                    { OrderID: 10248, CustomerID: 'AANAR', EmployeeID: 7, Freight: 23.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' });
+                changes.addedRecords.push(
+                    { OrderID: 10253, CustomerID: 'VINET', EmployeeID: 4, Freight: 35.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' });
+                changes.deletedRecords.push(
+                    { OrderID: 10253, CustomerID: 'VINET', EmployeeID: 4, Freight: 35.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7' });
+                dataManager = new DataManager({
+                    adaptor: adaptor
+                });
+                let promise: Promise<Object> = (<Promise<Object>>dataManager.saveChanges(changes, 'OrderID', new Query()));
+                let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                request.respondWith({
+                    'status': 200,
+                    'contentType': 'application/json',
+                    'responseText': JSON.stringify({
+                        result: data,
+                        addedRecords: [{
+                            OrderID: 10253, CustomerID: 'VINET', EmployeeID: 4,
+                            Freight: 35.38, Guid: 'f89dee73-af9f-4cd4-b330-db93c25ff3c7'
+                        }]
+                    })
+                });
+                promise.then((e: any) => {
+                    result = e;
+                    done();
+                });
+            });
+            afterAll(() => {
+                jasmine.Ajax.uninstall();
+            });
+        });
+
+    });

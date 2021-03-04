@@ -387,7 +387,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 for (let index: number = 0; index < this.element.attributes.length; index++) {
                     let attributeName: string = this.element.attributes[index].nodeName;
                     if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
-                        !(attributeName === 'id' || attributeName === 'type')) {
+                        !(attributeName === 'id' || attributeName === 'type' || attributeName === 'e-mappinguid')) {
+                        // e-mappinguid attribute is handled for Grid component.
                         this.textarea.setAttribute(attributeName, this.element.attributes[index].nodeValue);
                         if (apiAttributes.indexOf(attributeName) < 0) {
                             this.element.removeAttribute(attributeName);

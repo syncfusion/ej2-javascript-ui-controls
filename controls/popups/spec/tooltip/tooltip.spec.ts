@@ -203,6 +203,70 @@ describe('Tooltip Control', () => {
             expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
             tooltip.close();
         });
+        it('enableHtmlParse as false and HTML script tag as string content', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>',
+                enableHtmlParse:false
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+            tooltip.close();
+        });
+        it('enableHtmlParse as false and HTML script tag as string content', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>',
+                enableHtmlParse:true
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlParse as false, enableHtmlSanitizer as false and HTML script tag as string content', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>',
+                enableHtmlParse:false,
+                enableHtmlSanitizer:false
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlParse as false, enableHtmlSanitizer as true and HTML script tag as string content', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>',
+                enableHtmlParse:false,
+                enableHtmlSanitizer:true
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlParse as true, enableHtmlSanitizer as false and HTML script tag as string content', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>',
+                enableHtmlParse:true,
+                enableHtmlSanitizer:false
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlParse as true, enableHtmlSanitizer as true and HTML script tag as string content', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>',
+                enableHtmlParse:true,
+                enableHtmlSanitizer:true
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
         it('enableHtmlSanitizer as false and content as HtmlElement', () => {
             var tipcontent = createElement('p', { innerHTML: 'tooltip content from html<style>body{background:rgb(0, 0, 255)}<\/style>' });
             tooltip = new Tooltip({
@@ -809,6 +873,21 @@ describe('Tooltip Control', () => {
             }
             document.body.innerHTML = '';
         });
+        it('windowCollision with collision affected position - left and top', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'LeftTop', content: 'collision left and top', target: '#target',
+                windowCollision:true
+            }, '#targetContainer');
+            let target1: HTMLElement = document.getElementById('target');
+            triggerMouseEvent(target1, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-right')).toEqual(true);
+            triggerMouseEvent(target1, 'mouseleave');
+        });
         it('collision affected position - left and top', () => {
             let elem: HTMLDivElement = document.createElement('div');
             elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;">Tooltip target</div></div>';
@@ -837,6 +916,21 @@ describe('Tooltip Control', () => {
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-bottom')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
+        it('windowCollision with collision affected position - left and center', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:0px;top:150px;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'LeftCenter', content: 'collision left and center', target: '#target',
+                windowCollision:true
+            }, '#targetContainer');
+            let target1: HTMLElement = document.getElementById('target');
+            triggerMouseEvent(target1, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-right')).toEqual(true);
+            triggerMouseEvent(target1, 'mouseleave');
+        });
         it('collision affected position - left and bottom', () => {
             let elem: HTMLDivElement = document.createElement('div');
             elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:0px;top:300px;">Tooltip target</div></div>';
@@ -851,6 +945,21 @@ describe('Tooltip Control', () => {
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-bottom')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
+        it('windowCollision with collision affected position - left and bottom', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:0px;top:300px;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'BottomCenter', content: 'collision left and bottom', target: '#target',
+                windowCollision:true
+            }, '#targetContainer');
+            let target1: HTMLElement = document.getElementById('target');
+            triggerMouseEvent(target1, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-top')).toEqual(true);
+            triggerMouseEvent(target1, 'mouseleave');
+        });
         it('collision affected position - right and top', () => {
             let elem: HTMLDivElement = document.createElement('div');
             elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:300px;top:0px;">Tooltip target</div></div>';
@@ -863,6 +972,21 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(target1, 'mouseover');
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-top')).toEqual(true);
+            triggerMouseEvent(target1, 'mouseleave');
+        });
+        it('windowCollision with collision affected position - right and top', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:300px;top:0px;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'RightTop', content: 'collision right and top', target: '#target',
+                windowCollision:true
+            }, '#targetContainer');
+            let target1: HTMLElement = document.getElementById('target');
+            triggerMouseEvent(target1, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-left')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
         it('collision affected position - right and center', () => {
@@ -891,6 +1015,21 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(target1, 'mouseover');
             let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-bottom')).toEqual(true);
+            triggerMouseEvent(target1, 'mouseleave');
+        });
+        it('windowCollision with collision affected position - right and bottom', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:300px;top:300px;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'RightBottom', content: 'collision right and bottom', target: '#target',
+                windowCollision:true
+            }, '#targetContainer');
+            let target1: HTMLElement = document.getElementById('target');
+            triggerMouseEvent(target1, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-left')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
         it('collision affected position - top with offset', () => {

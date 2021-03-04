@@ -1,4 +1,4 @@
-import { createElement, Droppable, EventHandler, removeClass, addClass } from '@syncfusion/ej2-base';
+import { createElement, EventHandler, removeClass, addClass, Droppable } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 
@@ -14,14 +14,15 @@ export class AxisTableRenderer {
     private leftAxisPanel: HTMLElement;
     private rightAxisPanel: HTMLElement;
 
+    /* eslint-disable-next-line */
     /** Constructor for render module */
-    constructor(parent: PivotFieldList) {
+    constructor(parent: PivotFieldList) {   /* eslint-disable-line */
         this.parent = parent;
     }
 
     /**
      * Initialize the axis table rendering
-     * @returns void
+     * @returns {void}
      * @private
      */
     public render(): void {
@@ -70,7 +71,7 @@ export class AxisTableRenderer {
                 className: cls.AXIS_PROMPT_CLASS,
                 innerHTML: localePrompt
             });
-            let droppable: Droppable = new Droppable(axisContent, {});
+            let droppable: Droppable = new Droppable(axisContent, {});  /* eslint-disable-line */
             axis.appendChild(axisTitleWrapper);
             axis.appendChild(axisContent);
             axis.appendChild(axisPrompt);

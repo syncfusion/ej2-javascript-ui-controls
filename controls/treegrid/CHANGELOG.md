@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#314373` - Treegrid refresh method works fine when we enable Virtualization and `enableCollapseAll`.
+
 ## 18.4.42 (2021-02-09)
 
 ### TreeGrid

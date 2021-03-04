@@ -851,7 +851,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             let rect: ClientRect = element.getBoundingClientRect();
             this.padding = 0;
             this.elementSize = new Size(rect.width, rect.height);
-            let tooltipRect: Rect = this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
+            let tooltipRect: Rect = this.shared ? this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y)
+            : this.tooltipLocation(areaBounds, location, new TooltipLocation(0, 0), new TooltipLocation(0, 0));
             if (this.enableAnimation && !this.shared && !this.isFirst) {
                 this.animateTooltipDiv(<HTMLDivElement>this.element, tooltipRect);
             } else {
@@ -1058,20 +1059,20 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-   /** @private */
+    /** @private */
     public fadeOut(): void {
         let tooltipElement: HTMLElement = (this.isCanvas && !this.template) ? <HTMLElement>getElement(this.element.id + '_svg') :
-        <HTMLElement>getElement(this.element.id);
+            <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
             if (this.isCanvas && !this.template) {
                 tooltipGroup = document.getElementById(this.element.id + '_group') ? document.getElementById(this.element.id + '_group') :
-                               tooltipGroup;
+                    tooltipGroup;
             }
-            let opacity: number;
-            if (tooltipGroup) {
-                opacity = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
+            if (!tooltipGroup) {
+                return null;
             }
+            let opacity: number = parseFloat(tooltipGroup.getAttribute('opacity')) || 1;
             new Animation({}).animate(tooltipGroup, {
                 duration: 200,
                 progress: (args: AnimationOptions): void => {
@@ -1095,7 +1096,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private endAnimation(tooltipGroup: HTMLElement): void {
         tooltipGroup.setAttribute('opacity', '0');
-        if (this.template && !this.shared) {
+        if (this.template) {
             tooltipGroup.style.display = 'none';
         }
         this.trigger('animationComplete', {tooltip: this});
@@ -1144,4 +1145,3 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 }
-

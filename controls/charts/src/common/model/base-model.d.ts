@@ -193,6 +193,37 @@ export interface MarginModel {
 }
 
 /**
+ * Interface for a class ContainerPadding
+ */
+export interface ContainerPaddingModel {
+
+    /**
+     * Left padding in pixels.
+     * @default 0
+     */
+    left?: number;
+
+    /**
+     * Right padding in pixels.
+     * @default 0
+     */
+    right?: number;
+
+    /**
+     * Top padding in pixels.
+     * @default 0
+     */
+    top?: number;
+
+    /**
+     * Bottom padding in pixels.
+     * @default 0
+     */
+    bottom?: number;
+
+}
+
+/**
  * Interface for a class Animation
  */
 export interface AnimationModel {

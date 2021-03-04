@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-querybuilder/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-querybuilder)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-querybuilder)](https://www.npmjs.com/package/@syncfusion/ej2-querybuilder)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-querybuilder/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-querybuilder)
 
 # ej2-querybuilder
 

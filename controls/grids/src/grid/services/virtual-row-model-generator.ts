@@ -39,8 +39,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         let result: Row<Column>[] = []; let center: number = ~~(this.model.pageSize / 2);
         let indexes: number[] = this.getBlockIndexes(page); let loadedBlocks: number[] = [];
-        if ((isFrozen && (this.parent.getTablesCount() === 2 && !e.renderMovableContent)
-            || this.parent.getTablesCount() === 3 && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
+        if ((isFrozen && (this.parent.getFrozenMode() !== 'Left-Right' && !e.renderMovableContent)
+            || this.parent.getFrozenMode() === 'Left-Right' && !e.renderMovableContent && !e.renderFrozenRightContent) || !isFrozen) {
             this.checkAndResetCache(e.requestType);
         }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {

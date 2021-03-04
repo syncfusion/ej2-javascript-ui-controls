@@ -245,7 +245,8 @@ export class HyperlinkDialog {
         if (!isNullOrUndefined(this.navigationUrl)) {
             this.documentHelper.owner.editorModule.editHyperlink(this.documentHelper.selection, address, displayText, isBookmark);
         } else {
-            let remove: boolean = this.documentHelper.selection.text !== displayText && !this.displayTextBox.disabled;
+            // tslint:disable-next-line:max-line-length
+            let remove: boolean = (this.documentHelper.selection.text !== displayText || this.documentHelper.selection.text.indexOf('\r') === -1)  && !this.displayTextBox.disabled;
             this.documentHelper.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
         this.documentHelper.hideDialog();

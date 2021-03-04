@@ -303,6 +303,7 @@ export class ContextMenu {
             args.type = 'Content';
             args.disableItems = this.disableItems;
             args.hideItems = this.hideItems;
+            args.hideChildItems = [];
             if (args.rowData.level === 0 && this.parent.viewType === 'ResourceView') {
                 args.cancel = true;
                 return;
@@ -326,6 +327,9 @@ export class ContextMenu {
                 }
                 if (this.disableItems.length > 0) {
                     this.contextMenu.enableItems(this.disableItems, false);
+                }
+                if (args.hideChildItems.length > 0) {
+                    this.contextMenu.hideItems(args.hideChildItems);
                 }
             });
             return callBackPromise;

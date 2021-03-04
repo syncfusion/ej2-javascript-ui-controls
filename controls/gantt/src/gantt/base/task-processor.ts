@@ -707,7 +707,7 @@ export class TaskProcessor extends DateProcessor {
                     this.calculateEndDate(ganttData);
                 }
             } else if (startDate) {
-                this.calculateDateFromStartDate(startDate, endDate, duration, ganttData);
+                this.calculateDateFromStartDate(startDate, endDate, duration, ganttData, isLoad);
 
             } else if (endDate) {
                 this.calculateDateFromEndDate(endDate, duration, ganttData);
@@ -867,12 +867,12 @@ export class TaskProcessor extends DateProcessor {
                 true);
         }
     }
-    private calculateDateFromStartDate(startDate: Date, endDate: Date, duration: string, ganttData: IGanttData): void {
+    private calculateDateFromStartDate(startDate: Date, endDate: Date, duration: string, ganttData: IGanttData, isLoad: boolean): void {
         let ganttProperties: ITaskData = ganttData.ganttProperties;
         let validateAsMilestone: boolean = (parseInt(duration, 10) === 0 || ((startDate && endDate) &&
             (new Date(startDate.getTime()) === new Date(endDate.getTime())))) ? true : null;
         /* tslint:disable-next-line */
-        this.parent.setRecordValue('startDate', this.checkStartDate(startDate, ganttProperties, validateAsMilestone), ganttProperties, true);
+        this.parent.setRecordValue('startDate', this.checkStartDate(startDate, ganttProperties, validateAsMilestone, isLoad), ganttProperties, true);
         if (!endDate && (isNullOrUndefined(duration) || duration === '')) {
             if (this.parent.allowUnscheduledTasks) {
                 this.parent.setRecordValue('endDate', null, ganttProperties, true);

@@ -190,7 +190,7 @@ describe('Gantt taskbar editing', () => {
             };
             ganttObj.dataBind();
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('11/02/2017 08:00');
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('11/02/2017 17:00');
                 expect(args.taskBarEditAction).toBe('MilestoneDrag');
             };
             ganttObj.dataBind();

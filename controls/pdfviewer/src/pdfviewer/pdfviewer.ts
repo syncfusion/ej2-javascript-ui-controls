@@ -2438,6 +2438,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Gets or sets the export annotations JSON file name in the PdfViewer control.
      */
+    @Property(null)
     public exportAnnotationFileName: string;
 
     /**

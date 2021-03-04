@@ -21,12 +21,13 @@ export class CommonKeyboardInteraction {
         downArrow: 'downArrow'
     };
     private keyboardModule: KeyboardEvents;
-    /* tslint:disable-next-line:no-any */
+    /* eslint-disable */
     private timeOutObj: any;
     /**
      * Constructor
      */
     constructor(parent: PivotCommon) {
+        /* eslint-enable */
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
         this.keyboardModule = new KeyboardEvents(this.parent.element, {
@@ -136,7 +137,6 @@ export class CommonKeyboardInteraction {
     private processFilterNodeSelection(e: KeyboardEventArgs): void {
         let target: Element = e.target as Element;
         if (target && closest(target, '.' + cls.SELECT_ALL_CLASS) && e.keyCode === 40) {
-            /* tslint:disable-next-line:max-line-length */
             let memberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.EDITOR_TREE_CONTAINER_CLASS) as HTMLElement;
             if (memberEditorTree && memberEditorTree.querySelector('li')) {
                 let firstLi: HTMLElement = memberEditorTree.querySelector('li');
@@ -156,7 +156,6 @@ export class CommonKeyboardInteraction {
                 memberEditorTree.querySelector('li').classList.contains('e-prev-active-node') &&
                 memberEditorTree.querySelector('li') === memberEditorTree.querySelector('li#_active.e-hover.e-node-focus')) {
                 removeClass(memberEditorTree.querySelectorAll('li.e-prev-active-node'), 'e-prev-active-node');
-                /* tslint:disable-next-line:max-line-length */
                 let allMemberEditorTree: HTMLElement = closest(target, '.' + cls.EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + cls.SELECT_ALL_CLASS) as HTMLElement;
                 if (allMemberEditorTree && allMemberEditorTree.querySelector('li')) {
                     let firstLi: HTMLElement = allMemberEditorTree.querySelector('li');
@@ -186,8 +185,7 @@ export class CommonKeyboardInteraction {
     private processClose(e: Event): void {
         let target: Element = e.target as Element;
         if (target && closest(target, '.e-popup.e-popup-open')) {
-            /* tslint:disable-next-line:max-line-length */
-            /* tslint:disable-next-line:no-any */
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
             if (dialogInstance && !dialogInstance.closeOnEscape) {
                 let button: string = dialogInstance.element.getAttribute('data-fieldName');
@@ -208,8 +206,8 @@ export class CommonKeyboardInteraction {
     }
 
     /**
-     * To destroy the keyboard module. 
-     * @return {void}
+     * To destroy the keyboard module.
+     * @returns {void}
      * @private
      */
     public destroy(): void {

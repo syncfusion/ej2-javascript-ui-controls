@@ -5,6 +5,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { isActionPrevent } from '../base/util';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { IXLFilter } from '../common/filter-interface';
+import { Column } from '../models/column';
 
 /**
  * @hidden
@@ -50,6 +51,10 @@ export class CheckBoxFilter {
         }
     }
 
+    protected closeResponsiveDialog(isCustomFilter: boolean): void {
+        this.checkBoxBase.closeDialog();
+    }
+
     /**
      * For internal use only - Get the module name.
      * @private
@@ -71,6 +76,15 @@ export class CheckBoxFilter {
             this.parent.notify(events.preventBatch, args);
             args.cancel = true;
         }
+    }
+
+    protected clearCustomFilter(col: Column): void {
+        this.checkBoxBase.clearFilter(col);
+    }
+
+    protected applyCustomFilter(args: { col: Column, isCustomFilter: boolean }): void {
+        this.checkBoxBase.fltrBtnHandler();
+        this.checkBoxBase.closeDialog();
     }
 
     public addEventListener(): void {

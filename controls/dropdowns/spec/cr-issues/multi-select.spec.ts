@@ -1666,6 +1666,7 @@ describe('MultiSelect', () => {
             });
             listObj.appendTo(element);
             listObj.value = ['fkfnmfmnsdfmn'];
+            listObj.dataBind();
             listObj.showPopup();
             setTimeout(() => {
                 listObj.hidePopup();
@@ -2300,6 +2301,119 @@ describe('MultiSelect', () => {
                 expect(listObj.text).toBe('Empty');
                 done();
             }, 450);
+        });
+    });
+    describe("EJ2-36805", () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Chip not created when change value dynamically when control is in focus', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { "Name": "India", "Code": "IN" },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'Box',
+                value: ['AU','US'],
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            expect(listObj.chipCollectionWrapper.childElementCount).toBe(2);
+            listObj.focusIn();
+            listObj.value = ['IN'];
+            listObj.dataBind();
+            expect(listObj.chipCollectionWrapper.childElementCount).toBe(1);
+            expect(listObj.chipCollectionWrapper.firstElementChild.innerText).toBe("India");
+        });
+        it('Chip not created when change value dynamically when control is in focus - Default Mode', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 'AU' },
+                { Name: 'Bermuda', Code: 'BM' },
+                { "Name": "India", "Code": "IN" },
+                { Name: 'United States', Code: 'US' }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            listObj.hidePopup();
+            listObj.focusIn();
+            listObj.value = ['IN'];
+            listObj.dataBind();
+            expect(listObj.chipCollectionWrapper.style.display == "").toBe(true);
+            expect(listObj.chipCollectionWrapper.childElementCount).toBe(1);
+            expect(listObj.chipCollectionWrapper.firstElementChild.innerText).toBe("India");
+        });
+    });
+    describe("Un Select all not working when integer datasource", () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let mouseDownEvent : MouseEvent = document.createEvent('MouseEvent');
+        mouseDownEvent.initEvent('mousedown');
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Clicking Select all and Unselect all', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 1 },
+                { Name: 'Bermuda', Code: 2 },
+                { "Name": "India", "Code": 3 },
+                { Name: 'United States', Code: 4 }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            if (listObj.isPopupOpen()) {
+                listObj.popupObj.element.querySelector('.e-selectall-parent').dispatchEvent(mouseDownEvent);
+                expect(listObj.viewWrapper.innerText.length).toBeGreaterThan(0);
+                listObj.popupObj.element.querySelector('.e-selectall-parent').dispatchEvent(mouseDownEvent);
+                expect(listObj.viewWrapper.innerText.length).toBe(0);
+            }
+        });
+        it('Using Select all and unselect all method', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 1 },
+                { Name: 'Bermuda', Code: 2 },
+                { "Name": "India", "Code": 3 },
+                { Name: 'United States', Code: 4 }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            if (listObj.isPopupOpen()) {
+                listObj.selectAll(true);
+                expect(listObj.viewWrapper.innerText.length).toBeGreaterThan(0);
+                listObj.selectAll(false);
+                expect(listObj.viewWrapper.innerText.length).toBe(0);
+            }
         });
     });
 });

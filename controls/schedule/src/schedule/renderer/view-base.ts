@@ -33,6 +33,22 @@ export namespace ViewHelper {
             proxy.getDayNames('wide')[date.getDay()];
         return util.capitalizeFirstWord(text, 'multiple');
     };
+    export const getWeekNumberContent: Function = (proxy: Schedule, dates: Date[]) => {
+        let weekNumber: number;
+        if (proxy.weekRule === 'FirstDay') {
+            let weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
+            weekNumber = util.getWeekNumber(weekNumberDate);
+        } else if (proxy.weekRule === 'FirstFourDayWeek') {
+            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
+            let weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
+            let weekMidDate: Date = util.getWeekMiddleDate(weekFirstDate, weekLastDate);
+            weekNumber = util.getWeekNumber(weekMidDate);
+        } else if (proxy.weekRule === 'FirstFullWeek') {
+            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], proxy.firstDayOfWeek);
+            weekNumber = util.getWeekNumber(weekFirstDate);
+        }
+        return weekNumber;
+    };
 }
 export class ViewBase {
     public element: HTMLElement;
@@ -466,23 +482,6 @@ export class ViewBase {
         if (this.parent.currentView === 'TimelineMonth' && dateElement) {
             scrollWrap.scrollLeft = dateElement.offsetLeft;
         }
-    }
-
-    public getWeekNumberContent(dates: Date[]): number {
-        let weekNumber: number;
-        if (this.parent.weekRule === 'FirstDay') {
-            let weekNumberDate: Date = util.getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
-            weekNumber = util.getWeekNumber(weekNumberDate);
-        } else if (this.parent.weekRule === 'FirstFourDayWeek') {
-            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
-            let weekLastDate: Date = util.getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
-            let weekMidDate: Date = util.getWeekMiddleDate(weekFirstDate, weekLastDate);
-            weekNumber = util.getWeekNumber(weekMidDate);
-        } else if (this.parent.weekRule === 'FirstFullWeek') {
-            let weekFirstDate: Date = util.getWeekFirstDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);
-            weekNumber = util.getWeekNumber(weekFirstDate);
-        }
-        return weekNumber;
     }
 
     public setPersistence(): void {

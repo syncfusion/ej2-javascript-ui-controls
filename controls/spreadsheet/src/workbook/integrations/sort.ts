@@ -1,7 +1,8 @@
 import { Workbook, SheetModel, CellModel, getCell, setCell, getData } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
-import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale } from '../common/index';
+import { getCellIndexes, getIndexesFromAddress, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
+import { parseIntValue } from '../common/index';
 import { initiateSort } from '../common/event';
 import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 
@@ -203,6 +204,12 @@ export class WorkbookSort {
         let comparer: Function = DataUtil.fnSort(direction);
         let caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
         if (x && y && (typeof x.value === 'string' || typeof y.value === 'string')) {
+            if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
+                x.value = <string>parseIntValue(x.value);
+            }
+            if (isNumber(y.value)) {
+                y.value = <string>parseIntValue(y.value);
+            }
             let collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
             if (!direction || direction.toLowerCase() === 'ascending') {
                 return collator.compare(x.value as string, y.value as string);

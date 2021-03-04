@@ -322,14 +322,14 @@ export class ColumnFreezeHeaderRenderer extends FreezeRender implements IRendere
             super.rfshMovable();
             if (this.parent.getFrozenRightColumnsCount()) {
                 let rows: Row<Column>[] = this.rows;
-                this.getFrozenRightHeader().appendChild(this.createTable());
+                this.getFrozenRightHeader().appendChild(this.createHeader(undefined, 'frozen-right'));
                 this.refreshStackedHdrHgt();
                 this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { renderFrozenRightContent: true } });
                 this.rows = rows;
             }
         } else {
             this.getFrozenRightHeader().appendChild(this.getTable());
-            this.getMovableHeader().appendChild(this.createTable());
+            this.getMovableHeader().appendChild(this.createHeader(undefined, 'movable'));
             this.refreshStackedHdrHgt();
             this.addMovableFirstCls();
         }
@@ -820,7 +820,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @return {Element} 
      */
     public getMovableRowElements(): Element[] {
-        if (this.parent.getTablesCount() === 2) {
+        if (this.parent.getFrozenMode() !== 'Left-Right') {
             return this.rowElements;
         } else {
             return this.movableRowElements;
@@ -832,7 +832,7 @@ export class ColumnFreezeContentRenderer extends FreezeContentRender implements 
      * @return {Element} 
      */
     public getFrozenRightRowElements(): Element[] {
-        if (this.parent.getTablesCount() === 2) {
+        if (this.parent.getFrozenMode() !== 'Left-Right') {
             return this.freezeRowElements;
         } else {
             return this.frozenRightRowElements;

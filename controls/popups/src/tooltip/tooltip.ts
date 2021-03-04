@@ -231,6 +231,23 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public showTipPointer: boolean;
     /**
+     * It enables or disables the parsing of HTML string content into HTML DOM elements for Tooltip. 
+     * If the value of the property is set to false, the tooltip content will be displayed as HTML string instead of HTML DOM elements.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlParse: boolean;
+    /**
+     * It is used to set the collision target element as page viewport (window) or Tooltip element, when using the target. 
+     * If this property is enabled, tooltip will perform the collision calculation between the target elements 
+     * and viewport(window) instead of Tooltip element.
+     *
+     * @default false
+     */
+    @Property(false)
+    public windowCollision: boolean;
+    /**
      * It is used to set the position of tip pointer on tooltip.
      * When it sets to auto, the tip pointer auto adjusts within the space of target's length
      *  and does not point outside.
@@ -606,11 +623,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.enableHtmlSanitizer) {
                         this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
                     }
-                    tooltipContent.innerHTML = this.content;
+                    tooltipContent[this.enableHtmlParse ? 'innerHTML' : 'textContent'] = this.content;
                 } else {
                     let templateFunction: Function = compile(this.content);
                     let tempArr: Element[] = templateFunction(
-                                                {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
+                        {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
                     if (tempArr) {
                         append(tempArr, tooltipContent);
                     }
@@ -877,7 +894,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             left: x, top: y, position: this.position,
             horizontal: this.tooltipPositionX, vertical: this.tooltipPositionY
         };
-        let affectedPos: string[] = isCollide(this.tooltipEle, (this.target ? this.element : null), x, y);
+        let affectedPos: string[] = isCollide(this.tooltipEle, this.checkCollideTarget(), x, y);
         if (affectedPos.length > 0) {
             elePos.horizontal = affectedPos.indexOf('left') >= 0 ? 'Right' : affectedPos.indexOf('right') >= 0 ? 'Left' :
                 this.tooltipPositionX;
@@ -924,7 +941,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
         }
         let eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
-        let left: number = fit(this.tooltipEle, (this.target ? this.element : null), { X: true, Y: false }, eleOffset).left;
+        let left: number = fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: false }, eleOffset).left;
         this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
@@ -939,6 +956,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.style.display = '';
         eleOffset.left = left;
         return eleOffset;
+    }
+
+    private checkCollideTarget(): HTMLElement {
+        return !this.windowCollision && this.target ? this.element : null;
     }
 
     private hideTooltip(hideAnimation: TooltipAnimationSettings, e?: Event, targetElement?: HTMLElement): void {

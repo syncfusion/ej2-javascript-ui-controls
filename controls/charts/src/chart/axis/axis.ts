@@ -20,10 +20,9 @@ import { axisRangeCalculated } from '../../common/model/constants';
 import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';
 import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';
 import { textWrap } from '../../common/utils/helper';
+import { TextAlignment } from '../../common/utils/enum';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-
-const axisPadding: number = 5;
 
 /**
  * Configures the `rows` of the chart.
@@ -365,6 +364,14 @@ export class Axis extends ChildProperty<Axis> {
 
     @Property('DateTime')
     public skeletonType: SkeletonType;
+
+    /**
+     * It specifies alignment of the line break labels.
+     * @default 'Center'
+     */
+
+    @Property('Center')
+    public lineBreakAlignment: TextAlignment;
 
     /**
      * Left and right padding for the plot area in pixels.
@@ -718,6 +725,14 @@ export class Axis extends ChildProperty<Axis> {
     public labelPadding: number;
 
     /**
+     * Specifies the titlePadding from axis label
+     * @default 5
+     */
+
+    @Property(5)
+    public titlePadding: number;
+
+    /**
      * Options for customizing major tick lines.
      */
 
@@ -953,7 +968,7 @@ export class Axis extends ChildProperty<Axis> {
         }
         let diff: number;
         let value: number;
-        let labelSize: number = titleSize + innerPadding + axisPadding + this.labelPadding +
+        let labelSize: number = titleSize + innerPadding + this.titlePadding + this.labelPadding +
             ((this.orientation === 'Vertical') ? this.maxLabelSize.width : this.maxLabelSize.height) + this.multiLevelLabelHeight;
         if (crossAxis && this.placeNextToAxisLine) {
             let range: VisibleRangeModel = crossAxis.visibleRange;
@@ -1174,8 +1189,6 @@ export class Axis extends ChildProperty<Axis> {
             if ((<LabelIntersectAction>action !== 'None' || this.angle % 360 === 0) && this.orientation === 'Horizontal' &&
                 this.rect.width > 0 && !isIntersect) {
                 let width1: number = isAxisLabelBreak ? label.breakLabelSize.width : label.size.width;
-                let height1: number = isAxisLabelBreak ? label.breakLabelSize.height : label.size.height;
-
                 pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
                 pointX -= width1 / 2;
                 if (this.edgeLabelPlacement === 'Shift') {
@@ -1221,7 +1234,7 @@ export class Axis extends ChildProperty<Axis> {
                                 this.rect.width / this.visibleLabels.length, this.labelStyle
                             );
                         }
-                        let height: number = (height1 * label.text.length);
+                        let height: number = (label.size.height * label.text.length);
                         if (height > this.maxLabelSize.height) {
                             this.maxLabelSize.height = height;
                         }
@@ -1233,8 +1246,11 @@ export class Axis extends ChildProperty<Axis> {
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
             //I264474: Fix for datasource bind im mounted console error ocurred
             this.rotatedLabel = isNullOrUndefined(this.rotatedLabel) ? '' : this.rotatedLabel;
-            if (isBreakLabel(this.rotatedLabel)) {
-                this.maxLabelSize = measureText(this.rotatedLabel, this.labelStyle);
+            let isHorizontalAngle: boolean = this.angle === -360 || this.angle === 0 || this.angle === -180 ||
+                this.angle === 180 || this.angle === 360;
+            // To avoid overlap axis label with chart title or chart legend when it is outside.    
+            if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
+                this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
             } else {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }

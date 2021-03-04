@@ -201,6 +201,8 @@ describe('EJ2-6660-Header template', () => {
         it('header text testing', () => {
             let innerTxt=gridObj.getHeaderContent().querySelectorAll('th')[0].innerText;
             expect(innerTxt).toBe('HeaderName');
+            expect(gridObj.getHeaderContent().querySelectorAll('th')[1].getAttribute('aria-colindex')).toBe('1');
+            expect(gridObj.getHeaderContent().querySelectorAll('th')[2].getAttribute('aria-colindex')).toBe('2');
         });
 
         afterAll(() => {

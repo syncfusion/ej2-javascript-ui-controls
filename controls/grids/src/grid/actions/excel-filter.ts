@@ -5,6 +5,7 @@ import { ExcelFilterBase } from '../common/excel-filter-base';
 import { CheckBoxFilter } from './checkbox-filter';
 import { IXLFilter } from '../common/filter-interface';
 import * as events from '../base/constant';
+import { Column } from '../models/column';
 
 /**
  * @hidden
@@ -44,6 +45,27 @@ export class ExcelFilter extends CheckBoxFilter {
         this.excelFilterBase.closeDialog();
         if (this.isresetFocus) {
             this.parent.notify(events.restoreFocus, {});
+        }
+    }
+
+    protected clearCustomFilter(col: Column): void {
+        this.excelFilterBase.clearFilter(col);
+    }
+
+    protected closeResponsiveDialog(isCustomFilter: boolean): void {
+        if (isCustomFilter) {
+            this.excelFilterBase.removeDialog();
+        } else {
+            this.closeDialog();
+        }
+    }
+
+    protected applyCustomFilter(args: { col: Column, isCustomFilter: boolean }): void {
+        if (!args.isCustomFilter) {
+            this.excelFilterBase.fltrBtnHandler();
+            this.excelFilterBase.closeDialog();
+        } else {
+            this.excelFilterBase.filterBtnClick(args.col.field);
         }
     }
 

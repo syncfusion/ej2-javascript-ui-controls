@@ -17,11 +17,11 @@ export class FieldList implements IAction {
      */
     private parent: PivotView;
     private element: HTMLElement;
+    /* eslint-disable */
     private handlers: {
         load: Function,
         update: Function
     };
-    /* tslint:disable-next-line:no-any */
     private timeOutObj: any;
 
     /** Constructor for Field List module */
@@ -35,6 +35,7 @@ export class FieldList implements IAction {
      * @private
      */
     protected getModuleName(): string {
+        /* eslint-enable */
         return 'fieldlist';
     }
 
@@ -69,11 +70,7 @@ export class FieldList implements IAction {
             target: this.parent.element.parentElement,
             aggregateTypes: this.parent.aggregateTypes,
             maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
-            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
-            // enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
-            // enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
-            // onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent),
-            // fieldDrop: this.parent.bindTriggerEvents.bind(this.parent),
+            aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.isPopupView = true;
         this.parent.pivotFieldListModule.pivotGridModule = this.parent;
@@ -128,6 +125,7 @@ export class FieldList implements IAction {
         }
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
@@ -136,23 +134,28 @@ export class FieldList implements IAction {
             load: this.initiateModule,
             update: this.updateControl
         };
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.on(events.initSubComponent, this.handlers.load, this);
         this.parent.on(events.uiUpdate, this.handlers.update, this);
     }
 
+    /* eslint-disable-next-line */
     /**
      * @hidden
      */
     public removeEventListener(): void {
-        if (this.parent.isDestroyed) { return; }
+        if (this.parent.isDestroyed) {
+            return;
+        }
         this.parent.off(events.initSubComponent, this.handlers.load);
         this.parent.off(events.uiUpdate, this.handlers.update);
     }
 
     /**
-     * To destroy the Field List 
-     * @return {void}
+     * To destroy the Field List.
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

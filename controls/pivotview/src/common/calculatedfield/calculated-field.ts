@@ -77,8 +77,11 @@ export class CalculatedField implements IAction {
     private field: string;
     private accordion: Accordion;
 
-    /** Constructor for calculatedfield module */
-    constructor(parent: PivotView | PivotFieldList) {
+    /**
+     * Constructor for calculatedfield module.
+     * @param {PivotView | PivotFieldList} parent - Component instance.
+     */
+    constructor(parent: PivotView | PivotFieldList) {   /* eslint-disable-line */
         this.parent = parent;
         this.existingReport = null;
         this.parent.calculatedFieldModule = this;
@@ -105,7 +108,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To get module name.
-     * @returns string
+     * @returns {string} - Module name.
      */
     protected getModuleName(): string {
         return 'calculatedfield';
@@ -163,11 +166,10 @@ export class CalculatedField implements IAction {
             }
         }
     }
-    /* tslint:disable:max-line-length */
     /**
      * Trigger while click treeview icon.
-     * @param  {NodeClickEventArgs} e
-     * @returns void
+     * @param  {NodeClickEventArgs} e - Click event argument.
+     * @returns {void}
      */
     private fieldClickHandler(e: NodeClickEventArgs): void {
         let node: HTMLElement = closest(e.event.target as Element, 'li') as HTMLElement;
@@ -204,11 +206,10 @@ export class CalculatedField implements IAction {
             }
         }
     }
-    /* tslint:enable:max-line-length */
     /**
      * Trigger while click treeview icon.
-     * @param  {AccordionClickArgs} e
-     * @returns void
+     * @param  {AccordionClickArgs} e - Click event argument.
+     * @returns {void}
      */
     private accordionClickHandler(e: AccordionClickArgs): void {
         if (e.item && e.item.iconCss.indexOf('e-list-icon') !== -1 &&
@@ -245,7 +246,7 @@ export class CalculatedField implements IAction {
         for (let i: number = 0; i < allElement.length; i++) {
             if (allElement[i].querySelector('.' + cls.CALC_EDIT) || allElement[i].querySelector('.' + cls.CALC_EDITED)) {
                 let element: HTMLElement = createElement('span', {
-                    className: 'e-list-icon ' + cls.GRID_REMOVE + ' e-icons',
+                    className: 'e-list-icon ' + cls.GRID_REMOVE + ' e-icons'
                 });
                 append([element], allElement[i].querySelector('.e-acrdn-header-icon') as HTMLElement);
             }
@@ -261,13 +262,12 @@ export class CalculatedField implements IAction {
     /**
      * To display context menu.
      * @param  {HTMLElement} node
-     * @returns void
+     * @returns {void}
      */
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private displayMenu(node: HTMLElement, treeNode?: HTMLElement, target?: HTMLElement): void {
         let edit: boolean = target ? target.classList.contains(cls.CALC_EDIT) : true;
         let edited: boolean = target ? target.classList.contains(cls.CALC_EDITED) : true;
-        /* tslint:disable:max-line-length */
         if (this.parent.dataType === 'pivot' && node.querySelector('.e-list-icon.e-format') &&
             node.querySelector('.e-list-icon.e-format').classList.contains(cls.ICON) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
@@ -299,7 +299,7 @@ export class CalculatedField implements IAction {
                 let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                 let hierarchyDrop: DropDownList = getInstance(select('#' + this.parentID + 'Hierarchy_List_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                 let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
-                /* tslint:enable:max-line-length */
+                /* eslint-enable max-len */
                 fieldTitle.innerHTML = this.parent.localeObj.getConstant('caption');
                 (select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement).value = expression;
                 memberTypeDrop.readonly = true;
@@ -330,7 +330,6 @@ export class CalculatedField implements IAction {
             this.inputObj.value = '';
             this.inputObj.dataBind();
             let dialogElement: HTMLElement = this.dialog.element;
-            /* tslint:disable:max-line-length */
             let customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
             customFormat.value = '';
             customFormat.dataBind();
@@ -339,7 +338,7 @@ export class CalculatedField implements IAction {
                 let formatDrop: DropDownList = getInstance(select('#' + this.parentID + 'Format_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                 let memberTypeDrop: DropDownList = getInstance(select('#' + this.parentID + 'Member_Type_Div', dialogElement) as HTMLElement, DropDownList) as DropDownList;
                 let fieldTitle: HTMLElement = select('#' + this.parentID + '_' + 'FieldNameTitle', dialogElement);
-                /* tslint:enable:max-line-length */
+                /* eslint-enable max-len */
                 fieldTitle.innerHTML = this.parent.localeObj.getConstant('fieldTitle');
                 hierarchyDrop.index = 0;
                 hierarchyDrop.dataBind();
@@ -390,11 +389,11 @@ export class CalculatedField implements IAction {
             }
         }
 
-        /* tslint:disable:max-line-length */
         if (this.parent.dataType === 'olap') {
             engineModule = this.parent.olapEngineModule;
-            let fields: { [key: string]: Object }[] = engineModule.fieldListData ? engineModule.fieldListData as { [key: string]: Object }[] : [];
-            /* tslint:disable:no-any */
+            let fields:
+                { [key: string]: Object }[] = engineModule.fieldListData ? engineModule.fieldListData as { [key: string]: Object }[] : [];
+            /* eslint-disable @typescript-eslint/no-explicit-any */
             for (let item of Object.keys(fields) as string[]) {
                 if (fields[item as any].name === fieldName) {
                     let index: number = parseInt(item, 10);
@@ -404,7 +403,7 @@ export class CalculatedField implements IAction {
                     }
                 }
             }
-            /* tslint:enable:no-any */
+            /* eslint-enable @typescript-eslint/no-explicit-any */
             let parentID: string = this.treeObj.getNode(node).parentID as string;
             this.treeObj.removeNodes([node]);
             if (calcfields.length <= 0) {
@@ -434,7 +433,8 @@ export class CalculatedField implements IAction {
                 break;
             }
         }
-        let fields: IFieldOptions[][] = [dataSourceSettings.values, dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.filters];
+        let fields: IFieldOptions[][] =
+            [dataSourceSettings.values, dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.filters];
         for (let i: number = 0, n: number = fields.length; i < n; i++) {
             for (let j: number = 0, length: number = fields[i].length; j < length; j++) {
                 if (fields[i][j].name === fieldName) {
@@ -443,7 +443,7 @@ export class CalculatedField implements IAction {
                 }
             }
         }
-        /* tslint:enable:max-line-length */
+        /* eslint-enable max-len */
         if (this.isEdit && this.currentFieldName === fieldName) {
             this.isEdit = false;
             this.inputObj.value = '';
@@ -457,7 +457,7 @@ export class CalculatedField implements IAction {
     }
     /**
      * To set position for context menu.
-     * @returns void
+     * @returns {void}
      */
     private openContextMenu(node: HTMLElement): void {
         let fieldName: string = node.getAttribute('data-field');
@@ -498,7 +498,7 @@ export class CalculatedField implements IAction {
     /**
      * Triggers while select menu.
      * @param  {MenuEventArgs} menu
-     * @returns void
+     * @returns {void}
      */
     private selectContextMenu(menu: MenuEventArgs): void {
         if (menu.element.textContent !== null) {
@@ -513,7 +513,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To create context menu.
-     * @returns void
+     * @returns {void}
      */
     private createMenu(menuItems: MenuItemModel[], node: HTMLElement): void {
         let menuOptions: ContextMenuModel = {
@@ -544,9 +544,9 @@ export class CalculatedField implements IAction {
 
     /**
      * Triggers while click OK button.
-     * @returns void
+     * @returns {void}
      */
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private applyFormula(): void {
         let currentObj: CalculatedField = this;
         let isExist: boolean = false;
@@ -561,7 +561,6 @@ export class CalculatedField implements IAction {
             cancel: false
         };
         let control: PivotView | PivotFieldList = this.parent.getModuleName() === 'pivotfieldlist' &&
-            /* tslint:disable-next-line:max-line-length */
             (this.parent as PivotFieldList).isPopupView ? (this.parent as PivotFieldList).pivotGridModule : this.parent;
         control.trigger(events.calculatedFieldCreate, eventArgs, (observedArgs: CalculatedFieldCreateEventArgs) => {
             if (!observedArgs.cancel) {
@@ -715,7 +714,6 @@ export class CalculatedField implements IAction {
             }
         });
     }
-    /* tslint:disable:max-line-length */
     private getCalculatedFieldInfo(): ICalculatedFields {
         let field: ICalculatedFields;
         let dropField: HTMLTextAreaElement = select('#' + this.parentID + 'droppable', document) as HTMLTextAreaElement;
@@ -739,7 +737,7 @@ export class CalculatedField implements IAction {
         }
         return field;
     }
-    /* tslint:enable:max-line-length */
+    /* eslint-enable max-len */
     private updateFormatSettings(report: IDataOptions, fieldName: string, formatString: string): void {
         let newFormat: FormatSettingsModel = { name: fieldName, format: formatString, useGrouping: true };
         let isFormatExist: boolean = false;
@@ -802,8 +800,9 @@ export class CalculatedField implements IAction {
             this.inputObj.value = '';
             this.currentFieldName = this.formatText = this.fieldText = this.formatType = null;
             this.formulaText = this.fieldType = this.parentHierarchy = null;
-            /* tslint:disable:max-line-length */
-            let dialogElement: HTMLElement = this.parent.isAdaptive ? (this.parent as PivotFieldList).dialogRenderer.parentElement : this.dialog.element;
+            let dialogElement: HTMLElement =
+                this.parent.isAdaptive ?
+                    (this.parent as PivotFieldList).dialogRenderer.parentElement : this.dialog.element;
             ((this.parent as PivotFieldList).dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
             (select('#' + this.parentID + 'droppable', (this.parent as PivotFieldList).dialogRenderer.parentElement) as HTMLTextAreaElement).value = '';
             (select('#' + this.parentID + 'Custom_Format_Element', (this.parent as PivotFieldList).dialogRenderer.parentElement) as HTMLTextAreaElement).value = '';
@@ -823,7 +822,7 @@ export class CalculatedField implements IAction {
                 customFormat.enabled = false;
                 customFormat.dataBind();
             }
-            /* tslint:enable:max-line-length */
+            /* eslint-enable max-len */
         }
     }
 
@@ -868,8 +867,9 @@ export class CalculatedField implements IAction {
     private getFieldListData(parent: PivotView | PivotFieldList): { [key: string]: Object }[] {
         let fields: { [key: string]: Object }[] = [];
         if (this.parent.dataType === 'olap') {
-            /* tslint:disable-next-line:max-line-length */
-            fields = PivotUtil.getClonedData(parent.olapEngineModule.fieldListData ? parent.olapEngineModule.fieldListData as { [key: string]: Object }[] : []);
+            fields =
+                PivotUtil.getClonedData(parent.olapEngineModule.fieldListData ?
+                    parent.olapEngineModule.fieldListData as { [key: string]: Object }[] : []);
             for (let item of fields as IOlapField[]) {
                 if (item.spriteCssClass &&
                     (item.spriteCssClass.indexOf('e-attributeCDB-icon') > -1 ||
@@ -913,13 +913,13 @@ export class CalculatedField implements IAction {
     /**
      * Triggers before menu opens.
      * @param  {BeforeOpenCloseMenuEventArgs} args
-     * @returns void
+     * @returns {void}
      */
 
     /**
      * Trigger while drop node in formula field.
      * @param  {DragAndDropEventArgs} args
-     * @returns void
+     * @returns {void}
      */
     private fieldDropped(args: DragAndDropEventArgs): void {
         args.cancel = true;
@@ -980,7 +980,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To create dialog.
-     * @returns void
+     * @returns {void}
      */
     private createDialog(): void {
         if (select('#' + this.parentID + 'calculateddialog', document) !== null) {
@@ -1097,10 +1097,9 @@ export class CalculatedField implements IAction {
             }
         }
     }
-    /* tslint:disable:max-line-length */
     /**
      * To render dialog elements.
-     * @returns void
+     * @returns {void}
      */
     private renderDialogElements(): HTMLElement {
         let outerDiv: HTMLElement = createElement('div', {
@@ -1272,7 +1271,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To create calculated field adaptive layout.
-     * @returns void
+     * @returns {void}
      */
     private renderAdaptiveLayout(isEdit: boolean): void {
         let dialogElement: Tab = (this.parent as PivotFieldList).dialogRenderer.adaptiveElement;
@@ -1306,7 +1305,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To update calculated field info in adaptive layout.
-     * @returns void
+     * @returns {void}
      */
     private updateAdaptiveCalculatedField(isEdit: boolean, fieldName?: string): void {
         let dialogElement: HTMLElement = (this.parent as PivotFieldList).dialogRenderer.adaptiveElement.element;
@@ -1346,7 +1345,8 @@ export class CalculatedField implements IAction {
         }
         if (dialogElement.querySelector('.' + cls.CALC_FORMAT_INPUT) as HTMLTextAreaElement) {
             let customFormat: MaskedTextBox = getInstance(select('#' + this.parentID + 'Custom_Format_Element', dialogElement) as HTMLElement, MaskedTextBox) as MaskedTextBox;
-            let formatObj: IFormatSettings = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings) as IFormatSettings;
+            let formatObj: IFormatSettings =
+                PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings) as IFormatSettings;
             if (this.parent.dataType === 'pivot') {
                 this.formatText = customFormat.value = formatObj ? formatObj.format : null;
             } else {
@@ -1355,11 +1355,11 @@ export class CalculatedField implements IAction {
             customFormat.dataBind();
         }
     }
-    /* tslint:enable:max-line-length */
+    /* eslint-enable max-len */
 
     /**
      * To create treeview.
-     * @returns void
+     * @returns {void}
      */
     private createOlapDropElements(): void {
         let dialogElement: HTMLElement = (this.parent.isAdaptive ?
@@ -1443,12 +1443,11 @@ export class CalculatedField implements IAction {
     }
     /**
      * To create treeview.
-     * @returns void
+     * @returns {void}
      */
     private createTreeView(): void {
         if (this.parent.dataType === 'olap') {
             this.treeObj = new TreeView({
-                /* tslint:disable-next-line:max-line-length */
                 fields: { dataSource: this.getFieldListData(this.parent), id: 'id', text: 'caption', parentID: 'pid', iconCss: 'spriteCssClass' },
                 allowDragAndDrop: true,
                 enableRtl: this.parent.enableRtl,
@@ -1568,7 +1567,7 @@ export class CalculatedField implements IAction {
     /**
      * Trigger before treeview text append.
      * @param  {DrawNodeEventArgs} args
-     * @returns void
+     * @returns {void}
      */
     private drawTreeNode(args: DrawNodeEventArgs): void {
         if (this.parent.dataType === 'olap') {
@@ -1637,7 +1636,6 @@ export class CalculatedField implements IAction {
                 className: ' e-iconspace'
             });
             prepend([dragElement], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
-            /* tslint:disable-next-line:max-line-length */
             append([spaceElement, args.node.querySelector('.' + cls.FORMAT)], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
             if (this.getMenuItems(this.parent.engineModule.fieldList[field].type).length <= 0) {
                 removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
@@ -1690,8 +1688,10 @@ export class CalculatedField implements IAction {
         return type;
     }
     private getValidSummaryType(): AggregateTypes[] {
-        return [COUNT as AggregateTypes, DISTINCTCOUNT as AggregateTypes, SUM as AggregateTypes, AVG as AggregateTypes, MEDIAN as AggregateTypes,
-        MIN as AggregateTypes, MAX as AggregateTypes, PRODUCT as AggregateTypes, STDEV as AggregateTypes, STDEVP as AggregateTypes,
+        return [COUNT as AggregateTypes, DISTINCTCOUNT as AggregateTypes,
+        SUM as AggregateTypes, AVG as AggregateTypes, MEDIAN as AggregateTypes,
+        MIN as AggregateTypes, MAX as AggregateTypes, PRODUCT as AggregateTypes,
+        STDEV as AggregateTypes, STDEVP as AggregateTypes,
         VAR as AggregateTypes, VARP as AggregateTypes];
     }
     /**
@@ -1720,7 +1720,7 @@ export class CalculatedField implements IAction {
     /**
      * To render mobile layout.
      * @param  {Tab} tabObj
-     * @returns void
+     * @returns {void}
      */
     private renderMobileLayout(tabObj?: Tab): void {
         tabObj.items[4].content = this.renderDialogElements().outerHTML;
@@ -1762,7 +1762,6 @@ export class CalculatedField implements IAction {
                 if (this.formatText !== null && (this.parent as PivotFieldList).
                     dialogRenderer.parentElement.querySelector('.' + cls.CALC_FORMAT_INPUT) !== null) {
                     ((this.parent as PivotFieldList).
-                        /* tslint:disable-next-line:max-line-length */
                         dialogRenderer.parentElement.querySelector('.' + cls.CALC_FORMAT_INPUT) as HTMLInputElement).value = this.formatText;
                     formatInputObj.value = this.formatText;
                 }
@@ -1786,7 +1785,6 @@ export class CalculatedField implements IAction {
             addBtn.appendTo('#' + this.parentID + 'addBtn');
             if (this.parent.dataType === 'olap') {
                 this.treeObj = new TreeView({
-                    /* tslint:disable-next-line:max-line-length */
                     fields: { dataSource: this.getFieldListData(this.parent), id: 'id', text: 'caption', parentID: 'pid', iconCss: 'spriteCssClass' },
                     showCheckBox: true,
                     autoCheck: false,
@@ -1884,7 +1882,7 @@ export class CalculatedField implements IAction {
 
     /**
      * Trigger while click cancel button.
-     * @returns void
+     * @returns {void}
      */
     private cancelBtnClick(): void {
         this.renderMobileLayout((this.parent as PivotFieldList).dialogRenderer.adaptiveElement);
@@ -1892,7 +1890,7 @@ export class CalculatedField implements IAction {
 
     /**
      * Trigger while click add button.
-     * @returns void
+     * @returns {void}
      */
     private addBtnClick(): void {
         let fieldText: string = '';
@@ -1928,7 +1926,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To create calculated field dialog elements.
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public createCalculatedFieldDialog(args?: { edit: boolean, fieldName: string }): void {
@@ -1945,7 +1943,6 @@ export class CalculatedField implements IAction {
                     target.setAttribute('aria-selected', 'true');
                     target.id = this.treeObj.element.id + '_active';
                     if (this.parent.dataType === 'pivot') {
-                        /* tslint:disable-next-line */
                         let e: any = { event: { target: target.querySelector('.e-list-icon.e-edit.e-icons') as EventTarget } } as NodeClickEventArgs;
                         this.fieldClickHandler(e);
                     } else {
@@ -1959,7 +1956,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To create calculated field desktop layout.
-     * @returns void
+     * @returns {void}
      */
     private renderDialogLayout(): void {
         this.newFields =
@@ -1993,8 +1990,8 @@ export class CalculatedField implements IAction {
 
     /**
      * Creates the error dialog for the unexpected action done.
-     * @method createConfirmDialog
-     * @return {void}
+     * @function createConfirmDialog
+     * @returns {void}
      * @hidden
      */
     private createConfirmDialog(title: string, description: string, calcInfo: ICalculatedFields, isRemove?: boolean, node?: Element): void {
@@ -2002,7 +1999,6 @@ export class CalculatedField implements IAction {
             id: this.parentID + '_ErrorDialog',
             className: cls.ERROR_DIALOG_CLASS
         });
-        /* tslint:disable:max-line-length */
         this.parent.element.appendChild(errorDialog);
         this.confirmPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
@@ -2036,7 +2032,7 @@ export class CalculatedField implements IAction {
             target: document.body,
             close: this.removeErrorDialog.bind(this),
         });
-        /* tslint:enable:max-line-length */
+        /* eslint-enable max-len */
         this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
         // this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
@@ -2081,7 +2077,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To add event listener.
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public addEventListener(): void {
@@ -2091,7 +2087,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To remove event listener.
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public removeEventListener(): void {
@@ -2101,7 +2097,7 @@ export class CalculatedField implements IAction {
 
     /**
      * To destroy the calculated field dialog
-     * @returns void
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

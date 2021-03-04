@@ -255,6 +255,9 @@ export class YearEvent extends TimelineEvent {
             let endTime: Date = util.addDays(eventObj[this.fields.endTime] as Date, -1);
             eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
         }
+        if (eventObj[this.fields.startTime] > eventObj[this.fields.endTime]) {
+            return;
+        }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             index = row + 1;
             if ((eventObj[this.fields.startTime] as Date).getTime() === (eventObj[this.fields.endTime] as Date).getTime()) {
@@ -397,6 +400,12 @@ export class YearEvent extends TimelineEvent {
                 (eventData[this.fields.startTime] as Date).getTime()) / util.MS_PER_DAY);
         }
         eventData.isSpanned = isSpanned;
+        if (util.resetTime(eventStart).getTime() < util.resetTime(this.parent.minDate).getTime()) {
+            eventData[this.fields.startTime] = this.parent.minDate;
+        }
+        if (util.resetTime(eventEnd).getTime() > util.resetTime(this.parent.maxDate).getTime()) {
+            eventData[this.fields.endTime] = this.parent.maxDate;
+        }
         return eventData;
     }
 
@@ -422,13 +431,14 @@ export class YearEvent extends TimelineEvent {
             let appEnd: Date = new Date(app[this.fields.endTime].getTime());
             if (this.parent.activeViewOptions.orientation === 'Vertical' &&
                 this.parent.activeViewOptions.group.resources.length > 0) {
-                if ((util.resetTime(appStart).getTime() > dateStart)
-                    && (util.resetTime(appEnd).getTime() < dateEnd)) {
+                if ((util.resetTime(appStart).getTime() >= dateStart)
+                    && (util.resetTime(appEnd).getTime() <= dateEnd)) {
                     appointmentsList.push(app);
                 }
             } else {
-                if (this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)
-                    && (util.resetTime(appEnd).getTime() >= dateEnd)) {
+                if (this.parent.rowAutoHeight && (((util.resetTime(appStart).getTime() <= dateStart)
+                    && (util.resetTime(appEnd).getTime() >= dateEnd)) || (util.resetTime(appStart).getTime() >= dateStart)
+                    && (util.resetTime(appEnd).getTime() <= dateEnd))) {
                     appointmentsList.push(app);
                 }
                 if (!this.parent.rowAutoHeight && (util.resetTime(appStart).getTime() <= dateStart)

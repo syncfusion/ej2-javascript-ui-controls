@@ -79,7 +79,9 @@ export class BookmarkView {
                     if (isBlazor()) {
                         // tslint:disable-next-line
                         let bookmarkCollection: any = { bookmarks: proxy.bookmarks, bookmarksDestination: proxy.bookmarksDestination };
-                        this.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
+                        if (proxy.pdfViewer && proxy.pdfViewer._dotnetInstance) {
+                            proxy.pdfViewer._dotnetInstance.invokeMethodAsync('UpdateBookmarkCollection', bookmarkCollection);
+                        }
                     }
                 }
             }

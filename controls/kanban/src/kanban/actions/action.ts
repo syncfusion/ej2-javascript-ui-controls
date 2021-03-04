@@ -1,8 +1,9 @@
 import {
-    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined, Base, formatUnit
+    closest, classList, createElement, remove, addClass, removeClass, isNullOrUndefined, Base, formatUnit, createInstance
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardClickEventArgs, ActionEventArgs } from '../base/interface';
+import { Columns } from '../models/columns';
 import { ColumnsModel } from '../models';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -298,7 +299,8 @@ export class Action {
     }
 
     public addColumn(columnOptions: ColumnsModel, index: number): void {
-        this.parent.columns.splice(index, 0, columnOptions);
+        let addColumn: ColumnsModel = createInstance(Columns, [this.parent, 'columns', columnOptions, true]);
+        this.parent.columns.splice(index, 0, addColumn);
         this.parent.notify(events.dataReady, { processedData: this.parent.kanbanData });
     }
 

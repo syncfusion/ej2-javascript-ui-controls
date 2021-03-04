@@ -925,6 +925,8 @@ export class SfdtReader {
             } else if (inline.hasOwnProperty('imageString')) {
                 let image: ImageElementBox = new ImageElementBox(data[i].isInlineImage);
                 image.isMetaFile = data[i].isMetaFile;
+                image.isCompressed = data[i].isCompressed;
+                image.metaFileImageString = data[i].metaFileImageString;
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
                 this.checkAndApplyRevision(inline, image);

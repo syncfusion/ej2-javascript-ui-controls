@@ -1074,6 +1074,44 @@ describe('DropDownList', () => {
             },)
         });
     });
+    describe('EJ2-46380 - dynamic fields property changing', () => {
+        let ddlObj: any;
+        let ddlEle1: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl1' });
+        let empList: any = [ 
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+        { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+        { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+        { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+        { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle1); 
+            ddlObj = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'sports', value: 'sports' },
+            });
+            ddlObj.appendTo(ddlEle1); 
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            ddlEle1.remove();
+        });
+        it('field property changes on dynamically', () => {
+            ddlObj.showPopup();
+            expect(ddlObj.list.querySelectorAll('li')[2].textContent).toBe('Basketball');
+            ddlObj.hidePopup();
+            ddlObj.fields = { text: 'id', value: 'id' };
+            ddlObj.dataBind();
+            ddlObj.showPopup();
+            expect(ddlObj.list.querySelectorAll('li')[2].textContent).toBe('level3');
+            let item: any = (ddlObj as any).popupObj.element.querySelectorAll('li')[2];
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            mouseEventArgs.target = item;
+            mouseEventArgs.type = 'click';
+            ddlObj.onMouseClick(mouseEventArgs);
+            expect(ddlObj.value === 'level3').toBe(true);
+        });
+    });
     describe('EJ2-39852', () => {
         let ddlObj: any;
         let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });

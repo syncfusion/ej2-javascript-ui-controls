@@ -13,23 +13,25 @@ import { createElement, prepend } from '@syncfusion/ej2-base';
 export class AxisFields {
     public parent: PivotView;
 
-    /** Constructor for render module */
-    constructor(parent: PivotView) {
+    /** Constructor for render module
+     * @param {PivotView} parent - Instance.
+     */
+    constructor(parent: PivotView) {    /* eslint-disable-line */
         this.parent = parent;
     }
     /**
      * Initialize the grouping bar pivot button rendering
-     * @returns void
+     * @returns {void}
      * @private
      */
     public render(): void {
-        /* tslint:disable:no-any */
         let pivotButtonModule: PivotButton =
             ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) ?
                 new PivotButton(this.parent) : this.parent.pivotButtonModule);
+        /* eslint-enable */
         this.createPivotButtons();
         let pivotButtons: HTMLElement[] = [];
-        for (let element of this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS) as any) {
+        for (let element of this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS) as any) {   /* eslint-disable-line */
             if (!element.classList.contains(cls.GROUP_CHART_ROW)) {
                 pivotButtons = pivotButtons.concat([].slice.call(element.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
             }
@@ -50,15 +52,14 @@ export class AxisFields {
             this.parent.dataSourceSettings.values, this.parent.dataSourceSettings.filters];
         for (let element of this.parent.element.querySelectorAll(
             '.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.'
-            + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS) as any) {
+            + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS) as any) {  /* eslint-disable-line */
             if ((this.parent.dataSourceSettings.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) ||
                 (this.parent.dataSourceSettings.columns.length > 0 ? !element.classList.contains(cls.GROUP_CHART_COLUMN) : true)) {
                 element.innerHTML = '';
             }
         }
-        /* tslint:enable:no-any */
-        let axis: String[] = ['rows', 'columns', 'values', 'filters'];
-        let count: number = axis.length;
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        let axis: string[] = ['rows', 'columns', 'values', 'filters'];
         for (let i: number = 0, lnt: number = fields.length; i < lnt; i++) {
             if (fields[i]) {
                 let args: PivotButtonArgs = {

@@ -3,7 +3,7 @@ import { MouseEventArgs } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import * as cls from '../../common/base/css-constant';
-import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ContextMenu } from '@syncfusion/ej2-navigations';
+import { MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
@@ -30,6 +30,7 @@ export class AggregateMenu {
     private valueDialog: Dialog;
     private summaryTypes: AggregateTypes[];
 
+    /* eslint-disable */
     /**
      * Constructor for the rener action.
      * @hidden
@@ -40,10 +41,11 @@ export class AggregateMenu {
 
     /**
      * Initialize the pivot table rendering
-     * @returns void
+     * @returns {void}
      * @private
      */
     public render(args: MouseEventArgs, parentElement: HTMLElement): void {
+        /* eslint-enable */
         this.parentElement = parentElement;
         this.openContextMenu(args);
     }
@@ -108,7 +110,7 @@ export class AggregateMenu {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
-            onClose: (args: OpenCloseMenuEventArgs) => {
+            onClose: (args: OpenCloseMenuEventArgs) => {    /* eslint-disable-line */
                 (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
             },
             select: this.selectOptionInContextMenu.bind(this)
@@ -147,6 +149,7 @@ export class AggregateMenu {
         args.element.style.zIndex = (this.menuInfo[isString].element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
+    /* eslint-disable-next-line */
     /** @hidden */
     public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement, type?: string): void {
         this.parentElement = parentElement;
@@ -167,28 +170,31 @@ export class AggregateMenu {
             enableRtl: this.parent.enableRtl,
             width: 'auto',
             height: 'auto',
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     click: this.updateValueSettings.bind(this),
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
-                    click: () => { this.valueDialog.hide(); },
+                    click: () => {
+                        this.valueDialog.hide();
+                    },
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
-            /* tslint:disable-next-line:max-line-length */
             closeOnEscape: (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') ? false : true,
             target: this.parentElement,
-            overlayClick: () => { this.removeDialog(); },
+            overlayClick: () => {
+                this.removeDialog();
+            },
             close: this.removeDialog.bind(this)
         });
         this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
         // this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private createFieldOptions(buttonElement: HTMLElement, type?: string): HTMLElement {
         let fieldCaption: string = buttonElement.getAttribute('data-caption');
         let summaryType: string = (type && type !== 'MoreOption') ? type : buttonElement.getAttribute('data-type');
@@ -225,7 +231,6 @@ export class AggregateMenu {
             fieldItemDataSource = [];
         }
         else {
-            /* tslint:disable-next-line:max-line-length */
             baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value as string);
             fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
                 baseField : fieldDataSource[0].value as string)].formattedMembers);
@@ -240,7 +245,6 @@ export class AggregateMenu {
         let optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-wrapper' });
         let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-wrapper' });
         let optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-wrapper' });
-        /* tslint:disable-next-line:max-line-length */
         let texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
         let textContent: HTMLElement = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.id.toString() });
         let inputTextDiv1: HTMLElement = createElement('div', {
@@ -355,10 +359,8 @@ export class AggregateMenu {
                 buttonElement.setAttribute('data-type', type as string);
                 for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
                     if (this.parent.dataSourceSettings.values[vCnt].name === field) {
-                        /* tslint:disable:align */
                         let dataSourceItem: IFieldOptions = extend({}, (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
                             (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt], null, true);
-                        /* tslint:enable:align */
                         dataSourceItem.type = type as SummaryTypes;
                         this.parent.engineModule.fieldList[field].aggregateType = type;
                         valuefields.splice(vCnt, 1, dataSourceItem);
@@ -374,13 +376,12 @@ export class AggregateMenu {
             this.parent.updateDataSource(isRefreshed);
         } else {
             if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
-                /* tslint:disable:align */
                 (this.parent as PivotFieldList).pivotGridModule.setProperties({
                     dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties as IDataOptions
                 }, true);
                 (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
                 (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
-                /* tslint:enable:align */
+                /* eslint-enable @typescript-eslint/indent */
             } else {
                 (this.parent as PivotFieldList).triggerPopulateEvent();
             }
@@ -434,7 +435,7 @@ export class AggregateMenu {
 
     /**
      * To destroy the pivot button event listener
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

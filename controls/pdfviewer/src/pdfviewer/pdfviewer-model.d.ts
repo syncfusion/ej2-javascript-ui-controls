@@ -2090,6 +2090,11 @@ export interface PdfViewerModel extends ComponentModel{
     documentPath?: string;
 
     /**
+     * Gets or sets the export annotations JSON file name in the PdfViewer control.
+     */
+    exportAnnotationFileName?: string;
+
+    /**
      * Gets or sets the download file name in the PdfViewer control.
      */
     downloadFileName?: string;

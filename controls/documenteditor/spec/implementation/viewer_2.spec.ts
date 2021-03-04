@@ -1740,6 +1740,6 @@ console.log('Layout on resize');
     it('Page field validation', () => {
 console.log('Page field validation');
         editor.open(pageField);
-        expect(editor.documentHelper.pages[1].currentPageNum).not.toBe(1);
+        expect(editor.documentHelper.pages[1].currentPageNum).toBe(1);
     });
 });

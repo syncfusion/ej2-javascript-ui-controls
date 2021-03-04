@@ -19,26 +19,27 @@ export class DataSourceUpdate {
     /** @hidden */
     public btnElement: HTMLElement;
     /** @hidden */
-    /* tslint:disable-next-line */
+    /* eslint-disable-next-line */
     public control: any;
     /** @hidden */
     public pivotButton: PivotButton;
 
     /**
      * Constructor for the dialog action.
+     * @param {PivotCommon} parent - parent.
      * @hidden
      */
-    constructor(parent?: PivotCommon) {
+    constructor(parent?: PivotCommon) { /* eslint-disable-line */
         this.parent = parent;
     }
 
     /**
      * Updates the dataSource by adding the given field along with field dropped position to the dataSource.
+     * @function updateDataSource
      * @param  {string} fieldName - Defines dropped field name to update dataSource.
      * @param  {string} droppedClass -  Defines dropped field axis name to update dataSource.
-     * @param  {number} fieldCaption - Defines dropped position to the axis based on field position.
-     * @method updateDataSource
-     * @return {void}
+     * @param  {number} droppedPosition - Defines dropped position to the axis based on field position.
+     * @returns {void}
      * @hidden
      */
     public updateDataSource(fieldName: string, droppedClass: string, droppedPosition: number): void {
@@ -114,7 +115,7 @@ export class DataSourceUpdate {
                         dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
                         droppedAxis: droppedClass, droppedPosition: droppedPosition
                     };
-                    /* tslint:disable */
+                    /* eslint-disable */
                     let dataSourceUpdate: DataSourceUpdate = this;
                     control.trigger(events.onFieldDropped, eventArgs, (droppedArgs: FieldDroppedEventArgs) => {
                         dataSourceItem = droppedArgs.droppedField;
@@ -172,15 +173,15 @@ export class DataSourceUpdate {
             }
         });
     }
-    /* tslint:enable */
     /**
      * Updates the dataSource by removing the given field from the dataSource.
      * @param  {string} fieldName - Defines dropped field name to remove dataSource.
-     * @method removeFieldFromReport
-     * @return {void}
+     * @function removeFieldFromReport
+     * @returns {void}
      * @hidden
      */
     public removeFieldFromReport(fieldName: string): IFieldOptions {
+        /* eslint-enable */
         let dataSourceItem: IFieldOptions;
         let isDataSource: boolean = false;
         let rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
@@ -217,9 +218,10 @@ export class DataSourceUpdate {
 
     /**
      * Creates new field object given field name from the field list data.
-     * @param  {string} fieldName - Defines dropped field name to add dataSource.
-     * @method getNewField
-     * @return {void}
+     * @param {string} fieldName - Defines dropped field name to add dataSource.
+     * @param {IFieldOptions} fieldItem - Defines dropped field.
+     * @function getNewField
+     * @returns {IFieldOptions} - IFieldOptions
      * @hidden
      */
     public getNewField(fieldName: string, fieldItem?: IFieldOptions): IFieldOptions {

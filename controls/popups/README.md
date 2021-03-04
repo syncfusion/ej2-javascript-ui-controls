@@ -1,4 +1,4 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-popups/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-popups)
+[![npm](http://ej2.syncfusion.com/github-badges?package=@syncfusion/ej2-popups)](https://www.npmjs.com/package/@syncfusion/ej2-popups)&nbsp;&nbsp;[![coverage](http://ej2.syncfusion.com/badges/ej2-popups/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-popups)
 
 # ej2-popups
 

@@ -9610,6 +9610,10 @@ export class Editor {
                 }
                 newParagraph.index = block.index + 1;
                 newParagraph.containerWidget = block.containerWidget;
+                if (block instanceof ParagraphWidget) {
+                    newParagraph.paragraphFormat.lineSpacing = block.paragraphFormat.lineSpacing;
+                    newParagraph.paragraphFormat.lineSpacingType = block.paragraphFormat.lineSpacingType;
+                }
                 this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, newParagraph.bodyWidget, newParagraph, false);
                 if (block.containerWidget instanceof Widget) {
                     block.containerWidget.childWidgets.push(newParagraph);
@@ -10516,9 +10520,32 @@ export class Editor {
     public removeContent(lineWidget: LineWidget, startOffset: number, endOffset: number): void {
         let count: number = this.selection.getLineLength(lineWidget);
         let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
+        let startText: any = undefined;
+        let textCount: number = 0;
+        let lastText: any = undefined;
         // tslint:disable-next-line:max-line-length
         for (let i: number = isBidi ? 0 : lineWidget.children.length - 1; isBidi ? i < lineWidget.children.length : i >= 0; isBidi ? i++ : i--) {
             let inline: ElementBox = lineWidget.children[i];
+            for (let k: number = 0; k < lineWidget.children.length; k++) {
+                let elementbox: ElementBox = lineWidget.children[k];
+               if (elementbox instanceof TextElementBox) {
+                    let text: any = elementbox.text;
+                    if (text.length + textCount > startOffset && !(textCount > startOffset)) {
+                      startText = text[startOffset - textCount - 1];
+                      if (isNullOrUndefined(startText) && (startOffset - textCount) === 0) {
+                          startText = lastText;
+                      }
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    if (text.length + textCount > endOffset) {
+                        if ((text[endOffset - textCount] === ' ' && startOffset === 0) || (startText === ' ' && text[endOffset - textCount] === ' ')) {
+                            endOffset += 1;
+                        }
+                    }
+                    lastText = text[text.length - 1];
+                }
+                textCount += elementbox.length;
+            }
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
                 continue;
@@ -11743,7 +11770,7 @@ export class Editor {
     // tslint:disable-next-line:max-line-length
     private removeCharacter(inline: ElementBox, offset: number, count: number, lineWidget: LineWidget, lineIndex: number, i: number, isRearrange?: boolean): boolean {
         let isBreak: boolean = false;
-        if (inline instanceof BookmarkElementBox) {
+        if (inline instanceof BookmarkElementBox && inline.line !== inline.reference.line) {
             if (!isNullOrUndefined(inline.line.previousLine)) {
                 inline.line.previousLine.children.splice(inline.line.previousLine.children.length, 0, inline);
                 inline.line = inline.line.previousLine;

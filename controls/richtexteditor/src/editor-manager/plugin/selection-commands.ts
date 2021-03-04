@@ -36,6 +36,11 @@ export class SelectionCommands {
                 if (nodes.length > 0) {
                     isCollapsed = true;
                     range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
+                } else if (range.startContainer.nodeType === 3 && range.startContainer.parentElement.childElementCount > 0 &&
+                    range.startOffset > 0 && range.startContainer.parentElement.firstElementChild.tagName.toLowerCase() !== 'br') {
+                    isCollapsed = true;
+                    range = nodeCutter.GetCursorRange(docElement, range, range.startContainer);
+                    nodes.push(range.startContainer);
                 } else if (range.startContainer.nodeName.toLowerCase() !== 'td') {
                     let cursorNode: Node = this.insertCursorNode(
                         docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode);
@@ -108,15 +113,31 @@ export class SelectionCommands {
         value: string,
         endNode: Node): Node {
         let cursorNodes: Node[] = domSelection.getNodeCollection(range);
-        let cursorFormat: Node = (cursorNodes.length > 0) ? isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
+        let cursorFormat: Node = (cursorNodes.length > 0) ?
+        (cursorNodes.length > 1 && range.startContainer === range.endContainer) ?
+        this.getCursorFormat(isFormatted, cursorNodes, format, endNode) :
+        isFormatted.getFormattedNode(cursorNodes[0], format, endNode) : null;
         let cursorNode: Node = null;
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
         } else {
+            if (cursorNodes.length > 1 && range.startOffset > 0 && ((cursorNodes[0] as HTMLElement).firstElementChild &&
+                (cursorNodes[0] as HTMLElement).firstElementChild.tagName.toLowerCase() === 'br')) {
+                (cursorNodes[0] as HTMLElement).innerHTML = '';
+            }
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }
         return cursorNode;
+    }
+
+    private static getCursorFormat(isFormatted: IsFormatted, cursorNodes: Node[], format: string, endNode: Node): Node {
+        let currentNode: Node;
+        for (let index: number = 0; index < cursorNodes.length; index++) {
+            currentNode = (cursorNodes[index] as HTMLElement).lastElementChild ?
+            (cursorNodes[index] as HTMLElement).lastElementChild : cursorNodes[index];
+        }
+        return isFormatted.getFormattedNode(currentNode, format, endNode);
     }
 
     private static removeFormat(

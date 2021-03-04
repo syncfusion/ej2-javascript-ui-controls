@@ -1,6 +1,8 @@
 import { DocumentEditorContainer } from '../../src/document-editor-container/document-editor-container';
 import { Toolbar } from '../../src/document-editor-container/tool-bar/tool-bar';
 import { createElement } from '@syncfusion/ej2-base';
+import { ContextMenu } from '../../src/document-editor/implementation/context-menu';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Document Editor container
  */
@@ -78,4 +80,49 @@ console.log('Properties pane enable validation');
         container.showPropertiesPane = true;
         expect(container.showPropertiesPane).toBe(true);
     });
+});
+describe('Restrict editing enable validation', () => {
+    let container: DocumentEditorContainer;
+    let menu: ContextMenu;
+    let element: HTMLElement;
+    beforeAll(() => {
+        element = createElement('div');
+        document.body.appendChild(element);
+        DocumentEditorContainer.Inject(Toolbar);
+        container = new DocumentEditorContainer({ restrictEditing: true, showPropertiesPane: true });
+        container.appendTo(element);
+        
+    });
+    afterAll(() => {
+        container.destroy();
+        expect(element.childNodes.length).toBe(0);
+        document.body.removeChild(element);
+        expect(() => { container.destroy(); }).not.toThrowError();
+        element = undefined;
+        container = undefined;
+    });
+    
+    it('Restrict editing enable validation', () => {
+        console.log('Restrict editing enable validation');
+                (container.documentEditor as any).openBlank();
+        let classele: any = document.getElementsByClassName('e-toolbar-item');
+        for (let i: number = 0; i< classele.length; i++) {
+            let ele: any =classele[i];
+            let disabled: any = ele.ariaDisabled;
+            let label: any = ele.children[0];
+            if (isNullOrUndefined(label))
+            {
+                continue;
+            }
+            let item: any = label.ariaLabel;
+            if (item === 'New' || item === 'Open' || item ==='Find' || item === 'LocalClipboard' || item === 'RestrictEditing') {
+                expect(disabled).toBe('false');
+            }
+            if (item === 'Undo' || item === 'Redo' || item === 'Image dropdownbutton' || item === 'Table' || item === 'Link' || item ===  'Break dropdownbutton'|| item === 'PageNumber' || item === 'PageSetup' || item === 'Footer' || item === 'FormFields' || item === 'Header' || item === 'Comments' || item === 'TrackChanges' || item === 'Bookmark' || item === 'TableOfContents' ) {
+                expect(disabled).toBe('true');
+            }
+        }
+        expect(container.toolbarModule.propertiesPaneButton.element.parentElement.classList.contains('e-de-overlay')).toBe(true);
+                expect(container.showPropertiesPane).toBe(false);
+            });
 });

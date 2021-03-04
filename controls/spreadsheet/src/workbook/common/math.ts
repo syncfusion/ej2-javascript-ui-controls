@@ -126,6 +126,13 @@ export function toDate(text: Date | string | number, intl: Internationalization,
     return dObj;
 }
 
+/**
+ * @hidden
+ */
+export function parseIntValue(value: string): string | number {
+    return (value && /^\d*\.?\d*$/.test(value)) ? parseFloat(value) : value;
+}
+
 export interface ToDateArgs {
     dateObj: Date;
     type: string;

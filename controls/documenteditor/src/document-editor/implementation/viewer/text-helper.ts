@@ -283,6 +283,23 @@ export class TextHelper {
         }
         return true;
     }
+    /**
+     * @private
+     * @param text 
+     */
+    public containsNumberAlone(text: string): boolean {
+        // tslint:disable
+        let number: string = '0123456789';
+        if (text === '') {
+            return false;
+        }
+        for (let i: number = 0; i < text.length; i++) {
+            if (number.indexOf(text.charAt(i)) === -1) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * @private

@@ -23,18 +23,18 @@ export class Grouping implements IAction {
     private groupDialog: Dialog;
     private selectedCellsInfo: SelectedCellsInfo[];
     private isUpdate: boolean;
-    /* tslint:disable-next-line:max-line-length */
     private dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
 
     private handlers: {
-        load: Function
+        load: Function; /* eslint-disable-line */  
     };
 
+    /* eslint-disable-next-line */
     /**
      * Constructor for the group UI rendering.
      * @hidden
      */
-    constructor(parent?: PivotView) {
+    constructor(parent?: PivotView) {   /* eslint-disable-line */
         this.parent = parent;
         this.parent.groupingModule = this;
         this.addEventListener();
@@ -42,13 +42,14 @@ export class Grouping implements IAction {
 
     /**
      * For internal use only - Get the module name.
+     * @returns {string} - string
      * @private
      */
     protected getModuleName(): string {
         return 'grouping';
     }
 
-    private render(args: { target: HTMLElement, option: string, parentElement: HTMLElement }): void {
+    private render(args: { target: HTMLElement; option: string; parentElement: HTMLElement }): void {
         let target: HTMLElement = args.target;
         let option: string = args.option;
         let parentElement: HTMLElement = args.parentElement;
@@ -70,9 +71,9 @@ export class Grouping implements IAction {
 
     /**
      * Returns the selected members/headers by checing the valid members from the pivot table.
-     * @method getSelectedOptions
-     * @param  {SelectedCellsInfo[]} axis - Get the members name from the given selected cells information
-     * @return {boolean}
+     * @function getSelectedOptions
+     * @param  {SelectedCellsInfo[]} selectedCellsInfo - Get the members name from the given selected cells information
+     * @returns {string[]} - string
      * @hidden
      */
     public getSelectedOptions(selectedCellsInfo: SelectedCellsInfo[]): string[] {
@@ -135,7 +136,6 @@ export class Grouping implements IAction {
                 }
             }
             if (isInvalid) {
-                /* tslint:disable-next-line:max-line-length */
                 this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('warning'), this.parent.localeObj.getConstant('invalidSelection'));
                 this.parent.grid.clearSelection();
             } else if (type && type !== '') {
@@ -191,8 +191,7 @@ export class Grouping implements IAction {
         }
     }
 
-    /* tslint:disable-next-line:max-line-length */
-    private removeGroupSettings(fieldName: string, selectedOptions: string[], groupFields: IGroupSettings[], groupNames: string[], type?: GroupType): IGroupSettings[] {
+    private removeGroupSettings(fieldName: string, selectedOptions: string[], groupFields: IGroupSettings[], groupNames: string[], type?: GroupType): IGroupSettings[] {    /* eslint-disable-line */
         let index: number = groupNames.indexOf(fieldName);
         if (index !== -1) {
             let field: IGroupSettings = groupFields[index];
@@ -232,18 +231,18 @@ export class Grouping implements IAction {
 
     /**
      * Returns the selected members/headers by checing the valid members from the pivot table.
-     * @method getSelectedCells
+     * @function getSelectedCells
      * @param  {string} axis - Spicifies the axis name for the given field.
      * @param  {string} fieldName - Gets selected members for the given field name.
      * @param  {string} name - specifies the selected member name for the given field.
-     * @return {boolean}
+     * @returns {SelectedCellsInfo[]} - return type
      * @hidden
      */
     public getSelectedCells(axis: string, fieldName: string, name: string): SelectedCellsInfo[] {
         let selectedCellsInfo: SelectedCellsInfo[] = [];
-        /* tslint:disable */
+        /* eslint-disable */
         let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
-        /* tslint:enable */
+        /* eslint-enable */
         for (let element of selectedElements) {
             let colIndex: number = Number(element.getAttribute('aria-colindex'));
             let rowIndex: number = Number(element.getAttribute('index'));
@@ -279,18 +278,22 @@ export class Grouping implements IAction {
             enableRtl: this.parent.enableRtl,
             width: 300,
             height: 'auto',
-            position: { X: 'center', Y: 'center' },
+            position: { X: 'center', Y: 'center' }, /* eslint-disable-line */
             buttons: [
                 {
                     click: this.updateGroupSettings.bind(this),
                     buttonModel: { cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
                 },
                 {
-                    click: () => { this.groupDialog.hide(); },
+                    click: () => {
+                        this.groupDialog.hide();
+                    },
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
-            overlayClick: () => { this.removeDialog(); },
+            overlayClick: () => {
+                this.removeDialog();
+            },
             closeOnEscape: true,
             close: this.removeDialog.bind(this),
             target: this.parentElement
@@ -299,7 +302,7 @@ export class Grouping implements IAction {
         this.groupDialog.appendTo(groupDialog);
     }
     private createGroupOptions(fieldName: string, type: string): HTMLElement {
-        let groupInstance: Grouping = this;
+        let groupInstance: Grouping = this; /* eslint-disable-line */
         let mainDiv: HTMLElement = createElement('div', {
             className: 'e-group-field-div-content', id: this.parentElement.id + '_group_field_div_content',
             attrs: { 'data-fieldName': fieldName, 'data-type': type }
@@ -315,7 +318,6 @@ export class Grouping implements IAction {
                     let caption: string;
                     let dataFields: IFieldOptions[] = dataSource.rows;
                     dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
-                    /* tslint:disable:max-line-length */
                     let actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
                     let currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields) as IFieldOptions;
                     let nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields) as IFieldOptions;
@@ -327,7 +329,7 @@ export class Grouping implements IAction {
                     let captionInputTextDiv1: HTMLElement = createElement('div', {
                         className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
                     });
-                    /* tslint:enable:max-line-length */
+                    /* eslint-enable max-len */
                     let captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-wrapper' });
                     let captionInputField1: HTMLInputElement = createElement('input', {
                         id: this.parentElement.id + 'group_caption_option',
@@ -418,7 +420,7 @@ export class Grouping implements IAction {
                     let endAt: string = undefined;
                     if (type === 'date') {
                         let selectedGroups: string[] = [];
-                        let groupData: { [key: string]: Object }[] = [
+                        let groupData: { [key: string]: Object }[] = [  /* eslint-disable-line */
                             { value: 'Seconds', text: this.parent.localeObj.getConstant('Seconds') },
                             { value: 'Minutes', text: this.parent.localeObj.getConstant('Minutes') },
                             { value: 'Hours', text: this.parent.localeObj.getConstant('Hours') },
@@ -426,7 +428,7 @@ export class Grouping implements IAction {
                             { value: 'Months', text: this.parent.localeObj.getConstant('Months') },
                             { value: 'QuarterYear', text: this.parent.localeObj.getConstant('QuarterYear') },
                             { value: 'Quarters', text: this.parent.localeObj.getConstant('Quarters') },
-                            { value: 'Years', text: this.parent.localeObj.getConstant('Years') },
+                            { value: 'Years', text: this.parent.localeObj.getConstant('Years') }
                         ];
                         if (groupField && groupField.type === 'Date') {
                             selectedGroups = groupField.groupInterval;
@@ -440,7 +442,7 @@ export class Grouping implements IAction {
                             enableRtl: this.parent.enableRtl,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(startAt === undefined),
-                            width: '100%',
+                            width: '100%'
                         });
                         startAtInputObj.isStringTemplate = true;
                         startAtInputObj.appendTo(startAtInputField1);
@@ -449,12 +451,12 @@ export class Grouping implements IAction {
                             enableRtl: this.parent.enableRtl,
                             format: 'dd/MM/yyyy hh:mm:ss a',
                             enabled: !(endAt === undefined),
-                            width: '100%',
+                            width: '100%'
                         });
                         endAtInputObj.isStringTemplate = true;
                         endAtInputObj.appendTo(endAtInputField1);
                         MultiSelect.Inject(CheckBoxSelection);
-                        /* tslint:disable */
+                        /* eslint-disable */
                         let intervalObj: MultiSelect = new MultiSelect({
                             dataSource: groupData,
                             value: selectedGroups as string[],
@@ -474,7 +476,7 @@ export class Grouping implements IAction {
                                 }
                             }
                         });
-                        /* tslint:enable */
+                        /* eslint-enable */
                         intervalObj.isStringTemplate = true;
                         intervalObj.appendTo(intervalInputField1);
                         startAtInputObj.value = startAt === undefined ? null : new Date(startAt);
@@ -497,7 +499,7 @@ export class Grouping implements IAction {
                             format: '###',
                             value: startAt === undefined ? undefined : parseInt(startAt, 10),
                             enabled: !(startAt === undefined),
-                            width: '100%',
+                            width: '100%'
                         });
                         startAtInputObj.isStringTemplate = true;
                         startAtInputObj.appendTo(startAtInputField1);
@@ -557,7 +559,7 @@ export class Grouping implements IAction {
         }
         return mainDiv;
     }
-    /* tslint:disable:max-func-body-length */
+    /* eslint-disable  */
     private updateGroupSettings(): void {
         let dialogElement: HTMLElement = this.groupDialog.element;
         let groupType: string = dialogElement.getAttribute('data-type');
@@ -622,7 +624,6 @@ export class Grouping implements IAction {
                 this.isUpdate = true;
                 groupFields.push(field);
             }
-            /* tslint:disable-next-line:max-line-length */
             groupFields = this.validateSettings(fieldName, groupFields, groupType, (splicedItems.length === 0 ? customGroup.items : splicedItems), newItems);
         } else if (groupType === 'date' || groupType === 'number') {
             let startCheckBoxInstance: CheckBox = getInstance('#' + this.parentElement.id + 'group_start_option', CheckBox) as CheckBox;
@@ -691,7 +692,6 @@ export class Grouping implements IAction {
         }
         return customFields;
     }
-    /* tslint:disable-next-line:max-line-length */
     private validateSettings(fieldName: string, groupFields: IGroupSettings[], groupType: string, splicedItems: string[], newItems?: string[]): IGroupSettings[] {
         let validatedSettings: IGroupSettings[] = [];
         let groups: { [key: string]: IGroupSettings[] } = this.getGroupBasedSettings(groupFields);
@@ -702,7 +702,6 @@ export class Grouping implements IAction {
                 let customGroups: IGroupSettings[] = customFields[fieldName.replace(/_custom_group/g, '')];
                 let fields: string[] = customGroups.map((item: IGroupSettings, pos: number) => item.name);
                 if (newItems) {
-                    /* tslint:disable-next-line:max-line-length */
                     customGroups = this.modifyParentGroupItems(fieldName, customGroups, splicedItems, newItems, fields);
                 } else {
                     customGroups = this.removeGroupSettings(fieldName.replace('_custom_group', ''), splicedItems, customGroups, fields);
@@ -730,7 +729,6 @@ export class Grouping implements IAction {
         }
         return validatedSettings;
     }
-    /* tslint:disable-next-line:max-line-length */
     private reOrderSettings(customGroups: IGroupSettings[], fields: string[], orderedSettings: IGroupSettings[], fieldName: string): IGroupSettings[] {
         let index: number = fields.indexOf(fieldName);
         if (index > -1 && customGroups[index].customGroups && customGroups[index].customGroups.length > 0) {
@@ -739,7 +737,6 @@ export class Grouping implements IAction {
         }
         return orderedSettings;
     }
-    /* tslint:disable-next-line:max-line-length */
     private modifyParentGroupItems(fieldName: string, groupFields: IGroupSettings[], splicedItems: string[], newItems: string[], fields: string[]): IGroupSettings[] {
         let index: number = fields.indexOf(fieldName + '_custom_group');
         if (index !== -1) {
@@ -816,7 +813,7 @@ export class Grouping implements IAction {
 
     /**
      * To destroy the pivot button event listener
-     * @return {void}
+     * @returns {void}
      * @hidden
      */
     public destroy(): void {

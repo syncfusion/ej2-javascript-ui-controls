@@ -2,6 +2,45 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#311796`, `#316639`, `#308845`, `#316676`, `#162561` - All the pages in the document were now loaded properly.
+- `#309052`, `#315953` - Footnote now layouts properly.
+- `#307997` - Resolved issue on updating the bullet list.
+- `#314313`, `#316278` - When copy pasting the merge field, merge field was now preserved properly.
+- `#315435` - Table cells layouts properly now.
+- `#315413`, `#317463` - Table cells renders to preferred width now.
+
+## 18.4.44 (2021-02-23)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#313564`, `#314479` - Bookmark co ordinates were now updated properly.
+- `#162017` - Restart page number behaviour was implemented also for page break now.
+- `#310874` - Table with merged cells were exported properly now.
+- `#162017` - Page number was now updated properly based on page index.
+- `#313821` - Table column were now layout properly.
+- `#311371` - While deleting the bookmark extra spaces between the text were now removed properly.
+
+## 18.4.43 (2021-02-16)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#160804`, `#160805` - Line space was now considered properly on exporting.
+- `#161513` - Properties pane was now disabled while enabling restrict editing.
+- `#311371` - While deleting a text extra spaces between the text were now removed properly.
+- `#311884` - Document with table was imported properly now.
+- `#310754` - Hebrew text was now layout properly with spaces and numbers renders properly.
+- Resolved performance lagging issue while editing.
+
 ## 18.4.42 (2021-02-09)
 
 ### Document Editor

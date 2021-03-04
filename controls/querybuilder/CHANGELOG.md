@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.46 (2021-03-02)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Provided tooltip support for Add button.
+
 ## 18.4.42 (2021-02-09)
 
 ### QueryBuilder

@@ -33,6 +33,8 @@ export const TOGGLE_SELECT_CLASS: string = 'e-select-table';
 /** @hidden */
 export const FIELD_TABLE_CLASS: string = 'e-field-table';
 /** @hidden */
+export const BUTTON_DRAGGABLE: string = 'e-draggable';
+/** @hidden */
 export const OLAP_FIELD_TABLE_CLASS: string = 'e-olap-field-table';
 /** @hidden */
 export const FIELD_LIST_CLASS: string = 'e-field-list';
@@ -295,8 +297,10 @@ export const LASTSPAN: string = 'e-lastspan';
 export const EDITOR_SEARCH_WRAPPER_CLASS: string = 'e-editor-search-wrapper';
 /** @hidden */
 export const EDITOR_SEARCH_CLASS: string = 'e-editor-search';
+/* eslint-disable */
 /** @hidden */
 export const EDITOR_SEARCH__INPUT_CLASS: string = 'e-editor-search-input';
+/* eslint-enable */
 /** @hidden */
 export const SELECT_ALL_WRAPPER_CLASS: string = 'e-select-all-wrapper';
 /** @hidden */

@@ -420,6 +420,7 @@ export class Drawing {
                 signatureText.style.textAlign = 'Left';
                 signatureText.rotateValue = undefined;
                 signatureText.content = obj.data;
+                signatureText.margin.top = (obj.fontSize / 2);
                 signatureText.style.textWrapping = 'Wrap';
                 canvas.children.push(signatureText);
                 break;

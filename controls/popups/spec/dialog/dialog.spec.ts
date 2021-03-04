@@ -3440,3 +3440,26 @@ describe('Testing resize Events', () => {
         done()
     });
 });
+
+describe('EJ2-46093 - Modal Dialog can still tab and select other elements issue testing', () => {
+    let events: any;
+    let eventArgs: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        let btn: HTMLElement = createElement('button', {id : 'cntBtn', innerHTML: 'Click me' });
+        ele.appendChild(btn);
+        document.body.appendChild(ele);
+        events = new Dialog({ showCloseIcon: true, isModal: true });
+        events.appendTo(ele);
+    });
+
+    it('Tab key press to focus change testing ', () => {
+        (document.getElementById('cntBtn') as HTMLInputElement).focus();
+        eventArgs = { preventDefault: function() {}, keyCode: 9, altKey: false, ctrlKey: false, shiftKey: false };
+        events.keyDown(eventArgs);
+        expect(document.activeElement.classList.contains('e-dlg-closeicon-btn')).toBe(true);
+    });
+    afterAll(() => {
+        destroyDialog(events);
+    });
+});

@@ -101,6 +101,6 @@ console.log('bold apply');
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[0] as TextElementBox).text).toBe('?sample');
+        expect((lineWidget.children[0] as TextElementBox).text).toBe('sample?');
     });
 });

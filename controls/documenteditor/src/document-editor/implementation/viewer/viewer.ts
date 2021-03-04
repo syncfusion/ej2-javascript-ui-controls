@@ -946,7 +946,7 @@ export class DocumentHelper {
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
         this.owner.commentReviewPane.reviewTab.hideTab(0, false);
-        this.owner.commentReviewPane.reviewTab.hideTab(1, !this.owner.enableTrackChanges);
+        this.owner.commentReviewPane.reviewTab.hideTab(1, false);
         this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment, 'Comments');
     }
     /**
@@ -2969,13 +2969,17 @@ export class DocumentHelper {
                             page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                             return this.getFieldText(fieldPattern, page.currentPageNum);
                         }
-                        if (previousPage.currentPageNum === 0) {
+                        if (previousPage.currentPageNum === 1) {
                             previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                         }
                         page.currentPageNum = previousPage.currentPageNum + 1;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
+                    } else if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex === 0) {
+                        page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
+                        return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
                     page.currentPageNum = (!isNullOrUndefined(page.previousPage)) ? page.previousPage.currentPageNum + 1 : page.index + 1;
+                    page.currentPageNum = page.index + 1;
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.documentHelper.pages.length);
@@ -3352,8 +3356,10 @@ export abstract class LayoutViewer {
             let bottom: number = 0.667 + bottomMargin;
             if (!isNullOrUndefined(page.footerWidget)) {
                 isEmptyWidget = page.footerWidget.isEmpty;
+                let footnoteHeight: number = !isNullOrUndefined(page.footnoteWidget) ? page.footnoteWidget.height : 0;
                 if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                    bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+                    // tslint:disable-next-line:max-line-length
+                    bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height + footnoteHeight, bottomMargin));
                 }
             }
             if (!isNullOrUndefined(sectionFormat)) {

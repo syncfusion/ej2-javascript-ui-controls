@@ -654,10 +654,6 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;
-            if (!isNewlyAdded && this.previousText !== inputValue) {
-                // tslint:disable-next-line:max-line-length
-                this.pdfViewer.annotationModule.triggerAnnotationPropChange(this.selectedAnnotation, false, false, false, false, false, false, false, true, this.previousText, inputValue);
-            }
             // tslint:disable-next-line
             if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations) {
                 inputEleWidth = ((inputEleWidth - 1) / zoomFactor);
@@ -698,6 +694,10 @@ export class FreeTextAnnotation {
             // tslint:disable-next-line
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             this.inputBoxCount += 1;
+            if (!isNewlyAdded && this.previousText !== inputValue) {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotationModule.triggerAnnotationPropChange(this.selectedAnnotation, false, false, false, false, false, false, false, true, this.previousText, inputValue);
+            }
         } else {
             this.inputBoxElement.focus();
             if (!this.isTextSelected) {

@@ -41,16 +41,16 @@ describe('Insert Field with different position validation in bidi', () => {
     it('insert field at start of text element', () => {
 console.log('insert field at start of text element');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).toBe(-1);
+        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).toBe(12);
         editor.selection.handleHomeKey();
         editor.editor.insertField('MERGEFIELD  MyField  \\* MERGEFORMAT', '«MyField»');
-        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).toBe(-1);
+        expect((lineWidget.children[0] as TextElementBox).text.indexOf('חדשים')).toBe(12);
         expect(lineWidget.children[lineWidget.children.length - 1] instanceof FieldElementBox).toBe(true);
     });
     it('replace text with field validation', () => {
 console.log('replace text with field validation');
         let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[2] as TextElementBox).text.indexOf('Lead#First')).not.toBe(-1);
+        expect((lineWidget.children[2] as TextElementBox).text.indexOf('Lead#First')).toBe(-1);
         editor.search.find('חדשים');
         editor.editor.insertField('MERGEFIELD  MyField  \\* MERGEFORMAT', '«MyField»');
         // expect((lineWidget.children[14] as TextElementBox).text.indexOf('Lead#First')).not.toBe(-1);
@@ -270,7 +270,7 @@ console.log('single delete with different formatting');
       editor.selection.handleRightKey();
       editor.editor.delete();
       let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
-        expect((lineWidget.children[1] as TextElementBox).text).toBe('سشةحمث ');
+        expect((lineWidget.children[1] as TextElementBox).text).toBe(' ');
     });
     it('Multiple delete with formatting', () => {
 console.log('Multiple delete with formatting');

@@ -19,7 +19,7 @@ import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCbox
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
-import { DataResult } from '../base/interface';
+import { DataResult, EJ2Intance } from '../base/interface';
 
 /**
  * @hidden
@@ -41,11 +41,13 @@ export class CheckBoxFilterBase {
     protected searchBox: Element;
     protected sInput: HTMLInputElement;
     protected sIcon: Element;
-    protected options: IFilterArgs;
+    /** @hidden */
+    public options: IFilterArgs;
     protected existingPredicate: { [key: string]: PredicateModel[] } = {};
     protected foreignKeyData: Object[];
     protected foreignKeyQuery: Query = new Query();
-    protected filterState: boolean = true;
+    /** @hidden */
+    public filterState: boolean = true;
     protected values: Object = {};
     private cBoxTrue: Element;
     private cBoxFalse: Element;
@@ -57,6 +59,7 @@ export class CheckBoxFilterBase {
     protected localeObj: L10n;
     protected valueFormatter: ValueFormatter;
     private searchHandler: Function;
+    private isMenuNotEqual: boolean;
     /**
      * Constructor for checkbox filtering module
      * @hidden
@@ -97,13 +100,13 @@ export class CheckBoxFilterBase {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
         EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
-        EventHandler.add(this.dlg.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
+        EventHandler.add(this.dialogObj.element.querySelector('.e-searchinput'), 'keyup', this.searchHandler, this);
     }
 
     private unWireEvents(): void {
         EventHandler.remove(this.dlg, 'click', this.clickHandler);
         EventHandler.remove(this.dlg, 'keyup', this.keyupHandler);
-        let elem: Element = this.dlg.querySelector('.e-searchinput');
+        let elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
         }
@@ -290,22 +293,43 @@ export class CheckBoxFilterBase {
         });
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
+        this.renderResponsiveFilter(options);
         this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
-        this.parent.element.appendChild(this.dlg);
+        if (options.isResponsiveFilter) {
+            let responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
+            responsiveCnt.appendChild(this.dlg);
+        } else {
+            this.parent.element.appendChild(this.dlg);
+        }
         this.dialogObj.appendTo(this.dlg as HTMLElement);
-        this.dialogObj.element.style.maxHeight = this.options.height + 'px';
+        this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
         this.dialogObj.show();
+        let content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
+        content.appendChild(this.sBox);
         this.wireEvents();
         createSpinner({ target: this.spinner }, this.parent.createElement);
         showSpinner(this.spinner);
         this.getAllData();
     }
 
+    private renderResponsiveFilter(options: IFilterArgs): void {
+        if (options.isResponsiveFilter) {
+            this.dialogObj.buttons = [{}];
+            this.dialogObj.position = { X: '', Y: '' };
+            this.dialogObj.target = document.querySelector('.e-resfilter > .e-dlg-content > .e-mainfilterdiv') as HTMLElement;
+            this.dialogObj.width = '100%';
+        }
+    }
+
     private dialogCreated(e: {}): void {
-        if (!Browser.isDevice) {
-            getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
+        if (this.options.isResponsiveFilter) {
+            this.dialogObj.element.style.left = '0px';
         } else {
-            this.dialogObj.position = { X: 'center', Y: 'center' };
+            if (!Browser.isDevice) {
+                getFilterMenuPostion(this.options.target, this.dialogObj, this.parent);
+            } else {
+                this.dialogObj.position = { X: 'center', Y: 'center' };
+            }
         }
         this.parent.notify(events.filterDialogCreated, e);
     }
@@ -333,17 +357,19 @@ export class CheckBoxFilterBase {
             this.unWireEvents();
             remove(this.dlg);
             this.dlg = null;
+            this.parent.notify(events.filterDialogClose, {});
         }
     }
 
-    protected clearFilter(): void {
+    /** @hidden */
+    public clearFilter(col?: Column): void {
         /* tslint:disable-next-line:max-line-length */
         let args: { instance: CheckBoxFilterBase, handler: Function, cancel: boolean } = { instance: this, handler: this.clearFilter, cancel: false };
         this.parent.notify(events.fltrPrevent, args);
         if (args.cancel) {
             return;
         }
-        this.options.handler({ action: 'clear-filter', field: this.options.field });
+        this.options.handler({ action: 'clear-filter', field: col ? col.field : this.options.field });
     }
 
     private btnClick(e: MouseEvent): void {
@@ -375,16 +401,16 @@ export class CheckBoxFilterBase {
             } else {
                 if ((<{ keyCode?: number }>e).keyCode === 13) {
                     this.fltrBtnHandler();
-            } else {
+                } else {
 
-                let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
-                if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
-                    this.fltrBtnHandler();
-                } else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
-                    this.clearFilter();
+                    let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
+                    if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
+                        this.fltrBtnHandler();
+                    } else if (this.getLocalizedLabel('ClearButton').toLowerCase() === text) {
+                        this.clearFilter();
+                    }
                 }
             }
-        }
             this.closeDialog();
         } else if (!((<Element>e.target).tagName.toLowerCase() === 'input')) {
             this.clearFilter();
@@ -392,25 +418,31 @@ export class CheckBoxFilterBase {
         }
     }
 
-    private fltrBtnHandler(): void {
+    /** @hidden */
+    public fltrBtnHandler(): void {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let check: Element[] = checked;
         let optr: string = 'equal';
+        let ddlValue: EJ2Intance = (this.dialogObj.element.querySelector('.e-dropdownlist') as EJ2Intance);
+        if (ddlValue) {
+            this.options.operator = optr = ddlValue.ej2_instances[0].value as string;
+        }
+        this.isMenuNotEqual = this.options.operator === 'notequal';
         let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
         let caseSen: boolean = this.options.allowCaseSensitive;
         let defaults: {
             predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         } = {
-            field: this.options.field, predicate: 'or', uid: this.options.uid,
+            field: this.options.field, predicate: this.isMenuNotEqual ? 'and' : 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
         };
         let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
         if (isNotEqual && searchInput.value === '') {
-            optr = 'notequal';
+            optr = this.isMenuNotEqual ? 'equal' : 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
-            defaults.predicate = 'and';
-            defaults.operator = 'notequal';
+            defaults.predicate = this.isMenuNotEqual ? 'or' : 'and';
+            defaults.operator = optr;
         }
         let value: string;
         let val: string;
@@ -826,7 +858,9 @@ export class CheckBoxFilterBase {
     private dialogOpen(): void {
         if (this.parent.element.classList.contains('e-device')) {
             this.dialogObj.element.querySelector('.e-input-group').classList.remove('e-input-focus');
-            (<HTMLElement>this.dialogObj.element.querySelector('.e-btn')).focus();
+            if (!this.options.isResponsiveFilter) {
+                (<HTMLElement>this.dialogObj.element.querySelector('.e-btn')).focus();
+            }
         }
     }
 
@@ -856,10 +890,14 @@ export class CheckBoxFilterBase {
     private updateIndeterminatenBtn(): void {
         let cnt: number = this.cBox.children.length - 1;
         let className: string[] = [];
+        let disabled: boolean = false;
         let elem: Element = this.cBox.querySelector('.e-selectall');
         let selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall)').length;
-        let btn: Button = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
-        btn.disabled = false;
+        let btn: Button;
+        if (!this.options.isResponsiveFilter) {
+            btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
+            btn.disabled = false;
+        }
         let input: HTMLInputElement = elem.previousSibling as HTMLInputElement;
         setChecked(input, false);
         input.indeterminate = false;
@@ -871,17 +909,24 @@ export class CheckBoxFilterBase {
             input.indeterminate = true;
         } else {
             className = ['e-uncheck'];
-            btn.disabled = true;
+            disabled = true;
+            if (btn) { btn.disabled = true; }
         }
-        this.filterState = !btn.disabled;
-        btn.dataBind();
+        if (btn) {
+            this.filterState = !btn.disabled;
+            btn.dataBind();
+        }
         removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
         addClass([elem], className);
+        this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
     }
 
     private createFilterItems(data: Object[], isInitial?: boolean): void {
         let cBoxes: Element = this.parent.createElement('div');
-        let btn: Button = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
+        let btn: Button; let disabled: boolean = false;
+        if (!this.options.isResponsiveFilter) {
+            btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
+        }
         let nullCounter: number = -1;
         for (let i: number = 0; i < data.length; i++) {
             let val: string = getValue('ejValue', data[i]);
@@ -926,15 +971,19 @@ export class CheckBoxFilterBase {
             this.cBox.innerHTML = '';
             appendChildren(this.cBox, [].slice.call(cBoxes.children));
             this.updateIndeterminatenBtn();
-            btn.disabled = false;
+            if (btn) { btn.disabled = false; }
+            disabled = false;
         } else {
             cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
             this.cBox.innerHTML = '';
             appendChildren(this.cBox, [].slice.call(cBoxes.children));
-            btn.disabled = true;
+            if (btn) { btn.disabled = true; }
+            disabled = true;
         }
-        this.filterState = !btn.disabled;
-        btn.dataBind();
+        if (btn) {
+            this.filterState = !btn.disabled;
+            btn.dataBind();
+        }
         let args: {
             dataSource?: Object[], requestType?: string,
             filterModel?: CheckBoxFilterBase
@@ -945,6 +994,7 @@ export class CheckBoxFilterBase {
             args[filterModel] = this;
         }
         this.parent.notify(events.cBoxFltrComplete, args);
+        this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
         hideSpinner(this.spinner);
     }
 
@@ -952,7 +1002,8 @@ export class CheckBoxFilterBase {
         if (!this.isFiltered || !isColFiltered) {
             return true;
         } else {
-            return this.result[value];
+            let checkState: boolean = this.result[value];
+            return this.options.operator === 'notequal' ? !checkState : checkState;
         }
     }
 

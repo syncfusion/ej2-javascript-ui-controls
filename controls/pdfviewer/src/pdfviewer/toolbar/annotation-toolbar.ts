@@ -3075,7 +3075,10 @@ export class AnnotationToolbar {
     private resetViewerHeight(viewerHeight: number, toolbarHeight: number): number {
         return viewerHeight + toolbarHeight;
     }
-    private afterAnnotationToolbarCreationInBlazor(): void {
+    /**
+     * @private
+     */
+    public afterAnnotationToolbarCreationInBlazor(): void {
         this.HighlightElement = document.getElementById(this.pdfViewer.element.id + '_highLight').children[0];
         this.UnderlineElement = document.getElementById(this.pdfViewer.element.id + '_underline').children[0];
         this.StrikethroughElement = document.getElementById(this.pdfViewer.element.id + '_strikethrough').children[0];
@@ -3089,11 +3092,13 @@ export class AnnotationToolbar {
         element.classList.add('e-pv-tbar-btn');
         if (element.childNodes.length > 0) {
             let spanElement: HTMLElement = element.childNodes[0] as HTMLElement;
-            spanElement.id = this.pdfViewer.element.id + idString + 'Icon';
-            spanElement.classList.remove('e-icons');
-            spanElement.classList.remove('e-btn-icon');
-            if (this.pdfViewer.enableRtl) {
-                spanElement.classList.add('e-right');
+            if (spanElement && spanElement.classList) {
+                spanElement.id = this.pdfViewer.element.id + idString + 'Icon';
+                spanElement.classList.remove('e-icons');
+                spanElement.classList.remove('e-btn-icon');
+                if (this.pdfViewer.enableRtl) {
+                    spanElement.classList.add('e-right');
+                }
             }
         }
         return element;

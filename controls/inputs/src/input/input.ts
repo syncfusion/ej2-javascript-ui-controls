@@ -1,5 +1,5 @@
 import { createElement, attributes, addClass, removeClass, detach, classList } from '@syncfusion/ej2-base';
-import { closest, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, formatUnit, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 const CLASSNAMES: ClassNames = {
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
@@ -506,7 +506,7 @@ export namespace Input {
         if (isClear) {
             inputObject.clearButton = createClearButton (element, inputObject, initial, makeElement);
         } else {
-            inputObject.clearButton.remove();
+            remove(inputObject.clearButton);
             inputObject.clearButton = null;
         }
     }
