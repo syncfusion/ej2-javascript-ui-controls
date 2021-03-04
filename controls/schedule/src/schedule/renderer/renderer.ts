@@ -20,7 +20,7 @@ export class Render {
 
     public render(viewName: View, isDataRefresh: boolean = true): void {
         this.initializeLayout(viewName);
-        if (this.parent.activeView && isDataRefresh && !this.parent.isServerRenderer()) {
+        if (isDataRefresh && !this.parent.isServerRenderer()) {
             this.refreshDataManager();
         }
     }
@@ -132,6 +132,7 @@ export class Render {
     }
 
     public refreshDataManager(): void {
+        if (!this.parent.activeView) return;
         let start: Date = this.parent.activeView.startDate();
         let end: Date = this.parent.activeView.endDate();
         let dataManager: Promise<Object> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));
