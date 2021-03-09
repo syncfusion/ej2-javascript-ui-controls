@@ -1109,6 +1109,83 @@ describe('Zoom feature tesing for map control', () => {
         });
     });
 
+    describe('Checking OSM maps with zoomFactor', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let zoomEle: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                layers: [
+                    {
+                       layerType: 'OSM',
+                       markerSettings: [{
+                        visible: true,
+                        shape: 'Diamond',
+                        height: 15,
+                        fill: "green",
+                        width: 15,
+                        dataSource: [
+                            {
+                                latitude: 37.0000, longitude: -120.0000, name: 'California',
+                            },
+                            {
+                                latitude: 40.7127, longitude: -74.0059, name: "New York"
+                            },
+                            {
+                                latitude: 42, longitude: -93, name: 'Iowa'
+                            }
+                        ]
+                    }]
+                    }
+                ],
+                zoomSettings: {
+                    enable: true,
+                    zoomFactor: 3
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Checking zoom factor value as 0', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_svg");
+                expect(element.childElementCount).toBe(2);
+            };
+            map.zoomSettings.zoomFactor = 0;
+            map.refresh();
+        });
+        it('Checking zoom factor value as 1', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_svg");
+                expect(element.childElementCount).toBe(2);
+            };
+            map.zoomSettings.zoomFactor = 1;
+            map.refresh();
+        });
+        it('Checking zoom factor value as 3', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_svg");
+                expect(element.childElementCount).toBe(2);
+            };
+            map.zoomSettings.zoomFactor = 3;
+            map.refresh();
+        });
+        it('Checking with shouldZoomInitially as true', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_svg");
+                expect(element.childElementCount).toBe(2);
+            };
+            map.zoomSettings.shouldZoomInitially = true;
+            map.zoomSettings.zoomFactor = 1;
+            map.refresh();
+        });
+    });
+
     describe('Checkzoom center position after screen resize ', () => {
         let id: string = 'container';
         let map: Maps;

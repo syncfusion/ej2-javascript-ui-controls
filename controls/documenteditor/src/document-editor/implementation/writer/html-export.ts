@@ -20,6 +20,10 @@ export class HtmlExport {
      * @private
      */
     public fieldCheck: number = 0;
+    /**
+     * @private
+     */
+    public isMergeField: boolean = false;
 
     /* tslint:disable:no-any */
     /**
@@ -213,7 +217,6 @@ export class HtmlExport {
     public serializeInlines(paragraph: any, blockStyle: string): string {
         let inline: any = undefined;
         let i: number = 0;
-        let isMergeField: boolean = false;
         let tagAttributes: string[] = [];
         while (paragraph.inlines.length > i) {
             inline = paragraph.inlines[i];
@@ -233,8 +236,8 @@ export class HtmlExport {
                         tagAttributes = [];
                         tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
                         blockStyle += this.createAttributesTag('a', tagAttributes);
-                    } else if (fieldCode.text.indexOf('MERGEFIELD') >= 0) {
-                        isMergeField = true;
+                    } else if (fieldCode.text.toLowerCase().indexOf('mergefield') >= 0) {
+                        this.isMergeField = true;
                         tagAttributes = [];
                         tagAttributes.push('style="mso-element:field-begin"');
                         blockStyle += '<!--[if supportFields]>';
@@ -245,7 +248,7 @@ export class HtmlExport {
                         this.fieldCheck = undefined;
                     }
                 } else if (inline.fieldType === 2) {
-                    if (isMergeField) {
+                    if (this.isMergeField) {
                         tagAttributes = [];
                         tagAttributes.push('style="mso-element:field-separator"');
                         blockStyle += this.createAttributesTag('span', tagAttributes);
@@ -258,14 +261,13 @@ export class HtmlExport {
                         this.fieldCheck = 0;
                     }
                 } else {
-                    if (isMergeField) {
+                    if (this.isMergeField) {
                         tagAttributes = [];
                         blockStyle += '<!--[if supportFields]>';
                         tagAttributes.push('style="mso-element:field-end"');
                         blockStyle += this.createAttributesTag('span', tagAttributes);
                         blockStyle += this.endTag('span');
                         blockStyle += '<![endif]-->';
-                        isMergeField = false;
                     } else if (!isNullOrUndefined(this.fieldCheck) && this.fieldCheck !== 0) {
 
                         blockStyle += this.endTag('a');
@@ -275,7 +277,7 @@ export class HtmlExport {
             } else {
                 let text: string = isNullOrUndefined(inline.text) ? '' : inline.text;
                 if (this.fieldCheck === 0) {
-                    if (text.indexOf('MERGEFIELD') >= 0 && isMergeField) {
+                    if (text.indexOf('MERGEFIELD') >= 0 && this.isMergeField) {
                         tagAttributes = [];
                         tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
                         blockStyle += this.createAttributesTag('span', tagAttributes);
@@ -292,7 +294,7 @@ export class HtmlExport {
                     blockStyle += '>';
                 }
                 if (this.fieldCheck === 2) {
-                    if (isMergeField) {
+                    if (this.isMergeField) {
                         tagAttributes = [];
                         tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
                         blockStyle += this.createAttributesTag('span', tagAttributes);

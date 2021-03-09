@@ -110,18 +110,20 @@ export class PdfExport {
         this.data = new Data(this.parent);
         this.isBlob = isBlob;
         this.gridPool = {};
+        let query: Query = new Query();
         if (parent.childGrid && !(!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.hierarchyExportMode === 'None')) {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
         let args: Object = {
             requestType: 'beforePdfExport', cancel: false,
-            headerPageNumbers: [], gridDrawPosition: { xPosition: 0, yPosition: 0 }
+            headerPageNumbers: [], gridDrawPosition: { xPosition: 0, yPosition: 0 }, generateQuery : false
         };
         if (!isBlazor()) {
             let gridObject: string = 'gridObject';
             args[gridObject] = parent;
         }
         let can: string = 'cancel';
+        let generateQuery : string = 'generateQuery';
         let header: string = 'headerPageNumbers';
         let drawPos: string = 'gridDrawPosition';
         parent.trigger(events.beforePdfExport, args);
@@ -133,13 +135,16 @@ export class PdfExport {
         if (isExportColumns(pdfExportProperties)) {
             updateColumnTypeForExportColumns(pdfExportProperties, parent);
         }
+        if (args[generateQuery]) {
+             query = ExportHelper.getQuery(parent, this.data);
+        }
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
             && pdfExportProperties.dataSource instanceof DataManager) {
             return new Promise((resolve: Function, reject: Function) => {
-                (<DataManager>pdfExportProperties.dataSource).executeQuery(new Query()).then((returnType: Object) => {
+                (<DataManager>pdfExportProperties.dataSource).executeQuery(query).then((returnType: Object) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
                 });
             });

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### MultiSelect
+
+#### Bug Fixes
+
+`#317598` - Issue with "selected values are not posted properly while clicking on the select all option with predefined value" has been resolved.
+
 ## 18.4.44 (2021-02-23)
 
 ### MultiSelect

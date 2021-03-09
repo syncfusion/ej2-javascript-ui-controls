@@ -104,7 +104,7 @@ export class NumberFormatting implements IAction {
             if (format.indexOf(this.parent.dataSourceSettings.values[j].name) === -1) {
                 formatObject = {
                     name: this.parent.dataSourceSettings.values[j].name, format: 'N0',
-                    useGrouping: true,
+                    useGrouping: true
                 };
                 this.newFormat.push(formatObject);
             }

@@ -556,7 +556,6 @@ export class Matrix {
             navigator[0] = -1;
         }
         if (first === null) {
-            rowIndex = this.current[0];
             for (let i: number = 0; i < this.rows; i++) {
                 if (this.matrix[i].some((v: number) => { return v === 1; })) {
                     emptyTable = false;
@@ -564,6 +563,7 @@ export class Matrix {
                 }
             }
             if (emptyTable) {
+                rowIndex = this.current[0];
                 return [rowIndex, columnIndex];
             }
         }

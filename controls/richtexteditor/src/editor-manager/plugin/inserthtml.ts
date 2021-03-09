@@ -242,9 +242,9 @@ export class InsertHtml {
     private static getNodeCollection (range: Range, nodeSelection: NodeSelection, node: Node): Node[] {
         let nodes: Node[] = [];
         if (range.startOffset === range.endOffset && range.startContainer === range.endContainer
-            && (range.startContainer.nodeName === 'TD' ||
-            ((node as HTMLElement).classList && (node as HTMLElement).classList.contains('pasteContent')))) {
-                nodes.push(range.startContainer.childNodes[range.endOffset]);
+            && (range.startContainer.nodeName === 'TD' || (range.startContainer.nodeType !== 3 &&
+            (node as HTMLElement).classList && (node as HTMLElement).classList.contains('pasteContent')))) {
+            nodes.push(range.startContainer.childNodes[range.endOffset]);
         } else {
             nodes = nodeSelection.getInsertNodeCollection(range);
         }

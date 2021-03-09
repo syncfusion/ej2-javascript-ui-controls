@@ -376,4 +376,57 @@ describe('Bookmark delete validation', () => {
       editor.editor.onBackSpace();
       expect(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any).childWidgets[0] as LineWidget).children[1].line.indexInOwner).toBe((((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as any).childWidgets[0] as LineWidget).children[1] as BookmarkElementBox).reference.line.indexInOwner);
     });
-});  
+});
+describe('Inserting a same bookmark multiple times validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableLocalPaste: false, enableComment: true });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Inserting a same bookmark multiple times validation', function () {
+      editor.openBlank();
+      editor.editor.insertText('check');
+      editor.editor.onEnter();
+      editor.editor.insertText('Bookmark');
+      editor.editor.onEnter();
+      editor.editor.insertText('content');
+      editor.editor.onEnter();
+      editor.editor.insertText('editor');
+      editor.selection.handleHomeKey();
+      editor.selection.handleUpKey();
+      editor.selection.handleUpKey();
+      editor.selection.handleUpKey();
+      editor.selection.handleControlShiftRightKey();
+      editor.selection.handleControlShiftDownKey();
+      editor.selection.handleControlShiftDownKey();
+      editor.selection.handleControlShiftDownKey();
+      editor.editor.insertBookmark('check');
+      editor.selection.handleHomeKey();
+      editor.selection.handleUpKey();
+      editor.selection.handleControlRightKey();
+      editor.selection.handleControlRightKey();
+      editor.editor.insertBookmark('check1');
+      editor.selection.handleHomeKey();
+      editor.selection.handleUpKey();
+      editor.selection.handleUpKey();
+      editor.editor.insertBookmark('check');
+      expect(editor.documentHelper.bookmarks.length).toBe(2);
+    });
+});

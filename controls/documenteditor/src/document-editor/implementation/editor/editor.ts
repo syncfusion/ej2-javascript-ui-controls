@@ -3189,7 +3189,7 @@ export class Editor {
         let index: number = 0;
         let tabCharIndex: number = text.lastIndexOf('\t');
         index = (tabCharIndex >= 0) ? tabCharIndex + 1 : text.lastIndexOf(' ') + 1;
-        while (span.previousNode instanceof TextElementBox && index === 0) {
+        while (span.previousElement instanceof TextElementBox && index === 0) {
             span = span.previousNode as TextElementBox;
             let previousText: string = span.text;
             tabCharIndex = previousText.lastIndexOf('\t');
@@ -4417,6 +4417,10 @@ export class Editor {
                             || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
                             insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
                             insertPosition.paragraph.x = this.owner.viewer.clientActiveArea.x;
+                        }
+                        if (this.currentPasteOptions === 'KeepTextOnly') {
+                            let paraFormat: WParagraphFormat = new WParagraphFormat();
+                           this.selection.start.paragraph.paragraphFormat = paraFormat;
                         }
                         this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
                     }
@@ -13210,6 +13214,13 @@ export class Editor {
      * @param  {string} name - Name of bookmark
      */
     public insertBookmark(name: string): void {
+        if (this.documentHelper.bookmarks.containsKey(name)) {
+            let existingBookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(name);
+            existingBookmark.line.children.splice(existingBookmark.line.children.indexOf(existingBookmark), 1);
+            // tslint:disable-next-line:max-line-length
+            existingBookmark.reference.line.children.splice(existingBookmark.reference.line.children.indexOf(existingBookmark.reference), 1);
+            this.documentHelper.bookmarks.remove(name);
+        }
         let bookmark: BookmarkElementBox = new BookmarkElementBox(0);
         bookmark.name = name;
         let bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);

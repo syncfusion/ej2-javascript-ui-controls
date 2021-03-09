@@ -25,6 +25,7 @@ export class AxisFields {
      * @private
      */
     public render(): void {
+        /* eslint-disable */
         let pivotButtonModule: PivotButton =
             ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) ?
                 new PivotButton(this.parent) : this.parent.pivotButtonModule);

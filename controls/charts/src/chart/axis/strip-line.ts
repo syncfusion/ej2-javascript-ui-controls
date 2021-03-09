@@ -165,9 +165,9 @@ export class StripLine {
             id: id + 'collections',
             'clip-path': 'url(#' + id + 'ClipRect' + ')'
         });
-        striplineGroup.appendChild(
-            appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer)
-        );
+        if (!chart.enableCanvas) {
+            striplineGroup.appendChild(appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer));
+        }
         for (let axis of axes) {
             let count: number = 0;
             for (let stripline of axis.stripLines) {

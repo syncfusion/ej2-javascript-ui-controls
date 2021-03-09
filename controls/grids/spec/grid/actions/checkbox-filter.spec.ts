@@ -2335,3 +2335,54 @@ describe('Checkbox Filter module => ', () => {
         });
     });
 });
+
+describe('EJ2-46285 - Provide support to handle custom filter dataSource in Excel Filter', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                enableVirtualization: true,
+                filterSettings:{type:'Excel',
+                columns: [{ field: 'OrderID', matchCase: false, operator: 'equal', value: '10248' }]},
+                selectionSettings: { persistSelection: true, type: 'Multiple', checkboxOnly: true },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right',  editType: 'numericedit',},
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150 },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('assigning custom datasource', () => {
+        gridObj.on('beforeCheckboxRenderer', function(e: any){
+            if (e.field === "EmployeeID") {
+                e.executeQuery = false;
+                e.dataSource = [
+                    { EmployeeID: 5 },
+                    { EmployeeID: 6 },
+                    { EmployeeID: 4 },
+                    { EmployeeID: 3 }
+                ];  }
+        })
+    });
+    
+    it('checking the datasource', (done: Function) => {
+        gridObj.actionComplete = actionComplete = (args?: any): void => {
+        if(args.requestType === "filterchoicerequest") {
+            expect(gridObj.element.getElementsByClassName('e-ftrchk').length).toBe(5);
+            done();
+        }
+        }
+        gridObj.actionComplete = actionComplete;
+        (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

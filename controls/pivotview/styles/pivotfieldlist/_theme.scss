@@ -40,12 +40,14 @@
     }
   }
 
+  // sass-lint:disable-all
   #{if(&, "&", "*")}.e-rtl {
 
     .e-select-table {
       padding: 8px 5px;
     }
   }
+  // sass-lint:enable-all
 
   .e-bigger .e-pivotfieldlist,
   .e-bigger.e-pivotfieldlist {

@@ -1,7 +1,7 @@
 /**
  * Splitter test cases
  */
-import { createElement, Browser, isNullOrUndefined} from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, detach} from '@syncfusion/ej2-base';
 import {Splitter, ResizeEventArgs, BeforeExpandEventArgs, BeforeSanitizeHtmlArgs} from '../src/splitter/splitter';
 import {SplitterModel, PanePropertiesModel} from '../src/splitter/splitter-model';
 
@@ -5372,6 +5372,51 @@ describe('Splitter Control', () => {
             window.dispatchEvent(resizeEvent);
             expect(splitterObj.allPanes[0].style.flexBasis ==='50%').toBe(true);         
             expect(splitterObj.allPanes[1].style.flexBasis === '').toBe(true);
+        });
+    });
+
+    describe('Window resizing after page routing', () => {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            document.body.appendChild(element);
+            splitterObj = new Splitter({width :'100%', paneSettings: [{ size: '50%', min: '10px' }, { min: '20px', }]});
+            splitterObj.appendTo("#default"); 
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('check body element', () => {
+            detach(splitterObj.element);
+            let resizeEvent  : any= window.document.createEvent('UIEvents'); 
+            resizeEvent.initUIEvent('resize', true, false, window, 0); 
+            window.dispatchEvent(resizeEvent);
+            expect(document.body.contains(splitterObj.element)).toBe(false);
+        });
+    });
+    describe('splitter without pane', () => {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            element.style.width ='300px';
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({width :'100%'});
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('check empty pane', () => {
+            let resizeEvent  : any= window.document.createEvent('UIEvents'); 
+            resizeEvent.initUIEvent('resize', true, false, window, 0); 
+            window.dispatchEvent(resizeEvent);
+            expect(document.body.contains(splitterObj.element)).toBe(true);
         });
     });
 

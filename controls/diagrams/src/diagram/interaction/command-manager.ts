@@ -2028,6 +2028,8 @@ export class CommandHandler {
                 if (this.diagram.mode === 'SVG') {
                     let i: number = 1;
                     let target: string = zIndexTable[i];
+                    // EJ2-46656 - CR issue fix
+                    target = this.resetTargetNode(objectId, target, i, zIndexTable);
                     while (!target && i < index) {
                         target = zIndexTable[++i];
                     }
@@ -2049,8 +2051,19 @@ export class CommandHandler {
             this. getZIndexObjects();
         }
     }
-    private  getZIndexObjects(): void {
-        let element: (NodeModel|ConnectorModel)[] = [];
+    private resetTargetNode(objectId: string, target: string, i: number, zIndexTable: {}): string {
+        if (this.diagram.nameTable[objectId].shape.type === 'SwimLane'
+            && this.diagram.nameTable[target].parentId !== undefined && this.diagram.nameTable[target].parentId !== ''
+            && this.diagram.nameTable[this.diagram.nameTable[target].parentId].isLane) {
+            i = i + 1;
+            target = zIndexTable[i];
+            return target = this.resetTargetNode(objectId, target, i, zIndexTable);
+        } else {
+            return target;
+        }
+    }
+    private getZIndexObjects(): void {
+        let element: (NodeModel | ConnectorModel)[] = [];
         let i: number; let j: number;
         for (i = 0; i < this.diagram.nodes.length; i++) {
             element.push(this.diagram.nodes[i]);
@@ -2179,6 +2192,7 @@ export class CommandHandler {
                                 (oldzIndexTable.indexOf(objectName) < oldzIndexTable.indexOf(layer.objects[i]))) {
                                 if (this.diagram.nameTable[objectName].parentId === ''
                                     && this.diagram.nameTable[layer.objects[i]].parentId === ''
+                                    && this.diagram.nameTable[layer.objects[i]].parentId === undefined
                                     && this.diagram.nameTable[objectName].parentId !== this.diagram.nameTable[layer.objects[i]].id) {
                                     this.moveSvgNode(layer.objects[i], objectName);
                                     this.updateNativeNodeIndex(objectName);
@@ -4817,7 +4831,9 @@ export class CommandHandler {
      * @private
      */
     public dropChildToContainer(parent: NodeModel, node: NodeModel): void {
-        addChildToContainer(this.diagram, parent, node);
+        if (!(this.diagram.diagramActions & DiagramAction.PreventLaneContainerUpdate)) {
+            addChildToContainer(this.diagram, parent, node);
+        }
     }
 
     /** @private */

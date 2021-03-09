@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, extend, compile, getValue } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, extend, compile, getValue, setValue } from '@syncfusion/ej2-base';
 import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
@@ -393,6 +393,7 @@ export class ChartRows extends DateProcessor {
             rowData: data
         };
         this.parent.trigger('actionComplete', args);
+        setValue('isEdit', false, this.parent.contextMenuModule);
     }
 
     /**

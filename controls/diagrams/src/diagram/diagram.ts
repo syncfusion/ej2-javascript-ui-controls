@@ -3394,10 +3394,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private updateBlazorDiagramProperties(attribute: string[], canCall?: boolean): void {
         if (isBlazor() && !canCall) {
-            this.enableServerDataBinding(false);
+            //Need to send the client changes into server side for public APIs changes.
+            let isServerDataBindEnabled: boolean = this.allowServerDataBinding;
+            this.enableServerDataBinding(true);
             for (let i: number = 0; i < attribute.length; i++) {
                 this.oldDiagramObject[attribute[i]] = cloneObject(this[attribute[i]]);
             }
+            this.enableServerDataBinding(isServerDataBindEnabled);
         }
         if (canCall) {
             this.commandHandler.getDiagramOldValues(this.oldDiagramObject, attribute);
@@ -4244,9 +4247,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj) {
             obj = this.nameTable[obj.id];
             this.insertBlazorConnector(obj as Connector);
-            if (obj && obj.shape && obj.shape.type === 'SwimLane') {
-                removeSwimLane(this, obj as NodeModel);
-            }
             if (obj && (canDelete(obj) || (this.diagramActions & DiagramAction.Clear))) {
                 args = {
                     element: obj, cause: this.diagramActions,
@@ -4259,6 +4259,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.triggerEvent(DiagramEvent.collectionChange, args);
                 }
                 if (!args.cancel) {
+                    if (canDelete(obj)) {
+                        if (obj && obj.shape && obj.shape.type === 'SwimLane') {
+                            removeSwimLane(this, obj as NodeModel);
+                        }
+                    }
                     if (this.bpmnModule) {
                         if (this.bpmnModule.checkAndRemoveAnnotations(obj as NodeModel, this)) {
                             this.refreshCanvasLayers();
@@ -5982,6 +5987,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (independentObj) {
             let checkBoundaryConstraints: boolean = this.commandHandler.checkBoundaryConstraints(
                 undefined, undefined, obj.wrapper.bounds);
+            for (let i: number = 0, a: string[] = Object.keys((layer as Layer).zIndexTable); i < a.length; i++) {
+                if ((layer as Layer).zIndexTable[a[i]] && (layer as Layer).zIndexTable[a[i]] === (obj as NodeModel).id) {
+                    delete (layer as Layer).zIndexTable[a[i]];
+                }
+            }
             (layer as Layer).zIndexTable[(obj as Node).zIndex] = (obj as Node).id;
             if (!checkBoundaryConstraints) {
                 let node: (NodeModel | ConnectorModel)[] = obj instanceof Node ? this.nodes : this.connectors;
@@ -7338,9 +7348,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updateThumbConstraints(selectorModel.nodes, selectorModel);
                 this.updateThumbConstraints(selectorModel.connectors, selectorModel, true);
             }
+            let help: string = 'helper';
             if (selectorModel.annotation) {
                 this.renderSelectorForAnnotation(selectorModel, selectorElement);
-            } else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
+            } else if (selectorModel.nodes.length + selectorModel.connectors.length === 1 || this.nameTable[help]) {
                 if (selectorModel.nodes[0] instanceof Node) {
                     let node: Node = selectorModel.nodes[0] as Node;
                     if (checkParentAsContainer(this, node)) {

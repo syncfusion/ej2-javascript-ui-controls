@@ -194,6 +194,8 @@
     .e-frozencontent>.e-table {
       border-left-color: $pivotgrid-default-border-color !important;
       border-right-color: $pivotgrid-default-border-color !important;
+      border-left: 0;
+      border-right-width: 1px;
     }
 
     .e-stackedheadercelldiv.e-cellvalue {
@@ -784,6 +786,12 @@
         padding-right: 8px !important;
       }
 
+      .e-frozenheader>.e-table,
+      .e-frozencontent>.e-table {
+        border-left-width: 1px;
+        border-right: 0;
+      }
+
       // sass-lint:enable-all
 
       .e-rowsheader .e-cellvalue {
@@ -795,10 +803,15 @@
         text-align: left;
       }
 
-      .e-group-rows,
-      .e-grouping-bar {
+      .e-group-values,
+      .e-group-columns,
+      .e-group-filters {
         padding-left: 0;
         padding-right: $pivotview-axis-indent-padding;
+      }
+
+      .e-group-rows,
+      .e-grouping-bar {
 
         .e-pvt-btn-div {
           padding-left: $pivotgrid-horizontal-button-padding;

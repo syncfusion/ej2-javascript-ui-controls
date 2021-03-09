@@ -302,6 +302,11 @@ export class DiagramElement {
     public measure(availableSize: Size, obj?: Object, callback?: Function): Size {
         let width: number = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
         let height: number = this.height !== undefined ? this.height : (availableSize.height || 0) - this.margin.top - this.margin.bottom;
+        if (this.id) {
+            if (height === 0 && (this.elementActions & ElementAction.HorizontalLaneHeader)) {
+                height = this.actualSize.height;
+            }
+        }
         this.desiredSize = new Size(width, height);
         if (this.isCalculateDesiredSize) {
             this.desiredSize = this.validateDesiredSize(this.desiredSize, availableSize);

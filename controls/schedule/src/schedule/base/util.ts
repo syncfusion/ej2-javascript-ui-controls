@@ -187,6 +187,11 @@ export function addLocalOffsetToEvent(event: { [key: string]: Object }, eventFie
     return event;
 }
 
+export function isIPadDevice(): boolean {
+    let deviceCheck: string = window.navigator.userAgent.toLowerCase();
+    return deviceCheck.indexOf('ipad') > -1;
+}
+
 export function capitalizeFirstWord(inputString: string, type: string): string {
     switch (type) {
         case 'multiple':

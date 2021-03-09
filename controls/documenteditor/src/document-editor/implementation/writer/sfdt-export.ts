@@ -313,6 +313,9 @@ export class SfdtExport {
         do {
             bodyWidget = next;
             next = next.nextRenderedWidget as BodyWidget;
+            if (isNullOrUndefined(next) && !isNullOrUndefined(bodyWidget.page.nextPage) && !isNullOrUndefined(bodyWidget.page.nextPage)) {
+                next = bodyWidget.page.nextPage.bodyWidgets[0];
+            }
         } while (next instanceof BodyWidget && next.index === bodyWidget.index);
         return next;
     }
@@ -570,6 +573,11 @@ export class SfdtExport {
             next = paragraphWidget.nextSplitWidget as ParagraphWidget;
         }
         next = paragraphWidget.nextRenderedWidget as BlockWidget;
+        if (isNullOrUndefined(next) && paragraphWidget.containerWidget instanceof BodyWidget &&
+            !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage) &&
+            !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets)) {
+            next = (paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets[0].childWidgets[0] as BlockWidget;
+        }
         return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {

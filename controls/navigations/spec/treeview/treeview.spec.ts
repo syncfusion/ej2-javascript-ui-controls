@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple  } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3} from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3} from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -3445,6 +3445,26 @@ describe('TreeView control', () => {
                 checkEle[0].querySelector('.e-frame').dispatchEvent(mousedown);
                 checkEle[0].querySelector('.e-frame').dispatchEvent(mouseup);
                 expect(j).toBe(false);
+            });
+            it('nodeChecked event is triggered isChecked Attribute Testing', () => {
+                var j = 'true';
+                var k = 'false';
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child:"nodeChild", expanded: 'nodeExpanded1' },
+                    showCheckBox: true,
+                    nodeChecked: (args: NodeCheckEventArgs) => {
+                        j = args.data[0].isChecked.toString();
+                        k = args.data[1].isChecked.toString();
+                    },
+                },'#tree1');
+                expect(j.toString()).toBe('true');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                var mousedown = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle[6].querySelector('.e-frame').dispatchEvent(mousedown);
+                var mouseup = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle[6].querySelector('.e-frame').dispatchEvent(mouseup);
+                expect(j.toString()).toBe('true');
+                expect(k.toString()).toBe('mixed');          
             });
             it('nodeExpanding event is triggered while drag and drop', (done: Function) => {
                 treeObj = new TreeView({ 
@@ -13802,6 +13822,99 @@ describe('Drag and drop with different TreeView functionality testing with empty
             expect(treeObj.getTreeData()[24]["isChecked"]).toBe(true);
             done();
             }, 100);
+        });
+    });
+    describe('isChecked attribute testing with sorting property', () => {
+        let treeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            treeObj = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            document.body.appendChild(ele);
+            treeObj = new TreeView({
+                fields: {
+                    dataSource: hierarchicalData8, id: "id",
+                    text: "function",
+                    child: "childs"
+                }, 
+                showCheckBox: true, 
+                sortOrder: "Ascending"
+            });
+            treeObj.appendTo('#tree1');
+        });
+        afterEach((): void => {
+            if (treeObj)
+                treeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Hierarchical data testing', (done: Function) => {
+                expect(treeObj.checkedNodes.length).toBe(1);
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle[2].querySelector('.e-frame').classList.contains('e-stop')).toBe(true);
+                expect(checkEle[3].querySelector('.e-frame').classList.contains('e-stop')).toBe(true);
+                expect(checkEle[4].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                expect(checkEle[5].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                done();
+        });
+    });
+    describe('isChecked attribute testing with sorting property', () => {
+        let treeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            treeObj = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            document.body.appendChild(ele);
+            treeObj = new TreeView({
+                fields: {
+                    dataSource: localData8, 
+                    id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild' , isChecked: 'isSelected'
+                }, 
+                showCheckBox: true, 
+                sortOrder: "Ascending"
+            });
+            treeObj.appendTo('#tree1');
+        });
+        afterEach((): void => {
+            if (treeObj)
+                treeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('List data testing', (done: Function) => {
+                expect(treeObj.checkedNodes.length).toBe(2);
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle[0].querySelector('.e-frame').classList.contains('e-stop')).toBe(true);
+                expect(checkEle[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                expect(checkEle[2].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                expect(checkEle[3].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                done();
         });
     });
     describe('Disable Node on loadondemand enabled', () => {

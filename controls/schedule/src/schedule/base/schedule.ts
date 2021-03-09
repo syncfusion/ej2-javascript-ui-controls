@@ -1238,7 +1238,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     protected preRender(): void {
-        this.isAdaptive = Browser.isDevice;
+        this.isAdaptive = Browser.isDevice as boolean || util.isIPadDevice();
         this.globalize = new Internationalization(this.locale);
         this.tzModule = new Timezone();
         if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {

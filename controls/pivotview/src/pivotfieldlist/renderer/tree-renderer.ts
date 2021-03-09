@@ -604,7 +604,7 @@ export class TreeViewRenderer implements IAction {
     }
 
     private updateDataSource(): void {
-        if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
+        if (this.parent.isPopupView) {
             if (this.parent.dataType === 'olap') {
                 (this.parent as PivotFieldList).pivotGridModule.olapEngineModule = (this.parent as PivotFieldList).olapEngineModule;
             } else {

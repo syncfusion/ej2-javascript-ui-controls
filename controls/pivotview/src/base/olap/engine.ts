@@ -2868,7 +2868,9 @@ export class OlapEngine {
                         field.hierarchyUniqueName + '.');
                     let uniqueName: string = prefixName + '[' + field.name + ']';
                     let caption: string = (this.dataFields[field.name] && this.dataFields[field.name].caption ?
-                        this.dataFields[field.name].caption : this.mappingFields[field.name] && this.mappingFields[field.name].caption ? this.mappingFields[field.name].caption : field.name);
+                        this.dataFields[field.name].caption :
+                        this.mappingFields[field.name] && this.mappingFields[field.name].caption ?
+                            this.mappingFields[field.name].caption : field.name);
                     let formatString: string = field.formatString;
                     let calcField: IOlapField = {
                         hasChildren: false,
@@ -2896,6 +2898,7 @@ export class OlapEngine {
                         isHierarchy: true,
                         isExcelFilter: false,
                         isCalculatedField: true,
+                        /* eslint-disable */
                         allowDragAndDrop: (this.dataFields[field.name] ? this.dataFields[field.name].allowDragAndDrop : this.mappingFields[field.name] ? this.mappingFields[field.name].allowDragAndDrop : true),
                         showFilterIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showFilterIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showFilterIcon : true),
                         showSortIcon: (this.dataFields[field.name] ? this.dataFields[field.name].showSortIcon : this.mappingFields[field.name] ? this.mappingFields[field.name].showSortIcon : true),
@@ -2905,6 +2908,7 @@ export class OlapEngine {
                         showSubTotals: (this.dataFields[field.name] ? this.dataFields[field.name].showSubTotals : this.mappingFields[field.name] ? this.mappingFields[field.name].showSubTotals : true),
                         fieldType: (expression.toLowerCase().indexOf('measure') > -1 ? 'Measure' : 'Dimension'),
                         parentHierarchy: (expression.toLowerCase().indexOf('measure') > -1 ? undefined : field.hierarchyUniqueName)
+                        /* eslint-enable */
                     };
                     fieldListElements.push(calcField);
                     this.fieldList[calcField.id] = calcField;
@@ -3011,6 +3015,7 @@ export class OlapEngine {
                 currrentMembers: {},
                 isHierarchy: true,
                 isExcelFilter: false,
+                /* eslint-disable */
                 allowDragAndDrop: (this.dataFields[id] ? this.dataFields[id].allowDragAndDrop : this.mappingFields[id] ? this.mappingFields[id].allowDragAndDrop : true),
                 showFilterIcon: (this.dataFields[id] ? this.dataFields[id].showFilterIcon : this.mappingFields[id] ? this.mappingFields[id].showFilterIcon : true),
                 showSortIcon: (this.dataFields[id] ? this.dataFields[id].showSortIcon : this.mappingFields[id] ? this.mappingFields[id].showSortIcon : true),
@@ -3018,6 +3023,7 @@ export class OlapEngine {
                 showRemoveIcon: (this.dataFields[id] ? this.dataFields[id].showRemoveIcon : this.mappingFields[id] ? this.mappingFields[id].showRemoveIcon : true),
                 showValueTypeIcon: (this.dataFields[id] ? this.dataFields[id].showValueTypeIcon : this.mappingFields[id] ? this.mappingFields[id].showValueTypeIcon : true),
                 showSubTotals: (this.dataFields[id] ? this.dataFields[id].showSubTotals : this.mappingFields[id] ? this.mappingFields[id].showSubTotals : true)
+                /* eslint-enable */
             };
             dimensionElements.push(fieldObj);
             this.fieldList[id] = fieldObj;
@@ -3101,7 +3107,7 @@ export class OlapEngine {
                     hasAllMember: isAllMemberAvail,
                     allMember: allMember,
                     tag: hierarchyName,
-                    caption:  this.dataFields[hierarchyName] && this.dataFields[hierarchyName].caption ? this.dataFields[hierarchyName].caption : this.mappingFields[hierarchyName] && this.mappingFields[hierarchyName].caption ? this.mappingFields[hierarchyName].caption : field.querySelector('HIERARCHY_CAPTION').textContent,
+                    caption: this.dataFields[hierarchyName] && this.dataFields[hierarchyName].caption ? this.dataFields[hierarchyName].caption : this.mappingFields[hierarchyName] && this.mappingFields[hierarchyName].caption ? this.mappingFields[hierarchyName].caption : field.querySelector('HIERARCHY_CAPTION').textContent,
                     // aggregateType: this.getAggregateType(hierarchyName),
                     type: 'string',
                     filter: [],
@@ -3117,6 +3123,7 @@ export class OlapEngine {
                     levelCount: 1,
                     isHierarchy: (field.querySelector('HIERARCHY_ORIGIN') ? ((field.querySelector('HIERARCHY_ORIGIN').textContent !== '2') && field.querySelector('HIERARCHY_ORIGIN').textContent !== '6') ? false : true : false),
                     isExcelFilter: false,
+                    /* eslint-disable */
                     allowDragAndDrop: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].allowDragAndDrop : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].allowDragAndDrop : true),
                     showFilterIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showFilterIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showFilterIcon : true),
                     showSortIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSortIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSortIcon : true),
@@ -3124,6 +3131,7 @@ export class OlapEngine {
                     showRemoveIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showRemoveIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showRemoveIcon : true),
                     showValueTypeIcon: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showValueTypeIcon : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showValueTypeIcon : true),
                     showSubTotals: (this.dataFields[hierarchyName] ? this.dataFields[hierarchyName].showSubTotals : this.mappingFields[hierarchyName] ? this.mappingFields[hierarchyName].showSubTotals : true)
+                    /* eslint-enable */
                 };
                 dimensionElements.push(fieldObj);
                 this.fieldList[hierarchyName] = fieldObj;
@@ -3257,6 +3265,7 @@ export class OlapEngine {
                 searchMembers: [],
                 members: {},
                 currrentMembers: {},
+                /* eslint-disable */
                 formatString: formatString,
                 allowDragAndDrop: (this.dataFields[measureName] ? this.dataFields[measureName].allowDragAndDrop : this.mappingFields[measureName] ? this.mappingFields[measureName].allowDragAndDrop : true),
                 showFilterIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showFilterIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showFilterIcon : true),
@@ -3265,6 +3274,7 @@ export class OlapEngine {
                 showRemoveIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showRemoveIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showRemoveIcon : true),
                 showValueTypeIcon: (this.dataFields[measureName] ? this.dataFields[measureName].showValueTypeIcon : this.mappingFields[measureName] ? this.mappingFields[measureName].showValueTypeIcon : true),
                 showSubTotals: (this.dataFields[measureName] ? this.dataFields[measureName].showSubTotals : this.mappingFields[measureName] ? this.mappingFields[measureName].showSubTotals : true)
+                /* eslint-enable */
             };
             dimensionElements.push(fieldObj);
             this.fieldList[measureName] = fieldObj;

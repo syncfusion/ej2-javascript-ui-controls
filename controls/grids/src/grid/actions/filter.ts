@@ -802,7 +802,7 @@ export class Filter implements IAction {
             }
             if ((this.filterSettings.mode === 'Immediate' || (e.keyCode === 13 &&
                 !(e.target as HTMLElement).classList.contains('e-filterbaroperator')))
-                && e.keyCode !== 9 ) {
+                && e.keyCode !== 9 && !this.column.filterTemplate) {
                 this.value = target.value.trim();
                 this.processFilter(e);
             }

@@ -1017,6 +1017,8 @@ export enum ElementAction {
     ElementIsPort = 1 << 1,
     /** Enable the element action as Group  */
     ElementIsGroup = 1 << 2,
+    /** Enable the element action if swimlaneHeader is rendred  */
+    HorizontalLaneHeader = 1 << 3,
 }
 
 /** Enables/Disables the handles of the selector
@@ -2321,7 +2323,10 @@ export enum DiagramAction {
     /** Indicates whether drag is initiated by mouse  */
     DragUsingMouse = 1 << 15,
     /** Indicates whether decorator property is changed or not */
-    DecoratorPropertyChange = 1 << 16
+    DecoratorPropertyChange = 1 << 16,
+    /** Avoid dropping of child nodes into the swim lane */
+    PreventLaneContainerUpdate = 1 << 17
+
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';

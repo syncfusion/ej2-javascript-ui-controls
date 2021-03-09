@@ -130,16 +130,16 @@ export class LinkCommand {
             let check: boolean = true;
             currentNode = txtArray[i];
             while (check === true) {
-                if (currentNode.parentElement.nodeName === 'A') {
-                    let anchorEle: HTMLElement = currentNode.parentElement;
-                    currentNode.parentElement.parentElement.insertBefore(anchorEle.firstChild, anchorEle);
-                    currentNode.parentElement.removeChild(anchorEle);
+                if (currentNode.parentNode.nodeName === 'A') {
+                    let anchorEle: HTMLElement = currentNode.parentNode as HTMLElement;
+                    currentNode.parentNode.parentNode.insertBefore(anchorEle.firstChild, anchorEle);
+                    currentNode.parentNode.removeChild(anchorEle);
                 }
-                if (this.isBlockNode(currentNode.parentElement) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1) {
+                if (this.isBlockNode(currentNode.parentNode as Element) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1) {
                     inlineNodes[i] = currentNode;
                     check = false;
                 } else {
-                    currentNode = currentNode.parentElement;
+                    currentNode = currentNode.parentNode;
                 }
             }
         }

@@ -774,7 +774,7 @@ export class CheckBoxFilterBase {
             { records: Object[] }).records || [];
         }
         let data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
-        this.processDataSource(null, true, data);
+        this.processDataSource(null, true, data, args1);
         this.sInput.focus();
         let args: Object = {
             requestType: events.filterAfterOpen,
@@ -787,14 +787,14 @@ export class CheckBoxFilterBase {
         this.parent.notify(events.cBoxFltrComplete, args);
     }
 
-    private processDataSource(query?: Query, isInitial?: boolean, dataSource?: Object[]): void {
+    private processDataSource(query?: Query, isInitial?: boolean, dataSource?: Object[], args?: CheckBoxBeforeRenderer): void {
         showSpinner(this.spinner);
         // query = query ? query : this.options.query.clone();
         // query.requiresCount();
         // let result: Object = new DataManager(dataSource as JSON[]).executeLocal(query);
         // let res: { result: Object[] } = result as { result: Object[] };
         this.updateResult();
-        this.createFilterItems(dataSource, isInitial);
+        this.createFilterItems(dataSource, isInitial, args);
     }
 
     private processSearch(query: Query): void {
@@ -872,6 +872,9 @@ export class CheckBoxFilterBase {
         let dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
+        if (typeof value === 'boolean') {
+            label.innerHTML = value === true ? this.getLocalizedLabel('True') : this.getLocalizedLabel('False');
+        }
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
@@ -921,15 +924,19 @@ export class CheckBoxFilterBase {
         this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
     }
 
-    private createFilterItems(data: Object[], isInitial?: boolean): void {
+    private createFilterItems(data: Object[], isInitial?: boolean, args1?: CheckBoxBeforeRenderer): void {
         let cBoxes: Element = this.parent.createElement('div');
         let btn: Button; let disabled: boolean = false;
         if (!this.options.isResponsiveFilter) {
             btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
         }
         let nullCounter: number = -1;
+        let key: string = 'ejValue';
+        if (!args1.executeQuery) {
+            key = args1.field ;
+        }
         for (let i: number = 0; i < data.length; i++) {
-            let val: string = getValue('ejValue', data[i]);
+            let val: string = getValue(key, data[i]);
             if (val === '' || isNullOrUndefined(val)) {
                 nullCounter = nullCounter + 1;
             }
@@ -950,7 +957,7 @@ export class CheckBoxFilterBase {
             let isRndere: boolean;
             for (let i: number = 0; i < data.length; i++) {
                 let uid: string = getUid('cbox');
-                this.values[uid] = getValue('ejValue', data[i]);
+                this.values[uid] = getValue(key, data[i]);
                 let value: string | number = getValue(this.options.field, data[i]);
                 if (this.options.formatFn) {
                     value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;

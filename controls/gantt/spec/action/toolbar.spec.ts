@@ -23,7 +23,8 @@ describe('Gantt toolbar support', () => {
                         duration: 'Duration',
                         progress: 'Progress',
                         child: 'subtasks',
-                        dependency: 'Predecessor'
+                        dependency: 'Predecessor',
+                        segments: 'Segments'
                     },
                     editSettings: {
                         allowAdding: true,
@@ -300,7 +301,30 @@ describe('Gantt toolbar support', () => {
             }
             ganttObj.refresh();
         });
-
+        it('CR-EJ2-46731: Maintaining additional fields in segments on zooming action', (done: Function) => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === 'AfterZoomIn') {
+                    debugger;
+                    expect(getValue('Segments[0].Custom', ganttObj.flatData[0].taskData)).toBe("Test");
+                }
+            };
+            ganttObj.toolbar = ['ZoomIn', 'ZoomOut'];
+            ganttObj.dataSource = [{
+                TaskID: 1, TaskName: 'Plan timeline', StartDate: new Date('02/04/2017'), EndDate: new Date('02/10/2017'),
+                Duration: 10, Progress: '60',
+                Segments: [
+                    { StartDate: new Date('02/04/2017'), Duration: 2, Custom: 'Test' },
+                    { StartDate: new Date('02/05/2017'), Duration: 5, Custom: 'Test' },
+                    { StartDate: new Date('02/08/2017'), Duration: 3, Custom: 'Test'  }
+                  ]
+            }];
+            ganttObj.dataBound = () => {
+                done();
+            };
+            ganttObj.refresh();
+            let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
+            triggerMouseEvent(zoomIn, 'click');
+        });
         it('Destroy method', () => {
             ganttObj.toolbarModule.destroy();
         });

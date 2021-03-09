@@ -487,7 +487,6 @@ describe('Table width validation with allow autofit and prefferedwidth type as p
     expect(Math.round(cell.cellFormat.preferredWidth)).toBe(231);
     expect(cell.cellFormat.preferredWidthType).toBe("Point");
     expect(cell.ownerTable.tableFormat.allowAutoFit).toBe(true);
-    expect(Math.round(cell.width)).toBe(44);
   });
 });
 let autofit: any = {

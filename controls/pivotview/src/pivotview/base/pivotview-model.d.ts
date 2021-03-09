@@ -323,7 +323,7 @@ export interface PivotViewModel extends ComponentModel{
      * * `description`: Allows you to add a description of the pivot chart.
      * * `enableAnimation`: Allows you to enable/disable the tooltip animation while performing the mouse move from one point to another in the pivot chart.
      * * `enableExport`: Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.
-     * * `enableMultiAxis`: Allows you to draw the pivot chart with multiple value fields as separate chart area.
+     * * `enableMultipleAxis`: Allows you to draw the pivot chart with multiple value fields as separate chart area.
      * * `enableSideBySidePlacement`: Allows you to draw points of the column type pivot chart series as side by side.
      * * `isMultiSelect`: Allows you to perform multiple selection in the pivot chart. To enable this option, it requires the property `selectionMode` to be **Point** or **Series** or **Cluster**.
      * * `isTransposed`: Allows you to render the pivot chart in a transposed manner or not.

@@ -4937,3 +4937,67 @@ describe('EJ2-45836 - The rowSelected event is triggered when rowselectig cancel
         gridObj = null;
     });
 });
+
+describe('EJ2-46492 - Preventing row deselection in the rowDeselecting event is not working', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { type: "Multiple" },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('checking rowDeselected event is not Working', () => {
+        let rowDeselecting = (e: any) => {
+            e.cancel = true;
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        (gridObj.element.querySelectorAll('.e-rowcell')[0] as any).click();
+        (gridObj.element.querySelectorAll('.e-rowcell')[0] as any).click();
+        expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-46492 - Preventing row deselection in the rowDeselecting event is not working', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { type: "Multiple" },
+                columns: [
+                    { type: "checkbox"},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250 },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('checking rowDeselected with check column is not Working', () => {
+        let chkBox: any = gridObj.element.querySelectorAll('.e-checkselect')[0] as HTMLElement;
+        let rowDeselecting = (e: any) => {
+            e.cancel = true;
+        };
+        gridObj.rowDeselecting = rowDeselecting;
+        (gridObj.element.querySelectorAll('.e-rowcell')[0] as any).click();
+        (gridObj.element.querySelectorAll('.e-rowcell')[0] as any).click();
+        expect(chkBox.nextSibling.classList.contains('e-check')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

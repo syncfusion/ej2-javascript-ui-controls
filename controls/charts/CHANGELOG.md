@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### Chart
+
+#### Bug Fixes
+
+- `#313827` - Fixed stripline fails issue on canvas mode.
+
 ## 18.4.46 (2021-03-02)
 
 ### Chart

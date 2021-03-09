@@ -216,7 +216,7 @@ export class PivotEngine {
         let fields: IDataSet;
         this.globalize = new Internationalization();
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
-        this.fieldsType = customProperties ? customProperties.fieldsType : {};  /* eslint-disable-line */
+        this.fieldsType = customProperties ? customProperties.fieldsType : {};
         this.clonedReport = customProperties ? customProperties.clonedReport : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
@@ -812,7 +812,7 @@ export class PivotEngine {
     }
 
     private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): string {
-        let isHavingFormat: any = (!isNullOrUndefined(formatField[currentField]) && !isNullOrUndefined(this.formatFields[currentField].format)) ? (this.formatFields[currentField].format).toLowerCase().match(/p[0-9]/) : undefined;
+        let isHavingFormat: any = (!isNullOrUndefined(formatField[currentField]) && !isNullOrUndefined(this.formatFields[currentField].format)) ? (this.formatFields[currentField].format).toLowerCase().match(/p[0-9]/) : undefined;   /* eslint-disable-line */
         return !isNullOrUndefined(isHavingFormat) ? this.formatFields[currentField].format : 'P0';
     }
 
@@ -3951,7 +3951,8 @@ export class PivotEngine {
 
         if (!isNaN(value) && !isNullOrUndefined(value) &&
             (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
-            formattedText = this.globalize.formatNumber(value, { format: this.getPercentFormat(this.formatFields, cellDetails.fieldName), maximumFractionDigits: 2 });
+            formattedText = this.globalize.formatNumber(value,
+                { format: this.getPercentFormat(this.formatFields, cellDetails.fieldName), maximumFractionDigits: 2 });
         } else if (!subTotal &&
             isNaN(value) && !isNullOrUndefined(value) &&
             (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {

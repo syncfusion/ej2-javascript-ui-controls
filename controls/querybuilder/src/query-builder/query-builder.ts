@@ -705,8 +705,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     addClass([element], 'e-flat'); addClass([element], 'e-primary');
                 } else {
                     addClass([element], 'e-round'); addClass([element], 'e-icon-btn');
-                    let tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteRule') });
-                    tooltip.appendTo(element as HTMLElement);
+                    element.setAttribute('title', this.l10n.getConstant('DeleteRule'));
                     element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
                     ruleElem.querySelector('button').appendChild(element);
                 }
@@ -992,8 +991,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 dltGroupBtn = this.createElement('button', { attrs: { class: clsName } });
                 let button: Button = new Button({ iconCss: 'e-icons e-delete-icon', cssClass: 'e-small e-round' });
                 button.appendTo(dltGroupBtn);
-                let tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('DeleteGroup') });
-                tooltip.appendTo(dltGroupBtn as HTMLElement);
+                dltGroupBtn.setAttribute('title', this.l10n.getConstant('DeleteGroup'));
                 rippleEffect(dltGroupBtn, { selector: '.deletegroup' });
                 groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
                 let ruleList: Element = target.querySelector('.e-rule-list');
@@ -1033,8 +1031,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 select: this.selectBtn.bind(this, groupBtn)
             });
             btnObj.appendTo(groupBtn);
-            let tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('AddButton') });
-            tooltip.appendTo(groupBtn as HTMLElement);
+            groupBtn.setAttribute('title', this.l10n.getConstant('AddButton'));
             if (!this.isImportRules) {
                 let grpId: string = target.id.replace(this.element.id + '_', '');
                 let chgrpId: string = groupElem.id.replace(this.element.id + '_', '');
@@ -2872,9 +2869,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private deleteGroupSuccessCallBack(args: ChangeEventArgs, target: Element): void {
         if (!args.cancel) {
-            if (this.actionButton) {
-                (getComponent(this.actionButton as HTMLElement, 'tooltip') as Tooltip).destroy();
-            }
             let groupElem: Element = target; let rule: RuleModel = this.getParentGroup(groupElem, true);
             let index: number = 0; let i: number; let len: number; let beforeRules: RuleModel = this.getValidRules(this.rule);
             let nextElem: Element = groupElem.nextElementSibling; let prevElem: Element = groupElem.previousElementSibling;

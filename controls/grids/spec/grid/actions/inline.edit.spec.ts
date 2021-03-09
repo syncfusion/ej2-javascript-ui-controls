@@ -1613,7 +1613,10 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
                     expect(gridObj.element.querySelectorAll('form').length).toBe(0);
-
+                    
+                    //old data check
+                    expect(args.rowData.CustomerID).not.toBe('updated');
+                    expect(args.previousData.CustomerID).not.toBe('updated');
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
                     //row count check

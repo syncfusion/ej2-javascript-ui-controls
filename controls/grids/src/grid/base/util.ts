@@ -1263,7 +1263,7 @@ export function setRowsInTbody(
 }
 
 /** @hidden */
-export function getNumberFormat(numberFormat: string, type: string): string {
+export function getNumberFormat(numberFormat: string, type: string, isExcel: boolean): string {
     let format: string;
     let intl: Internationalization = new Internationalization();
     if (type === 'number') {
@@ -1274,10 +1274,13 @@ export function getNumberFormat(numberFormat: string, type: string): string {
         }
     } else if (type === 'date' || type === 'time' || type === 'datetime') {
         try {
-            format = intl.getDatePattern({ skeleton: numberFormat, type: type }, false);
+            format = intl.getDatePattern({ skeleton: numberFormat, type: type }, isExcel);
+            if (isNullOrUndefined(format)) {
+                throw 'error';
+            }
         } catch (error) {
             try {
-                format = intl.getDatePattern({ format: numberFormat, type: type }, false);
+                format = intl.getDatePattern({ format: numberFormat, type: type }, isExcel);
             } catch (error) {
                 format = numberFormat;
             }
@@ -1316,4 +1319,17 @@ export function enableDisableResponsiveRenderer(instance: any, action: Responsiv
             instance.responsiveDialogRenderer = undefined;
         }
     }
+}
+
+/** @hidden */
+export function performComplexDataOperation(value: string, mapObject: Object): Object | string {
+    let returnObj: Object | string;
+    let length: number = value.split('.').length;
+    let splits: string[] = value.split('.');
+    let duplicateMap: Object | string = mapObject;
+    for (let i: number = 0; i < length; i++) {
+        returnObj = duplicateMap[splits[i]];
+        duplicateMap = returnObj;
+    }
+    return returnObj;
 }

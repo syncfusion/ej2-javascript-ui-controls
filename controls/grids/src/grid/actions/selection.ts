@@ -844,7 +844,8 @@ export class Selection implements IAction {
             }
             this.rowDeselect(events.rowDeselecting, rowIndex, data, row, foreignKeyData, target, mRow,
                 () => {
-                    if (this.isCancelDeSelect && (this.isRowClicked || this.checkSelectAllClicked)) {
+                    if (this.isCancelDeSelect && (this.isRowClicked || this.checkSelectAllClicked || (this.isInteracted &&
+                        !this.parent.isPersistSelection))) {
                         if (this.parent.isPersistSelection) {
                             if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
                                 for (let i: number = 0; i < this.selectedRecords.length; i++) {
@@ -981,7 +982,7 @@ export class Selection implements IAction {
                 { ...rowDeselectObj, ...{ mRow: mRow, frozenRightRow: frozenRightRow } } : rowDeselectObj,
                 (args: Object) => {
                     this.isCancelDeSelect = args[cancl];
-                    if (!this.isCancelDeSelect || (!this.isRowClicked && !this.checkSelectAllClicked)) {
+                    if (!this.isCancelDeSelect || (!this.isRowClicked && !this.isInteracted && !this.checkSelectAllClicked)) {
                         this.updatePersistCollection(row[0], false);
                         this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
                         if (mRow) {

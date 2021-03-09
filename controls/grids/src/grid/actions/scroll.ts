@@ -78,6 +78,9 @@ export class Scroll implements IAction {
             content.style.height = formatUnit(height);
         }
         this.ensureOverflow(content);
+        if (this.parent.isFrozenGrid()) {
+            this.refresh();
+        }
     }
     /**
      * @hidden

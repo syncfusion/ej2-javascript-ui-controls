@@ -1002,3 +1002,15 @@ export type AggregateTypes =
     'DifferenceFrom' |
     /** Allows to display the pivot table values with percentage difference from the value of the base item in the base field. */
     'PercentageOfDifferenceFrom';
+
+/**
+ * Allows the chart series to be displayed, depending on the value fields specified, in either a stacked or single chart area.
+ * The options available are:
+ * * Stacked: Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
+ * * Single: Allows the chart series to be displayed in a single chart area for different value fields.
+ */
+export type MultipleAxisMode =
+    /** Allows the chart series to be displayed in a separate chart area depending on the value fields specified. */
+    'Stacked' |
+    /** Allows the chart series to be displayed in a single chart area for different value fields. */
+    'Single';

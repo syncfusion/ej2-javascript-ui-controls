@@ -108,7 +108,9 @@ export function radiansToDegrees(radian: number): number {
  * Method for converting from latitude and longitude values to points
  */
 
-export function convertGeoToPoint(latitude: number, longitude: number, factor: number, layer: LayerSettings, mapModel: Maps): Point {
+export function convertGeoToPoint(
+    latitude: number, longitude: number, factor: number, layer: LayerSettings,
+    mapModel: Maps): Point {
     let mapSize: Size = new Size(mapModel.mapAreaRect.width, mapModel.mapAreaRect.height);
     let x: number; let y: number; let value: Point;
     let lat: number; let lng: number; let temp: number;

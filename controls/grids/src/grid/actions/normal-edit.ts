@@ -127,7 +127,7 @@ export class NormalEdit {
             this.parent.notify(events.virtualScrollEditActionBegin, e);
             this.previousData = e.data;
         } else {
-            this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
+            this.previousData = extend({}, {}, gObj.getCurrentViewRecords()[this.rowIndex], true);
         }
         for (let i: number = 0; i < primaryKeys.length; i++) {
             primaryKeyValues.push(getObject(primaryKeys[i], this.previousData));

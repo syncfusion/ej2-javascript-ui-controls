@@ -26,7 +26,7 @@ import { PivotPieChartCenterModel, PivotChartDataLabelModel, PivotChartConnector
 import { ChartSeriesType, ChartSelectionMode } from '../../common';
 import { Theme } from '../../common/base/themes';
 import { MultiLevelLabelClickEventArgs, OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';
-import { LabelPosition } from '../../common/base/enum';
+import { LabelPosition, MultipleAxisMode } from '../../common/base/enum';
 
 /**
  * Allows to configure the animation behavior for chart series such as animation duration and delay.
@@ -3239,7 +3239,7 @@ export class PivotZoomSettings extends ChildProperty<PivotZoomSettings> {
  * * `description`: Allows you to add a description of the pivot chart.
  * * `enableAnimation`: Allows you to enable/disable the tooltip animation while performing the mouse move from one point to another in the pivot chart.
  * * `enableExport`: Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.
- * * `enableMultiAxis`: Allows you to draw the pivot chart with multiple value fields as separate chart area.
+ * * `enableMultipleAxis`: Allows you to draw the pivot chart with multiple value fields as separate chart area.
  * * `enableSideBySidePlacement`: Allows you to draw points of the column type pivot chart series as side by side.
  * * `isMultiSelect`: Allows you to perform multiple selection in the pivot chart. To enable this option, it requires the property `selectionMode` to be **Point** or **Series** or **Cluster**.
  * * `isTransposed`: Allows you to render the pivot chart in a transposed manner or not.
@@ -3321,11 +3321,32 @@ export class ChartSettings extends ChildProperty<ChartSettings> {
     public columnDelimiter: string;
 
     /**
-     * Allows you to draw the pivot chart with multiple value fields as separate chart area.
+     * It allows you to draw a pivot chart with multiple value fields as a single or stacked chart area.
+     * Use the `multipleAxisMode` enum options, either **Stacked** or **Single**, to show the chart area as either stacked or single based on value fields.
+     * > The `enableMultiAxis` property is deprecated and will no longer be used. Use `enableMultipleAxis` with  to achieve the same.
      * @default false
+     * @deprecated
      */
     @Property(false)
     public enableMultiAxis: boolean;
+
+    /**
+     * It allows you to draw a pivot chart with multiple value fields as a single or stacked chart area.
+     * Use the `multipleAxisMode` enum options, either **Stacked** or **Single**, to show the chart area as either stacked or single based on value fields.
+     * @default false
+     */
+    @Property(false)
+    public enableMultipleAxis: boolean;
+
+    /**
+     * Allows the chart series to be displayed, depending on the value fields specified, in either a stacked or single chart area.
+     * The options available are:
+     * * Stacked: Allows the chart series to be displayed in a separate chart area depending on the value fields specified.
+     * * Single: Allows the chart series to be displayed in a single chart area for different value fields.
+     * @default 'Stacked'
+     */
+    @Property('Stacked')
+    public multipleAxisMode: MultipleAxisMode;
 
     /**
      * Enable or disable scroll bar while multiple axis.

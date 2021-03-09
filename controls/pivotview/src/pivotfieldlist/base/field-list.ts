@@ -827,9 +827,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     dataSource = [];
                 }
             }
-            if (isBlazor() && dataSource.length > 0) {
+            if (isBlazor() && dataSource && dataSource.length > 0) {
                 this.remoteData = dataSource;
-            } else if (dataSource.length > 0) {
+            } else if (dataSource && dataSource.length > 0) {
                 this.setProperties({ dataSourceSettings: { dataSource: dataSource } }, true);
             }
             this.initialLoad();
@@ -921,7 +921,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                             PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
                             this.savedDataSourceSettings = undefined;
                         }
-                        if ((newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0 && !isNullOrUndefined(this.staticPivotGridModule)) {
+                        if (newProp.dataSourceSettings.dataSource && (newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0 && !isNullOrUndefined(this.staticPivotGridModule)) {
                             this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.staticPivotGridModule.dataSourceSettings);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { rows: [] } }, true);
                             this.staticPivotGridModule.setProperties({ dataSourceSettings: { columns: [] } }, true);
@@ -1111,13 +1111,21 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     private fieldListRender(): void {
         this.element.innerHTML = '';
+        let showDialog: boolean;
         if (this.renderMode === 'Popup' && this.dialogRenderer.fieldListDialog && !this.dialogRenderer.fieldListDialog.isDestroyed) {
+            showDialog = this.dialogRenderer.fieldListDialog.visible;
             this.dialogRenderer.fieldListDialog.destroy();
             remove(document.getElementById(this.element.id + '_Wrapper'));
         }
         this.renderModule.render();
-        this.fieldListSpinnerElement = this.renderMode === 'Popup' ?
-            this.dialogRenderer.fieldListDialog.element : this.element.querySelector('.e-pivotfieldlist-wrapper');
+        if (this.renderMode === 'Popup') {
+            this.fieldListSpinnerElement = this.dialogRenderer.fieldListDialog.element;
+            if (showDialog) {
+                this.dialogRenderer.fieldListDialog.show();
+            }
+        } else {
+            this.fieldListSpinnerElement = this.element.querySelector('.e-pivotfieldlist-wrapper');
+        }
         if (this.spinnerTemplate) {
             createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate }, this.createElement);
         } else {
@@ -1378,7 +1386,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true) as IFieldListOptions;
                 }
                 pivot.updateView(pivot.pivotGridModule);
-            } else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
+            } else if (this.isPopupView && pivot.allowDeferLayoutUpdate) {
                 pivot.pivotGridModule.engineModule = pivot.engineModule;
                 pivot.pivotGridModule.setProperties({
                     dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions    /* eslint-disable-line */
@@ -1386,7 +1394,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.pivotGridModule.notify(events.uiUpdate, pivot);
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
             }
-            if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
+            if (this.isPopupView && pivot.pivotGridModule &&
                 pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
                 pivot.pivotGridModule.hideWaitingPopup();
@@ -1447,8 +1455,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.olapEngineModule = control.olapEngineModule;
             this.dataType = control.dataType;
             this.pivotFieldList = this.dataType === 'olap' ? control.olapEngineModule.fieldList : control.engineModule.fieldList;
-            if (this.renderMode === 'Popup') {
+            if (this.isPopupView) {
                 this.pivotGridModule = control;
+            } else {
+                this.staticPivotGridModule = control;
             }
             this.getFieldCaption(control.dataSourceSettings);
             this.pivotCommon.engineModule = this.dataType === 'olap' ? this.olapEngineModule : this.engineModule;
@@ -1458,12 +1468,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.notify(events.treeViewUpdate, {});
             }
             this.axisFieldModule.render();
-            if (this.renderMode === 'Fixed' && this.allowDeferLayoutUpdate) {
+            if (!this.isPopupView && this.allowDeferLayoutUpdate) {
                 this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
                 this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
-            }
-            if (!this.isPopupView) {
-                this.staticPivotGridModule = control;
             }
         }
     }

@@ -1029,7 +1029,7 @@ export class Toolbar {
             let checkbox: CheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('multipleAxes'),
                 cssClass: 'e-multipleAxes',
-                checked: this.parent.chartSettings.enableMultiAxis,
+                checked: this.parent.chartSettings.enableMultipleAxis,
                 enableRtl: this.parent.enableRtl
             });
             args.element.innerText = '';
@@ -1184,7 +1184,7 @@ export class Toolbar {
                 if (this.parent.grid && this.parent.chart) {
                     this.parent.grid.element.style.display = '';
                     this.parent.chart.element.style.display = 'none';
-                    if (this.parent.chartSettings.enableMultiAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
+                    if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
                         (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
                     }
                     this.parent.currentView = 'Table';
@@ -1362,7 +1362,7 @@ export class Toolbar {
                         if (this.parent.chartSettings.enableScrollOnMultiAxis) {
                             this.isMultiAxisChange = true;
                         }
-                        this.parent.chartSettings.enableMultiAxis = !this.parent.chartSettings.enableMultiAxis;
+                        this.parent.chartSettings.enableMultipleAxis = !this.parent.chartSettings.enableMultipleAxis;
                         this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
                     } else if (this.getAllChartItems().indexOf(type) > -1) {
                         this.updateChartType(type as ChartSeriesType, false);
@@ -1456,7 +1456,7 @@ export class Toolbar {
             }
         }
         this.updateChartType(chartType, false);
-        this.parent.chartSettings.enableMultiAxis = checked;
+        this.parent.chartSettings.enableMultipleAxis = checked;
         this.chartTypesDialog.close();
     }
     private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
@@ -1528,7 +1528,7 @@ export class Toolbar {
         let checkbox: CheckBox = new CheckBox({
             label: this.parent.localeObj.getConstant('multipleAxes'),
             cssClass: 'e-dialog-multiple-axis',
-            checked: this.parent.chartSettings.enableMultiAxis ? this.parent.chartSettings.enableMultiAxis : false,
+            checked: this.parent.chartSettings.enableMultipleAxis ? this.parent.chartSettings.enableMultipleAxis : false,
             enableRtl: this.parent.enableRtl,
         });
         let checkbox1: CheckBox = new CheckBox({

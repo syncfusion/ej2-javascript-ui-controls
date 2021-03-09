@@ -2906,8 +2906,7 @@ export class TableCellWidget extends BlockWidget {
         let defaultWidth: number = 0;
         // tslint:disable-next-line:max-line-length
         if ((this.cellFormat.preferredWidth > 0 && !this.ownerTable.tableFormat.allowAutoFit) || (this.cellFormat.preferredWidth > 0 &&
-            this.cellFormat.preferredWidthType !== 'Auto' && this.nextWidget && (this.nextWidget as TableCellWidget).cellFormat.preferredWidth === 0
-            && (this.nextWidget as TableCellWidget).cellFormat.cellWidth === 0)) {
+            this.cellFormat.preferredWidthType !== 'Auto')) {
             return this.cellFormat.preferredWidth;
             //if table has preferred width value and cell preferred width is auto, considered cell width.
         } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'

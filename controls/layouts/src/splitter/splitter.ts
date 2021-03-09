@@ -176,6 +176,7 @@ export type Orientation = 'Horizontal' | 'Vertical';
 
 @NotifyPropertyChanges
 export class Splitter extends Component<HTMLElement> {
+    private onReportWindowSize: EventListenerOrEventListenerObject;
     private allPanes: HTMLElement[] = [];
     private paneOrder: number[] = [];
     private separatorOrder: number[] = [];
@@ -488,6 +489,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     protected preRender(): void {
+        this.onReportWindowSize = this.reportWindowSize.bind(this);
         this.wrapper = this.element.cloneNode(true) as HTMLElement;
         this.wrapperParent = this.element.parentElement;
         if (!this.checkBlazor()) {
@@ -536,7 +538,7 @@ export class Splitter extends Component<HTMLElement> {
         this.collapseFlag = false;
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
-        window.addEventListener('resize', this.reportWindowSize.bind(this), true);
+        this.element.ownerDocument.defaultView.addEventListener('resize', this.onReportWindowSize, true);
         EventHandler.add(this.element, 'keydown', this.onMove, this);
     }
 
@@ -1202,6 +1204,10 @@ export class Splitter extends Component<HTMLElement> {
 
     private reportWindowSize(): void {
         let paneCount: number = this.allPanes.length;
+        if (!document.body.contains(this.element)) {
+            document.defaultView.removeEventListener('resize', this.onReportWindowSize);
+            return;
+        }
         for (let i: number = 0; i < paneCount; i++) {
             if (isNullOrUndefined(this.paneSettings[i].size)) {
                 this.allPanes[i].classList.remove(STATIC_PANE);
@@ -1213,7 +1219,9 @@ export class Splitter extends Component<HTMLElement> {
                 }
             }
         }
-        setTimeout(() => { this.updateSplitterSize(true); }, 200);
+        if (paneCount > 0) {
+            setTimeout(() => { this.updateSplitterSize(true); }, 200);
+        }
     }
 
     private updateSplitterSize(iswindowResize ?: boolean) : void {
@@ -1289,7 +1297,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private unwireResizeEvents(): void {
-        window.removeEventListener('resize', this.reportWindowSize.bind(this));
+        this.element.ownerDocument.defaultView.removeEventListener('resize', this.onReportWindowSize);
         let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
         EventHandler.remove(document, 'mousemove', this.onMouseMove);

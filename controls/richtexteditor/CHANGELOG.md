@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#317795`- The issue with "Pasting the block node contents in the Rich Text Editor" has been resolved.
+
 ## 18.4.46 (2021-03-02)
 
 ### RichTextEditor

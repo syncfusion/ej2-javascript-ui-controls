@@ -2799,7 +2799,11 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', undefined, '0');
         writer.writeEndElement(); // end of delete
         writer.writeStartElement('c', 'axPos', this.chartNamespace);
-        writer.writeAttributeString(undefined, 'val', undefined, 'l');
+        if (axisID === '335265000') {
+            writer.writeAttributeString(undefined, 'val', undefined, 'l');
+        } else {
+            writer.writeAttributeString(undefined, 'val', undefined, 'b');
+        }
         writer.writeEndElement(); // end of axPos
         if (axis.hasMajorGridLines) {
             writer.writeStartElement('c', 'majorGridlines', this.chartNamespace);

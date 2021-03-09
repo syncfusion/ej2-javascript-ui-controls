@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#312055` - The opacity value is applied properly for the free text annotation when importing the annotations.
+
 ## 18.4.44 (2021-02-23)
 
 ### PDF Viewer

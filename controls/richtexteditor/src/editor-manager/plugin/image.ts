@@ -99,8 +99,9 @@ export class ImageCommand {
             }
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
+            let selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
             let imgElm: Element = e.value === 'Replace' ? (e.item.selectParent[0] as Element) :
-            (this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0] as Element).previousElementSibling;
+                (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             imgElm.addEventListener('load', () => {
                 e.callBack({
                     requestType: 'Image',

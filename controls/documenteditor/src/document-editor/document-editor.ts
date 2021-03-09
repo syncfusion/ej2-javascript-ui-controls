@@ -2358,9 +2358,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Shows the restrict editing pane.
      */
-    public showRestrictEditingPane(): void {
+    public showRestrictEditingPane(show?: boolean): void {
+        show = isNullOrUndefined(show) ? true : show;
         if (this.documentHelper && this.documentHelper.restrictEditingPane) {
-            this.documentHelper.restrictEditingPane.showHideRestrictPane(true);
+            this.documentHelper.restrictEditingPane.showHideRestrictPane(show);
         }
     }
     /**

@@ -5,7 +5,8 @@ import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { DropDownList, AutoComplete, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { RadioButton, CheckBox } from '@syncfusion/ej2-buttons';
-import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme } from '../base/util';
+import { distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme,
+    performComplexDataOperation } from '../base/util';
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
@@ -922,9 +923,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                     let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
                     e.result = e.result.filter((obj: { [key: string]: Object; }, index: number, arr: { [key: string]: Object; }[]) => {
                         return arr.map((mapObject: Object) => {
-                            return isComplex ? this.performComplexDataOperation(actObj.fields.value, mapObject)
+                            return isComplex ? performComplexDataOperation(actObj.fields.value, mapObject)
                                 : mapObject[actObj.fields.value];
-                        }).indexOf(isComplex ? this.performComplexDataOperation(actObj.fields.value, obj) :
+                        }).indexOf(isComplex ? performComplexDataOperation(actObj.fields.value, obj) :
                             obj[this.actObj.fields.value]) === index;
                     });
                 },
@@ -941,18 +942,6 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         actObj.appendTo(inputValue);
         this.actObj = actObj;
-    }
-
-    private performComplexDataOperation(value: string, mapObject: Object): Object | string {
-        let returnObj: Object | string;
-        let length: number = value.split('.').length;
-        let splits: string[] = value.split('.');
-        let duplicateMap: Object | string = mapObject;
-        for (let i: number = 0; i < length; i++) {
-            returnObj = duplicateMap[splits[i]];
-            duplicateMap = returnObj;
-        }
-        return returnObj;
     }
 
 }

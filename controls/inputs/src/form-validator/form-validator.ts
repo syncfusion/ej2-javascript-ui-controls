@@ -677,7 +677,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return fn.call(this, { element: this.inputElement, value: this.inputElement.value });
         } else if (FormValidator.isCheckable(this.inputElement)) {
             if (rule !== 'required') { return true; }
-            return selectAll('input[name=' + name + ']:checked', this.element).length > 0;
+            return selectAll('input[name="' + name + '"]:checked', this.element).length > 0;
         } else {
             return FormValidator.checkValidator[rule](args);
         }

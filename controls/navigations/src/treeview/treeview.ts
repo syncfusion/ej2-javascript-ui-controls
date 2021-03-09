@@ -2032,7 +2032,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             removeClass([frameSpan], [CHECK, INDETERMINATE]);
             this.removeCheck(currLi);
             ariaState = 'false';
-        } else if (state === 'indeterminate' && !frameSpan.classList.contains(INDETERMINATE) && this.autoCheck) {
+        } else if (state === 'indeterminate' && this.autoCheck) {
             frameSpan.classList.remove(CHECK);
             frameSpan.classList.add(INDETERMINATE);
             this.removeCheck(currLi);
@@ -2501,7 +2501,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         } else {
             childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
-            this.currentLoadData = childItems;
+            this.currentLoadData = this.getSortedData(childItems);
             if (isNOU(childItems) || childItems.length === 0) {
                 detach(eicon);
                 this.removeExpand(parentLi, true);
@@ -2509,7 +2509,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             } else {
                 if (!this.isBlazorPlatform || !this.initialRender) {
                     this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
-                    parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
+                    parentLi.appendChild(ListBase.createList(this.createElement, this.currentLoadData, this.listBaseOption));
                 }
                 this.expandNode(parentLi, eicon, loaded);
                 this.setSelectionForChildNodes(childItems);

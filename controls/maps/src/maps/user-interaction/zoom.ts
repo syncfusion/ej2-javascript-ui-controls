@@ -120,6 +120,7 @@ export class Zoom {
         } else if ((map.isTileMap) && (newZoomFactor >= minZoom && newZoomFactor <= maxZoom)) {
             this.getTileTranslatePosition(prevLevel, newZoomFactor, position, type);
             map.tileZoomLevel = newZoomFactor;
+            map.zoomSettings.zoomFactor = newZoomFactor;
             map.scale = Math.pow(2, newZoomFactor - 1);
             if (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && newZoomFactor <= map.initialZoomLevel) {
                 map.initialCheck = true;
@@ -218,6 +219,7 @@ export class Zoom {
             } else {
                 zoomCalculationFactor = prevLevel + (Math.round(prevLevel + (((size.width / zoomRect.width) + (size.height / zoomRect.height)) / 2)));
                 zoomCalculationFactor = (zoomCalculationFactor >= minZoom && zoomCalculationFactor <= maxZoom) ? zoomCalculationFactor : maxZoom;
+                map.zoomSettings.zoomFactor = zoomCalculationFactor;
                 this.getTileTranslatePosition(prevLevel, zoomCalculationFactor, { x: x, y: y });
                 map.tileZoomLevel = zoomCalculationFactor;
                 map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * Math.pow(2, zoomCalculationFactor))) /
@@ -540,8 +542,8 @@ export class Zoom {
                         template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                         cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
                         shapeValuePath: markerSettings.shapeValuePath, height: markerSettings.height,
-                        width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
-                        border: markerSettings.border
+                        width: markerSettings.width, imageUrl: markerSettings.imageUrl,
+                        imageUrlValuePath: markerSettings.imageUrlValuePath, shape: markerSettings.shape, border: markerSettings.border
                     };
                     eventArgs = markerShapeChoose(eventArgs, data);
                     eventArgs = markerColorChoose(eventArgs, data);
@@ -989,6 +991,7 @@ export class Zoom {
           let tileZoomFactor: number = prevLevel < minZoom && !map.isReset ? minZoom : zoomFactor;
             map.scale = Math.pow(2, tileZoomFactor - 1);
             map.tileZoomLevel = tileZoomFactor;
+            map.zoomSettings.zoomFactor = zoomFactor;
             let position: Point = { x: map.availableSize.width / 2, y: map.availableSize.height / 2 };
             this.getTileTranslatePosition(prevLevel, tileZoomFactor, position, type);
             if (map.zoomSettings.resetToInitial && map.applyZoomReset && type === 'Reset' || (type === 'ZoomOut' && map.zoomSettings.resetToInitial && map.applyZoomReset && tileZoomFactor <= map.initialZoomLevel)) {

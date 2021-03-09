@@ -27,6 +27,7 @@ export class ContextMenu {
     public segmentIndex: number = -1;
     private clickedPosition: number;
     private targetElement: Element;
+    private isEdit: boolean;
     /**
      * @private
      */
@@ -192,6 +193,7 @@ export class ContextMenu {
     }
 
     private splitTaskCall(args: CMenuClickEventArgs): void {
+        this.isEdit = true;
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         let currentClickedDate: Date = this.getClickedDate(args.element as HTMLElement);
         currentClickedDate.setHours(0, 0, 0, 0);
@@ -207,6 +209,7 @@ export class ContextMenu {
         });
     }
     private mergeCall(item: string): void {
+        this.isEdit = true;
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         let segments: ITaskSegment[] = this.rowData.ganttProperties.segments;
         let firstSegment: number = item === 'Right' ? this.segmentIndex : segments[this.segmentIndex - 1].segmentIndex;

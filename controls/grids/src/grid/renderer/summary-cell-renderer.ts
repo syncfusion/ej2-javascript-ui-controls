@@ -59,7 +59,12 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
             typeof (column.footerTemplate) !== 'string' : column.groupFooterTemplate ? typeof (column.groupFooterTemplate) !== 'string'
                 : column.groupCaptionTemplate ? typeof (column.groupCaptionTemplate) !== 'string' : false);
         if (isReactCompiler) {
-            tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID, null, null, node);
+            let prop: object = data[column.columnName];
+            if (tempObj.property === 'groupCaptionTemplate' || tempObj.property === 'groupFooterTemplate') {
+                let groupKey: string = 'groupKey'; let key: string = 'key';
+                prop[groupKey] = prop[key];
+            }
+            tempObj.fn(prop, this.parent, tempObj.property, tempID, null, null, node);
             this.parent.renderTemplates();
         } else {
             appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));

@@ -3980,12 +3980,15 @@ export class Annotation {
         let bounds: any = this.pdfViewerBase.convertBounds(currentAnnotation.wrapper.bounds);
         // tslint:disable-next-line
         let annotBounds: any = this.pdfViewerBase.convertBounds(annotation.bounds);
-        if (bounds && annotBounds && JSON.stringify(bounds) !== JSON.stringify(annotBounds) && (Math.abs(bounds.Y - annotBounds.Y) > 2) || (Math.abs(bounds.X - annotBounds.X) > 2)) {
+        if (bounds && annotBounds) {
             // tslint:disable-next-line
-            let annotationBounds: any = { x: annotBounds.X + (annotBounds.Width / 2), y:annotBounds.Y + (annotBounds.Height / 2), width: annotBounds.Width, height: annotBounds.Height};
-            this.pdfViewer.nodePropertyChange(currentAnnotation, { bounds: annotationBounds });
-            this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-            this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false);
+            if (JSON.stringify(bounds) !== JSON.stringify(annotBounds) && (Math.abs(bounds.Y - annotBounds.Y) > 2) || (Math.abs(bounds.X - annotBounds.X) > 2)) {
+                // tslint:disable-next-line
+                let annotationBounds: any = { x: annotBounds.X + (annotBounds.Width / 2), y:annotBounds.Y + (annotBounds.Height / 2), width: annotBounds.Width, height: annotBounds.Height};
+                this.pdfViewer.nodePropertyChange(currentAnnotation, { bounds: annotationBounds });
+                this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false);
+            }
         }
     }
     /**
@@ -4275,6 +4278,9 @@ export class Annotation {
         } else if (annotationType === 'freeText') {
             // tslint:disable-next-line:max-line-length
             annotationAuthor = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+        } else if (annotationType === 'ink') {
+            // tslint:disable-next-line:max-line-length
+            annotationAuthor = (this.pdfViewer.inkAnnotationSettings.author !== 'Guest') ? this.pdfViewer.inkAnnotationSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
         }
         if (!annotationAuthor) {
             // tslint:disable-next-line:max-line-length

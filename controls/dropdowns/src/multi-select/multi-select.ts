@@ -3605,7 +3605,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private updateValue (event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[], state: boolean): void {
         let length: number = li.length;
-        let hiddenValue: string = '';
         if (li && li.length) {
             let index: number = 0;
             let count: number = 0;
@@ -3619,33 +3618,25 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.enableGroupCheckBox) {
                     this.findGroupStart(li[index]);
                 }
-                if (state) {
-                    hiddenValue += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
-                }
                 index++;
             }
-            this.hiddenElement.innerHTML = hiddenValue;
             if (length > 50) {
                 setTimeout(
                     (): void => {
-                        hiddenValue = '';
                         while (index < length && index < count) {
                             this.updateListSelection(li[index], event, length - index);
                             if (this.enableGroupCheckBox) {
                                 this.findGroupStart(li[index]);
                             }
-                            if (state) {
-                                hiddenValue += '<option selected value ="' + this.value[index] + '">' + index + '</option>';
-                            }
                             index++;
                         }
                         if (!(isBlazor() && this.isServerRendered)) {
-                            this.hiddenElement.innerHTML += hiddenValue;
                             this.updatedataValueItems(event);
                             if (!this.changeOnBlur) {
                                 this.updateValueState(event, this.value, this.tempValues);
                                 this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
                             }
+                            this.updateHiddenElement();
                         }
                     },
                     0
@@ -3660,10 +3651,36 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.updateValueState(event, this.value, this.tempValues);
                     this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
                 }
+                this.updateHiddenElement();
             }
         }
     }
 
+    private updateHiddenElement(): void {
+        let hiddenValue: string = '';
+        let wrapperText: string = '';
+        let data: string = '';
+        let text: string[] = <string[]>[];
+        if (this.mode === 'CheckBox') {
+            (this.value as string[]).map((value: string, index: number): void => {
+                hiddenValue += '<option selected value ="' + value + '">' + index + '</option>';
+                if (this.listData) {
+                    data = this.getTextByValue(value);
+                } else {
+                    data = value;
+                }
+                wrapperText += data + this.delimiterChar + ' ';
+                text.push(data);
+            });
+            this.hiddenElement.innerHTML = hiddenValue;
+            this.updateWrapperText(this.delimiterWrapper, wrapperText);
+            this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
+            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
+            this.setProperties({ text: text.toString() }, true);
+            this.refreshInputHight();
+            this.refreshPlaceHolder();
+        }
+    }
     private updatedataValueItems(event?: MouseEvent | KeyboardEventArgs): void {
         this.deselectHeader();
         this.textboxValueUpdate(event);

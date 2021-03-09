@@ -2,41 +2,13 @@
 
 ## [Unreleased]
 
-## 18.4.43 (2021-02-16)
+## 18.4.46 (2021-03-02)
 
 ### Pivot Table
 
 #### Bug Fixes
 
-- `#298311` - CSS issue of calculated field dialog in dark theme has been fixed.
-
-## 18.4.39 (2021-01-28)
-
-### Pivot Table
-
-#### Features
-
-- `#294982`,`#F157008` - "Median" aggregation is now supported.
-
-## 18.4.34 (2021-01-12)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#301448` - The pivot table now displays no unnecessary scrollbars when the browser is resized.
-
-#### New Features
-
-- `#298512` - The drill-through grid can now be exported, like the pivot table.
-
-## 18.4.31 (2020-12-22)
- 
-### Pivot Table
- 
-#### Bug Fixes
- 
--`#298296` - Columns are now properly stretched when resizing the browser.
+- Border alignment issue in "Grouping Bar" UI has been fixed.
 
 ## 18.4.30 (2020-12-17)
 
@@ -44,7 +16,7 @@
 
 #### Bug Fixes
 
-- `#300162` - The pivot chart now works properly with height as a percentage..
+- `#300162` - The pivot chart now works properly with height as a percentage.
 
 ## 18.2.56 (2020-09-01)
 

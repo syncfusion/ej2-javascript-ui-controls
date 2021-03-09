@@ -117,7 +117,7 @@ export class GroupingBar implements IAction {
             this.groupingChartTable.classList.remove(cls.GRID_GROUPING_BAR_CLASS);
             this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.add(cls.GROUP_CHART_ROW);
             this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.remove(cls.GROUP_PIVOT_ROW);
-            if (this.parent.chartSettings.enableMultiAxis && this.parent.chartSettings.chartSeries &&
+            if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.chartSeries &&
                 ['Pie', 'Pyramid', 'Doughnut', 'Funnel'].indexOf(this.parent.chartSettings.chartSeries.type) < 0) {
                 this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS).classList.add(cls.GROUP_CHART_MULTI_VALUE);
             } else {

@@ -9,7 +9,7 @@ import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej
 import { GridModel, ResizeSettingsModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
 import { getRowHeight, setColumnIndex, Global, ispercentageWidth, renderMovable, getNumberFormat } from './util';
-import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex } from './util';
+import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs } from './interface';
@@ -84,6 +84,7 @@ import { gridObserver, BlazorAction } from '../actions/blazor-action';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';
+import { DateFormatOptions, NumberFormatOptions } from '@syncfusion/ej2-base';
 
 
 /** 
@@ -877,6 +878,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private toolTipObj: Tooltip;
     private prevElement: HTMLElement;
     private stackedColumn: Column;
+    private isExcel: boolean;
     /** @hidden */
     public lockcolPositionCount: number = 0;
     /** @hidden */
@@ -6108,7 +6110,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
     }
-
+    
     /** 
      * Get row index by primary key or row data.
      * @param  {string} value - Defines the primary key value.
@@ -6118,7 +6120,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let pkName: string = this.getPrimaryKeyFieldNames()[0];
         value = typeof value === 'object' ? value[pkName] : value;
         for (let i: number = 0; i < this.getRowsObject().length; i++) {
-            if (this.getRowsObject()[i].data[pkName] === value) {
+            let pKvalue = this.getRowsObject()[i].data[pkName];
+            if (pkName.split('.').length > 1) {
+                pKvalue = performComplexDataOperation(pkName, this.getRowsObject()[i].data);
+            }
+            if (pKvalue === value) {
                 return this.getRowsObject()[i].index;
             }
         }
@@ -6358,6 +6364,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public serverExcelExport(url: string): void {
+        this.isExcel = true;
         this.exportGrid(url);
     }
     /**
@@ -6366,6 +6373,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {void} 
      */
     public serverPdfExport(url: string): void {
+        this.isExcel = false;
         this.exportGrid(url);
     }
 
@@ -6389,8 +6397,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     e.template = "true";
                 };
                 if (e.format) {
-                    let format: string = typeof (e.format) === 'object' ? e.format.format : e.format;
-                    e.format = getNumberFormat(format, e.type);
+                    e.format = getNumberFormat(this.getFormat(e.format), e.type, this.isExcel);
                 }
             }
             if (e.columns) {
@@ -6419,14 +6426,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 columns[i].template = "true";
             };
             if (columns[i].format) {
-                let e: Column = columns[i];
-                let format: string = typeof (e.format) === 'object' ? e.format.format : e.format;
-                columns[i].format = getNumberFormat(format, columns[i].type);
+                columns[i].format = getNumberFormat(this.getFormat(columns[i].format), columns[i].type, this.isExcel);
             }
             if (columns[i].columns) {
                 this.setHeaderText(columns[i].columns as Column[]);
             }
         }
+    }
+
+    private getFormat(format: string | NumberFormatOptions | DateFormatOptions): string {
+        return typeof (format) === 'object' ? !isNullOrUndefined(format.format) ?
+            format.format : format.skeleton : format
     }
 
     /**

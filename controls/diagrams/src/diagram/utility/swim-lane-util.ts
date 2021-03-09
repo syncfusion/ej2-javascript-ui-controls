@@ -3,7 +3,7 @@ import { NodeModel, LaneModel, PhaseModel, SwimLaneModel } from '../objects/node
 import { Node, Shape, SwimLane } from '../objects/node';
 import { GridPanel, GridCell, GridRow, RowDefinition, ColumnDefinition } from '../core/containers/grid';
 import { Lane, Phase } from '../objects/node';
-import { DiagramAction, NodeConstraints, DiagramConstraints, DiagramEvent } from '../enum/enum';
+import { DiagramAction, NodeConstraints, DiagramConstraints, DiagramEvent, ElementAction } from '../enum/enum';
 import { cloneObject, randomId } from './../utility/base-util';
 import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
@@ -203,6 +203,9 @@ export function laneCollection(
             }
             childWrapper = addObjectToGrid(
                 diagram, grid, object, laneNode, false, false, true, shape.lanes[laneIndex].id);
+            if (orientation) {
+                childWrapper.children[0].elementActions = childWrapper.children[0].elementActions | ElementAction.HorizontalLaneHeader;
+            }
             parentWrapper.children.push(childWrapper);
         }
         grid.addObject(parentWrapper, rowValue, colValue);

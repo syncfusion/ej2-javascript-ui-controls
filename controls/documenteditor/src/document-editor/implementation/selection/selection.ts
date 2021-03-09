@@ -8421,6 +8421,10 @@ export class Selection {
         div.style.top = '-10000px';
         div.style.position = 'relative';
         div.innerHTML = htmlContent;
+        if (this.htmlWriter.isMergeField) {
+            div.innerText = '';
+            this.htmlWriter.isMergeField = false;
+        }
         document.body.appendChild(div);
         if (navigator.userAgent.indexOf('Firefox') !== -1) {
             div.tabIndex = 0;

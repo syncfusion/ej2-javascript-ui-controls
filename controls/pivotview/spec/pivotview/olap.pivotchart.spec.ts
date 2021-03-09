@@ -46,7 +46,7 @@ describe('- Grid properties - ', () => {
             width: 1000,
             height: 500,
             displayOption: { view: 'Chart' },
-            chartSettings: { chartSeries: { type: 'Column', animation: { enable: false } }, enableMultiAxis: false, }
+            chartSettings: { chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false, }
         });
         pivotGridObj.appendTo('#PivotView');
     });

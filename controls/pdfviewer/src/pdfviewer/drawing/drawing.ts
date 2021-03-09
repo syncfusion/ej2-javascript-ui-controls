@@ -451,6 +451,7 @@ export class Drawing {
                 }
                 freeTextEle.rotateValue = undefined;
                 freeTextEle.content = obj.dynamicText;
+                freeTextEle.style.opacity = obj.opacity;
                 freeTextEle.margin.left = 2;
                 freeTextEle.margin.top = 5;
                 freeTextEle.style.textWrapping = 'Wrap';

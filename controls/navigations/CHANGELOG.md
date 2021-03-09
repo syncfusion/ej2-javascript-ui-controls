@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#310875` - The issue with "The `isChecked` attribute is not working when using the `sortOrder` property in TreeView" has been resolved.
+
 ## 18.4.44 (2021-02-23)
 
 ### Tab

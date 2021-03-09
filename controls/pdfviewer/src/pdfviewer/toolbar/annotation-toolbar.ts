@@ -1162,7 +1162,7 @@ export class AnnotationToolbar {
                 }
             }
         }
-        if (!isBlazor) {
+        if (!isBlazor()) {
             this.updateOpacityIndicator();
         }
     }
@@ -1269,6 +1269,9 @@ export class AnnotationToolbar {
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
             if (args.name === 'changed') {
                 this.pdfViewer.annotation.modifyThickness(args.value);
+                if (!isBlazor()) {
+                    this.updateThicknessIndicator();
+                }
             }
         } else {
             this.ShapeThickness(args.value);

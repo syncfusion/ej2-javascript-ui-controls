@@ -537,7 +537,7 @@ export class BordersAndShadingDialog {
         });
         this.borderColorPicker.appendTo(borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
-            value: '#000000', change: this.applyPreviewTableBackgroundColor,
+            value: '#FFFFFF', change: this.applyPreviewTableBackgroundColor,
             enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.shadingColorPicker.appendTo(shadingColorPickerElement);

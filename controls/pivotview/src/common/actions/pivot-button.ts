@@ -199,8 +199,8 @@ export class PivotButton implements IAction {
                             if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
                                 this.parent.getModuleName() === 'pivotfieldlist') {
                                 this.createDraggable(field[i], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
+                                (buttonElement as any).querySelector('.' + cls.BUTTON_DRAGGABLE).ej2_instances[0].dragArea = this.parentElement;
                             }
-                            (buttonElement as any).querySelector('.' + cls.BUTTON_DRAGGABLE).ej2_instances[0].dragArea = this.parentElement;
                         }
                     }
                 }
@@ -211,7 +211,7 @@ export class PivotButton implements IAction {
                             let parent: PivotView = this.parent as PivotView;
                             if (this.valueFiedDropDownList && element.querySelector('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV)) {
                                 this.valueFiedDropDownList.dataSource = valueData;
-                                this.valueFiedDropDownList.value = !parent.chartSettings.enableMultiAxis ?
+                                this.valueFiedDropDownList.value = !parent.chartSettings.enableMultipleAxis ?
                                     parent.chartModule.currentMeasure : valueData[0].value;
                             } else {
                                 let ddlDiv: HTMLElement = createElement('div', { className: cls.GROUP_CHART_VALUE_DROPDOWN_DIV });
@@ -219,7 +219,7 @@ export class PivotButton implements IAction {
                                 this.valueFiedDropDownList = new DropDownList({
                                     dataSource: valueData,
                                     enableRtl: this.parent.enableRtl,
-                                    value: !parent.chartSettings.enableMultiAxis ?
+                                    value: !parent.chartSettings.enableMultipleAxis ?
                                         parent.chartModule.currentMeasure : valueData[0].value,
                                     width: 200,
                                     fields: { value: 'value', text: 'text' },
@@ -853,7 +853,7 @@ export class PivotButton implements IAction {
         if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
             this.parent.updateDataSource(isRefreshGrid);
         } else {
-            if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
+            if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).isPopupView && (this.parent as PivotFieldList).pivotGridModule) {
                 if (this.parent.dataType === 'olap') {
                     (this.parent as PivotFieldList).pivotGridModule.olapEngineModule = (this.parent as PivotFieldList).olapEngineModule;
                 } else {

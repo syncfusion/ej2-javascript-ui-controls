@@ -2416,4 +2416,67 @@ describe('MultiSelect', () => {
             }
         });
     });
+    describe("EJ2-46897- Hidden element not updated properly when predefined values provided", () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let mouseDownEvent : MouseEvent = document.createEvent('MouseEvent');
+        mouseDownEvent.initEvent('mousedown');
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Clicking Select all and Unselect all', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 1 },
+                { Name: 'Bermuda', Code: 2 },
+                { Name: "India", Code: 3 },
+                { Name: 'United States', Code: 4 }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                value: [1,3],
+                showSelectAll: true,
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            expect(listObj.hiddenElement.options.length).toBe(2);
+            listObj.showPopup();
+            if (listObj.isPopupOpen()) {
+                listObj.popupObj.element.querySelector('.e-selectall-parent').dispatchEvent(mouseDownEvent);
+                expect(listObj.hiddenElement.options.length).toBe(4);
+                listObj.popupObj.element.querySelector('.e-selectall-parent').dispatchEvent(mouseDownEvent);
+                expect(listObj.viewWrapper.innerText.length).toBe(0);
+            }
+        });
+        it('Using Select all and unselect all method', () => {
+            let data: { [key: string]: Object }[] = [
+                { Name: 'Australia', Code: 1 },
+                { Name: 'Bermuda', Code: 2 },
+                { Name: "India", Code: 3 },
+                { Name: 'United States', Code: 4 }
+            ];
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox',
+                value: [1,3],
+                showSelectAll: true,
+                fields: { text: 'Name', value: 'Code' }
+            });
+            listObj.appendTo(element);
+            expect(listObj.hiddenElement.options.length).toBe(2);
+            listObj.showPopup();
+            if (listObj.isPopupOpen()) {
+                listObj.selectAll(true);
+                expect(listObj.hiddenElement.options.length).toBe(4);
+                listObj.selectAll(false);
+                expect(listObj.hiddenElement.options.length).toBe(0);
+            }
+        });
+    });
 });

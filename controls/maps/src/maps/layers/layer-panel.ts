@@ -16,7 +16,7 @@ import { layerRendering, ILayerRenderingEventArgs, shapeRendering, IShapeRenderi
 
 export class LayerPanel {
     private mapObject: Maps;
-    private currentFactor: number;
+    public currentFactor: number;
     private groupElements: Element[];
     private layerObject: Element;
     private currentLayer: LayerSettings;
@@ -138,17 +138,26 @@ export class LayerPanel {
         ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
          panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
         zoomFactorValue = panel.mapObject.zoomSettings.enable ? zoomFactorValue : panel.mapObject.zoomSettings.zoomFactor;
+        zoomFactorValue = zoomFactorValue > 0 ? zoomFactorValue : 1;
+        panel.mapObject.defaultState = zoomFactorValue !== 1 ? false : true;
+        if (!panel.mapObject.markerZoomedState && panel.mapObject.zoomSettings.shouldZoomInitially &&
+            panel.mapObject.zoomSettings.zoomFactor === 1) {
+            panel.mapObject.defaultState = true;
+        }
         if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
             panel.mapObject.tileZoomLevel = zoomFactorValue;
             panel.mapObject.previousZoomFactor = zoomFactorValue;
         }  else if (this.mapObject.isReset && panel.mapObject.tileZoomLevel === 1 && !panel.mapObject.zoomSettings.shouldZoomInitially) {
             panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
         } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
+            panel.mapObject.previousZoomFactor = panel.mapObject.tileZoomLevel;
             panel.mapObject.tileZoomLevel = panel.mapObject.defaultState && panel.mapObject.zoomSettings.enable ?
                 panel.mapObject.tileZoomLevel : !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
                 panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
                     panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
+            panel.mapObject.tileZoomLevel = zoomFactorValue === 1 && panel.mapObject.zoomSettings.zoomFactor === 0 ?
+                zoomFactorValue : panel.mapObject.tileZoomLevel;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
                     (panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
                         || (isNullOrUndefined(panel.mapObject.markerZoomFactor)
@@ -158,6 +167,11 @@ export class LayerPanel {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
+        } else if (panel.mapObject.defaultState) {
+            panel.mapObject.previousZoomFactor = panel.mapObject.tileZoomLevel;
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+            panel.mapObject.tileTranslatePoint.x = 0;
+            panel.mapObject.tileTranslatePoint.y = 0;
         }
         if ( zoomFactorValue <= 1 && !isNullOrUndefined(panel.mapObject.height) && !panel.mapObject.zoomSettings.shouldZoomInitially
         && (panel.mapObject.tileZoomLevel === panel.mapObject.tileZoomScale) && this.mapObject.initialCheck ) {

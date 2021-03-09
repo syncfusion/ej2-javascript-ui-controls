@@ -352,6 +352,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public highestHeight: number = 0;
+    /**
+     * @private
+     */
     public customStampCollection: ICustomStampItems[] = [];
     /**
      * @private
@@ -1466,6 +1470,7 @@ export class PdfViewerBase {
         this.downloadCollections = {};
         this.annotationEvent = null;
         this.highestWidth = 0;
+        this.highestHeight = 0;
         this.requestLists = [];
         this.tilerequestLists = [];
         this.pdfViewer.formFieldCollections = [];
@@ -2724,6 +2729,21 @@ public mouseDownHandler(event: MouseEvent): void {
         if (this.getRerenderCanvasCreated()) {
             event.preventDefault();
         }
+        if (event.ctrlKey) {
+            let zoomDifference: number = 25;
+            if (this.pdfViewer.magnification.zoomFactor < 1) {
+                zoomDifference = 10;
+            }
+            if (this.pdfViewer.magnification.zoomFactor >= 2) {
+                zoomDifference = 50;
+            }
+            // tslint:disable-next-line
+            if ((event as any).wheelDelta > 0) {
+                this.pdfViewer.magnification.zoomTo((this.pdfViewer.magnification.zoomFactor * 100) + zoomDifference);
+            } else {
+                this.pdfViewer.magnification.zoomTo((this.pdfViewer.magnification.zoomFactor * 100) - zoomDifference);
+            }
+        }
         if (this.pdfViewer.magnificationModule) {
             this.pdfViewer.magnificationModule.pageRerenderOnMouseWheel();
             if (event.ctrlKey) {
@@ -3680,6 +3700,10 @@ public mouseDownHandler(event: MouseEvent): void {
                 if (pageWidth > this.highestWidth) {
                     this.highestWidth = pageWidth;
                 }
+                let pageHeight: number = this.pageSize[i].height;
+                if (pageHeight > this.highestHeight) {
+                    this.highestHeight = pageHeight;
+                }
             }
             if ((isPortrait && isLandscape) || differentPageSize) {
                 this.isMixedSizeDocument = true;
@@ -3924,7 +3948,7 @@ public mouseDownHandler(event: MouseEvent): void {
                                     }
                                 }
                             }
-                            if (proxy.tileRenderCount === proxy.tileRequestCount && proxy.isTileImageRendered) {
+                            if (proxy.tileRenderCount === proxy.tileRequestCount) {
                                 proxy.isTileImageRendered = false;
                                 proxy.tileRenderCount = 0;
                                 if (this.pdfViewer.magnificationModule) {
@@ -4376,9 +4400,17 @@ public mouseDownHandler(event: MouseEvent): void {
         }
         // tslint:disable-next-line:max-line-length
         if (this.isMixedSizeDocument && this.highestWidth > 0) {
-            leftPosition = (width - (this.highestWidth * this.getZoomFactor())) / 2;
+            if (this.viewerContainer.clientWidth > 0) {
+                leftPosition = (this.viewerContainer.clientWidth - (this.highestWidth * this.getZoomFactor())) / 2;
+            } else {
+                leftPosition = (width - (this.highestWidth * this.getZoomFactor())) / 2;
+            }
         } else {
-            leftPosition = (width - this.getPageWidth(pageIndex)) / 2;
+            if (this.viewerContainer.clientWidth > 0) {
+                leftPosition = (this.viewerContainer.clientWidth - this.getPageWidth(pageIndex)) / 2;
+            } else {
+                leftPosition = (width - this.getPageWidth(pageIndex)) / 2;
+            }
         }
         let isLandscape: boolean = false;
         if (this.pageSize[pageIndex].width > this.pageSize[pageIndex].height) {
@@ -4407,11 +4439,21 @@ public mouseDownHandler(event: MouseEvent): void {
         let leftPosition: number;
         if (this.pageSize[pageIndex]) {
             if (this.isMixedSizeDocument && this.highestWidth > 0) {
-                // tslint:disable-next-line:max-line-length
-                leftPosition = (this.viewerContainer.getBoundingClientRect().width - (this.highestWidth * this.getZoomFactor())) / 2;
+                if (this.viewerContainer.clientWidth > 0) {
+                    // tslint:disable-next-line:max-line-length
+                    leftPosition = (this.viewerContainer.clientWidth - (this.highestWidth * this.getZoomFactor())) / 2;
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    leftPosition = (this.viewerContainer.getBoundingClientRect().width - (this.highestWidth * this.getZoomFactor())) / 2;
+                }
             } else {
-                // tslint:disable-next-line:max-line-length
-                leftPosition = (this.viewerContainer.getBoundingClientRect().width - this.pageSize[pageIndex].width * this.getZoomFactor()) / 2;
+                if (this.viewerContainer.clientWidth > 0) {
+                    // tslint:disable-next-line:max-line-length
+                    leftPosition = (this.viewerContainer.clientWidth - this.pageSize[pageIndex].width * this.getZoomFactor()) / 2;
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    leftPosition = (this.viewerContainer.getBoundingClientRect().width - this.pageSize[pageIndex].width * this.getZoomFactor()) / 2;
+                }
             }
             let isLandscape: boolean = false;
             if (this.pageSize[pageIndex].width > this.pageSize[pageIndex].height) {

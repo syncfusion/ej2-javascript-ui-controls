@@ -435,6 +435,100 @@ export let hierarchicalData7: { [key: string]: Object; }[] = [
    
 ];
 
+export let hierarchicalData8: { [key: string]: Object; }[] = [
+    {
+      orgId: 1,
+      id: 1,
+      function: "Administration",
+      expanded: true,
+      childs: []
+    },
+    {
+      orgId: 1,
+      id: 2,
+      function: "Purchasing",
+      expanded: true,
+      childs: []
+    },
+    {
+      orgId: 1,
+      id: 3,
+      function: "Security",
+      expanded: true,
+      childs: [
+        {
+          orgId: 1,
+          id: 4,
+          function: "Security Criteria Maintenance",
+          isChecked: false,
+          expanded: true,
+          childs: [
+            {
+              orgId: 1,
+              id: 7,
+              function: "View Only",
+              isChecked: true,
+              expanded: false,
+              childs: []
+            },
+            {
+              orgId: 1,
+              id: 8,
+              function: "Update",
+              isChecked: false,
+              expanded: false,
+              childs: []
+            }
+          ]
+        },
+        {
+          orgId: 1,
+          id: 5,
+          function: "User Groups",
+          expanded: true,
+          childs: [
+            {
+              orgId: 1,
+              id: 9,
+              function: "View Only",
+              expanded: false,
+              childs: []
+            },
+            {
+              orgId: 1,
+              id: 10,
+              function: "Create/Update",
+              expanded: false,
+              childs: []
+            }
+          ]
+        },
+        {
+          orgId: 1,
+          id: 6,
+          function: "Users",
+          expanded: true,
+          childs: [
+            {
+              orgId: 1,
+              id: 11,
+              function: "View Only",
+              expanded: false,
+              childs: []
+            },
+            {
+              orgId: 1,
+              id: 12,
+              function: "Create/Update",
+              expanded: false,
+              childs: []
+            }
+          ]
+        }
+      ]
+    }
+  ];
+
 export var localData: { [key: string]: Object }[] = [
     { id: 1, text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', hasChildren: true, selected: 'true', navigateUrl: 'http://npmci.syncfusion.com/', },
     { id: 2, parentID: 1, text: "Abstract", hasChildren: true },

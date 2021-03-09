@@ -713,6 +713,7 @@ export class DiagramEventHandler {
                         }
                     }
                 }
+                let avoidDropChildren: boolean = false;
                 let history: HistoryLog = this.updateContainerProperties();
                 let isGroupAction: boolean; this.addUmlNode();
                 this.inAction = false; this.isMouseDown = false; this.currentPosition = this.getMousePosition(evt);
@@ -740,6 +741,13 @@ export class DiagramEventHandler {
                                 this.commandHandler.isContainer = true;
                             }
                         }
+                        avoidDropChildren = this.diagram.lineRoutingModule
+                            && this.diagram.nameTable["helper"] && this.eventArgs.target && (this.eventArgs.target as Node).isLane
+                            && ((this.eventArgs.source instanceof Selector && (this.eventArgs.source as Selector).nodes.length > 0
+                                && ((this.eventArgs.source as Selector).nodes[0] as Node).parentId === "") || ((this.eventArgs.source as Node).parentId === ""));
+                        if (avoidDropChildren) {
+                            this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.PreventLaneContainerUpdate;
+                        }
                         this.tool.mouseUp(this.eventArgs, history.isPreventHistory);
                     } else {
                         this.tool.mouseUp(this.eventArgs);
@@ -754,6 +762,19 @@ export class DiagramEventHandler {
                 this.updateContainerBounds(true);
                 if (this.eventArgs.clickCount !== 2) {
                     this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                    if (avoidDropChildren) {
+                        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate
+                        let nodes: NodeModel[] = this.eventArgs.source instanceof Selector
+                            ? (this.eventArgs.source as Selector).nodes : [this.eventArgs.source as Node]
+                        if (nodes) {
+                            for (let i = 0; i < nodes.length; i++) {
+                                if (!nodes[i].container) {
+                                    this.commandHandler.dropChildToContainer(this.eventArgs.target, nodes[i]);
+                                    this.commandHandler.renderContainerHelper(nodes[i]);
+                                }
+                            }
+                        }
+                    }
                 }
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
@@ -799,6 +820,7 @@ export class DiagramEventHandler {
             }
             this.eventArgs = {};
         }
+        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
     }
     /* tslint:enable */
@@ -2102,6 +2124,7 @@ class ObjectFinder {
                 parentObj = diagram.nameTable[(parentObj as Node).parentId];
             }
         }
+        this.checkSwimlane(actualTarget);
         if (eventArgs && !eventArgs.source) {
             for (let i: number = 0; i < actualTarget.length; i++) {
                 let parentNode: NodeModel = diagram.nameTable[(actualTarget[i] as Node).parentId];
@@ -2114,6 +2137,27 @@ class ObjectFinder {
             }
         }
         return actualTarget as IElement[];
+    }
+    /** @private */
+    public checkSwimlane(actualTarget: (NodeModel | ConnectorModel)[]): void {
+        let isNode: Boolean;
+        for (let m: number = 0; m < actualTarget.length; m++) {
+            let obj: NodeModel | ConnectorModel = actualTarget[m];
+            let parentNode: string;
+            let node: Node;
+            if (obj instanceof Node) {
+                parentNode = (actualTarget[m] as Node).parentId;
+                node = obj as Node;
+            }
+            if (parentNode === '') {
+                isNode = true;
+            }
+            if (m > 0 && isNode && node && (node.isLane || node.isPhase || node.isHeader)) {
+                let swap: NodeModel | ConnectorModel = actualTarget[m];
+                actualTarget[m] = actualTarget[m - 1];
+                actualTarget[m - 1] = swap;
+            }
+        }
     }
     /** @private */
     public isTarget(actualTarget: Node, diagram: Diagram, action: string): IElement {

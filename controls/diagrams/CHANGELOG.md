@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#316541` - This issue "Drag and Drop into the swimlane for multiple nodes is not work as expected while enabling the Linerouting " has been fixed.
+- `#316429` - This issue "When drag and drop connector into the swimlane not updated properly " has been fixed.
+- `F163118` - This issue "Swimlane is removable even if the delete constraints are excluded" has been fixed.
+
 ## 18.4.46 (2021-03-02)
 
 ### Diagram
@@ -9,6 +19,12 @@
 #### Bug Fixes
 
 - `F162436` - This issue "While set the node's isExpanded property true at initial rendering unwanted scroll is take placed" has been fixed.
+- `#314664` - This issue "Exception occurs when drag and drop the node and perform undo " has been fixed.
+- `F161997` - This issue "Context menu disappear while mouseover the item which has subitems " has been fixed.
+
+#### New Features
+
+- `#314220` - Support for Auto scrolling feature while using drawing tool has been added.
 
 ## 18.4.43 (2021-02-16)
 

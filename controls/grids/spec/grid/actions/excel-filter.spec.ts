@@ -12,6 +12,7 @@ import { Freeze } from '../../../src/grid/actions/freeze';
 import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import { Selection } from '../../../src/grid/actions/selection';
 import { filterData } from '../base/datasource.spec';
+import { performComplexDataOperation } from '../../../src/grid/base/util';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
@@ -444,8 +445,7 @@ describe('Excel Filter =>', () => {
             (gridObj.filterModule as any).filterIconClickHandler(getClickObj(
                 gridObj.getColumnHeaderByField('Name').querySelector('.e-filtermenudiv')));
             gridObj.keyboardModule.keyAction({ action: 'Escape', preventDefault: preventDefault } as any);
-            let returnedValue: string =
-                (<any>gridObj.filterModule).filterModule.excelFilterBase.performComplexDataOperation('Details.Somethings', gridObj.dataSource[0]);
+            let returnedValue: string | object = performComplexDataOperation('Details.Somethings', gridObj.dataSource[0]);
             expect(returnedValue).toBe('asdsafasf');
         });
 

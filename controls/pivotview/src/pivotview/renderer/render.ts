@@ -59,7 +59,6 @@ export class Render {
     private maxMeasurePos: number = 0;
     private hierarchyCount: number = 0;
     private actualText: string = '';
-    private isInitial: boolean = true;
     /* eslint-disable-next-line */
     private timeOutObj: any;
     /** Constructor for render module
@@ -352,10 +351,10 @@ export class Render {
         if (!isNullOrUndefined((this.parent as any).renderReactTemplates)) {    /* eslint-disable-line */
             (this.parent as any).renderReactTemplates();    /* eslint-disable-line */
         }
-        if (this.isInitial) {
+        if (this.parent.isInitial) {
             this.parent.refreshData();
         }
-        this.isInitial = false;
+        this.parent.isInitial = false;
         this.parent.notify(events.contentReady, {});
     }
 

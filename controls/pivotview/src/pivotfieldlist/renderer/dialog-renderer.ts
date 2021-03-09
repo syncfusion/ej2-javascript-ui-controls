@@ -509,19 +509,25 @@ export class DialogRenderer {
         if (this.parent.allowDeferLayoutUpdate) {
             this.parent.dataSourceSettings =
                 extend({}, (<{ [key: string]: Object }>this.parent.clonedDataSource).properties, null, true) as IDataOptions;   /* eslint-disable-line */
-            this.parent.pivotGridModule.engineModule = this.parent.engineModule;
-            this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
-            this.parent.pivotGridModule.
-                setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
-                }, true);
+            if (this.parent.isPopupView && this.parent.pivotGridModule) {
+                this.parent.pivotGridModule.engineModule = this.parent.engineModule;
+                this.parent.pivotGridModule.olapEngineModule = this.parent.olapEngineModule;
+                this.parent.pivotGridModule.
+                    setProperties({
+                        dataSourceSettings: (<{ [key: string]: Object }>this.parent.clonedDataSource).properties as IDataOptions    /* eslint-disable-line */
+                    }, true);
+            }
             if (Object.keys(this.parent.clonedFieldList).length > 0) {
                 this.parent.dataType === 'olap' ? this.parent.olapEngineModule.fieldList =  /* eslint-disable-line */
                     extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions :
                     this.parent.engineModule.fieldList = extend({}, this.parent.clonedFieldList, null, true) as IFieldListOptions;
             }
-            this.parent.pivotGridModule.notify(events.uiUpdate, this);
-            this.parent.pivotGridModule.notify(events.contentReady, this);
+            if (this.parent.isPopupView && this.parent.pivotGridModule) {
+                this.parent.pivotGridModule.notify(events.uiUpdate, this);
+                this.parent.pivotGridModule.notify(events.contentReady, this);
+            } else {
+                this.cancelButtonClick();
+            }
         }
         this.parent.dialogRenderer.fieldListDialog.hide();
     }

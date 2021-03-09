@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.47 (2021-03-09)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#I303694` - An issue with scheduler toolbar items are not rendered as mobile view in iPad has been fixed.
+
 ## 18.4.46 (2021-03-02)
 
 ### Schedule

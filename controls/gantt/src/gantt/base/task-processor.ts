@@ -1165,7 +1165,9 @@ export class TaskProcessor extends DateProcessor {
         }
         let taskData: Object[] = <Object[]>extend([], [], data.taskData[taskSettings.segments], true);
         for (let i: number = 0; i < segments.length; i++) {
-            if (!this.parent.isLoad) {
+            if ((this.parent.editModule && this.parent.editModule.dialogModule &&
+                getValue('isEdit', this.parent.editModule.dialogModule)) || (this.parent.contextMenuModule &&
+                     getValue('isEdit', this.parent.contextMenuModule))) {
                 taskData[i] = {};
             }
             if (!isNullOrUndefined(taskSettings.startDate)) {

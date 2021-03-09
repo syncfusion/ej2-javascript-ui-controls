@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.46 (2021-03-02)
+## 18.4.47 (2021-03-09)
+
+### Gantt
+
+#### Bug Fixes
+
+- `316898` - Maintained additional fields in segments on zooming action.
+
+## 18.4.44 (2021-02-23)
 
 ### Gantt
 

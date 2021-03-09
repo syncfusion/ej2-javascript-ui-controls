@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.4.44 (2021-02-23)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#315130` - The issue with, "Provide support to prevent default focus in the 'OnOverlayClick' event" has been resolved
+
 ## 18.4.43 (2021-02-16)
 
 ### Tooltip

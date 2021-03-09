@@ -4742,6 +4742,19 @@
     }
   }
 
+  .e-outline.e-float-input.e-input-group:not(.e-float-icon-left).e-input-focus .e-float-line::before,
+  .e-outline.e-float-input.e-input-group:not(.e-float-icon-left).e-input-focus .e-float-line::after,
+  .e-outline.e-float-input.e-input-group.e-float-icon-left.e-input-focus .e-input-in-wrap .e-float-line::before,
+  .e-outline.e-float-input.e-input-group.e-float-icon-left.e-input-focus .e-input-in-wrap .e-float-line::after,
+  .e-outline.e-float-input.e-control-wrapper.e-input-group:not(.e-float-icon-left).e-input-focus .e-float-line::before,
+  .e-outline.e-float-input.e-control-wrapper.e-input-group:not(.e-float-icon-left).e-input-focus .e-float-line::after,
+  .e-outline.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left.e-input-focus .e-input-in-wrap .e-float-line::before,
+  .e-outline.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left.e-input-focus .e-input-in-wrap .e-float-line::after {
+    @if $input-skin-name == 'material' {
+      width: 0%;
+    }
+  }
+
   .e-outline.e-input-group.e-control-wrapper,
   .e-outline.e-input-group,
   .e-outline.e-input-group:not(.e-float-icon-left),

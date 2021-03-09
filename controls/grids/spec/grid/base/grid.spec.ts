@@ -15,6 +15,8 @@ import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specu
 import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel, recordClick } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
+import { getNumberFormat } from '../../../src/grid/base/util';
+
 Grid.Inject(Page);
 
 describe('Grid base module', () => {
@@ -1571,5 +1573,55 @@ describe('Grid base module', () => {
                 gridObj = null;
                 gridObj.actionComplete = null;
             });
+        });
+        describe('EJ2-46639 - getRowIndexByPrimarykey not working properly with complex data', function () {
+            let gridObj: Grid;
+            let complexData: Object[] = [
+                { OrderID: { ID: { ordID: 10248 } }, CustomerID: "VINET", Freight: 32.38, ShipCountry: "France" },
+                { OrderID: { ID: { ordID: 10249 } }, CustomerID: "TOMSP", Freight: 11.61, ShipCountry: "Germany" },
+                { OrderID: { ID: { ordID: 10250 } }, CustomerID: "HANAR", Freight: 65.83, ShipCountry: "Brazil" },
+                { OrderID: { ID: { ordID: 10251 } }, CustomerID: "VICTE", Freight: 41.34, ShipCountry: "France" }];
+            beforeAll(function (done) {
+                gridObj = createGrid({
+                    dataSource: complexData,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID.ID.ordID', type: 'number', isPrimaryKey: true },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'Freight', field: 'Freight', format: "C2" },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                    allowSelection: true,
+                }, done);
+            });
+            it('Get rowindex from primarykey', function () {
+                expect(gridObj.getRowIndexByPrimaryKey(10248)).toBe(0);
+                expect(gridObj.getRowIndexByPrimaryKey(10249)).toBe(1);
+                expect(gridObj.getRowIndexByPrimaryKey(10250)).toBe(2);
+                expect(gridObj.getRowIndexByPrimaryKey(10355)).toBe(-1);
+            });
+            afterAll(function () {
+                destroy(gridObj);
+            });
+        });
+    });
+    describe('EJ2-46527 - Server export coverage', function () {
+        let gridObj: Grid;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', type: 'number', isPrimaryKey: true },
+                    { headerText: 'OrderDate', field: 'Order Date', format: { type: "date", format: "dd/MM/yyyy" } },
+                    { headerText: 'Freight', field: 'Freight', format: "C2" },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+        });
+        it('Calling export functions', function () {
+            let column: Column = gridObj.columns[1] as Column;
+            getNumberFormat((gridObj as any).getFormat(column.format), column.type, true);
+        });
+        afterAll(function () {
+            destroy(gridObj);
         });
     });
