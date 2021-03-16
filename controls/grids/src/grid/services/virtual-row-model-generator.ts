@@ -8,6 +8,7 @@ import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
+import * as events from '../base/constant';
 
 /**
  * Content module is used to render grid content
@@ -103,6 +104,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
                         this.parent.vRows = rows;
                         this.parent.vcRows = rows;
+                        this.parent.notify(events.refreshVirtualMaxPage, {});
                     }
                     let median: number;
                     if (isGroupAdaptive(this.parent)) {

@@ -21,6 +21,7 @@ export class SelectionCommands {
             if (format === 'backgroundcolor' && value === '') {
                 value = 'transparent';
             }
+            let preventRestore: boolean = false;
             let domSelection: NodeSelection = new NodeSelection();
             let nodeCutter: NodeCutter = new NodeCutter();
             let isFormatted: IsFormatted = new IsFormatted();
@@ -44,10 +45,14 @@ export class SelectionCommands {
                 } else if (range.startContainer.nodeName.toLowerCase() !== 'td') {
                     let cursorNode: Node = this.insertCursorNode(
                         docElement, domSelection, range, isFormatted, nodeCutter, format, value, endNode);
-                    domSelection.endContainer = domSelection.startContainer = domSelection.getNodeArray(
-                        cursorNode,
-                        true);
-                    domSelection.endOffset = domSelection.startOffset = 1;
+                    domSelection.endContainer = domSelection.startContainer = domSelection.getNodeArray(cursorNode, true);
+                    const childNodes: NodeListOf<Node> = cursorNode.nodeName === 'BR' && cursorNode.parentNode.childNodes;
+                    if (!isNOU(childNodes) && childNodes.length === 1 && childNodes[0].nodeName === 'BR' && nodes.length === 0) {
+                        domSelection.setSelectionText(docElement, range.startContainer, range.endContainer, 0, 0);
+                        preventRestore = true;
+                    } else {
+                        domSelection.endOffset = domSelection.startOffset = 1;
+                    }
                 }
             }
             isCursor = range.collapsed;
@@ -96,7 +101,7 @@ export class SelectionCommands {
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
             }
             if (isIDevice()) { setEditFrameFocus(endNode as Element, selector); }
-            save.restore();
+            if (!preventRestore) { save.restore(); }
             if (isSubSup) {
                 this.applyFormat(docElement, format, endNode);
             }

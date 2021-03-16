@@ -52,7 +52,7 @@ export class RowDD {
         if (document.getElementsByClassName('e-griddragarea').length ||
             (gObj.rowDropSettings.targetID && (!(target as Element).classList.contains('e-selectionbackground')
                 && gObj.selectionSettings.type !== 'Single')) ||
-            (!gObj.rowDropSettings.targetID && !parentsUntil(e.sender.target as Element, 'e-rowdragdrop'))) {
+            (!gObj.rowDropSettings.targetID && !parentsUntil(target as Element, 'e-rowdragdrop'))) {
             return false;
         }
         if (gObj.rowDropSettings.targetID &&
@@ -219,7 +219,8 @@ export class RowDD {
                 this.removeBorder(trElement);
             }
         }
-        if (target.classList.contains('e-content') && !this.isDropGrid.element.querySelector('.e-emptyrow') && this.istargetGrid) {
+        if (target && target.classList.contains('e-content') && !this.isDropGrid.element.querySelector('.e-emptyrow')
+            && this.istargetGrid) {
             this.removeBorder(trElement);
             let rowIndex: number = this.isDropGrid.getCurrentViewRecords().length - 1;
             let selector: string = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
@@ -784,7 +785,7 @@ export class RowDD {
 
     private getScrollWidth(): number {
         let scrollElem: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
-        return scrollElem.scrollWidth < scrollElem.offsetWidth ? Scroll.getScrollBarWidth() + 1 : 0;
+        return scrollElem.scrollWidth > scrollElem.offsetWidth ? Scroll.getScrollBarWidth() : 0;
     }
 
     private removeFirstRowBorder(element: Element): void {

@@ -5,7 +5,7 @@ import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data'
 import { ListBase, SortOrder } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove, select } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, remove, select, selectAll } from '@syncfusion/ej2-base';
 
 export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
@@ -577,7 +577,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (baseTemplate) {
             let exception: Object;
             try {
-                checkTemplate = (select(baseTemplate, document).length) ? true : false;
+                checkTemplate = (selectAll(baseTemplate, document).length) ? true : false;
             } catch (exception) {
                 checkTemplate = false;
             }

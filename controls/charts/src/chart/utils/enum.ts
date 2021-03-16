@@ -584,6 +584,18 @@ export type LabelIntersectAction =
     'Rotate90';
 
 /**
+ * Defines the Alignment. They are
+ * * none - Shows all the labels.
+ * * hide - Hide the label when it intersect.
+ * *
+ */
+export type DataLabelIntersectAction =
+    /** Shows all the labels. */
+    'None' |
+    /** Hide the label when it intersect. It is also applicable for polar radar chart */
+    'Hide';
+
+/**
  * Defines the Position. They are
  * * inside - Place the ticks or labels inside to the axis line.
  * * outside - Place the ticks or labels outside to the axis line.

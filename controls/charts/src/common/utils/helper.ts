@@ -1115,9 +1115,9 @@ export function createTemplate(
             // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         } else if (chart.getModuleName() === 'chart') {
-            reactCallback = chartReactTemplate.bind(
+            reactCallback = (point && series) ? chartReactTemplate.bind(
                 this, childElement, chart, point, series, labelIndex, redraw
-                );
+            ) : reactCallback;
             // tslint:disable-next-line:no-any
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         }

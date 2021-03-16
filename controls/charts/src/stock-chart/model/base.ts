@@ -185,7 +185,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public start: number | Date;
+    public start: Object | number | Date;
 
     /**
      * Color of the strip line.
@@ -200,7 +200,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public end: number | Date;
+    public end: Object | number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -239,7 +239,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public repeatEvery: number | Date;
+    public repeatEvery: Object | number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -255,7 +255,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public repeatUntil: number | Date;
+    public repeatUntil: Object | number | Date;
 
     /**
      * segmentStart value of the strip line.
@@ -263,7 +263,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public segmentStart: number | Date;
+    public segmentStart: Object | number | Date;
 
     /**
      * segmentAxisName of the strip line.
@@ -279,7 +279,7 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
      * @aspDefaultValueIgnore
      */
     @Property(null)
-    public segmentEnd: number | Date;
+    public segmentEnd: Object | number | Date;
 
     /**
      * Strip line Opacity

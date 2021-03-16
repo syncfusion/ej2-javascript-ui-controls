@@ -542,8 +542,9 @@ public isRemote(): boolean {
       results = <ITreeData[]>this.dataResults.result;
       count = this.dataResults.count;
     }
-    let isPdfExport: string = 'isPdfExport';
-    if ((isPrinting === true || args[isPdfExport]) && this.parent.printMode === 'AllPages') {
+    let isPdfExport: string = 'isPdfExport'; let isCollapsedStatePersist: string = 'isCollapsedStatePersist';
+    if ((isPrinting === true || (args[isPdfExport] && (isNullOrUndefined(args[isCollapsedStatePersist])
+       || args[isCollapsedStatePersist]))) && this.parent.printMode === 'AllPages') {
       let actualResults: ITreeData[] = [];
       for (let i: number = 0; i < results.length; i++) {
         let expandStatus: boolean = getExpandStatus(this.parent, results[i], this.parent.parentData);

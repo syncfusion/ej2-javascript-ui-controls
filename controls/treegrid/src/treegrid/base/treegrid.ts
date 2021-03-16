@@ -51,8 +51,8 @@ import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-ren
 import { DataManipulation } from './data';
 import { RowDD } from '../actions/rowdragdrop';
 import { Sort } from '../actions/sort';
-import { ITreeData, RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from './interface';
-import { CellSaveEventArgs, DataStateChangeEventArgs, RowExpandingEventArgs } from './interface';
+import { ITreeData, RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs, TreeGridExcelExportProperties } from './interface';
+import { CellSaveEventArgs, DataStateChangeEventArgs, RowExpandingEventArgs, TreeGridPdfExportProperties } from './interface';
 import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';
 import { DataSourceChangedEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
 import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems, RowPosition, CopyHierarchyType } from '../enum';
@@ -1199,7 +1199,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
      * @blazorType void
      */
     public excelExport(
-      excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
+      excelExportProperties?: ExcelExportProperties | TreeGridExcelExportProperties, isMultipleExport?: boolean,
       /* tslint:disable-next-line:no-any */
       workbook?: any, isBlob?: boolean): Promise<any> {
       if (isBlazor()) {
@@ -1237,7 +1237,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * @blazorType void
    */
   public pdfExport(
-      pdfExportProperties?: PdfExportProperties,
+      pdfExportProperties?: PdfExportProperties | TreeGridPdfExportProperties,
       /* tslint:disable-next-line:no-any */
       isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
       if (isBlazor()) {
@@ -3566,6 +3566,9 @@ private getGridEditSettings(): GridEditModel {
     let rows: HTMLTableRowElement[] = this.getRows().filter((e: HTMLTableRowElement) => {
       return e.querySelector('.e-treegrid' + (action  === 'expand' ? 'collapse' : 'expand'));
     });
+    if (!rows.length && this.getRows().length) {
+      rows.push(this.getRows()[0]);
+    }
     this.isExpandAll = true;
     this.isCollapseAll = true;
     if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {

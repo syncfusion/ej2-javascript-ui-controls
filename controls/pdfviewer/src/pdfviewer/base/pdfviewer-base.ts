@@ -1174,7 +1174,13 @@ export class PdfViewerBase {
         }
     }
     private saveDocumentHashData(): void {
-        window.sessionStorage.setItem('hashId', this.hashId);
+        let hashId: string = '';
+        if (Browser.isIE || Browser.info.name === 'edge') {
+            hashId = encodeURI(this.hashId);
+        } else {
+            hashId = this.hashId;
+        }
+        window.sessionStorage.setItem('hashId', hashId);
         if (this.documentLiveCount) {
             window.sessionStorage.setItem('documentLiveCount', this.documentLiveCount.toString());
         }
@@ -1561,7 +1567,12 @@ export class PdfViewerBase {
      */
     // tslint:disable-next-line
     public unloadDocument(proxy: PdfViewerBase): void {
-        let documentId: string = window.sessionStorage.getItem('hashId');
+        let documentId: string = '';
+        if (Browser.isIE || Browser.info.name === 'edge') {
+            documentId = decodeURI(window.sessionStorage.getItem('hashId'));
+        } else {
+            documentId = window.sessionStorage.getItem('hashId');
+        }
         let documentLiveCount: string = window.sessionStorage.getItem('documentLiveCount');
         if (documentId !== null) {
             // tslint:disable-next-line:max-line-length
@@ -2077,7 +2088,12 @@ export class PdfViewerBase {
         }
     }
     private clearSessionStorage = (): void => {
-        let documentId: string = window.sessionStorage.getItem('hashId');
+        let documentId: string = '';
+        if (Browser.isIE || Browser.info.name === 'edge') {
+            documentId = decodeURI(window.sessionStorage.getItem('hashId'));
+        } else {
+            documentId = window.sessionStorage.getItem('hashId');
+        }
         let documentLiveCount: string = window.sessionStorage.getItem('documentLiveCount');
         if (documentId !== null) {
             // tslint:disable-next-line:max-line-length

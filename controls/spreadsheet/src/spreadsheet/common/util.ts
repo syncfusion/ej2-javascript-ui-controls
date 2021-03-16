@@ -7,7 +7,7 @@ import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel,
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation, clearCFRule, setCFRule, ConditionalFormatModel } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged, replace } from './index';
-import { getCellIndexes, getCell, getColumnWidth, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
+import { getCellIndexes, getCell, ChartModel, setChart, refreshChartSize } from '../../workbook/index';
 import { deleteChart } from '../../spreadsheet/index';
 import { initiateFilterUI } from './event';
 
@@ -904,7 +904,7 @@ export function setRowEleHeight(
         let splitVal: string[] = edit.innerHTML.split('\n');
         let n: number = 0; let valLength: number = splitVal.length;
         for (i = 0; i < valLength; i++) {
-            let lines: number = getLines(splitVal[i], getColumnWidth(sheet, actCell[1]), cell.style, parent.cellStyle);
+            let lines: number = getLines(splitVal[i], getExcludedColumnWidth(sheet, actCell[0], actCell[1]), cell.style, parent.cellStyle);
             if (lines === 0) {
                 lines = 1; // for empty new line
             }
@@ -954,7 +954,6 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
     let spaceWidth: number = getTextWidth(' ', style, parentStyle);
     let lines: number;
     let cnt: number = 0;
-    colwidth -= 5; // for padding
     textArr.forEach((txt: string) => {
         let lWidth: number = 0;
         let cWidth: number = 0;
@@ -985,6 +984,65 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
         cnt += Math.ceil((prevWidth - spaceWidth) / colwidth);
     }
     return cnt;
+}
+
+/**
+ * calculation for width taken by border inside a cell
+ */
+function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): number {
+    let width: number = 0;
+    let cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+    let rightSideCell: CellModel = getCell(rowIdx, colIdx + 1, sheet, null, true);
+    if (cell.style) {
+        if (cell.style.border) {
+            width = (colIdx === 0 ? 2 : 1) * parseFloat(cell.style.border.split('px')[0]);
+        } else {
+            if (colIdx === 0 && cell.style.borderLeft) {
+                width = parseFloat(cell.style.borderLeft.split('px')[0]);
+            }
+            if (cell.style.borderRight) {
+                width += parseFloat(cell.style.borderRight.split('px')[0]);
+            }
+        }
+    }
+    if (!(cell.style && (cell.style.border || cell.style.borderRight)) && rightSideCell.style && rightSideCell.style.borderLeft) {
+        width += parseFloat(rightSideCell.style.borderLeft.split('px')[0]);
+    }
+    return width;
+}
+
+/** 
+ * calculation for height taken by border inside a cell
+ * @hidden
+ */
+export function getBorderHeight(rowIdx: number, colIdx: number, sheet: SheetModel): number {
+    let height: number = 0;
+    let cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+    let bottomSideCell: CellModel = getCell(rowIdx + 1, colIdx, sheet, null, true);
+    if (cell.style) {
+        if (cell.style.border) {
+            height = (rowIdx === 0 ? 2 : 1) * parseFloat(cell.style.border.split('px')[0]);
+        } else {
+            if (rowIdx === 0 && cell.style.borderTop) {
+                height = parseFloat(cell.style.borderTop.split('px')[0]);
+            }
+            if (cell.style.borderBottom) {
+                height += parseFloat(cell.style.borderBottom.split('px')[0]);
+            }
+        }
+    }
+    if (!(cell.style && (cell.style.border || cell.style.borderBottom)) && bottomSideCell.style && bottomSideCell.style.borderTop) {
+        height += parseFloat(bottomSideCell.style.borderTop.split('px')[0]);
+    }
+    return height;
+}
+
+/**
+ * Calculating column width by excluding cell padding and border width
+ * @hidden
+ */
+export function getExcludedColumnWidth(sheet: SheetModel, rowIdx: number, startColIdx: number, endColIdx: number = startColIdx): number {
+    return getColumnsWidth(sheet, startColIdx, endColIdx) - (5 + getBorderWidth(rowIdx, startColIdx, sheet)); // 5 -> For cell padding
 }
 
 /**

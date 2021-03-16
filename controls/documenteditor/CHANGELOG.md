@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## 18.4.48 (2021-03-16)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#163116`, `#317496`, `#315005` - Implemented the line spacing Hanging similar to MS word.
+- `#317691` - Resolve the Number formatting after applying bullet formats.
+- `#317524` - Replace all with empty string is now working.
+- `#317605` - Shape with line format value null was now preserved properly.
+- `#317150` - Can press 'p' key in Firefox after control + a and then backspace.
+- Resolve hanging issue while opening document.
+- `#315656` - Resolve script error when importing document.
+
+## 18.4.47 (2021-03-09)
+
+### Document Editor
+
+#### Breaking Changes
+
+- The `DictionaryData(int langID,string dictPath,string affPath,string customPath)` is marked as obsolete. Please use the alternate new constructor `DictionaryData(int langID, string dictPath, string affPath)` in `Syncfusion.EJ2.SpellChecker` spell checker.
+- The `SpellChecker(List<SpellCheckDictionary> dictItem)` is marked as obsolete. Please use the alternate new constructor `SpellChecker(List<DictionaryData> dictItem, string customDicPath)` in `Syncfusion.EJ2.SpellChecker` spell checker.
+
+#### Bug Fixes
+
+- `#315096` - Selection behaviour is updated properly, while pasting a URL and clicking enter after the URL.
+- `#315413`, `#317463` - Table cell is now rendered properly.
+- `#314467` - Find and replace is now working properly.
+- `#315441` - While inserting same bookmark multiple times and deleting, bookmarks were preserved properly now.
+- `#316532` - ParagraphFormat is now preserved while pasting with text only option.
+- `#314193` - Document with charts were now preserved properly on exporting.
+- `#161908`, `#318321` - Added API to show/hide restrict editing pane.
+- `#315435` - Table cell width now preserved properly on editing.
+- `#162638` - Table background color was now updated properly on updating borders and shading.
+
 ## 18.4.46 (2021-03-02)
 
 ### Document Editor
@@ -27,6 +62,8 @@
 - `#162017` - Page number was now updated properly based on page index.
 - `#313821` - Table column were now layout properly.
 - `#311371` - While deleting the bookmark extra spaces between the text were now removed properly.
+- `#312082` - Resolved script error on updating TOC.
+- `#312306` - Hyperlink label was not added while editing the link address now.
 
 ## 18.4.43 (2021-02-16)
 

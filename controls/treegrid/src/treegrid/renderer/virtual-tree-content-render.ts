@@ -157,8 +157,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
 
     private dataBoundEvent(): void {
-      let dataBoundEve: string = 'dataBound';
-      super[dataBoundEve]();
+      let dataBoundEve: string = 'dataBound'; let initialRowTop: string = 'initialRowTop';
+      if (!this[initialRowTop]) {
+        this[initialRowTop] = this.parent.getRowByIndex(0).getBoundingClientRect().top;
+      }
     }
 
     private rowSelectedEvent(args: RowSelectEventArgs): void {

@@ -1,5 +1,5 @@
 import { TreeGrid } from '../base/treegrid';
-import { ITreeData } from '../base/interface';
+import { ITreeData, TreeGridPdfExportProperties } from '../base/interface';
 import { getObject, PdfExport as GridPdf, Grid, BeforeDataBoundArgs, PdfExportProperties} from '@syncfusion/ej2-grids';
 import { PdfQueryCellInfoEventArgs, PdfStyle } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline } from '../utils';
@@ -110,6 +110,9 @@ export class PdfExport {
         setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
         setValue('isExport',  true, args);
         setValue('isPdfExport', true, args);
+        if (!isNullOrUndefined(prop) && !isNullOrUndefined((prop as TreeGridPdfExportProperties).isCollapsedStatePersist)) {
+          setValue('isCollapsedStatePersist',  (prop as TreeGridPdfExportProperties).isCollapsedStatePersist, args);
+        }
         if (!isNullOrUndefined(prop) && !isNullOrUndefined(prop.exportType)) {
           setValue('exportType',  prop.exportType, args);
         }

@@ -228,6 +228,10 @@
           font-size: $schedule-header-device-font-size;
         }
       }
+
+      .e-content-wrap.e-scroll-hidden {
+        overflow: hidden;
+      }
     }
 
     .e-schedule-resource-toolbar {
@@ -1438,7 +1442,8 @@
             }
           }
 
-          .e-appointment {
+          .e-appointment,
+          .e-appointment-indicator {
             background-color: $schedule-appointment-bg-color;
             border-radius: 50%;
             height: 5px;

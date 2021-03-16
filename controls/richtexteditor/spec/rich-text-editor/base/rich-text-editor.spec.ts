@@ -5,7 +5,7 @@ import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } 
 import { RichTextEditor, HTMLFormatter, MarkdownFormatter, dispatchEvent } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
-import { renderRTE, destroy } from './../render.spec';
+import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -4115,7 +4115,6 @@ describe('Check undo in execCommand', () => {
         destroy(rteObj);
     });
 });
-
 describe('Check destroy method', () => {
     let rteObj: RichTextEditor;
     beforeAll((done: Function) => {
@@ -4125,135 +4124,152 @@ describe('Check destroy method', () => {
         done();
     });
     it('Check rte element', () => {
-    rteObj.destroy();
-    expect(document.querySelector('e-richtexteditor')).toBe(null);
+        rteObj.destroy();
+        expect(document.querySelector('e-richtexteditor')).toBe(null);
     });
     afterAll(() => {
         destroy(rteObj);
     });
+});
+describe('RTE content element height check-Pixel', function () {
+    let rteObj: any;
+    let elem: any;
+    beforeAll(function (done) {
+        elem = document.createElement('div');
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        document.getElementById('defaultRTE').style.display = 'none';
+        rteObj = new RichTextEditor({
+            height: '100px',
+            toolbarSettings: {
+                enable: false
+            }
+        });
+        rteObj.appendTo("#defaultRTE");
 
-    describe('RTE content element height check-Pixel', function () {
-        let rteObj: any;
-        let elem: any;
-        beforeAll(function (done) {
-            elem = document.createElement('div');
-            elem.id = 'defaultRTE';
-            document.body.appendChild(elem);
-            document.getElementById('defaultRTE').style.display='none';
-            rteObj = new RichTextEditor({
-                height: '100px',
-                toolbarSettings :{
-                    enable : false
-                }
-            });
-            rteObj.appendTo("#defaultRTE");
-           
-            done();
-        });
-        it('Check pixel', function (done) {
-            document.getElementById('defaultRTE').style.display='block';
-            setTimeout(() => {
-                expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
-                done();
-            }, 100);
-         
-        });
-        afterAll(function () {
-            destroy(rteObj);
-        });
+        done();
     });
-    describe('RTE content element height check-percentage', function () {
-        let rteObj: any;
-        let elem : any;
-        beforeAll(function (done) {
-            elem = document.createElement('div');
-            elem.id = 'defaultRTE';
-            document.body.appendChild(elem);
-            (document.getElementById('defaultRTE') as HTMLElement).style.display='none';
-            rteObj = new RichTextEditor({
-                height: '50%',
-                toolbarSettings :{
-                    enable : false
-                }
-            });
-            rteObj.appendTo("#defaultRTE");
+    it('Check pixel', function (done) {
+        document.getElementById('defaultRTE').style.display = 'block';
+        setTimeout(() => {
+            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('100px');
             done();
-        });
-        it('check pecentage', function (done) {
-            document.getElementById('defaultRTE').style.display='block';
-            setTimeout(() => {
-                expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
-                done();
-            }, 100);
-         
-        });
-        afterAll(function () {
-            destroy(rteObj);
-        });
+        }, 100);
     });
-    describe('RTE - Edited changes are not reflect using value after typed value', () => {
-        let rteObj: RichTextEditor;
-        beforeAll((done: Function) => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['SourceCode']
-                },
-                value: `<div><p>First p node-0</p></div>`,
-                placeholder: 'Type something',
-                autoSaveOnIdle: true
-            });
-            rteObj.saveInterval = 10;
-            rteObj.dataBind();
-            done();
+    afterAll(function () {
+        destroy(rteObj);
+    });
+});
+describe('RTE content element height check-percentage', function () {
+    let rteObj: any;
+    let elem: any;
+    beforeAll(function (done) {
+        elem = document.createElement('div');
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        (document.getElementById('defaultRTE') as HTMLElement).style.display = 'none';
+        rteObj = new RichTextEditor({
+            height: '50%',
+            toolbarSettings: {
+                enable: false
+            }
         });
-        it("AutoSave the value in interval time", (done) => {
-            rteObj.focusIn();
-            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
-            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
-            keyboardEventArgs.ctrlKey = false;
-            keyboardEventArgs.shiftKey = false;
-            keyboardEventArgs.action = 'enter';
-            keyboardEventArgs.which = 13;
+        rteObj.appendTo("#defaultRTE");
+        done();
+    });
+    it('check pecentage', function (done) {
+        document.getElementById('defaultRTE').style.display = 'block';
+        setTimeout(() => {
+            expect((document.querySelector('.e-rte-content') as HTMLElement).style.height).toBe('50%');
+            done();
+        }, 100);
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+});
+describe('RTE - Edited changes are not reflect using value after typed value', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['SourceCode']
+            },
+            value: `<div><p>First p node-0</p></div>`,
+            placeholder: 'Type something',
+            autoSaveOnIdle: true
+        });
+        rteObj.saveInterval = 10;
+        rteObj.dataBind();
+        done();
+    });
+    it("AutoSave the value in interval time", (done) => {
+        rteObj.focusIn();
+        (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+        expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+        keyboardEventArgs.ctrlKey = false;
+        keyboardEventArgs.shiftKey = false;
+        keyboardEventArgs.action = 'enter';
+        keyboardEventArgs.which = 13;
+        (rteObj as any).keyUp(keyboardEventArgs);
+        setTimeout(() => {
+            expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(true);
+            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-2</p></div>`;
+            expect(rteObj.value !== '<div><p>First p node-2</p></div>').toBe(true);
             (rteObj as any).keyUp(keyboardEventArgs);
             setTimeout(() => {
-                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(true);
-                (rteObj as any).inputElement.innerHTML = `<div><p>First p node-2</p></div>`;
-                expect(rteObj.value !== '<div><p>First p node-2</p></div>').toBe(true);
-                (rteObj as any).keyUp(keyboardEventArgs);
-                setTimeout(() => {
-                    expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
-                    done();
-                }, 400);
-            }, 400);
-        });
-        it(" Clear the setInterval at component blur", (done) => {
-            rteObj.focusOut();
-            (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
-            expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
-            setTimeout(() => {
-                expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(false);
+                expect(rteObj.value === '<div><p>First p node-2</p></div>').toBe(true);
                 done();
-            }, 110);
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
+            }, 400);
+        }, 400);
     });
-    describe('BLAZ-5899: getText public method with new line test', () => {
-        let rteObj: RichTextEditor;
-        let innerHTML: string = `<p>Test</p><p><br></p><p>Multiline</p><p><br></p><p>More lines</p>`;
-        beforeEach(() => {
-        });
-        it(' DIV', () => {
-            rteObj = renderRTE({ value: innerHTML });
-            expect(rteObj.getText() === 'Test\n\n\n\n\nMultiline\n\n\n\n\nMore lines').toBe(true);
-        });
-        it(' IFrame', () => {
-            rteObj = renderRTE({ iframeSettings: { enable: true }, value: innerHTML });
-            expect(rteObj.getText() === 'Test\n\n\n\n\nMultiline\n\n\n\n\nMore lines').toBe(true);
-        });
-        afterEach(() => {
-            destroy(rteObj);
-        });
+    it(" Clear the setInterval at component blur", (done) => {
+        rteObj.focusOut();
+        (rteObj as any).inputElement.innerHTML = `<div><p>First p node-1</p></div>`;
+        expect(rteObj.value !== '<div><p>First p node-1</p></div>').toBe(true);
+        setTimeout(() => {
+            expect(rteObj.value === '<div><p>First p node-1</p></div>').toBe(false);
+            done();
+        }, 110);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('BLAZ-5899: getText public method with new line test', () => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `<p>Test</p><p><br></p><p>Multiline</p><p><br></p><p>More lines</p>`;
+    beforeEach(() => {
+    });
+    it(' DIV', () => {
+        rteObj = renderRTE({ value: innerHTML });
+        expect(rteObj.getText() === 'Test\n\n\n\n\nMultiline\n\n\n\n\nMore lines').toBe(true);
+    });
+    it(' IFrame', () => {
+        rteObj = renderRTE({ iframeSettings: { enable: true }, value: innerHTML });
+        expect(rteObj.getText() === 'Test\n\n\n\n\nMultiline\n\n\n\n\nMore lines').toBe(true);
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-46060: 8203 character not removed after start typing', () => {
+    let rteObj: RichTextEditor;
+    beforeEach(() => { });
+    it(' DIV', () => {
+        rteObj = renderRTE({});
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText.search(/\u200B/g) === 0).toBe(true);
+        dispatchKeyEvent(rteObj.element.querySelector('.e-content'), 'keypress', { 'key': 'a', 'keyCode': 65 });
+        keyboardEventArgs.key = 'a';
+        keyboardEventArgs.which = 65;
+        keyboardEventArgs.keyCode = 65;
+        (<any>rteObj).keyUp(keyboardEventArgs);
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText.search(/\u200B/g) === 0).toBe(false);
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText === 'a').toBe(false);
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML).toBe('<p><strong></strong><br></p>');    
+    });
+    afterEach(() => {
+        destroy(rteObj);
     });
 });

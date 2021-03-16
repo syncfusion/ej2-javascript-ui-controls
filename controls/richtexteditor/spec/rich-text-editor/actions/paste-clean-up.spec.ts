@@ -1552,3 +1552,80 @@ describe("Paste in Markdown Editor", () => {
         destroy(rteObj);
     });
 });
+describe("EJ2-46613 - Pasting content with bolded list doesn't paste the content", () => {
+  let rteObj: RichTextEditor;
+  let keyBoardEvent: any = {
+    preventDefault: () => { },
+    type: "keydown",
+    stopPropagation: () => { },
+    ctrlKey: false,
+    shiftKey: false,
+    action: null,
+    which: 64,
+    key: ""
+  };
+
+  beforeAll((done: Function) => {
+    rteObj = renderRTE({
+      pasteCleanupSettings: {
+        prompt: false
+      }
+    });
+    done();
+  });
+  it("pasting bolded list availability", (done) => {
+    let localElem: string = `<!--StartFragment-->
+
+    <p class=MsoListParagraphCxSpFirst style='text-align:justify;text-indent:-.25in;
+    mso-list:l0 level1 lfo1'><a name="_Hlk36481117"><![if !supportLists]><span
+    lang=ES style='font-family:Symbol;mso-fareast-font-family:Symbol;mso-bidi-font-family:
+    Symbol;mso-no-proof:yes'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </span></span></span><![endif]><b><span lang=ES style='font-size:14.0pt;
+    line-height:107%;mso-no-proof:yes'>Autoevaluación Proyectos </span></b></a><span
+    lang=ES style='mso-no-proof:yes'><o:p></o:p></span></p>
+    
+    <p class=MsoListParagraphCxSpLast style='text-align:justify'><span lang=ES
+    style='mso-no-proof:yes'><o:p>&nbsp;</o:p></span></p>
+    
+    <p class=MsoNormal style='text-align:justify'><b><span lang=ES
+    style='color:red;mso-no-proof:yes'>Pendientes<o:p></o:p></span></b></p>
+    
+    <span lang=ES style='font-size:11.0pt;line-height:107%;font-family:"Calibri",sans-serif;
+    mso-fareast-font-family:Calibri;mso-fareast-theme-font:minor-latin;color:black;
+    mso-ansi-language:ES;mso-fareast-language:EN-US;mso-bidi-language:AR-SA'>Se
+    verifica en ambiente de pruebas Calibrí v.79 el </span><span lang=ES
+    style='font-size:11.0pt;line-height:107%;font-family:"Calibri",sans-serif;
+    mso-ascii-theme-font:minor-latin;mso-fareast-font-family:Calibri;mso-fareast-theme-font:
+    minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-font-family:"Times New Roman";
+    mso-bidi-theme-font:minor-bidi;mso-ansi-language:ES;mso-fareast-language:EN-US;
+    mso-bidi-language:AR-SA'>documento <b>Gen de Relación Masiva Personal_1</b> </span><span
+    lang=ES style='font-size:11.0pt;line-height:107%;font-family:"Calibri",sans-serif;
+    mso-fareast-font-family:Calibri;mso-fareast-theme-font:minor-latin;color:black;
+    mso-ansi-language:ES;mso-fareast-language:EN-US;mso-bidi-language:AR-SA'>y se
+    encuentra que</span><!--EndFragment-->`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      expect((rteObj as any).inputElement.querySelectorAll('ul').length).toEqual(1);
+      expect((rteObj as any).inputElement.querySelectorAll('ul li').length).toEqual(1);
+      expect((rteObj as any).inputElement.querySelectorAll('ul li b').length).toEqual(1);
+      expect((rteObj as any).inputElement.querySelector('ul li b').textContent.trim()).toBe('Autoevaluación Proyectos');
+      done();
+    }, 100);
+  });
+  afterAll(() => {
+    destroy(rteObj);
+  });
+});

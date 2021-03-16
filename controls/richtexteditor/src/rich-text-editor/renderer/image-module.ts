@@ -959,7 +959,9 @@ export class Image {
         }
     }
     private imageRemovePost(src: string): void {
-        let ajax: Ajax = new Ajax(this.parent.insertImageSettings.removeUrl, 'POST', true, null);
+        const removeUrl: string = this.parent.insertImageSettings.removeUrl;
+        if (isNOU(removeUrl) || removeUrl === '') { return; }
+        const ajax: Ajax = new Ajax(removeUrl, 'POST', true, null);
         let formData: FormData = new FormData();
         formData.append(name, src as string);
         ajax.send(formData);

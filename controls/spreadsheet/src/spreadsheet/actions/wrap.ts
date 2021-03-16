@@ -2,9 +2,9 @@ import { closest, Browser } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, beginAction } from '../common/index';
-import { completeAction, BeforeWrapEventArgs, getTextHeight, getLines,  } from '../common/index';
+import { completeAction, BeforeWrapEventArgs, getTextHeight, getLines, getBorderHeight, getExcludedColumnWidth } from '../common/index';
 import { SheetModel, getCell, CellModel, CellStyleModel, wrap as wrapText, wrapEvent, getRow } from '../../workbook/index';
-import { getRowHeight, getAddressFromSelectedRange, getColumnsWidth } from '../../workbook/index';
+import { getRowHeight, getAddressFromSelectedRange } from '../../workbook/index';
 
 
 /**
@@ -70,7 +70,7 @@ export class WrapText {
                     }
                     if (!isCustomHgt) {
                         cell = getCell(i, j, args.sheet);
-                        colwidth = getColumnsWidth(args.sheet, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
+                        colwidth = getExcludedColumnWidth(args.sheet, i, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText: string = this.parent.getDisplayText(cell);
                         if (displayText.indexOf('\n') < 0) {
                             let editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');
@@ -99,7 +99,8 @@ export class WrapText {
                                 } else {
                                     lines = getLines(displayText, colwidth, cell.style, this.parent.cellStyle);
                                 }
-                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1;
+                                hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, lines) + 1 +
+                                    getBorderHeight(i, j, args.sheet);
                                 maxHgt = Math.max(maxHgt, hgt);
                                 setMaxHgt(args.sheet, i, j, hgt);
                             } else {

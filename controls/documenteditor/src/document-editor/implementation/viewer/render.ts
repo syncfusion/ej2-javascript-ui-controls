@@ -341,7 +341,7 @@ export class Renderer {
                 let shapeLeft: number = this.getScaledValue(shape.x, 1);
                 let shapeTop: number = this.getScaledValue(shape.y, 2);
                 this.pageContext.beginPath();
-                if (shape.fillFormat && shape.fillFormat.fill) {
+                if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.fillFormat && shape.fillFormat.fill) {
                     this.pageContext.fillStyle = shape.fillFormat.color;
                     this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
                 }

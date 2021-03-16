@@ -150,7 +150,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    start?: number | Date;
+    start?: Object | number | Date;
 
     /**
      * Color of the strip line.
@@ -163,7 +163,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    end?: number | Date;
+    end?: Object | number | Date;
 
     /**
      * Size of the strip line, when it starts from the origin.
@@ -197,7 +197,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatEvery?: number | Date;
+    repeatEvery?: Object | number | Date;
 
     /**
      * isSegmented value of the strip line
@@ -211,14 +211,14 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    repeatUntil?: number | Date;
+    repeatUntil?: Object | number | Date;
 
     /**
      * segmentStart value of the strip line.
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentStart?: number | Date;
+    segmentStart?: Object | number | Date;
 
     /**
      * segmentAxisName of the strip line.
@@ -232,7 +232,7 @@ export interface StockChartStripLineSettingsModel {
      * @default null
      * @aspDefaultValueIgnore
      */
-    segmentEnd?: number | Date;
+    segmentEnd?: Object | number | Date;
 
     /**
      * Strip line Opacity

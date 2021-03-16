@@ -1032,8 +1032,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {string} address - Specifies the range address.
      */
     public copy(address?: string): Promise<Object> {
-        let activeAddress: string = this.getActiveSheet().name + '!' + this.getActiveSheet().activeCell;
-        address = !isNullOrUndefined(address) ? address : activeAddress;
         let promise: Promise<Object> =
             new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
         this.notify(copy, address ? {

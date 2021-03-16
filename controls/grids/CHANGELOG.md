@@ -2,9 +2,20 @@
 
 ## [Unreleased]
 
+## 18.4.48 (2021-03-16)
+
+### Grid
+
+#### Bug Fixes
+
+- `#315782` - Virtualization with grouping issue has been fixed.
+- `#19156` - Scroll is prevented with infinite scroll's cache mode issue has been fixed.
+
 ## 18.4.47 (2021-03-09)
 
 ### Grid
+
+#### Bug Fixes
 
 - `#315085` - Script error with custom format in server side exporting has been fixed.
 - `#22476` - `getRowIndexByPrimarykey` method returns incorrect index with complex data has been fixed.

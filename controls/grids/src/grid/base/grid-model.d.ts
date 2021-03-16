@@ -842,15 +842,15 @@ export interface GridModel extends ComponentModel{
     allowFiltering?: boolean;
 
     /**
-     * Defines the grid rows displaying direction. The available modes are, 
-     * * `Horizontal`: Displays the rows horizontally 
-     * * `Vertical`: Displays the rows Vertically
+     * Defines the grid row elements rendering direction. The available directions are, 
+     * * `Horizontal`: Renders the grid row elements in the horizontal direction
+     * * `Vertical`: Renders the grid row elements in the vertical direction
      * @default Horizontal
      */
     rowRenderingMode?: RowRenderingDirection;
 
     /**
-     * If `enableAdaptiveUI` set to true the grid dialogs will be displayed at fullscreen.
+     * If `enableAdaptiveUI` set to true the grid filter, sort, and edit dialogs render adaptively.
      * @default false    
      */
     enableAdaptiveUI?: boolean;

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.4.47 (2021-03-09)
+## 18.4.48 (2021-03-16)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I316931` - Selection misalignment issue when applying border on wrap text has been resolved.
+
+## 18.4.46 (2021-03-02)
 
 ### Spreadsheet
 

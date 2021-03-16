@@ -1,5 +1,5 @@
 import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue, enableDisableResponsiveRenderer } from '../base/util';
+import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
 import { remove, matches, isBlazor } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings, Grid } from '../base/grid';
@@ -66,14 +66,17 @@ export class Filter implements IAction {
     public skipNumberInput: string[] = ['=', ' ', '!'];
     public skipStringInput: string[] = ['>', '<', '='];
     //Module declarations
-    private parent: IGrid;
-    private serviceLocator: ServiceLocator;
+    /** @hidden */
+    public parent: IGrid;
+    /** @hidden */
+    public serviceLocator: ServiceLocator;
     private l10n: L10n;
     private valueFormatter: IValueFormatter;
     private actualPredicate: { [key: string]: PredicateModel[] } = {};
     public prevFilterObject: PredicateModel;
     public filterObjIndex: number;
-    private responsiveDialogRenderer: ResponsiveDialogRenderer;
+    /** @hidden */
+    public responsiveDialogRenderer: ResponsiveDialogRenderer;
     public menuOperator: { [key: string]: Object }[];
 
     /**
@@ -190,7 +193,9 @@ export class Filter implements IAction {
     }
 
     private setFullScreenDialog(): void {
-        enableDisableResponsiveRenderer(this, ResponsiveDialogAction.isFilter);
+        if (this.serviceLocator) {
+            this.serviceLocator.registerAdaptiveService(this, this.parent.enableAdaptiveUI, ResponsiveDialogAction.isFilter);
+        }
     }
 
     private generateRow(index?: number): Row<Column> {

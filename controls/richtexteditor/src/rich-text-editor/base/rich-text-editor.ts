@@ -1403,6 +1403,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         let allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
         if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
+            if (this.editorMode === 'HTML') {
+                const range: Range = this.getRange();
+                const start: Node = range.startContainer;
+                const startParent: HTMLElement = start.parentNode as HTMLElement;
+                if (start === range.endContainer && start.nodeType === 3 && startParent.innerText.trim().charCodeAt(0) === 8203) {
+                    startParent.innerText = startParent.innerText.replace(/\u200B/g, '');
+                }
+            }
             this.formatter.onKeyHandler(this, e);
         }
         if (this.inputElement && this.inputElement.textContent.length !== 0) {
@@ -2467,6 +2475,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private updateValueOnIdle(): void {
+        if (!isNOU(this.tableModule) && !isNOU(this.inputElement.querySelector('.e-table-box.e-rbox-select'))) { return; }
         this.setProperties({ value: this.getUpdatedValue() }, true);
         this.valueContainer.value = this.value;
         this.invokeChangeEvent();

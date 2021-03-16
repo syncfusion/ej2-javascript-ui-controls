@@ -1045,6 +1045,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public focusModule: FocusStrategy;
 
+    // Change the target of the adaptive dialogs
+    public adaptiveDlgTarget: HTMLElement;
+
     protected needsID: boolean = true;
 
     //Grid Options
@@ -1273,16 +1276,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public allowFiltering: boolean;
 
     /**   
-     * Defines the grid rows displaying direction. The available modes are, 
-     * * `Horizontal`: Displays the rows horizontally 
-     * * `Vertical`: Displays the rows Vertically
+     * Defines the grid row elements rendering direction. The available directions are, 
+     * * `Horizontal`: Renders the grid row elements in the horizontal direction
+     * * `Vertical`: Renders the grid row elements in the vertical direction
      * @default Horizontal
      */
     @Property('Horizontal')
     public rowRenderingMode: RowRenderingDirection;
 
     /**    
-     * If `enableAdaptiveUI` set to true the grid dialogs will be displayed at fullscreen.
+     * If `enableAdaptiveUI` set to true the grid filter, sort, and edit dialogs render adaptively.
      * @default false    
      */
     @Property(false)
@@ -2795,10 +2798,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.isCheckBoxSelection = false;
         }
         if (this.rowRenderingMode === 'Vertical') {
-            if (!this.enableAdaptiveUI) {
-                this.setProperties({ enableAdaptiveUI: true }, true);
-                this.notify(events.setFullScreenDialog, {});
-            }
             if (this.enableHover) {
                 this.setProperties({ enableAdaptiveUI: true, enableHover: false }, true);
                 removeClass([this.element], 'e-gridhover');
@@ -3136,6 +3135,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
             case 'rowRenderingMode':
                 this.enableVerticalRendering();
+                this.notify(events.rowModeChange, {});
                 this.refresh();
                 break;
 
@@ -5102,8 +5102,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.classList.add('e-row-responsive');
         } else {
             this.element.classList.remove('e-row-responsive');
-            this.setProperties({ enableAdaptiveUI: false }, true);
-            this.notify(events.setFullScreenDialog, {});
         }
     }
 
@@ -5713,6 +5711,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.keyA = false;
             }
         }
+        if (e.keyCode === 13) {
+            this.notify(events.enterKeyHandler, e);
+        }
     }
 
     private keyActionHandler(e: KeyArg): void {
@@ -6110,7 +6111,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
     }
-    
+
     /** 
      * Get row index by primary key or row data.
      * @param  {string} value - Defines the primary key value.
@@ -6427,6 +6428,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             };
             if (columns[i].format) {
                 columns[i].format = getNumberFormat(this.getFormat(columns[i].format), columns[i].type, this.isExcel);
+
             }
             if (columns[i].columns) {
                 this.setHeaderText(columns[i].columns as Column[]);

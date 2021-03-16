@@ -656,6 +656,8 @@
           & .e-toolbar-right {
             & .e-search-wrapper {
               width: 100%;
+              padding-left: $grid-responsive-search-padding-left;
+              padding-right: $grid-responsive-search-padding-right;
 
               & .e-search-icon {
                 font-size: 18px;
@@ -666,6 +668,7 @@
                 border: 0;
                 opacity: 1;
                 padding: $tbar-btn-bgr-padding;
+                padding-right: $grid-responsive-search-icon-right;
                 width: 100%;
 
                 & .e-input {
@@ -675,9 +678,14 @@
                 & .e-search-icon {
                   margin-top: $grid-responsive-search-icon-margin;
                   padding-left: $grid-responsive-search-left-padding;
-                  padding-right: $grid-responsive-search-width;
                 } 
               }
+            }
+          }
+
+          & .e-responsive-right {
+            & .e-search-wrapper {
+                padding-left: 0;
             }
           }
         }
@@ -3246,6 +3254,10 @@
 
 .e-bigger .e-responsive-dialog,
 .e-bigger.e-responsive-dialog {
+  .e-btn.e-ripple {
+    overflow: initial;
+  }
+
   & .e-dlg-header-content {
     background: $grid-responsive-header-background;
     border-bottom: 1px solid;

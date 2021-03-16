@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 18.4.47 (2021-03-09)
+## 18.4.48 (2021-03-16)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#317066` - Resolved auto scroll issue while context menu item opens when Virtualization is enabled.
+
+## 18.4.46 (2021-03-02)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#315811` - `collpaseAll` method works fine when we use Virtualization with large number of child records.
+
+## 18.4.44 (2021-02-23)
 
 ### TreeGrid
 

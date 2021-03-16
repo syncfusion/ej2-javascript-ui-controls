@@ -515,6 +515,7 @@ export interface IGrid extends Component<HTMLElement> {
     isReact?: boolean;
     tableIndex?: number;
     isVue?: boolean;
+    adaptiveDlgTarget?: HTMLElement;
 
     /**
      * @hidden

@@ -923,7 +923,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 30, bounds.top + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 30, bounds.top + diagram.element.offsetTop + 20);
 
-                expect(node.offsetX == 370 && node.offsetY == 310).toBe(true);
+                expect((node.offsetX == 370||node.offsetX == 365  )&& (node.offsetY == 310|| node.offsetY == 320)).toBe(true);
                 done();
             }, 1000);
         });
@@ -941,7 +941,8 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 80, bounds.top + diagram.element.offsetTop + 70);
                 mouseEvents.mouseUpEvent(diagramCanvas, bounds.left + diagram.element.offsetLeft + 50, bounds.top + diagram.element.offsetTop + 50);
                 let swimlane = diagram.nameTable["swimlane"];
-                expect(swimlane.offsetX == 402.5 && swimlane.offsetY == 330 && swimlane.shape.phases[0].offset == 265).toBe(true)
+                expect((swimlane.offsetX == 402.5||swimlane.offsetX == 397.5||swimlane.offsetX == 395) && (swimlane.offsetY == 330||swimlane.offsetY == 335) 
+                && (swimlane.shape.phases[0].offset == 265||swimlane.shape.phases[0].offset == 255||swimlane.shape.phases[0].offset == 260)).toBe(true);
                 done();
             }, 1000);
         });
@@ -1014,7 +1015,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x1 + diagram.element.offsetLeft - 80, y1 + diagram.element.offsetTop);
             target = document.getElementById('swimlane');
             bounds1 = target.getBoundingClientRect();
-            expect(diagram.nameTable["swimlane"].shape.phases[1].offset == 635).toBe(true);
+            expect(diagram.nameTable["swimlane"].shape.phases[1].offset == 635||diagram.nameTable["swimlane"].shape.phases[1].offset == 640).toBe(true);
             done();
         });
 
@@ -1032,7 +1033,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x1 + diagram.element.offsetLeft, y1 + diagram.element.offsetTop - 80);
             target = document.getElementById('swimlane');
             bounds1 = target.getBoundingClientRect();
-            expect(bounds1.height == 360).toBe(true);
+            expect(bounds1.height == 360 || bounds1.height == 350||bounds1.height == 340).toBe(true);
             done();
         });
 
@@ -2284,7 +2285,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, targetPointY - 5);
                 mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, targetPointY - 15);
                 mouseEvents.mouseUpEvent(diagramCanvas, sourcePointX, targetPointY - 15);
-                expect(node.offsetX == 250 && node.offsetY == 310).toBe(true);
+                expect(node.offsetX == 250 && (node.offsetY == 310||node.offsetY == 320)).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('height'));
                 expect(lane > 100).toBe(true);
                 done();
@@ -2305,7 +2306,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX, sourcePointY);
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 5, sourcePointY);
                 mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 5, sourcePointY);
-                expect((node.offsetX == 370 || node.offsetX == 380) && node.offsetY == 310).toBe(true);
+                expect((node.offsetX == 370 || node.offsetX == 380) && (node.offsetY == 310||node.offsetY == 320)).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('width'));
                 expect(lane === 330 || lane === 340).toBe(true);
                 done();
@@ -3085,9 +3086,9 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 5, sourcePointY);
                 mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 5, sourcePointY);
 
-                expect(node.wrapper.offsetX == 655 && node.wrapper.offsetY == 400).toBe(true);
+                expect((node.wrapper.offsetX == 655||node.wrapper.offsetX == 650) && node.wrapper.offsetY == 400).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('width'));
-                expect(lane === 385).toBe(true);
+                expect(lane === 385||lane === 380).toBe(true);
                 done();
             });
             it('Drag and drop the node from palette to lane', (done: Function) => {
@@ -3886,6 +3887,45 @@ describe('Diagram Control', () => {
                 let data = diagram.saveDiagram();
                 diagram.loadDiagram(data);
                 done();
+            });
+            it('EJ2-47034 Exception occurs when drag and drop a lane on connector in swimlane', (done: Function) => {
+                diagram.collectionChange = function (args) {
+                    if (args.state === "Changing" && args.type === "Addition") {
+                      if (
+                        args.element &&
+                        args.element.shape &&
+                        args.element.shape.type === "SwimLane"
+                      ) {
+                        args.cancel = true;
+                      }else{
+                        args.cancel = true;
+                      }
+                    }
+                  }
+                
+                setTimeout(() => {
+                    var connector:any = { type: 'Orthogonal', sourcePortID: "node1" };
+                    diagram.drawingObject = connector as any;
+                    paletteInitalize('stackCanvas1');
+                    let events: MouseEvents = new MouseEvents();
+                    let ele = document.getElementById("stackCanvas1_container");
+
+                    let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+                    let startPointX = bounds.x + bounds.width / 2 + ele.offsetLeft;
+                    let startPointY = bounds.y + bounds.height / 2 + ele.offsetTop;
+
+                    events.mouseDownEvent(palette.element, startPointX, startPointY, false, false);
+                    events.mouseMoveEvent(palette.element, startPointX + 50, startPointY, false, false);
+                    events.mouseMoveEvent(palette.element, startPointX + 100, startPointY, false, false);
+                    expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+                    events.mouseMoveEvent(diagram.element, 100 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
+                    events.mouseMoveEvent(diagram.element, 105 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
+                    events.mouseMoveEvent(diagram.element, 120 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                    events.mouseUpEvent(diagram.element, 120 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                    console.log("EJ2-47034 Exception occurs when drag and drop a lane on connector in swimlane"+diagram.nodes.length)
+                    expect(diagram.nodes.length === 0).toBe(true);
+                    done();
+                }, 10);
             });
 
         });
@@ -7312,8 +7352,9 @@ describe('Swimlane - Enable Line Routing', () => {
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 295 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 245).toBe(true);
             expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 245).toBe(true);
             expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 455 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 430 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 430 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 355 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 355).toBe(true);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
+
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
 
@@ -7339,11 +7380,22 @@ describe('Swimlane - Enable Line Routing', () => {
 
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 295 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 245).toBe(true);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 245 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 410 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 245 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 410 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 355 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 355).toBe(true);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==245&&(diagram.connectors[0] as Connector).intermediatePoints[2].x ==295&&(diagram.connectors[0] as Connector).intermediatePoints[2].y ==245).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==245&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==410&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==245&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==410&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 460 
+            && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 360 
+            && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 
+            && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 360 
+            && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 
+            && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 
+            && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345
+            && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 
+            && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 
+            && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
+
             expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
             expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
 
@@ -7370,13 +7422,14 @@ describe('Swimlane - Enable Line Routing', () => {
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
 
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245).toBe(true);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 265 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 265 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 355 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 355).toBe(true);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 455 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445).toBe(true);
-            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 555 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 605.52 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 445).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
+            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==455&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445).toBe(true);
+            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==555&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==605.52&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==445).toBe(true);
+
             done();
         });
         it('deliveryonthataddress node from swimlane to outside', function (done) {
@@ -7394,13 +7447,14 @@ describe('Swimlane - Enable Line Routing', () => {
                 for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
 
                 // Connector Segments - Line Routing
-                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245).toBe(true);
-                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 265 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 265 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 355 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 355).toBe(true);
-                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 410 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 410 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 280 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 725 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 280).toBe(true);
-                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 725 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 280 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 710 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 280 && (diagram.connectors[6] as Connector).intermediatePoints[2].x == 710 && (diagram.connectors[6] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[4].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[4].y == 425).toBe(true);
+                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
+                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[4] as Connector).intermediatePoints[4].x ==345&&(diagram.connectors[4] as Connector).intermediatePoints[4].y ==425).toBe(true);
+                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==410&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==410&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==280&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==720&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==280).toBe(true);
+                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==720&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==280&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==710&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==280&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==710&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[4].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[4].y ==425).toBe(true);
+
                 done();
             }, 300);
         });
@@ -7422,13 +7476,14 @@ describe('Swimlane - Enable Line Routing', () => {
 
             // Connector Segments - Line Routing
             for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 165 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 245).toBe(true);
-            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 265 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 265 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 160 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 160).toBe(true);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 160 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 345 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 345).toBe(true);
-            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 345 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 355 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 355).toBe(true);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 355 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 410 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 345 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 425).toBe(true);
-            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 295 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 445 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 350 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 255 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 350).toBe(true);
-            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 370 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[2].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[2].y == 410 && (diagram.connectors[6] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[3].y == 425).toBe(true);
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==165&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==240).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==160&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==160).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==160&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==345&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==345).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==345&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==295&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==360&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==255&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==360).toBe(true);
+            expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==380&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==410&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==425).toBe(true);
+
             done();
         });
 
@@ -7447,13 +7502,14 @@ describe('Swimlane - Enable Line Routing', () => {
 
                 // Connector Segments - Line Routing
                 for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
-                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 265 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 205 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 345).toBe(true);
-                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 365 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 365 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 260 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 260).toBe(true);
-                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 260 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 260 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 445 && (diagram.connectors[2] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[2] as Connector).intermediatePoints[3].y == 445).toBe(true);
-                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 395 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 445 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 455 && (diagram.connectors[3] as Connector).intermediatePoints[3].x == 465 && (diagram.connectors[3] as Connector).intermediatePoints[3].y == 455).toBe(true);
-                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 465 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 455 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 455 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 450 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 145 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 395 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 145).toBe(true);
-                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x == 295 && (diagram.connectors[5] as Connector).intermediatePoints[0].y == 145 && (diagram.connectors[5] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[1].y == 145 && (diagram.connectors[5] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[5] as Connector).intermediatePoints[2].y == 450 && (diagram.connectors[5] as Connector).intermediatePoints[3].x == 255 && (diagram.connectors[5] as Connector).intermediatePoints[3].y == 450).toBe(true);
-                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x == 255 && (diagram.connectors[6] as Connector).intermediatePoints[0].y == 450 && (diagram.connectors[6] as Connector).intermediatePoints[1].x == 270 && (diagram.connectors[6] as Connector).intermediatePoints[1].y == 450 && (diagram.connectors[6] as Connector).intermediatePoints[2].x == 270 && (diagram.connectors[6] as Connector).intermediatePoints[2].y == 190 && (diagram.connectors[6] as Connector).intermediatePoints[3].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[3].y == 190 && (diagram.connectors[6] as Connector).intermediatePoints[4].x == 655 && (diagram.connectors[6] as Connector).intermediatePoints[4].y == 165).toBe(true);
+                expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==265&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==205&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==340).toBe(true);
+                expect((diagram.connectors[1] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[1] as Connector).intermediatePoints[0].y ==360&&(diagram.connectors[1] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[1].y ==360&&(diagram.connectors[1] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[1] as Connector).intermediatePoints[2].y ==260&&(diagram.connectors[1] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[1] as Connector).intermediatePoints[3].y ==260).toBe(true);
+                expect((diagram.connectors[2] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[2] as Connector).intermediatePoints[0].y ==260&&(diagram.connectors[2] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[1].y ==260&&(diagram.connectors[2] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[2] as Connector).intermediatePoints[2].y ==445&&(diagram.connectors[2] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[2] as Connector).intermediatePoints[3].y ==445).toBe(true);
+                expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==395&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==445&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==445&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==440&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].x ==460&&(diagram.connectors[3] as Connector).intermediatePoints[3].y ==460).toBe(true);
+                expect((diagram.connectors[4] as Connector).intermediatePoints[0].x ==460&&(diagram.connectors[4] as Connector).intermediatePoints[0].y ==460&&(diagram.connectors[4] as Connector).intermediatePoints[1].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[1].y ==460&&(diagram.connectors[4] as Connector).intermediatePoints[2].x ==450&&(diagram.connectors[4] as Connector).intermediatePoints[2].y ==145&&(diagram.connectors[4] as Connector).intermediatePoints[3].x ==395&&(diagram.connectors[4] as Connector).intermediatePoints[3].y ==145).toBe(true);
+                expect((diagram.connectors[5] as Connector).intermediatePoints[0].x ==295&&(diagram.connectors[5] as Connector).intermediatePoints[0].y ==145&&(diagram.connectors[5] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[1].y ==145&&(diagram.connectors[5] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[5] as Connector).intermediatePoints[2].y ==460&&(diagram.connectors[5] as Connector).intermediatePoints[3].x ==255&&(diagram.connectors[5] as Connector).intermediatePoints[3].y ==460).toBe(true);
+                expect((diagram.connectors[6] as Connector).intermediatePoints[0].x ==255&&(diagram.connectors[6] as Connector).intermediatePoints[0].y ==460&&(diagram.connectors[6] as Connector).intermediatePoints[1].x ==270&&(diagram.connectors[6] as Connector).intermediatePoints[1].y ==460&&(diagram.connectors[6] as Connector).intermediatePoints[2].x ==270&&(diagram.connectors[6] as Connector).intermediatePoints[2].y ==190&&(diagram.connectors[6] as Connector).intermediatePoints[3].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[3].y ==190&&(diagram.connectors[6] as Connector).intermediatePoints[4].x ==655&&(diagram.connectors[6] as Connector).intermediatePoints[4].y ==165).toBe(true);
+
                 done();
             }, 300);
         });
@@ -10258,10 +10314,36 @@ describe('Swimlane - Enable Line Routing', () => {
                 setTimeout(
                     () => {
                        console.log("Swim lane zindex update issue and line routing issue")
-                       expect(diagram.nameTable["swimlane"].wrapper.actualSize.width===705&&diagram.nameTable["swimlane"].wrapper.actualSize.height ===510&&diagram.nameTable["swimlane"].zIndex ===0).toBe(true);
+                       expect(diagram.nameTable["swimlane"].wrapper.actualSize.width===715&&diagram.nameTable["swimlane"].wrapper.actualSize.height ===510&&diagram.nameTable["swimlane"].zIndex ===0).toBe(true);
                        done();
                     },
                     1000);
         });
+        it('Snapping issue test cases', function (done) {
+            console.log("Snapping issue test cases")
+            var mouseEvents = new MouseEvents();
+            var diagramCanvas = document.getElementById('diagramSwimlane1' + 'content');
+            var node = diagram.nameTable["Order"];
+            var targetNode = diagram.nameTable["selectItemaddcart"];
+            var sourcePointX = node.wrapper.offsetX + diagram.element.offsetLeft;
+            var sourcePointY = node.wrapper.offsetY + diagram.element.offsetTop;
+            var targetPointX = targetNode.wrapper.offsetX + diagram.element.offsetLeft;
+            var targetPointY = targetNode.wrapper.offsetY + diagram.element.offsetTop;
+            mouseEvents.mouseDownEvent(diagramCanvas, sourcePointX, sourcePointY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 20);
+            mouseEvents.mouseMoveEvent(diagramCanvas, sourcePointX, sourcePointY + 40);
+            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY - 20);
+            mouseEvents.mouseMoveEvent(diagramCanvas, targetPointX - 150, targetPointY);
+            var snappingLineObject = document.getElementById("_SnappingLines");
+            mouseEvents.mouseUpEvent(diagramCanvas, targetPointX - 150, targetPointY);
+            expect(snappingLineObject.children[0].getAttribute("fill") === "#07EDE1"
+                && snappingLineObject.children[0].getAttribute("x1") === "440"
+                && snappingLineObject.children[0].getAttribute("y1") === "242.5"
+                && snappingLineObject.children[0].getAttribute("x2") === "695"
+                && snappingLineObject.children[0].getAttribute("y2") === "242.5").toBe(true);
+                done();
+           
+        });
+ 
     });
 });

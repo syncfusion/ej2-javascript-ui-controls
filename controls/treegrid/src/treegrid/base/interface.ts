@@ -1,5 +1,6 @@
 import { Column } from '../models/column';
 import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs, ExcelExportProperties } from '@syncfusion/ej2-grids';
+import { PdfExportProperties } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
  * @hidden
@@ -69,6 +70,12 @@ export interface ITreeData {
 
 /** Specifies the Tree Grid ExcelExport properties */
 export interface TreeGridExcelExportProperties extends ExcelExportProperties {
+    /** Specifies the collapsed state persistence in exported file */
+    isCollapsedStatePersist: boolean;
+}
+
+/** Specifies the Tree Grid PdfExport properties */
+export interface TreeGridPdfExportProperties extends PdfExportProperties {
     /** Specifies the collapsed state persistence in exported file */
     isCollapsedStatePersist: boolean;
 }

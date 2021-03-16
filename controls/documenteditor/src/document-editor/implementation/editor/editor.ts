@@ -10948,6 +10948,7 @@ export class Editor {
                 listLevel.characterFormat.fontFamily = fontFamily;
             } else {
                 listLevel.listLevelPattern = listLevelPattern;
+                listLevel.characterFormat.fontFamily = fontFamily;
                 let currentFormat : string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
                 if (listLevel.numberFormat.length !== format.length && levelNumber > 0) {
                     listLevel.numberFormat = format;

@@ -1280,7 +1280,7 @@
         width: 100%;
       }
 
-      .e-editor-search-wrapper {
+      .e-editor-search-container {
         display: flex;
         padding: 0 $field-list-editor-search-padding-size 10px;
       }
@@ -1329,7 +1329,7 @@
       // sass-lint:enable-all
 
       &.e-rtl {
-        .e-member-editor-wrapper {
+        .e-member-editor-outer-container {
           ul {
             margin-left: 0;
             margin-right: $field-list-member-filter-list-padding-size;
@@ -1338,7 +1338,7 @@
       }
 
       &.e-olap-editor-dialog {
-        .e-member-editor-wrapper {
+        .e-member-editor-outer-container {
           .e-member-editor-container ul {
             margin-left: 0;
           }
@@ -1348,14 +1348,14 @@
             padding-right: 10px;
           }
 
-          .e-editor-search-wrapper {
+          .e-editor-search-container {
             display: flex;
           }
         }
 
         // sass-lint:disable-all
         &.e-rtl {
-          .e-member-editor-wrapper {
+          .e-member-editor-outer-container {
             ul {
               margin-right: 0;
             }
@@ -1374,7 +1374,7 @@
         }
       }
 
-      .e-editor-label-wrapper {
+      .e-editor-label-container {
         background-color: $field-list-editor-label-fill;
         opacity: $field-list-editor-label-excel-opacity;
         padding: $field-list-editor-label-padding-size;
@@ -1441,7 +1441,7 @@
         // sass-lint:enable-all
       }
 
-      .e-select-all-wrapper ul {
+      .e-select-all-container ul {
         margin-left: $field-list-member-filter-list-padding-size;
         overflow: hidden;
 
@@ -1456,7 +1456,7 @@
         }
       }
 
-      .e-filter-tab-wrapper {
+      .e-filter-tab-container {
         border: none;
         // sass-lint:enable-all
 
@@ -1513,8 +1513,8 @@
         }
         // sass-lint:enable-all
 
-        .e-filter-option-wrapper-1,
-        .e-filter-option-wrapper-2,
+        .e-filter-option-container-1,
+        .e-filter-option-container-2,
         .e-separator-div {
           padding-top: 20px;
         }
@@ -1529,15 +1529,15 @@
       }
 
       &.e-excel-filter {
-        .e-editor-label-wrapper {
+        .e-editor-label-container {
           opacity: $field-list-editor-label-excel-opacity;
           padding: $field-list-editor-label-excel-padding-size;
         }
       }
 
       &.e-rtl {
-        .e-member-editor-wrapper {
-          .e-editor-search-wrapper {
+        .e-member-editor-outer-container {
+          .e-editor-search-container {
             .e-filter-sort {
               margin-left: 0;
               margin-right: $field-list-sort-wrapper-padding-size;
@@ -1553,12 +1553,12 @@
       }
 
       &.e-olap-editor-dialog {
-        .e-member-editor-wrapper {
-          .e-select-all-wrapper ul {
+        .e-member-editor-outer-container {
+          .e-select-all-container ul {
             margin-left: 0;
           }
 
-          .e-editor-search-wrapper {
+          .e-editor-search-container {
             .e-level-drop {
               margin: 0 5px;
 
@@ -1576,8 +1576,8 @@
 
         // sass-lint:disable-all
         &.e-rtl {
-          .e-member-editor-wrapper {
-            .e-editor-search-wrapper {
+          .e-member-editor-outer-container {
+            .e-editor-search-container {
               .e-filter-sort {
                 margin-left: 0;
                 margin-right: $field-list-sort-wrapper-padding-size;
@@ -1611,7 +1611,7 @@
       &.e-olap-editor-dialog {
         // sass-lint:disable-all
         &.e-rtl {
-          .e-member-editor-wrapper {
+          .e-member-editor-outer-container {
             ul li {
               .e-calc-measure-icon,
               .e-calc-dimension-icon,

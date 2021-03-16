@@ -582,7 +582,8 @@ export class SfdtReader {
 
                     this.parseBody(block.blocks, blocks, container, isSectionBreak, blockStartContentControl.contentControlProperties);
                     for (let j: number = 0; j < 2; j++) {
-                        let para: IWidget = j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1];
+                        // tslint:disable-next-line:max-line-length
+                        let para: IWidget = (blocks.length < block.blocks.length) ? blocks[0] : (j === 0 ? blocks[blocks.length - block.blocks.length] : blocks[blocks.length - 1]);
                         let blockWidget: BlockWidget;
                         if (para instanceof ParagraphWidget) {
                             blockWidget = para as BlockWidget;
@@ -594,6 +595,7 @@ export class SfdtReader {
                                 blockWidget = cell.lastChild as BlockWidget;
                             }
                         }
+                        if (!isNullOrUndefined(blockWidget)) {
                         if (blockWidget.childWidgets.length === 0) {
                             let lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
                             blockWidget.childWidgets.push(lineWidget);
@@ -605,6 +607,7 @@ export class SfdtReader {
                             (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
                             blockEndContentControl.line = blockWidget.lastChild as LineWidget;
                         }
+                    }
                     }
                 }
                 if (!isNullOrUndefined(contentControlProperties)) {

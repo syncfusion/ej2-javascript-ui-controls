@@ -510,3 +510,9 @@ export const setFullScreenDialog: string = 'set-fullscreen-dialog';
 export const refreshVirtualCacheOnRowDD: string = 'refresh-Virtual-Cache-On-RowDD';
 /** @hidden */
 export const refreshExpandandCollapse: string = 'refresh-Expand-and-Collapse';
+/** @hidden */
+export const rowModeChange: string = 'row-mode-change';
+/** @hidden */
+export const enterKeyHandler: string = 'enter-key-handler';
+/** @hidden */
+export const refreshVirtualMaxPage: string = 'refresh-virtual-max-page';

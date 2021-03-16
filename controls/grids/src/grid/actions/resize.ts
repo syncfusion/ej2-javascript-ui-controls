@@ -787,7 +787,11 @@ export class Resize implements IAction {
     private doubleTapEvent(e: TouchEvent | PointerEvent): void {
         if (this.getUserAgent() && this.isDblClk) {
             if (!this.tapped) {
-                this.tapped = setTimeout(this.timeoutHandler(), 300);
+                this.tapped = setTimeout(
+                    () => {
+                        this.tapped = null;
+                    },
+                    300);
             } else {
                 clearTimeout(this.tapped as number);
                 this.callAutoFit(e);

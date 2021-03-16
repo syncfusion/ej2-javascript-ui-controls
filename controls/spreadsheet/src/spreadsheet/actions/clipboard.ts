@@ -512,7 +512,7 @@ export class Clipboard {
                         cIdx], value: cell.value
                 });
         }
-        if (sheet.name && this.parent.getActiveSheet().name) {
+        if (sheet.name === this.parent.getActiveSheet().name) {
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(rIdx, cIdx, lastCell);
         }
     }

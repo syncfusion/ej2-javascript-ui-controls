@@ -123,6 +123,9 @@ export class DialogEditRender {
 
     private renderResponsiveDialog(): void {
         if (this.parent.enableAdaptiveUI) {
+            if (this.parent.adaptiveDlgTarget) {
+                this.dialogObj.target = this.parent.adaptiveDlgTarget;
+            }
             this.dialogObj.buttons = [{}];
             this.dialogObj.showCloseIcon = true;
             this.dialogObj.visible = false;

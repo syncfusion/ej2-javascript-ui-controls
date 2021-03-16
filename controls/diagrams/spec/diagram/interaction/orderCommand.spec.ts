@@ -760,10 +760,10 @@ describe('Diagram Control', () => {
                 var node1id = diagram.nodes[0].id
                 diagram.select([diagram.nodes[0]]);
                 var groupNodeid = document.getElementById("group_groupElement")
-                expect(groupNodeid.children[2].id==="node2_groupElement").toBe(true);
+                expect(groupNodeid.children[3].id==="node2_groupElement").toBe(true);
                 diagram.bringToFront();
                 var groupNodeid = document.getElementById("group_groupElement")
-                expect(groupNodeid.children[2].id==="node1_groupElement").toBe(true);
+                expect(groupNodeid.children[3].id==="node1_groupElement").toBe(true);
             
             done();
         });

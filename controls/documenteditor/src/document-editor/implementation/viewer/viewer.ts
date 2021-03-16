@@ -1334,7 +1334,11 @@ export class DocumentHelper {
         if (Browser.isIE && alt && ctrl) {
             ctrl = false;
         }
-        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || this.isControlPressed) && event.key === 'p') {
+        // tslint:disable-next-line:max-line-length
+        if (ctrl && event.key === 'v' || ctrl && event.key === 'a' || (ctrl || (this.isControlPressed && Browser.isIE)) && event.key === 'p') {
+            if (Browser.isIE) {
+                this.isControlPressed = false;
+            }
             return;
         }
         if (!this.owner.isReadOnlyMode) {

@@ -7,7 +7,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { GridLine } from '../../../src/grid/base/enum';
-import { Column } from '../../../src/grid/models/column';
+import { Column, ColumnModel } from '../../../src/grid/models/column';
 import { Page } from '../../../src/grid/actions/page';
 import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -16,7 +16,6 @@ import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel, recordClick } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 import { getNumberFormat } from '../../../src/grid/base/util';
-
 Grid.Inject(Page);
 
 describe('Grid base module', () => {

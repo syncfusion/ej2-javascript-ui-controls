@@ -292,6 +292,10 @@ export class ParagraphDialog {
     }
     private changeFirstLineIndent = (event: any): void => {
         this.firstLineIndent = event.value as number;
+        if (this.special.index === 2) {
+            this.firstLineIndent = -(this.firstLineIndent);
+            this.leftIndent = event.value as number;
+        }
     }
     private changeByTextAlignment = (args: any) => {
         this.textAlignment = args.value;

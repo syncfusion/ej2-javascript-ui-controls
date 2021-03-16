@@ -22,6 +22,8 @@ export class Toolbar {
     private gridID: string;
     // module declarations
     private parent: IGrid;
+    private rowSelectedFunction: () => void;
+    private rowDeSelectedFunction: () => void;
     private serviceLocator: ServiceLocator;
     private l10n: L10n;
     private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Print', 'Search',
@@ -482,8 +484,11 @@ export class Toolbar {
         this.parent.on(events.inBoundModelChanged, this.modelChanged, this);
         this.parent.on(events.dataBound, this.refreshToolbarItems, this);
         this.parent.on(events.click, this.removeResponsiveSearch, this);
-        this.parent.addEventListener(events.rowSelected, this.rowSelected.bind(this));
-        this.parent.addEventListener(events.rowDeselected, this.rowSelected.bind(this));
+        this.parent.on(events.rowModeChange, this.reRenderToolbar, this);
+        this.rowSelectedFunction = this.rowSelected.bind(this);
+        this.rowDeSelectedFunction = this.rowSelected.bind(this);
+        this.parent.addEventListener(events.rowSelected, this.rowSelectedFunction);
+        this.parent.addEventListener(events.rowDeselected, this.rowDeSelectedFunction);
     }
 
     protected removeEventListener(): void {
@@ -497,8 +502,9 @@ export class Toolbar {
         this.parent.off(events.inBoundModelChanged, this.modelChanged);
         this.parent.off(events.dataBound, this.refreshToolbarItems);
         this.parent.off(events.click, this.removeResponsiveSearch);
-        this.parent.removeEventListener(events.rowSelected, this.rowSelected.bind(this));
-        this.parent.removeEventListener(events.rowDeselected, this.rowSelected.bind(this));
+        this.parent.off(events.rowModeChange, this.reRenderToolbar);
+        this.parent.removeEventListener(events.rowSelected, this.rowSelectedFunction);
+        this.parent.removeEventListener(events.rowDeselected, this.rowDeSelectedFunction);
     }
 
     private removeResponsiveSearch(e: MouseEventArgs): void {

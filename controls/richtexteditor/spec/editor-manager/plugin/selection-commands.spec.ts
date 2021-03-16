@@ -729,3 +729,42 @@ describe('Bold the content inside table in fire fox', () => {
         expect(node1.childNodes[0].childNodes[0].nodeName.toLowerCase()).toEqual('strong');
     });
 });
+
+describe('EJ2-46060: bold remove testing', () => {    
+    let innervalue: string = `<p><strong><br></strong></p>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Remove bold', () => {
+        let node1: Node = document.querySelector('strong');
+        domSelection.setSelectionText(document, node1, node1, 0, 0);
+        SelectionCommands.applyFormat(document, 'bold', divElement);
+        expect(divElement.innerHTML).toEqual('<p><br></p>');
+    });
+});
+
+describe('EJ2-46060: List not generated after enter key press and bold format changed', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => { });
+    it(' Apply list', () => {
+        rteObj = renderRTE({ value: '<p><strong>a</strong><br></p><p><strong><br></strong></p>' });
+        let node1: Node = rteObj.element.querySelectorAll('.e-content p')[1];
+        domSelection.setSelectionText(document, node1, node1, 0, 0);
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[6] as HTMLElement).click();
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML.replace(/\uFEFF/g,"")).toBe('<p><strong>a</strong><br></p><ol><li><br></li></ol>');    
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});

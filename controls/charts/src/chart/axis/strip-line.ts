@@ -11,39 +11,46 @@ import {
 } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ZIndex, Anchor, SizeType } from '../utils/enum';
+import { DataUtil } from '@syncfusion/ej2-data';
 /**
  * `StripLine` module is used to render the stripLine in chart.
  */
 export class StripLine {
     /**
      * Finding x, y, width and height of the strip line
-     * @param axis
-     * @param strip line
-     * @param seriesClipRect
-     * @param startValue
-     * @param segmentAxis
+     *
+     * @param {Axis} axis axis
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} seriesClipRect seriesClipRect
+     * @param {number} startValue startValue
+     * @param {Axis} segmentAxis segmentAxis
+     * @param {Chart} chart chart instance
      */
     private measureStripLine(
-        axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, startValue: number, segmentAxis: Axis
+        axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, startValue: number, segmentAxis: Axis, chart: Chart
     ): Rect {
         let actualStart: number; let actualEnd: number;
-        let orientation: string = axis.orientation;
+        const orientation: string = axis.orientation;
+        const isDateTimeAxis: boolean = axis.valueType === 'DateTime';
         if (stripline.isRepeat && stripline.size !== null) {
             actualStart = startValue;
             actualEnd = null;
         } else {
             if (axis.valueType === 'DateTimeCategory') {
-                let start: Date | number = stripline.start;
-                let end: Date | number = stripline.end;
-                actualStart = (start != null && typeof start !== 'number') ? axis.labels.indexOf((start).getTime().toString()) :
-                    start as number;
-                actualEnd = (end != null && typeof end !== 'number') ? axis.labels.indexOf((end).getTime().toString()) : end as number;
+                const start: Date | number | Object = stripline.start;
+                const end: Date | number | Object = stripline.end;
+                actualStart = (start != null && typeof start !== 'number') ?
+                    axis.labels.indexOf(this.dateToMilliSeconds(start, chart).toString()) : start as number;
+                actualEnd = (end != null && typeof end !== 'number') ?
+                    axis.labels.indexOf(this.dateToMilliSeconds(end, chart).toString()) : end as number;
             } else {
-                actualStart = stripline.start === null ? null : +stripline.start;
-                actualEnd = stripline.end === null ? null : +stripline.end;
+                actualStart = stripline.start === null ? null : isDateTimeAxis && this.isCoreDate(stripline.start) ?
+                    this.dateToMilliSeconds(stripline.start, chart) : +stripline.start;
+                actualEnd = stripline.end === null ? null : isDateTimeAxis && this.isCoreDate(stripline.start) ?
+                    this.dateToMilliSeconds(stripline.end, chart) : +stripline.end;
             }
         }
-        let rect: { from: number, to: number } = this.getFromTovalue(
+        const rect: { from: number, to: number } = this.getFromTovalue(
             actualStart, actualEnd, stripline.size, stripline.startFromAxis,
             axis, stripline
         );
@@ -53,13 +60,15 @@ export class StripLine {
         let y: number = (orientation === 'Horizontal') ? seriesClipRect.y : (axis.rect.y + axis.rect.height -
             ((stripline.sizeType === 'Pixel' ? rect.from : rect.to) * axis.rect.height));
         if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null && stripline.sizeType !== 'Pixel') {
-            let segRect: { from: number, to: number } = this.getFromTovalue(
-                +stripline.segmentStart, +stripline.segmentEnd, null, null, segmentAxis, stripline);
+            const start: number = isDateTimeAxis && this.isCoreDate(stripline.segmentStart) ?
+                this.dateToMilliSeconds(stripline.segmentStart, chart) : +stripline.segmentStart;
+            const end: number = isDateTimeAxis && this.isCoreDate(stripline.segmentEnd) ?
+                this.dateToMilliSeconds(stripline.segmentEnd, chart) : +stripline.segmentEnd;
+            const segRect: { from: number, to: number } = this.getFromTovalue(start, end, null, null, segmentAxis, stripline);
             if (segmentAxis.orientation === 'Vertical') {
                 y = (segmentAxis.rect.y + segmentAxis.rect.height -
                     (segRect.to * segmentAxis.rect.height));
                 height = (segRect.to - segRect.from) * segmentAxis.rect.height;
-
             } else {
                 x = ((segRect.from * segmentAxis.rect.width) + segmentAxis.rect.x);
                 width = (segRect.to - segRect.from) * segmentAxis.rect.width;
@@ -72,12 +81,13 @@ export class StripLine {
     }
     /**
      * To get from to value from start, end, size, start from axis
-     * @param start
-     * @param end
-     * @param size
-     * @param startFromAxis
-     * @param axis
-     * @param strip line
+     *
+     * @param {number} start start
+     * @param {number} end end
+     * @param {number} size size
+     * @param {boolean} startFromAxis startFromAxis
+     * @param {Axis} axis axis
+     * @param {StripLineSettingsModel} stripline stripline
      */
     private getFromTovalue(
         start: number, end: number, size: number, startFromAxis: boolean, axis: Axis,
@@ -89,39 +99,40 @@ export class StripLine {
     }
     /**
      * Finding end value of the strip line
-     * @param to
-     * @param from
-     * @param size
-     * @param axis
-     * @param end
-     * @param strip line
+     *
+     * @param {number} to to
+     * @param {number} from from
+     * @param {number} size size
+     * @param {Axis} axis axis
+     * @param {number} end end
+     * @param {StripLineSettingsModel} stripline stripline
      */
     private getToValue(
         to: number, from: number, size: number, axis: Axis, end: number, stripline: StripLineSettingsModel
     ): number {
         let sizeType: SizeType = stripline.sizeType;
-        let isEnd: boolean = (end === null);
+        const isEnd: boolean = (end === null);
         if (axis.valueType === 'DateTime') {
-            let fromValue: Date = new Date(from);
+            const fromValue: Date = new Date(from);
             if (sizeType === 'Auto') {
                 sizeType = axis.actualIntervalType;
                 size *= axis.visibleRange.interval;
             }
             switch (sizeType) {
-                case 'Years':
-                    return <number>(isEnd ? new Date(fromValue.setFullYear(fromValue.getFullYear() + size)) : to);
-                case 'Months':
-                    return <number>(isEnd ? new Date(fromValue.setMonth(fromValue.getMonth() + size)) : to);
-                case 'Days':
-                    return <number>(isEnd ? new Date(fromValue.setDate(fromValue.getDate() + size)) : to);
-                case 'Hours':
-                    return <number>(isEnd ? new Date(fromValue.setHours(fromValue.getHours() + size)) : to);
-                case 'Minutes':
-                    return <number>(isEnd ? new Date(fromValue.setMinutes(fromValue.getMinutes() + size)) : to);
-                case 'Seconds':
-                    return <number>(isEnd ? new Date(fromValue.setSeconds(fromValue.getSeconds() + size)) : to);
-                default:
-                    return from;
+            case 'Years':
+                return <number>(isEnd ? new Date(fromValue.setFullYear(fromValue.getFullYear() + size)) : to);
+            case 'Months':
+                return <number>(isEnd ? new Date(fromValue.setMonth(fromValue.getMonth() + size)) : to);
+            case 'Days':
+                return <number>(isEnd ? new Date(fromValue.setDate(fromValue.getDate() + size)) : to);
+            case 'Hours':
+                return <number>(isEnd ? new Date(fromValue.setHours(fromValue.getHours() + size)) : to);
+            case 'Minutes':
+                return <number>(isEnd ? new Date(fromValue.setMinutes(fromValue.getMinutes() + size)) : to);
+            case 'Seconds':
+                return <number>(isEnd ? new Date(fromValue.setSeconds(fromValue.getSeconds() + size)) : to);
+            default:
+                return from;
             }
         } else {
             return stripline.sizeType === 'Pixel' ? from : (isEnd ? (from + size) : to);
@@ -129,8 +140,9 @@ export class StripLine {
     }
     /**
      * To check the strip line values within range
-     * @param value
-     * @param axis
+     *
+     * @param {number} value value
+     * @param {Axis} axis axis
      */
     private findValue(value: number, axis: Axis): number {
         if (value < axis.visibleRange.min) {
@@ -141,19 +153,32 @@ export class StripLine {
         return value;
     }
     /**
+     * Date parse
+     *
+     * @param {Date} value date
+     * @param {Chart} chart chart instance
+     * @returns {Date} parsed date
+     */
+    private dateParse(value: Date | Object, chart: Chart): Date {
+        let dateParser: Function = chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        let dateFormatter: Function = chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
+    }
+    /**
      * To render strip lines based start and end.
+     *
+     * @param {Chart} chart chart
+     * @param {ZIndex} position position
+     * @param {Axis[]} axes axes
      * @private
-     * @param chart
-     * @param position
-     * @param axes
      */
     public renderStripLine(chart: Chart, position: ZIndex, axes: Axis[]): void {
-        let id: string = chart.element.id + '_stripline_' + position + '_';
-        let seriesClipRect: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
+        const id: string = chart.element.id + '_stripline_' + position + '_';
+        const seriesClipRect: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         let end: number = 0;
         let limit: number = 0; let startValue: number = 0;
         let segmentAxis: Axis = null; let range: boolean;
-        let options: RectOption = new RectOption(
+        const options: RectOption = new RectOption(
             id + 'ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1,
             {
                 x: chart.initialClipRect.x, y: chart.initialClipRect.y,
@@ -161,16 +186,16 @@ export class StripLine {
                 height: chart.initialClipRect.height
             }
         );
-        let striplineGroup: Element = chart.renderer.createGroup({
+        const striplineGroup: Element = chart.renderer.createGroup({
             id: id + 'collections',
             'clip-path': 'url(#' + id + 'ClipRect' + ')'
         });
         if (!chart.enableCanvas) {
             striplineGroup.appendChild(appendClipElement(chart.redraw, options, chart.renderer as SvgRenderer));
         }
-        for (let axis of axes) {
+        for (const axis of axes) {
             let count: number = 0;
-            for (let stripline of axis.stripLines) {
+            for (const stripline of axis.stripLines) {
                 if (stripline.visible && stripline.zIndex === position) {
                     if (stripline.isSegmented && stripline.segmentStart != null && stripline.segmentEnd != null &&
                         stripline.sizeType !== 'Pixel') {
@@ -178,8 +203,9 @@ export class StripLine {
                     }
                     if (stripline.isRepeat && stripline.repeatEvery != null && stripline.size !== null && stripline.sizeType !== 'Pixel') {
                         limit = (stripline.repeatUntil != null) ? ((axis.valueType === 'DateTime') ?
-                            (stripline.repeatUntil as Date).getTime() : +stripline.repeatUntil) : axis.actualRange.max;
-                        startValue = stripline.start as number;
+                            this.dateToMilliSeconds(stripline.repeatUntil, chart) : +stripline.repeatUntil) : axis.actualRange.max;
+                        startValue = axis.valueType === 'DateTime' && this.isCoreDate(stripline.start) ?
+                            this.dateToMilliSeconds(stripline.start, chart) : stripline.start as number;
                         if ((stripline.startFromAxis && axis.valueType === 'DateTime' && stripline.sizeType === 'Auto') ||
                         (stripline.start < axis.visibleRange.min)) {
                             startValue = axis.visibleLabels[0].value === axis.visibleRange.min ? axis.visibleRange.min :
@@ -196,7 +222,7 @@ export class StripLine {
                                 );
                             }
                             count++;
-                            startValue = this.getStartValue(axis, stripline, startValue);
+                            startValue = this.getStartValue(axis, stripline, startValue, chart);
                         }
                     } else {
                         this.renderStripLineElement(
@@ -210,20 +236,40 @@ export class StripLine {
         appendChildElement(chart.enableCanvas, chart.svgObject, striplineGroup, chart.redraw);
     }
     /**
+     * To convert the C# date to js date
+     *
+     * @param {string | number | Object} value date value
+     * @returns {boolean} returns true if datetime value type is string(for asp platform)
+     */
+    private isCoreDate(value: string | number | Object | Date): boolean {
+        return typeof value === 'string' ? true : false;
+    }
+    /**
+     * To get the total milli seconds
+     *
+     * @param {Date | number | Object} value date value
+     * @param {Chart} chart chart instance
+     * @returns {number} returns milliseconds
+     */
+    private dateToMilliSeconds(value: Date | number | Object, chart: Chart): number {
+        return this.dateParse(value, chart).getTime();
+    }
+    /**
      * To draw the single line strip line
-     * @param strip line
-     * @param rect
-     * @param id
-     * @param parent
-     * @param chart
-     * @param axis
+     *
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} rect rect
+     * @param {string} id id
+     * @param {Element} parent parent
+     * @param {Chart} chart chart
+     * @param {Axis} axis axis
      */
     private renderPath(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
     ): void {
-        let element: Element = getElement(id);
-        let direction: string = element ? element.getAttribute('d') : '';
-        let d: string = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
+        const element: Element = getElement(id);
+        const direction: string = element ? element.getAttribute('d') : '';
+        const d: string = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
             + ' ' + rect.y) :
             ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + rect.x + ' ' + (rect.y + rect.height));
         appendChildElement(
@@ -234,20 +280,21 @@ export class StripLine {
             ),
             chart.redraw, true, 'x', 'y', null, direction, true
         );
-    };
+    }
     /**
      * To draw the rectangle
-     * @param strip line
-     * @param rect
-     * @param id
-     * @param parent
-     * @param chart
+     *
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} rect rect
+     * @param {string} id id
+     * @param {Element} parent parent
+     * @param {Chart} chart chart
      */
     private renderRectangle(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart
     ): void {
-        let element: Element = getElement(id);
-        let previousRect: Rect = element ? new Rect(
+        const element: Element = getElement(id);
+        const previousRect: Rect = element ? new Rect(
             +element.getAttribute('x'), +element.getAttribute('y'),
             +element.getAttribute('width'), +element.getAttribute('height')
         ) : null;
@@ -263,24 +310,25 @@ export class StripLine {
     }
     /**
      * To create the text on strip line
-     * @param strip line
-     * @param rect
-     * @param id
-     * @param parent
-     * @param chart
-     * @param axis
+     *
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} rect rect
+     * @param {string} id id
+     * @param {Element} parent parent
+     * @param {Chart} chart chart
+     * @param {Axis} axis axis
      */
     private renderText(
         stripline: StripLineSettingsModel, rect: Rect, id: string, parent: Element, chart: Chart, axis: Axis
     ): void {
-        let textSize: Size = measureText(stripline.text, stripline.textStyle);
-        let isRotationNull: boolean = (stripline.rotation === null);
-        let textMid: number = isRotationNull ? 3 * (textSize.height / 8) : 0;
+        const textSize: Size = measureText(stripline.text, stripline.textStyle);
+        const isRotationNull: boolean = (stripline.rotation === null);
+        const textMid: number = isRotationNull ? 3 * (textSize.height / 8) : 0;
         let ty: number = rect.y + (rect.height / 2) + textMid;
-        let rotation: number = isRotationNull ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
+        const rotation: number = isRotationNull ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
         let tx: number = rect.x + (rect.width / 2);
         let anchor: Anchor;
-        let padding: number = 5;
+        const padding: number = 5;
         if (axis.orientation === 'Horizontal') {
             tx = this.getTextStart(
                 tx + (textMid * this.factor(stripline.horizontalAlignment)),
@@ -305,35 +353,41 @@ export class StripLine {
     }
     private invertAlignment(anchor: Anchor): Anchor {
         switch (anchor) {
-            case 'Start':
-                anchor = 'End';
-                break;
-            case 'End':
-                anchor = 'Start';
-                break;
+        case 'Start':
+            anchor = 'End';
+            break;
+        case 'End':
+            anchor = 'Start';
+            break;
         }
         return anchor;
     }
     /**
      * To find the next value of the recurrence strip line
-     * @param axis
-     * @param stripline
-     * @param startValue
+     *
+     * @param {Axis} axis axis
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {number} startValue startValue
+     * @param {Chart} chart chart instance
+     * @returns {number} next start value of the recurrence strip line
      */
-    private getStartValue(axis: Axis, stripline: StripLineSettingsModel, startValue: number): number {
+    private getStartValue(axis: Axis, stripline: StripLineSettingsModel, startValue: number, chart: Chart): number {
         if (axis.valueType === 'DateTime') {
-            return this.getToValue(null, startValue, +stripline.repeatEvery, axis, null, stripline);
-
+            return (this.getToValue(
+                null, startValue,
+                this.isCoreDate(stripline.repeatEvery) ? this.dateToMilliSeconds(stripline.repeatEvery, chart) : +stripline.repeatEvery,
+                axis, null, stripline
+            ));
         } else {
             return startValue + (+stripline.repeatEvery);
-
         }
     }
     /**
      * Finding segment axis for segmented strip line
-     * @param axes
-     * @param axis
-     * @param strip line
+     *
+     * @param {Axis[]} axes axes collection
+     * @param {Axis} axis axis
+     * @param {StripLineSettingsModel} stripline stripline
      */
     private getSegmentAxis(axes: Axis[], axis: Axis, stripline: StripLineSettingsModel): Axis {
         let segment: Axis;
@@ -351,21 +405,22 @@ export class StripLine {
     }
     /**
      * To render strip line on chart
-     * @param axis
-     * @param stripline
-     * @param seriesClipRect
-     * @param id
-     * @param striplineGroup
-     * @param chart
-     * @param startValue
-     * @param segmentAxis
-     * @param count
+     *
+     * @param {Axis} axis axis
+     * @param {StripLineSettingsModel} stripline stripline
+     * @param {Rect} seriesClipRect seriesClipRect
+     * @param {string} id id
+     * @param {Element} striplineGroup striplineGroup
+     * @param {Chart} chart chart
+     * @param {number} startValue startValue
+     * @param {Axis} segmentAxis segmentAxis
+     * @param {number} count count
      */
     private renderStripLineElement(
         axis: Axis, stripline: StripLineSettingsModel, seriesClipRect: Rect, id: string, striplineGroup: Element, chart: Chart,
         startValue: number, segmentAxis: Axis, count: number
     ): void {
-        let rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis);
+        const rect: Rect = this.measureStripLine(axis, stripline, seriesClipRect, startValue, segmentAxis, chart);
         if (stripline.sizeType === 'Pixel') {
             this.renderPath(stripline, rect, id + 'path_' + axis.name + '_' + count, striplineGroup, chart, axis);
         } else {
@@ -379,40 +434,43 @@ export class StripLine {
     }
     /**
      * To find the factor of the text
-     * @param anchor
+     *
+     * @param {Anchor} anchor text anchor
      */
     private factor(anchor: Anchor): number {
         let factor: number = 0;
         switch (anchor) {
-            case 'Start':
-                factor = 1;
-                break;
-            case 'End':
-                factor = -1;
-                break;
+        case 'Start':
+            factor = 1;
+            break;
+        case 'End':
+            factor = -1;
+            break;
         }
         return factor;
     }
     /**
      * To find the start value of the text
-     * @param xy
-     * @param size
-     * @param textAlignment
+     *
+     * @param {number} xy xy values
+     * @param {number} size text size
+     * @param {Anchor} textAlignment text alignment
      */
     private getTextStart(xy: number, size: number, textAlignment: Anchor): number {
-        let padding: number = 5;
+        const padding: number = 5;
         switch (textAlignment) {
-            case 'Start':
-                xy = xy - (size / 2) + padding;
-                break;
-            case 'End':
-                xy = xy + (size / 2) - padding;
-                break;
+        case 'Start':
+            xy = xy - (size / 2) + padding;
+            break;
+        case 'End':
+            xy = xy + (size / 2) - padding;
+            break;
         }
         return xy;
     }
     /**
      * To get the module name for `StripLine`.
+     *
      * @private
      */
     public getModuleName(): string {
@@ -420,6 +478,7 @@ export class StripLine {
     }
     /**
      * To destroy the `StripLine` module.
+     *
      * @private
      */
     public destroy(): void {

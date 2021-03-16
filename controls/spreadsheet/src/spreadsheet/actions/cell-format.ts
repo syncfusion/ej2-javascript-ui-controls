@@ -1,7 +1,8 @@
 import { Spreadsheet, ICellRenderer, clearViewer, beginAction } from '../../spreadsheet/index';
 import { rowHeightChanged, setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, initialLoad } from '../common/index';
+import { getBorderHeight, getExcludedColumnWidth } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, CellStyleExtendedModel, CellModel} from '../../workbook/index';
-import { SheetModel, isHiddenRow, getCell, getColumnWidth, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
+import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, clearCFRule } from '../../workbook/index';
 import {  wrapEvent, getRangeAddress, ClearOptions,  clear } from '../../workbook/index';
 import { removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
@@ -74,14 +75,10 @@ export class CellFormat {
                         }
                     } else {
                         if (!this.checkHeight) { this.checkHeight = this.isHeightCheckNeeded(args.style, args.onActionUpdate); }
-                        let isFontSize: boolean = false;
-                        if (args.style.fontSize) {
-                            isFontSize = true;
-                        }
                         if (cell && cell.children[0] && cell.children[0].className === 'e-cf-databar' && args.style.fontSize) {
                             (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = args.style.fontSize;
                         }
-                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, 0, isFontSize);
+                        this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
                     }
                 }
             }
@@ -90,23 +87,28 @@ export class CellFormat {
         }
     }
     private updateRowHeight(
-        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize: number = 0, isFontSize?: boolean): void {
+        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, borderSize?: number): void {
         if (this.checkHeight) {
             let hgt: number = 0;
             let maxHgt: number;
             let sheet: SheetModel = this.parent.getActiveSheet();
-            let cell: CellModel = getCell(rowIdx, colIdx, sheet);
+            let cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
             let td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
-            hgt = getTextHeight(this.parent, (cell && cell.style) || this.parent.cellStyle, (cell && cell.wrap) ?
-                getLines(this.parent.getDisplayText(cell), getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle) : 1);
-            if (cell && !isNullOrUndefined(cell.value)) {
+            hgt = getTextHeight(this.parent, (cell.style) || this.parent.cellStyle, (cell.wrap) ?
+                getLines(this.parent.getDisplayText(cell), getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle)
+                : 1) + 1; // 1 -> For buffer
+            if (!borderSize) {
+                borderSize = getBorderHeight(rowIdx, colIdx, sheet);
+            }
+            if (!isNullOrUndefined(cell.value)) {
                 let val: string = cell.value.toString();
                 if (val.indexOf('\n') > -1) {
                     let i: number;
                     let splitVal: string[] = cell.value.split('\n');
                     let n: number = 0; let valLength: number = splitVal.length;
                     for (i = 0; i < valLength; i++) {
-                        let lines: number = getLines(splitVal[i], getColumnWidth(sheet, colIdx), cell.style, this.parent.cellStyle);
+                        let lines: number =
+                            getLines(splitVal[i], getExcludedColumnWidth(sheet, rowIdx, colIdx), cell.style, this.parent.cellStyle);
                         if (lines === 0) {
                             lines = 1; // for empty new line
                         }
@@ -115,7 +117,7 @@ export class CellFormat {
                     hgt = getTextHeight(this.parent, cell.style || this.parent.cellStyle, n) + 1;
                 }
             }
-            if (hgt + borderSize < 20 && isFontSize && getMaxHgt(sheet, rowIdx) >= 20) {
+            if (hgt + borderSize < 20) {
                 hgt = 20; // default height
             }
             if (td && td.children[0] && td.children[0].className === 'e-cf-databar') {

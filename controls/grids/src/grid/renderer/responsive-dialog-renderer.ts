@@ -1,4 +1,4 @@
-import { IAction, IGrid, ResponsiveDialogArgs } from '../base/interface';
+import { IAction, IGrid, ResponsiveDialogArgs, KeyboardEventArgs, NotifyArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { EventHandler, remove } from '@syncfusion/ej2-base';
@@ -32,6 +32,7 @@ export class ResponsiveDialogRenderer implements IAction {
     private isFiltered: boolean;
     private isRowResponsive: boolean;
     private isDialogClose: boolean;
+    private onActionCompleteFn: Function;
     public action: ResponsiveDialogAction;
 
     /**
@@ -52,6 +53,8 @@ export class ResponsiveDialogRenderer implements IAction {
         this.parent.on(events.filterCmenuSelect, this.renderCustomFilterDiv, this);
         this.parent.on(events.customFilterClose, this.customExFilterClose, this);
         this.parent.on(events.refreshCustomFilterClearBtn, this.refreshCustomFilterClearBtn, this);
+        this.onActionCompleteFn = this.editComplate.bind(this);
+        this.parent.addEventListener(events.actionComplete, this.onActionCompleteFn);
     }
 
     private customExFilterClose(): void {
@@ -308,7 +311,7 @@ export class ResponsiveDialogRenderer implements IAction {
             showCloseIcon: true,
             closeOnEscape: false,
             locale: this.parent.locale,
-            target: document.body,
+            target: this.parent.adaptiveDlgTarget ? this.parent.adaptiveDlgTarget : document.body,
             visible: false,
             enableRtl: this.parent.enableRtl,
             content: this.renderResponsiveContent(col),
@@ -374,6 +377,7 @@ export class ResponsiveDialogRenderer implements IAction {
         } else if (this.action === ResponsiveDialogAction.isSort) {
             this.closeCustomDialog();
         }
+        this.parent.off(events.enterKeyHandler, this.keyHandler);
     }
 
     private sortColumn(): void {
@@ -431,9 +435,10 @@ export class ResponsiveDialogRenderer implements IAction {
     /** @hidden */
     public renderResponsiveHeader(args?: ResponsiveDialogArgs, isCustomFilter?: boolean): HTMLElement | string {
         let gObj: IGrid = this.parent;
+        gObj.on(events.enterKeyHandler, this.keyHandler, this);
         let id: string = gObj.element.id + this.getDialogName(this.action);
         let header: HTMLElement | string = gObj.createElement('div', { className: 'e-res-custom-element' });
-        let titleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-dlg-custom-header', id: id });
+        let titleDiv: HTMLElement = gObj.createElement('div', { className: 'e-dlg-custom-header', id: id });
         titleDiv.innerHTML = this.getHeaderTitle(args);
         (header as Element).appendChild(titleDiv);
         let saveBtn: HTMLElement = gObj.createElement('button');
@@ -567,6 +572,20 @@ export class ResponsiveDialogRenderer implements IAction {
         }
     }
 
+    private keyHandler(e: KeyboardEventArgs): void {
+        if (e.keyCode === 13 && ((this.action === ResponsiveDialogAction.isFilter
+            && (e.target as HTMLElement).classList.contains('e-searchinput'))
+            || (this.action === ResponsiveDialogAction.isEdit || this.action === ResponsiveDialogAction.isAdd))) {
+            this.dialogHdrBtnClickHandler();
+        }
+    }
+
+    private editComplate(args: NotifyArgs): void {
+        if (args.requestType === 'save' || args.requestType === 'cancel') {
+            this.parent.off(events.enterKeyHandler, this.keyHandler);
+        }
+    }
+
     public removeEventListener(): void {
         if (this.customColumnDiv) {
             EventHandler.remove(this.customColumnDiv, 'click', this.customFilterColumnClickHandler);
@@ -578,5 +597,6 @@ export class ResponsiveDialogRenderer implements IAction {
         this.parent.off(events.filterCmenuSelect, this.renderCustomFilterDiv);
         this.parent.off(events.customFilterClose, this.customExFilterClose);
         this.parent.off(events.refreshCustomFilterClearBtn, this.refreshCustomFilterClearBtn);
+        this.parent.removeEventListener(events.actionComplete, this.onActionCompleteFn);
     }
 }

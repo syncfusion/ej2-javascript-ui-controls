@@ -2234,7 +2234,7 @@ export class Selection implements IAction {
         if (this.parent.frozenRows) {
             EventHandler.remove(this.parent.getHeaderContent(), 'mousemove', this.mouseMoveHandler);
         }
-        EventHandler.remove(document.body, 'mouseup', this.mouseUpHandler);
+        EventHandler.remove(document, 'mouseup', this.mouseUpHandler);
     }
 
     private hideAutoFill(): void {
@@ -2367,7 +2367,7 @@ export class Selection implements IAction {
         if (this.parent.frozenRows) {
             EventHandler.add(gObj.getHeaderContent(), 'mousemove', this.mouseMoveHandler, this);
         }
-        EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
+        EventHandler.add(document, 'mouseup', this.mouseUpHandler, this);
     }
 
     private clearSelAfterRefresh(e: { requestType: string }): void {

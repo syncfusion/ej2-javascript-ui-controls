@@ -1,4 +1,3 @@
-
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -3422,7 +3421,7 @@ export class WordExport {
         writer.writeEndElement();
         writer.writeStartElement('a', 'ln', this.aNamespace);
         writer.writeAttributeString(undefined, 'w', undefined, '12700');
-        if (shape.lineFormat.lineFormatType !== 'None') {
+        if (!isNullOrUndefined(shape.lineFormat.lineFormatType) && shape.lineFormat.lineFormatType !== 'None') {
             writer.writeStartElement('a', 'solidFill', this.aNamespace);
             writer.writeStartElement('a', 'srgbClr', this.aNamespace);
             writer.writeAttributeString(undefined, 'val', undefined, this.getColor(shape.lineFormat.color));

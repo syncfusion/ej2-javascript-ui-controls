@@ -479,6 +479,11 @@ export class Table {
         }
         let target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
         let closestTable: Element = closest(target, 'table');
+        if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable) {
+            this.removeResizeElement();
+            this.removeHelper(e as MouseEvent);
+            this.cancelResizeAction();
+        }
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
             this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
                 && (target.nodeName === 'TD' || target.nodeName === 'TH') ?

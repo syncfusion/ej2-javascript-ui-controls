@@ -624,6 +624,7 @@ export class NormalEdit {
         this.parent.on(events.dblclick, this.dblClickHandler, this);
         this.parent.on(events.deleteComplete, this.editComplete, this);
         this.parent.on(events.saveComplete, this.editComplete, this);
+        this.parent.on(events.rowModeChange, this.closeEdit, this);
         this.parent.on('closeinline', this.closeForm, this);
     }
 
@@ -639,6 +640,7 @@ export class NormalEdit {
         this.parent.off(events.dblclick, this.dblClickHandler);
         this.parent.off(events.deleteComplete, this.editComplete);
         this.parent.off(events.saveComplete, this.editComplete);
+        this.parent.off(events.rowModeChange, this.closeEdit);
         this.parent.off('closeinline', this.closeForm);
     }
 

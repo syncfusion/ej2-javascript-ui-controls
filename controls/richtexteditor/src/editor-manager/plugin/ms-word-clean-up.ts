@@ -580,17 +580,31 @@ export class MsWordPaste {
 
     private getListContent(elem: Element): void {
         let pushContent: string = '';
-        if (elem.firstElementChild.textContent.trim() === '' &&
-        !isNOU(elem.firstElementChild.firstElementChild) &&
-        elem.firstElementChild.firstElementChild.nodeName === 'IMG') {
+        const firstChild: Element = elem.firstElementChild;
+        if (firstChild.textContent.trim() === '' && !isNOU(firstChild.firstElementChild) &&
+            firstChild.firstElementChild.nodeName === 'IMG') {
             pushContent = elem.innerHTML.trim();
             this.listContents.push('');
             this.listContents.push(pushContent);
         } else {
-            pushContent = elem.firstElementChild.textContent.trim();
-            this.listContents.push(pushContent);
+            const styleNodes: string[] = ['b', 'em'];
+            if (firstChild.childNodes.length > 0 && (firstChild.querySelectorAll('b').length > 0
+                || firstChild.querySelectorAll('em').length > 0)) {
+                for (let i: number = 0; i < firstChild.childNodes.length; i++) {
+                    const nodeName: string = firstChild.childNodes[i].nodeName.toLowerCase();
+                    if (firstChild.childNodes[i].textContent.trim().length > 1 && styleNodes.indexOf(nodeName) !== -1) {
+                        pushContent = '<' + nodeName + '>' + firstChild.childNodes[i].textContent + '</' + nodeName + '>';
+                        this.listContents.push(pushContent);
+                    } else if (firstChild.childNodes[i].textContent.trim().length === 1) {
+                        this.listContents.push(firstChild.childNodes[i].textContent.trim());
+                    }
+                }
+            } else {
+                pushContent = firstChild.textContent.trim();
+                this.listContents.push(pushContent);
+            }
         }
-        detach(elem.firstElementChild);
+        detach(firstChild);
         this.listContents.push(elem.innerHTML);
     }
 }

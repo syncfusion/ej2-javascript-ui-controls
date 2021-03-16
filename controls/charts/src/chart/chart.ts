@@ -3260,7 +3260,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         blazorTemplatesReset(this);
         if (this.enableCanvas && this.svgObject && (this.svgObject as HTMLElement).tagName === 'CANVAS' ) {
             (this.renderer as CanvasRenderer).clearRect(new Rect(0, 0, this.availableSize.width, this.availableSize.height));
-            remove(this.svgObject);
+            if (this.svgObject.parentNode) { remove(this.svgObject); }
             return null;
         }
         removeElement(this.element.id + '_Secondary_Element');
@@ -3383,10 +3383,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public onPropertyChanged(newProp: ChartModel, oldProp: ChartModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
-        if (Object.keys(newProp).length === 1 && Object.keys(newProp)[0] === 'indicators') {
-            //add valid check,it should happen only when property change is triggered for target series
-            return;
-        }
         this.animateSeries = false;
         if (!this.delayRedraw) {
             for (let prop of Object.keys(newProp)) {
@@ -3479,6 +3475,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             this.processData(false);
                             refreshBounds = true;
                         }
+                        break;
+                    case 'indicators':
+                        refreshBounds = true;
                         break;
                     case 'zoomSettings':
                         if (newProp.zoomSettings.enableScrollbar || oldProp.zoomSettings.enableScrollbar) {

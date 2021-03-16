@@ -767,9 +767,10 @@ export class CommandHandler {
     public addLayer(layer: LayerModel, objects?: Object[], isServerUpdate: boolean = true): void {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
+        let isEnableServerDatabind: boolean = this.diagram.allowServerDataBinding;
         this.diagram.enableServerDataBinding(false);
         layer = new Layer(this.diagram, 'layers', layer, true);
-        this.diagram.enableServerDataBinding(true);
+        this.diagram.enableServerDataBinding(isEnableServerDatabind);
         (layer as Layer).objectZIndex = -1;
         (layer as Layer).zIndexTable = {};
         this.diagram.layers.push(layer);

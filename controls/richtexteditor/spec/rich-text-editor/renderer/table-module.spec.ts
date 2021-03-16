@@ -2727,4 +2727,33 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 500);
         });
     });
+    describe("EJ2-46995 - Resizing a table column and dragging over another table will resize the another table column", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td></tr><tr><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td></tr></tbody></table><p>Sample</p><p>Text</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td></tr><tr><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td></tr><tr><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td><td style="width: 20%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('While hover another table resize helper element availability testing ', () => {
+            let table: Element = rteObj.contentModule.getEditPanel().querySelectorAll('table')[0];
+            expect(table.querySelectorAll('tr').length === 2).toBe(true);
+            expect(table.querySelectorAll('td').length === 10).toBe(true);
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-row-resize').length === 2).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
+            table = rteObj.contentModule.getEditPanel().querySelectorAll('table')[1];
+            expect(table.querySelectorAll('tr').length === 3).toBe(true);
+            expect(table.querySelectorAll('td').length === 15).toBe(true);
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-row-resize').length === 3).toBe(true);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
+        });
+    });
 });

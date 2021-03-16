@@ -179,7 +179,7 @@ export class InfiniteScroll implements IAction {
                     this.infiniteCurrentViewData[keys[keys.length - 1]].push(e.data[0]);
                 }
             } else {
-                if (e.data.length === (blocks * size)) {
+                if (blocks > 1 && e.data.length === (blocks * size)) {
                     this.setInitialCache(e.data.slice() as Row<Column>[], {}, cache && e.args.requestType === 'delete', true);
                 } else {
                     this.infiniteCurrentViewData[page] = e.data.slice();
@@ -300,8 +300,11 @@ export class InfiniteScroll implements IAction {
         }
         let notifyArgs: {
             rows: Row<Column>[], cancel: boolean, args: { e: InfiniteScrollArgs, result: Object[] },
-            isMovable?: boolean, isFrozenRows?: boolean, isFrozenRight?: boolean
-        } = { rows: rows, cancel: false, args: args, isMovable: isMovable, isFrozenRows: isFrozenRows, isFrozenRight: isFrozenRows };
+            isMovable?: boolean, isFrozenRows?: boolean, isFrozenRight?: boolean, row: Row<Column>[]
+        } = {
+            rows: rows, cancel: false, args: args, isMovable: isMovable,
+            isFrozenRows: isFrozenRows, isFrozenRight: isFrozenRows, row: row
+        };
         this.parent.notify(events.infiniteCrudCancel, notifyArgs);
         if (!notifyArgs.cancel) {
             for (let i: number = row.length - 1; i >= 0; i--) {
@@ -540,11 +543,6 @@ export class InfiniteScroll implements IAction {
                 if (this.parent.infiniteScrollSettings.enableCache) {
                     this.isUpScroll = false;
                     this.isDownScroll = true;
-                    setTimeout(
-                        () => {
-                            this.isScroll = true;
-                        },
-                        600);
                 }
                 let rows: Element[] = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 let row: Element = rows[rows.length - 1];
@@ -565,11 +563,6 @@ export class InfiniteScroll implements IAction {
                 if (this.parent.infiniteScrollSettings.enableCache) {
                     this.isDownScroll = false;
                     this.isUpScroll = true;
-                    setTimeout(
-                        () => {
-                            this.isScroll = true;
-                        },
-                        600);
                 }
                 let row: Element = [].slice.call(scrollEle.querySelectorAll('.e-row'));
                 let rowIndex: number = parseInt(row[this.parent.pageSettings.pageSize - 1].getAttribute('aria-rowindex'), 10);
@@ -815,6 +808,7 @@ export class InfiniteScroll implements IAction {
                 this.pressedKey = undefined;
             }
             this.restoreInfiniteAdd();
+            this.isScroll = true;
         }
         this.isInfiniteScroll = false;
     }

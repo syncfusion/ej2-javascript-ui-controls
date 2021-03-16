@@ -485,6 +485,7 @@ export class Group implements IAction {
         let rObj: Row<Column> = gObj.getRowObjectFromUID(target.closest('tr').getAttribute('data-uid'));
         rObj.isExpand = isExpand;
         updatecloneRow(gObj);
+        this.parent.notify(events.refreshVirtualMaxPage, {});
         query = gObj.getDataModule().generateQuery(false);
         query.queries = gObj.getDataModule().aggregateQuery(gObj.getQuery().clone()).queries;
         let args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };

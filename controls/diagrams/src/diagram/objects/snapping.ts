@@ -6,7 +6,7 @@ import { DiagramElement } from '../core/elements/diagram-element';
 import { PathElement } from '../core/elements/path-element';
 import { SnapConstraints } from '../enum/enum';
 import { Connector } from './connector';
-import { Selector } from '../objects/node';
+import { Selector, Node } from '../objects/node';
 import { SelectorModel } from '../objects/node-model';
 import { Gridlines } from '../diagram/grid-lines';
 import { SnapSettingsModel } from '../diagram/grid-lines-model';
@@ -21,6 +21,7 @@ import { getAdornerLayerSvg } from './../utility/dom-util';
 import { isSelected } from '../interaction/actions';
 import { TextElement } from '../core/elements/text-element';
 import { DiagramHtmlElement } from '../core/elements/html-element';
+import { Container } from '../core/containers/container';
 
 /**
  * Snapping
@@ -39,6 +40,25 @@ export class Snapping {
         return (this.diagram.snapSettings.constraints
             & (SnapConstraints.SnapToObject | SnapConstraints.SnapToLines)) !== 0;
     }
+    /* tslint:disable */
+    private getWrapperObject(selectedObject: SelectorModel, nameTable: {}): Container {
+        if (selectedObject.nodes && selectedObject.nodes.length > 0
+            && (this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines || this.diagram.snapSettings.constraints
+                & SnapConstraints.SnapToObject)) {
+            for (let i: number = 0; i < selectedObject.nodes.length; i++) {
+                if (((selectedObject.nodes[i].shape.type === "SwimLane" || (selectedObject.nodes[i] as Node).isLane)
+                    || (selectedObject.nodes[i] as Node).parentId !== ''
+                    && nameTable[((selectedObject.nodes[i] as Node).parentId)]
+                    && nameTable[((selectedObject.nodes[i] as Node).parentId)].isLane) && nameTable['helper']) {
+                    return nameTable['helper'].wrapper;
+                } else {
+                    return selectedObject.wrapper;
+                }
+            }
+        }
+        return selectedObject.wrapper;
+    };
+    /* tslint:enable */
     /**
      * Snap to object
      * @private
@@ -49,7 +69,9 @@ export class Snapping {
         let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         let zoomFactor: number = this.diagram.scroller.currentZoom;
         let offset: PointModel = { x: 0, y: 0 };
-        let bounds: Rect = getBounds(selectedObject.wrapper);
+        let wrapper: Container;
+        wrapper = this.getWrapperObject(selectedObject, diagram.nameTable);
+        let bounds: Rect = getBounds(wrapper);
         let horizontallysnapped: Snap = { snapped: false, offset: 0 };
         let verticallysnapped: Snap = { snapped: false, offset: 0 };
         if (this.diagram.snapSettings.constraints & SnapConstraints.SnapToObject) {
@@ -174,6 +196,7 @@ export class Snapping {
     /**
      * Snap to Object 
      */
+    /* tslint:disable */
     private snapObject(
         diagram: Diagram, selectedObject: SelectorModel, g: SVGElement, horizontalSnap: Snap, verticalSnap: Snap,
         delta: PointModel, ended: boolean): void {
@@ -182,7 +205,9 @@ export class Snapping {
         let snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         let objectsAtLeft: Objects[] = []; let objectsAtRight: Objects[] = []; let objectsAtTop: Objects[] = [];
         let objectsAtBottom: Objects[] = [];
-        let bounds: Rect = getBounds(selectedObject.wrapper); let scale: number = diagram.scroller.currentZoom;
+        let wrapper: Container;
+        wrapper = this.getWrapperObject(selectedObject, diagram.nameTable);
+        let bounds: Rect = getBounds(wrapper); let scale: number = diagram.scroller.currentZoom;
         let hoffset: number = -scroller.horizontalOffset; let voffset: number = -scroller.verticalOffset;
         let snapObjDistance: number = snapSettings.snapObjectDistance / scale;
         let viewPort: Rect = new Rect(0, 0, scroller.viewPortWidth, scroller.viewPortHeight);
@@ -277,6 +302,7 @@ export class Snapping {
                 diagram, g, selectedObject, objectsAtTop, objectsAtBottom, horizontalSnap, verticalSnap, ended, delta, snapObjDistance);
         }
     }
+    /* tslint:enable */
     /**
      * @private
      */
@@ -1095,7 +1121,7 @@ export class Snapping {
                     nd = quad.objects[j] as DiagramElement;
                     if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible
                         && !(this.diagram.nameTable[nd.id].shape.type === 'SwimLane') && !(this.diagram.nameTable[nd.id].isLane) &&
-                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader)) {
+                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader) && nd.id !== 'helper') {
                         bounds = getBounds(nd);
                         if (nodes.indexOf(nd) === -1 && this.intersectsRect(child, bounds)) {
                             nodes.push(nd);

@@ -488,7 +488,6 @@ export class VerticalView extends ViewBase implements IRenderer {
         let trEle: Element = createElement('tr');
         let rowCount: number = this.colLevels.length;
         let lastLevel: TdData[] = this.colLevels[rowCount - 1];
-        this.createColGroup(tbl, lastLevel);
         for (let i: number = 0; i < rowCount; i++) {
             let ntr: Element = trEle.cloneNode() as Element;
             addClass([ntr], cls.HEADER_ROW_CLASS);
@@ -499,6 +498,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             tbl.querySelector('tbody').appendChild(ntr);
         }
         this.createAllDayRow(tbl, lastLevel);
+        this.createColGroup(tbl, lastLevel);
         wrap.appendChild(tbl);
         return container;
     }
@@ -580,8 +580,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         let wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         let tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
-        this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
+        this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         wrap.appendChild(tbl);
         this.wireCellEvents(tbl.querySelector('tbody'));
         EventHandler.add(wrap, 'scroll', this.onContentScroll, this);

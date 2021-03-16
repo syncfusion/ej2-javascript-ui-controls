@@ -1150,6 +1150,7 @@ export class DatePicker extends Calendar implements IInput {
             }
         } else {
             date = this.globalize.parseDate(this.inputElement.value, dateOptions);
+            date = (!isNullOrUndefined(date) && isNaN(+date)) ? null : date;
             if (!isNullOrUndefined(this.formatString) && this.inputElement.value !== '' && this.strictMode) {
                 if ((this.isPopupClicked || (!this.isPopupClicked && this.inputElement.value === this.previousElementValue))
                     && this.formatString.indexOf('y') === -1) {

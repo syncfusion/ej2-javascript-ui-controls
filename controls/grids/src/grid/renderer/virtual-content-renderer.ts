@@ -631,8 +631,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.getOffset(block - 1) : endTranslate < (sTop + cHeight) ? this.getOffset(block + 1) : translate;
         let blockHeight: number = this.offsets[info.blockIndexes[info.blockIndexes.length - 1]] -
             this.tmpOffsets[info.blockIndexes[0]];
-        if (result + blockHeight > this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()]) {
-            result -= (result + blockHeight) - this.offsets[this.getTotalBlocks()];
+        let totalBlocks: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
+        if (result + blockHeight > this.offsets[totalBlocks]) {
+            result -= (result + blockHeight) - this.offsets[totalBlocks];
         }
         return result;
     }
@@ -739,6 +740,12 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
+    private refreshMaxPage(): void {
+        if (this.parent.groupSettings.columns.length && this.parent.vcRows.length) {
+            this.maxPage = Math.ceil(this.parent.vcRows.length / this.parent.pageSettings.pageSize);
+        }
+    }
+
     public eventListener(action: string): void {
         this.parent[action](dataReady, this.onDataReady, this);
         this.parent.addEventListener(events.dataBound, this.dataBound.bind(this));
@@ -757,6 +764,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent[action](events.getVirtualData, this.getVirtualData, this);
         this.parent[action](events.virtualScrollEditCancel, this.editCancel, this);
         this.parent[action](events.refreshVirtualCacheOnRowDD, this.refreshVirtualCacheOnRowDD, this);
+        this.parent[action](events.refreshVirtualMaxPage, this.refreshMaxPage, this);
         let event: string[] = this.actions;
         for (let i: number = 0; i < event.length; i++) {
             this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);

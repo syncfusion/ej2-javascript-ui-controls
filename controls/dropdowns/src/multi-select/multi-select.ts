@@ -10,7 +10,7 @@ import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventAr
 import { Animation, AnimationModel, Browser, prepend, isBlazor, Complex } from '@syncfusion/ej2-base';
 import { MultiSelectModel } from '../multi-select';
 import { Search } from '../common/incremental-search';
-import { append, addClass, removeClass, closest, detach, remove, select } from '@syncfusion/ej2-base';
+import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';
 import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';
 /* tslint:disable */
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
@@ -2303,7 +2303,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (multiselectTemplate) {
             let exception: Object;
             try {
-                checkTemplate = (select(multiselectTemplate, document).length) ? true : false;
+                checkTemplate = (selectAll(multiselectTemplate, document).length) ? true : false;
             } catch (exception) {
                 checkTemplate = false;
             }

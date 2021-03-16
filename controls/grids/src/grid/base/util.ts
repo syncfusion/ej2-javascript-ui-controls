@@ -11,13 +11,12 @@ import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { ColumnModel, AggregateColumnModel } from '../models/models';
-import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode, ResponsiveDialogAction } from './enum';
+import { AggregateType, HierarchyGridPrintMode, freezeTable, freezeMode } from './enum';
 import { Dialog, calculateRelativeBasedPosition, Popup } from '@syncfusion/ej2-popups';
 import { PredicateModel } from './grid-model';
 import { Print } from '../actions/print';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 import { Cell } from '../models/cell';
-import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 
 //https://typescript.codeplex.com/discussions/401501
 /**
@@ -1304,19 +1303,6 @@ export function addBiggerDialog(gObj: IGrid): void {
         let dialogs: HTMLCollectionOf<Element> = document.getElementsByClassName('e-responsive-dialog');
         for (let i: number = 0; i < dialogs.length; i++) {
             dialogs[i].classList.add('e-bigger');
-        }
-    }
-}
-
-/** @hidden */
-export function enableDisableResponsiveRenderer(instance: any, action: ResponsiveDialogAction): void {
-    if (instance.parent.enableAdaptiveUI) {
-        instance.responsiveDialogRenderer = new ResponsiveDialogRenderer(instance.parent, instance.serviceLocator);
-        instance.responsiveDialogRenderer.action = action;
-    } else {
-        if (instance.responsiveDialogRenderer) {
-            instance.responsiveDialogRenderer.removeEventListener();
-            instance.responsiveDialogRenderer = undefined;
         }
     }
 }

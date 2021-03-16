@@ -6,7 +6,6 @@ import { Column } from '../models/column';
 import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import { SortDirection, ResponsiveDialogAction } from '../base/enum';
 import { setCssInGridPopUp, getActualPropFromColl, isActionPrevent, iterateExtend, parentsUntil } from '../base/util';
-import { enableDisableResponsiveRenderer } from '../base/util';
 import * as events from '../base/constant';
 import { SortDescriptorModel } from '../base/grid-model';
 import { AriaService } from '../services/aria-service';
@@ -34,10 +33,14 @@ export class Sort implements IAction {
     private focus: FocusStrategy;
     private lastSortedCols: SortDescriptorModel[];
     private lastCols: string[];
-    //Module declarations   
-    private parent: IGrid;
+    //Module declarations
+    /** @hidden */
+    public parent: IGrid;
     private currentTarget: Element = null;
-    private responsiveDialogRenderer: ResponsiveDialogRenderer;
+    /** @hidden */
+    public responsiveDialogRenderer: ResponsiveDialogRenderer;
+    /** @hidden */
+    public serviceLocator: ServiceLocator;
 
     /**
      * Constructor for Grid sorting module
@@ -47,6 +50,7 @@ export class Sort implements IAction {
         this.parent = parent;
         this.sortSettings = sortSettings;
         this.sortedColumns = sortedColumns;
+        this.serviceLocator = locator;
         this.focus = locator.getService<FocusStrategy>('focus');
         this.addEventListener();
         this.setFullScreenDialog();
@@ -146,7 +150,9 @@ export class Sort implements IAction {
     }
 
     private setFullScreenDialog(): void {
-        enableDisableResponsiveRenderer(this, ResponsiveDialogAction.isSort);
+        if (this.serviceLocator) {
+            this.serviceLocator.registerAdaptiveService(this, this.parent.enableAdaptiveUI, ResponsiveDialogAction.isSort);
+        }
     }
 
     private backupSettings(): void {

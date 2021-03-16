@@ -1,4 +1,5 @@
 import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { DiagramModel } from './diagram-model';
@@ -4194,39 +4195,41 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.refreshCanvasLayers();
-        let children: DiagramElement[] = currentObj.wrapper.children;
-        let element: HTMLElement;
-        let view: View;
-        if (children) {
-            for (let i: number = 0; i < children.length; i++) {
-                if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
-                    if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
-                        element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
-                        if (element) {
-                            element.parentNode.removeChild(element);
+        if (currentObj.wrapper) {
+            let children: DiagramElement[] = currentObj.wrapper.children;
+            let element: HTMLElement;
+            let view: View;
+            if (children) {
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
+                        if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
+                            element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
+                            if (element) {
+                                element.parentNode.removeChild(element);
+                            }
+                            element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
+                            if (element) {
+                                element.parentNode.removeChild(element);
+                            }
                         }
-                        element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
-                        if (element) {
-                            element.parentNode.removeChild(element);
+                        for (let elementId of this.views) {
+                            removeElement(children[i].id + '_groupElement', elementId);
+                            let nodeIndex: number = this.scroller.removeCollection.indexOf(currentObj.id);
+                            this.scroller.removeCollection.splice(nodeIndex, 1);
+                        }
+                    } else if (children[i] instanceof DiagramHtmlElement) {
+                        for (let elementId of this.views) {
+                            removeElement(currentObj.id + '_html_element', elementId);
+                            removeElement(children[i].id + '_html_element', elementId);
+                            this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                            if ((children[i] as DiagramEventAnnotation).annotationId) {
+                                this.clearTemplate(
+                                    ['annotationTemplate' + '_' + currentObj.id + ((children[i] as DiagramEventAnnotation).annotationId)]);
+                            }
                         }
                     }
-                    for (let elementId of this.views) {
-                        removeElement(children[i].id + '_groupElement', elementId);
-                        let nodeIndex: number = this.scroller.removeCollection.indexOf(currentObj.id);
-                        this.scroller.removeCollection.splice(nodeIndex, 1);
-                    }
-                } else if (children[i] instanceof DiagramHtmlElement) {
-                    for (let elementId of this.views) {
-                        removeElement(currentObj.id + '_html_element', elementId);
-                        removeElement(children[i].id + '_html_element', elementId);
-                        this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
-                        if ((children[i] as DiagramEventAnnotation).annotationId) {
-                            this.clearTemplate(
-                                ['annotationTemplate' + '_' + currentObj.id + ((children[i] as DiagramEventAnnotation).annotationId)]);
-                        }
-                    }
+                    removeGradient(children[i].id);
                 }
-                removeGradient(children[i].id);
             }
         }
     }
@@ -6261,6 +6264,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (!canvas.children) { canvas.children = []; }
         if (obj.children) {
             canvas.measureChildren = false;
+            portContainer.id = obj.id + 'group_container';
+            portContainer.style.fill = 'none';
+            portContainer.style.strokeColor = 'none'; portContainer.horizontalAlignment = 'Stretch';
+            portContainer.verticalAlignment = 'Stretch'; canvas.style = obj.style;
+            portContainer.children = []; portContainer.preventContainer = true;
+            if (obj.container) { portContainer.relativeMode = 'Object'; }
+            let checkPorts: boolean = (obj.ports && obj.ports.length > 0) ? true : false;
+            if (isNullOrUndefined(obj.container) && !checkPorts) {
+                canvas.children.push(portContainer);
+            }
             if (obj.container && (obj.container.type === 'Grid')) {
                 for (let i: number = 0; i < obj.children.length; i++) {
                     let childCollection: Canvas = new Canvas();
@@ -6281,13 +6294,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             }
-            portContainer.id = obj.id + 'group_container';
-            portContainer.style.fill = 'none';
-            portContainer.style.strokeColor = 'none'; portContainer.horizontalAlignment = 'Stretch';
-            portContainer.verticalAlignment = 'Stretch'; canvas.style = obj.style;
-            portContainer.children = []; portContainer.preventContainer = true;
-            if (obj.container) { portContainer.relativeMode = 'Object'; }
-            if (!obj.container || (obj.container.type !== 'Grid')) {
+            if (checkPorts || (obj.container && (obj.container.type !== 'Grid'))) {
                 canvas.children.push(portContainer);
             }
         } else {

@@ -574,7 +574,7 @@ describe('Group', () => {
             mouseEvents.clickEvent(diagramCanvas, 275, 300);
             mouseEvents.dragAndDropEvent(diagramCanvas, 275, 120, 200, 150);
 
-            expect(Math.round(diagram.selectedItems.nodes[0].wrapper.children[2].parentTransform) === 331 || Math.ceil(diagram.selectedItems.nodes[0].wrapper.children[2].parentTransform) === 334).toBe(true);
+            expect(Math.round(diagram.selectedItems.nodes[0].wrapper.children[0].parentTransform) === 331 || Math.ceil(diagram.selectedItems.nodes[0].wrapper.children[0].parentTransform) === 334).toBe(true);
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
             mouseEvents.clickEvent(diagramCanvas, 100, 300);
             expect(diagram.selectedItems.nodes[0].id === 'group2').toBe(true);

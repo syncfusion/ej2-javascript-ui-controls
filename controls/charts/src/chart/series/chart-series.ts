@@ -6,7 +6,7 @@ import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues } from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';
-import { ChartDrawType } from '../utils/enum';
+import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
 import { ConnectorModel } from '../../common/model/base-model';
 import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';
@@ -160,7 +160,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      */
 
     @Property('Hide')
-    public labelIntersectAction: string;
+    public labelIntersectAction: DataLabelIntersectAction;
 
 }
 

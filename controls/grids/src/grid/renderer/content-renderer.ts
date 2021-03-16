@@ -397,7 +397,7 @@ export class ContentRender implements IRenderer {
                         }
                     }
                 }
-                if (scrollTop + (this.contentPanel.firstElementChild as HTMLElement).offsetHeight ===
+                if (Math.round(scrollTop + (this.contentPanel.firstElementChild as HTMLElement).offsetHeight) >=
                     this.contentPanel.firstElementChild.scrollHeight && !args.rowObject) {
                     blockLoad = false;
                 }
