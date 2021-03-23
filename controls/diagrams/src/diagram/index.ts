@@ -62,6 +62,7 @@ export * from './objects/node-model';
 export * from './objects/connector-model';
 export * from './objects/undo-redo';
 export * from './objects/tooltip';
+export * from './objects/tooltip-model';
 export * from './objects/layout-animation';
 export * from './objects/preview';
 export * from './objects/fixed-user-handle';

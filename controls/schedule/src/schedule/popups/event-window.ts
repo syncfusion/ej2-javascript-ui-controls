@@ -826,6 +826,14 @@ export class EventWindow {
         this.repeatTempRule = this.recurrenceEditor.getRecurrenceRule();
     }
 
+    public subjectValue(eventObj: { [key: string]: Object }): void {
+        if (this.parent.eventSettings.fields.subject.default !== 'Add title') {
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default;
+        } else {
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.l10n.getConstant('addTitle');
+        }
+    }
+
     private onCellDetailsUpdate(eventObj: { [key: string]: Object }, repeatType: number): void {
         if (!this.parent.eventSettings.allowAdding) {
             return;
@@ -835,9 +843,7 @@ export class EventWindow {
         eventObj.Timezone = false;
         this.repeatStartDate = <Date>eventObj[this.fields.startTime];
         this.repeatRule = '';
-        if (!isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
-            eventObj[this.fields.subject] = this.parent.eventSettings.fields.subject.default;
-        }
+        this.subjectValue(eventObj);
         if (!isNullOrUndefined(this.parent.eventSettings.fields.location.default)) {
             eventObj[this.fields.location] = this.parent.eventSettings.fields.location.default;
         }
@@ -1063,6 +1069,7 @@ export class EventWindow {
             timezoneObj.checked = timezoneValue;
             timezoneObj.dataBind();
         }
+        this.subjectValue(eventObj);
         this.showDetails(eventObj);
         if (eventObj[this.fields.recurrenceRule] && this.recurrenceEditor) {
             this.recurrenceEditor.setRecurrenceRule(<string>eventObj[this.fields.recurrenceRule], <Date>eventObj[this.fields.startTime]);
@@ -1358,8 +1365,7 @@ export class EventWindow {
 
     public setDefaultValueToObject(eventObj: { [key: string]: Object }): void {
         if (!isNullOrUndefined(eventObj[this.fields.subject])) {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default
-                || this.l10n.getConstant('addTitle');
+            this.subjectValue(eventObj);
         }
         if (!isNullOrUndefined(eventObj[this.fields.location])) {
             eventObj[this.fields.location] = eventObj[this.fields.location] || this.parent.eventSettings.fields.location.default;

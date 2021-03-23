@@ -59,7 +59,8 @@ export class Print {
                         let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
                         this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
                     }
-                    this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);
+                    // tslint:disable-next-line:max-line-length
+                    this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName ? this.pdfViewer.downloadFileName : this.pdfViewer.fileName);
                 },
                 100);
         }
@@ -319,13 +320,9 @@ export class Print {
                         document.body.removeChild(this.iframe);
                     } else {
                         if (this.printWindow) {
-                            try {
-                                this.printWindow.print();
-                                this.printWindow.focus();
-                                this.printWindow.close();
-                            } catch (error) {
-                                return null;
-                            }
+                            this.printWindow.print();
+                            this.printWindow.focus();
+                            this.printWindow.close();
                         }
                     }
                 },

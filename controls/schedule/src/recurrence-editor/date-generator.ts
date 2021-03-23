@@ -913,15 +913,59 @@ function insertDateCollection(state: boolean, startDate: Date, endDate: Date, da
     }
 }
 
-// To process datte collection based on Byset position after process the collection based on BYDAY property value index: EX:BYDAY=1SUm-1SU
+/**
+ * Return the last week number of given month and year.
+ *
+ * @param {number} Year Accepts the Year in number format
+ * @param {number} startDayOfWeek Accepts the start date
+ * @param {number[]} monthCollection Accepts the collection of dates
+ * @param {number} week Accepts the week in number format
+ * @param {RecRule} ruleObject Accepts the recurrence rule object
+ * @returns {void}
+ * @private
+ */
+function weekCount
+    (year: number, startDayOfWeek: number, monthCollection: number[][], week: number, ruleObject: RecRule)
+    : number {
+    const firstDayOfWeek: number = startDayOfWeek || 0;
+    const firstOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 1);
+    let lastOfMonth: Date = new Date(year, ruleObject.month[0] - 1, 0);
+    const numberOfDaysInMonth: number = lastOfMonth.getDate();
+    const firstWeekDay: number = (firstOfMonth.getDay() - firstDayOfWeek + 7) % 7;
+    const used: number = firstWeekDay + numberOfDaysInMonth;
+    const count: number = Math.ceil(used / 7) - 1;
+    const dayData: number = monthCollection[week][count];
+    const chDate: Date = new Date(dayData);
+    const state: boolean = validateRules(chDate, ruleObject);
+    return (state) ? count : count - 1;
+}
+
+/**
+ * To process date collection based on Byset position after process the collection based on BYDAY property value index: EX:BYDAY=1SUm-1SU
+ *
+ * @param {number[]} monthCollection Accepts the collection of dates
+ * @param {boolean} state Accepts the state of the recurrence rule
+ * @param {Date} startDate Accepts the start date
+ * @param {Date} endDate Accepts the end date
+ * @param {number[]} data Accepts the collection of date
+ * @param {RecRule} ruleObject Accepts the recurrence rule object
+ * @returns {void}
+ * @private
+ */
 function insertDateCollectionBasedonBySetPos
-    (monthCollection: number[][], state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule): void {
+    (monthCollection: number[][], state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule)
+    : void {
     if (monthCollection.length > 0) {
         for (let week: number = 0; week < monthCollection.length; week++) {
             monthCollection[week].sort();
-            let index: number = ((ruleObject.setPosition < 1)
-                ? (monthCollection[week].length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-            let dayData: number = monthCollection[week][index];
+            const expectedDays: string[] = ruleObject.day;
+            const isHavingNumber: boolean[] = expectedDays.map((item: string) => HASNUMBER.test(item));
+            const weekIndex: number = (ruleObject.freq === 'YEARLY' && (ruleObject.validRules.indexOf('BYMONTH') > -1) &&
+                !(isHavingNumber.indexOf(true) > -1)) ?
+                weekCount(new Date(monthCollection[0][0]).getFullYear(), 0, monthCollection, week, ruleObject)
+                : (monthCollection[week].length + ruleObject.setPosition);
+            const index: number = ((ruleObject.setPosition < 1) ? weekIndex : ruleObject.setPosition - 1);
+            const dayData: number = monthCollection[week][index];
             insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
         }
     }

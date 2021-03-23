@@ -225,9 +225,10 @@ export class InsertHtml {
     }
     private static placeCursorEnd(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
-        lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? lastSelectionNode.previousSibling : lastSelectionNode;
+        lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? (isNOU(lastSelectionNode.previousSibling) ? lastSelectionNode.parentNode
+            : lastSelectionNode.previousSibling) : lastSelectionNode;
         while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
-        lastSelectionNode.nodeName !== 'BR') { lastSelectionNode = lastSelectionNode.lastChild; }
+        lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') { lastSelectionNode = lastSelectionNode.lastChild; }
         lastSelectionNode = isNOU(lastSelectionNode) ? node : lastSelectionNode;
         if (lastSelectionNode.nodeName === 'IMG') {
             this.imageFocus(lastSelectionNode, nodeSelection, docElement);
@@ -278,10 +279,12 @@ export class InsertHtml {
         (lastSelectionNode as HTMLElement).classList.add('lastNode');
         editNode.innerHTML = updateTextNode(editNode.innerHTML);
         lastSelectionNode = (editNode as HTMLElement).querySelector('.lastNode');
-        this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
-        (lastSelectionNode as HTMLElement).classList.remove('lastNode');
-        if ((lastSelectionNode as HTMLElement).classList.length === 0) {
-            (lastSelectionNode as HTMLElement).removeAttribute('class');
+        if (!isNOU(lastSelectionNode)) {
+            this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+            (lastSelectionNode as HTMLElement).classList.remove('lastNode');
+            if ((lastSelectionNode as HTMLElement).classList.length === 0) {
+                (lastSelectionNode as HTMLElement).removeAttribute('class');
+            }
         }
     }
 

@@ -67,4 +67,28 @@ describe('Spreadsheet formula module ->', () => {
 
     });
 
+    describe('CR-Issues ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '25' }] }] }] }, done);
+        });
+
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        describe('I311951 ->', () => {
+            it('Formula with percentage not working', (done: Function) => {
+                helper.edit('A2', '=A1*5%');
+                const inst: Spreadsheet = helper.getInstance();
+                expect(inst.sheets[0].rows[1].cells[0].formula).toEqual('=A1*5%');
+                expect(inst.sheets[0].rows[1].cells[0].value).toEqual('1.25');
+                expect(inst.getCell(1, 0).textContent).toEqual('1.25');
+                inst.selectRange('A2');
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('=A1*5%');
+                    done();
+                });
+            });
+        });
+    });
 });

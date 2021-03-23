@@ -8,7 +8,7 @@ import { Size } from '../primitives/size';
 import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { ConnectorModel } from '../objects/connector-model';
-import { wordBreakToString, whiteSpaceToString, textAlignToString } from '../utility/base-util';
+import { wordBreakToString, whiteSpaceToString, textAlignToString, randomId } from '../utility/base-util';
 import { getUserHandlePosition, canShowCorner, getInterval, getSpaceValue } from '../utility/diagram-util';
 import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer, updatePath } from '../utility/dom-util';
 import { measurePath, getBackgroundLayerSvg, getBackgroundImageLayer, setAttributeSvg } from '../utility/dom-util';
@@ -160,7 +160,9 @@ export class DiagramRenderer {
         void {
         let isElement: boolean = true;
         if (element instanceof Container) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             isElement = false;
+            element.id = element.id ? element.id : randomId();
             this.renderContainer(element, canvas, htmlLayer, transform, parentSvg, createParent, fromPalette, indexValue, isPreviewNode);
         } else if (element instanceof ImageElement) {
             this.renderImageElement(element, canvas, transform, parentSvg, fromPalette);
@@ -1075,6 +1077,7 @@ export class DiagramRenderer {
         (options as TextAttributes).wrapBounds = element.wrapBounds;
         (options as TextAttributes).childNodes = element.childNodes;
         (options as TextAttributes).isHorizontalLane = element.isLaneOrientation;
+        (options as TextAttributes).id = element.id ? element.id : randomId();
         if (element.isLaneOrientation) {
             (options as TextAttributes).parentOffsetX = this.groupElement.offsetX;
             (options as TextAttributes).parentOffsetY = this.groupElement.offsetY;

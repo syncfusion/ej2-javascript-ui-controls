@@ -1,5 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeGrid } from '../base/treegrid';
+import { Column } from '../models/column';
 import { Logger as GridLogger, Grid, IGrid, ItemDetails, detailLists, CheckOptions } from '@syncfusion/ej2-grids';
 
 /**
@@ -12,6 +13,7 @@ const BASE_DOC_URL: string = 'https://ej2.syncfusion.com/documentation';
 const WARNING: string = '[EJ2TreeGrid.Warning]';
 const ERROR: string = '[EJ2TreeGrid.Error]';
 const INFO: string = '[EJ2TreeGrid.Info]';
+let isRowDDEnabled: boolean = false;
 
 export interface TreeItemDetails {
   type: string;
@@ -48,6 +50,10 @@ export class Logger extends GridLogger {
         if (cOp.success) {
           let message: string = item.generateMessage(args, this.parent, cOp.options);
           message =  message.replace('EJ2Grid', 'EJ2TreeGrid').replace('* Hierarchy Grid', '').replace('* Grouping', '');
+          if (isRowDDEnabled && type[i] === 'primary_column_missing') {
+                message = message.replace('Editing', 'Row DragAndDrop');
+                isRowDDEnabled = false;
+          }
           let index: number = message.indexOf('https');
           let gridurl: string = message.substring(index);
           if (type[i] === 'module_missing') {
@@ -78,8 +84,9 @@ export class Logger extends GridLogger {
     this.treeGridObj = treeGrid;
     if (!(types instanceof Array)) { types = [types]; }
     let type: string[] = (<string[]>types);
-    if (treeGrid.allowRowDragAndDrop) {
-      this.log('primary_column_missing', args);
+    if (treeGrid.allowRowDragAndDrop && !(<Column[]>treeGrid.columns).filter((column: Column) => column.isPrimaryKey).length) {
+        isRowDDEnabled = true;
+        this.log('primary_column_missing', args);
     }
     for (let i: number = 0; i < type.length; i++) {
       let item: TreeItemDetails = treeGridDetails[type[i]];

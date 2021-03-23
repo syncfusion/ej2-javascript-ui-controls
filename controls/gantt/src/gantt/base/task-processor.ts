@@ -445,6 +445,7 @@ export class TaskProcessor extends DateProcessor {
                     if (!isNullOrUndefined(duration)) {
                         endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
                     } else {
+                        endDate = this.getDateFromFormat(endDate);
                         endDate = this.checkEndDate(endDate, data.ganttProperties, false);
                         duration = this.getDuration(
                             startDate, endDate, data.ganttProperties.durationUnit,

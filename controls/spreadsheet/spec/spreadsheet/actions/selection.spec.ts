@@ -1,3 +1,4 @@
+import { Spreadsheet } from "../../../src/index";
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 
 
@@ -97,5 +98,53 @@ describe('Selection ->', () => {
         //         done();
         //     }, 0);
         // });
+    });
+
+    describe('CR-Issues ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ rows: [{ index: 2, cells: [{ value: 'Welcome to Spreadsheet!!!', wrap: true }] }], selectedRange: 'D4' }] }, done);
+        });
+
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        describe('I316931 ->', () => {
+            it('Selected cells misaligned from grid lines', (done: Function) => {
+                const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                const activeCell: HTMLElement = helper.getElement().querySelector('.e-active-cell');
+                expect(activeCell.style.height).toEqual('21px');
+                expect(activeCell.style.top).toEqual('113px');
+                helper.triggerMouseAction(
+                    'mousedown', { x: selectAl.getBoundingClientRect().top + 1, y: selectAl.getBoundingClientRect().left + 1 }, null,
+                    selectAl);
+                helper.triggerMouseAction(
+                    'mouseup', { x: selectAl.getBoundingClientRect().top + 1, y: selectAl.getBoundingClientRect().left + 1 }, document,
+                    selectAl);
+                setTimeout(() => {
+                    const inst: Spreadsheet = helper.getInstance();
+                    expect(inst.sheets[0].rows[0]).toBeNull();
+                    expect(helper.invoke('getRow', [0]).style.height).toEqual('20px');
+                    expect(inst.sheets[0].rows[2].height).toBe(74);
+                    expect(helper.invoke('getRow', [2]).style.height).toEqual('74px');
+                    helper.getElement('#' + helper.id + '_borders').click();
+                    helper.getElement('#' + helper.id + '_borders-popup').querySelectorAll('.e-menu-item')[4].click();
+                    expect(inst.sheets[0].rows[0].height).toBe(22);
+                    expect(helper.invoke('getRow', [0]).style.height).toEqual('22px');
+                    expect(inst.sheets[0].rows[2].height).toBe(75);
+                    expect(helper.invoke('getRow', [2]).style.height).toEqual('75px');
+                    helper.invoke('selectRange', ['H10']);
+                    setTimeout(() => {
+                        expect(activeCell.style.top).toEqual('243px');
+                        helper.invoke('selectRange', ['D4']);
+                        setTimeout(() => {
+                            expect(activeCell.style.height).toEqual('22px');
+                            expect(activeCell.style.top).toEqual('117px');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

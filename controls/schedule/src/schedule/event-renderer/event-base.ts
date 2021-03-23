@@ -99,8 +99,12 @@ export class EventBase {
         for (let i: number = 0, len: number = blockData.length; i < len; i++) {
             let eventObj: { [key: string]: Object } = (blockData[i] as { [key: string]: Object });
             if (eventObj[fields.isAllDay]) {
-                eventObj[fields.startTime] = util.resetTime(eventObj[fields.startTime] as Date);
-                eventObj[fields.endTime] = util.addDays(util.resetTime(eventObj[fields.endTime] as Date), 1);
+                const isDifferentDate: boolean = util.resetTime(new Date((eventObj[fields.startTime] as Date).getTime())) <
+                    util.resetTime(new Date((eventObj[fields.endTime] as Date).getTime()));
+                if (!isDifferentDate) {
+                    eventObj[fields.startTime] = util.resetTime(eventObj[fields.startTime] as Date);
+                    eventObj[fields.endTime] = util.addDays(util.resetTime(eventObj[fields.endTime] as Date), 1);
+                }
             }
         }
         this.parent.blockProcessed = blockData;

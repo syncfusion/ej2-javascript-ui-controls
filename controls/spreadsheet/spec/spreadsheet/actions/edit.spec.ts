@@ -1,4 +1,4 @@
-import { SpreadsheetModel } from '../../../src/spreadsheet/index';
+import { Spreadsheet, SpreadsheetModel } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { CellModel } from '../../../src';
@@ -60,6 +60,34 @@ describe('Spreadsheet edit module ->', () => {
             // expect(ele.style.right).toBe('321px');
             // expect(ele.style.height).toBe('17px');
             done();
+        });
+    });
+
+    describe('CR-Issues ->', () => {
+        beforeAll((done: Function) => {
+            model = {
+                sheets: [{ ranges: [{ dataSource: defaultData }] }], height: 1000,
+                created: (): void => {
+                    helper.getInstance().cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+                }
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        describe('I309407 ->', () => {
+            it('curser is moving to the 4th cell when click on the second cell after entering value in first cell', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toEqual('A1:A1');
+                spreadsheet.editModule.startEdit();
+                spreadsheet.editModule.editCellData.value = 'Customer';
+                helper.triggerKeyNativeEvent(13);
+                expect(spreadsheet.sheets[0].selectedRange).toEqual('A2:A2');
+                done();
+            });
         });
     });
 });

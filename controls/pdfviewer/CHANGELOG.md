@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.4.49 (2021-03-23)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#306927` - The exception will no longer be thrown while exporting the existing custom stamp annotations.
+
+## 18.4.48 (2021-03-16)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#306927` - The exception will no longer be thrown while exporting the existing custom stamp annotations.
+
 ## 18.4.47 (2021-03-09)
 
 ### PDF Viewer

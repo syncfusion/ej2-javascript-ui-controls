@@ -134,7 +134,9 @@ export class ViewBase {
                 }
                 tdLeft += cell.offsetWidth;
             }
-            (currentCell.children[0] as HTMLElement).style[isRtl ? 'right' : 'left'] = (hiddenLeft - tdLeft) + 'px';
+            if (!isNullOrUndefined(currentCell)) {
+                (currentCell.children[0] as HTMLElement).style[isRtl ? 'right' : 'left'] = (hiddenLeft - tdLeft) + 'px';
+            }
         };
         let classNames: string[] = ['.e-header-year-cell', '.e-header-month-cell', '.e-header-week-cell', '.e-header-cells'];
         for (let className of classNames) {
@@ -480,7 +482,11 @@ export class ViewBase {
             scrollWrap.scrollTop = dateElement.offsetTop;
         }
         if (this.parent.currentView === 'TimelineMonth' && dateElement) {
-            scrollWrap.scrollLeft = dateElement.offsetLeft;
+            if (!this.parent.enableRtl) {
+                scrollWrap.scrollLeft = dateElement.offsetLeft;
+            } else {
+                scrollWrap.scrollLeft = -(this.parent.getContentTable().offsetWidth - dateElement.offsetLeft - dateElement.offsetWidth);
+            }
         }
     }
 

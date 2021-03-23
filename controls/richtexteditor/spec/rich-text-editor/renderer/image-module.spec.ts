@@ -3273,4 +3273,88 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 500);
         });
     });
+    describe('BLAZ-9502, EJ2-47169 - Image focus not working after outside click then again click a image', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image'],
+                },
+                value: '<p>Sample Text</p> <img alt="Logo" src="https://blazor.syncfusion.com/demos/images/rich-text-editor/rte-image-feather.png" style="width: 300px" /> <img alt="Logo" src="https://blazor.syncfusion.com/demos/images/toast/map.png" style="width: 300px" />'
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('image click with focus testing', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+                done();
+            }, 500);
+        });
+        it('outside click with focus', (done) => {
+            dispatchEvent(document.body, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
+                done();
+            }, 500);
+        });
+        it('Again image click with focus testing', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
+            setTimeout(() => {
+                expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+                done();
+            }, 500);
+        });
+    });
+    describe('EJ2-46971- Resize icon of the image is not positioned properly, when height is set to the Rich Text Editor', () => {
+        let rteObj: any;
+        let Imagepos: any;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image'],
+                },
+                value: '<p>Rich Text Editor allows to insert images from online source as well as local computer where you want to insert the image in your' +
+                'content.</p> <p><b>Get started Quick Toolbar to click on the image</b></p><p>It is possible to add custom style on the selected image inside the' +
+                'Rich Text Editor through quick toolbar. </p> <p>It is possible to add custom style on the selected image inside the Rich Text Editor through quick toolbar.' +
+                '</p> <p>It is possible to add custom style on the selected image inside the Rich Text Editor through quick toolbar. </p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside the' +
+                'Rich Text Editor through quick toolbar.<p>It is possible to add custom style on the selected image inside the' +
+                'Rich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside the Rich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' +
+                '<p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p><p>It is possible to add custom style on the selected image inside theRich Text Editor through quick toolbar.</p>' + 
+                '<img _ngcontent-knh-c4="" alt="Tiny_Image.PNG" class="e-rte-image e-imgcenter e-resize e-rte-drag-image e-imginline" height="77" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6hN7we0H3G7EKNkbPvZOioGzcm5nR46b63w&amp;usqp=CAU"' +
+                'style="min-width: 0px; max-width: 940px; min-height: 0px;" width="154"/>'
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('image click with focus testing before being resized', (done) => {
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
+            rteObj.resizeHandler();
+            expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
+            expect((rteObj.element.querySelector('.e-img-resize') as HTMLElement)).toBe(null);
+            done();
+        });
+        it('image click with focus testing after being resized', (done) => {
+            rteObj.resizeHandler();
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            expect((rteObj.element.querySelector('.e-img-resize') as HTMLElement)).not.toBe(null);
+            done();
+        });
+    });
 });

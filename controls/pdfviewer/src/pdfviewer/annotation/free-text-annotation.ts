@@ -265,6 +265,11 @@ export class FreeTextAnnotation {
             this.isBold = true;
             this.isUnderline = true;
             this.isStrikethrough = true;
+        } else if (15 === this.pdfViewer.freeTextSettings.fontStyle) {
+            this.isBold = true;
+            this.isItalic = true;
+            this.isUnderline = true;
+            this.isStrikethrough = true;
         } else if (6 === this.pdfViewer.freeTextSettings.fontStyle) {
             this.isUnderline = true;
             this.isItalic = true;

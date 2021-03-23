@@ -822,7 +822,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public resetTemplates(templates?: string[]): void {
         // tslint:disable-next-line:no-any
-        if ((this as any).isReact) {
+        if ((this as any).isAngular || (this as any).isReact) {
             this.clearTemplate(templates);
         }
     }

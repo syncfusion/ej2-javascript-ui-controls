@@ -789,6 +789,10 @@ export class ComboBox extends DropDownList {
                     let comboProps: { [key: string]: Object };
                     comboProps = this.getPropObject(prop, <{ [key: string]: string; }>newProp, <{ [key: string]: string; }>oldProp);
                     super.onPropertyChanged(comboProps.newProperty, comboProps.oldProperty);
+                    if (this.isFiltering() && prop === 'dataSource' && isNullOrUndefined(this.list) && this.itemTemplate &&
+                    this.getModuleName() === 'combobox') {
+                        super.renderList();
+                    }
                     break;
             }
         }

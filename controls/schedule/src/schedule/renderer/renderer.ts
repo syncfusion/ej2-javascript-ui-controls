@@ -27,6 +27,7 @@ export class Render {
 
     private initializeLayout(viewName: View): void {
         if (this.parent.activeView) {
+            this.parent.resetTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -132,6 +133,7 @@ export class Render {
     }
 
     public refreshDataManager(): void {
+        if (!this.parent.activeView) { return; }
         let start: Date = this.parent.activeView.startDate();
         let end: Date = this.parent.activeView.endDate();
         let dataManager: Promise<Object> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));

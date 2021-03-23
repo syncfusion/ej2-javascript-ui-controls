@@ -315,11 +315,11 @@ export class Selection extends BaseSelection {
      */
     public performSelection(index: Index, chart: Chart, element?: Element): void {
         this.isSeriesMode = this.currentMode === 'Series';
-        if (chart.series[index.series].type === 'BoxAndWhisker' &&
+        if (chart.series[index.series].type === 'BoxAndWhisker' && element &&
             element.id === chart.element.id + '_Series_' + index.series + '_Point_' + index.point + '_BoxPath') {
             element = <Element>element.parentNode;
         }
-        if (chart.series[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') &&
+        if (chart.series[index.series].type === 'Area' && (this.currentMode === 'Point' || this.currentMode === 'Cluster') && element &&
             (element.id === this.chart.element.id + '_Series_' + index.series)) {
             let className: string = this.generateStyle(chart.series[index.series]);
             let selectionEle: NodeListOf<HTMLElement> = document.querySelectorAll('.' + className);
@@ -333,7 +333,7 @@ export class Selection extends BaseSelection {
                 this.blurEffect(chart.element.id, chart.visibleSeries);
                 break;
             case 'Point':
-                if (!isNaN(index.point)) {
+                if (!isNaN(index.point) && element) {
                     this.selection(chart, index, [element]);
                     this.selectionComplete(chart, index, this.currentMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
@@ -639,6 +639,13 @@ export class Selection extends BaseSelection {
      */
     public redrawSelection(chart: Chart, oldMode: SelectionMode | HighlightMode): void {
         this.isSeriesMode = oldMode === 'Series';
+        if (!isNullOrUndefined(oldMode)) {
+            if (oldMode.indexOf('Drag') !== -1 || oldMode === 'Lasso') {
+                chart.isRedrawSelection = false;
+            } else {
+                chart.isRedrawSelection = true;
+            }
+        }
         let selectedDataIndexes: Indexes[] = <Indexes[]>extend([], this.selectedDataIndexes, null, true);
         let highlightDataIndexes: Indexes[] = <Indexes[]>extend([], this.highlightDataIndexes, null, true);
         if (this.styleId.indexOf('highlight') > 0 && highlightDataIndexes.length > 0 ) {
@@ -1156,7 +1163,7 @@ export class Selection extends BaseSelection {
         }
     }
     private removeSelectedElements(chart: Chart, index: Index[], seriesCollection: SeriesModel[]): void {
-        index.splice(0, index.length);
+        index = chart.isRedrawSelection ? index : index.splice(0, index.length); // No need to remove selected indexes while redrawing
         let seriesElements: Element[];
         for (let series of seriesCollection) {
             seriesElements = this.getSeriesElements(series);

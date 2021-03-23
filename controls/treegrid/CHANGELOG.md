@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.4.49 (2021-03-23)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#317991` - Filter action works properly while using query property.
+- `#318515` - Primary key column missing warning message shows properly.
+
 ## 18.4.48 (2021-03-16)
 
 ### TreeGrid

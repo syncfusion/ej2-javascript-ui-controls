@@ -9,6 +9,7 @@ import { getPortDirection } from '../utility/connector';
 import { Direction } from '../enum/enum';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { canEnableRouting } from '../utility/constraints-util';
+import { Container } from '../core/containers/container';
 
 
 /**
@@ -234,7 +235,7 @@ export class LineRouting {
             this.findEdgeBoundary(targetPortID, targetLeft, targetRight, targetTop, targetBottom, false);
             this.startGrid.totalDistance = 0; this.startGrid.previousDistance = 0;
             this.intermediatePoints.push({ x: this.startGrid.gridX, y: this.startGrid.gridY }); this.startArray.push(this.startGrid);
-            this.checkObstacles(connector);
+            this.checkObstacles(connector, diagram, targetLeft, targetRight, targetTop, targetBottom);
             renderPathElement: while (this.startArray.length > 0) {
                 let startGridNode: VirtualBoundaries = this.startArray.pop();
                 for (let i: number = 0; i < this.targetGridCollection.length; i++) {
@@ -256,24 +257,47 @@ export class LineRouting {
         }
     }
 
+    private checkChildNodes(grid: VirtualBoundaries, isSource: boolean): boolean {
+        let check: boolean = false;
+        let reject: boolean = false;
+        if (grid.nodeId.length >= 1 && !isSource) {
+            for (let i: number = 0; i < grid.nodeId.length; i++) {
+                let id: string = grid.nodeId[i];
+                for (let j: number = 0; j < grid.nodeId.length; j++) {
+                    if ((this.targetNode as Node).parentId === grid.nodeId[j]) {
+                        reject = true;
+                    }
+                }
+                if (!reject && this.targetNode.id === id) {
+                    check = true;
+                } else {
+                    check = false;
+                }
+            }
+        } else {
+            if (grid.nodeId.length === 1) {
+                check = true;
+            }
+        }
+        return check;
+    }
     private findEdgeBoundary(
         portID: string, left: VirtualBoundaries, right: VirtualBoundaries,
         top: VirtualBoundaries, bottom: VirtualBoundaries, isSource?: boolean): void {
 
         let grid: VirtualBoundaries;
-        let collection: VirtualBoundaries[] = (isSource) ? this.sourceGridCollection : this.targetGridCollection;
-
+        const collection: VirtualBoundaries[] = (isSource) ? this.sourceGridCollection : this.targetGridCollection;
         if (!portID && ((isSource) ? this.startNode : this.targetNode)) {
             for (let i: number = left.gridX; i <= right.gridX; i++) {
                 grid = this.gridCollection[i][left.gridY];
-                if ((grid.nodeId.length === 1 && (i === left.gridX || i === right.gridX)) ||
+                if ((this.checkChildNodes(grid, isSource) && (i === left.gridX || i === right.gridX)) ||
                     (i !== left.gridX && i !== right.gridX)) {
                     collection.push(grid);
                 }
             }
             for (let i: number = top.gridY; i <= bottom.gridY; i++) {
                 grid = this.gridCollection[top.gridX][i];
-                if (((grid.nodeId.length === 1 && (i === top.gridY || i === bottom.gridY)) ||
+                if (((this.checkChildNodes(grid, isSource) && (i === top.gridY || i === bottom.gridY)) ||
                     (i !== top.gridY && i !== bottom.gridY)) && collection.indexOf(grid) === -1) {
                     collection.push(grid);
                 }
@@ -283,7 +307,10 @@ export class LineRouting {
         }
     }
 
-    private checkObstacles(connector: Connector): void {
+    private checkObstacles(
+        connector: Connector, diagram: Diagram, targetLeft: VirtualBoundaries,
+        targetRight: VirtualBoundaries, targetTop: VirtualBoundaries, targetBottom: VirtualBoundaries):
+        void {
         let neigbours: VirtualBoundaries[] = this.findNearestNeigbours(this.startGrid, this.gridCollection, true);
         if (neigbours.length === 0) {
             if (connector.sourcePortID !== '') {
@@ -324,6 +351,102 @@ export class LineRouting {
                 this.resetGridColl(this.targetGrid, 'right', false);
                 this.resetGridColl(this.targetGrid, 'bottom', false);
                 this.resetGridColl(this.targetGrid, 'left', false);
+            }
+        }
+        if (this.targetGridCollection.length > 0 && this.targetGridCollection[0].nodeId.length > 1) {
+            for (let i: number = 0; i <= 1; i++) {
+                let gridX: number = this.targetGridCollection[i].gridX;
+                let gridY: number = this.targetGridCollection[i].gridY;
+                let gridNodes: string[] = this.targetGridCollection[i].nodeId;
+                let targetNode: string;
+                for (let k: number = 0; k < gridNodes.length; k++) {
+                    if (this.targetNode.id !== gridNodes[k]) {
+                        targetNode = gridNodes[k];
+                        break;
+                    }
+                }
+                let targetNodewrapper: Container;
+                let overLapNode: Container;
+                let contains: boolean;
+                if (diagram.nameTable[this.targetNode.id]) {
+                    targetNodewrapper = diagram.nameTable[this.targetNode.id].wrapper;
+                }
+                if (diagram.nameTable[targetNode]) {
+                    overLapNode = diagram.nameTable[targetNode].wrapper;
+                }
+                if (targetNodewrapper && overLapNode) {
+                    contains = this.contains(overLapNode.bounds, targetNodewrapper.bounds);
+                }
+                let reject: boolean;
+                for (let j: number = 0; j < gridNodes.length; j++) {
+                    if ((this.targetNode as Node).parentId === gridNodes[j]) {
+                        reject = true;
+                    }
+                }
+                if (!this.gridCollection[gridX][gridY].walkable && contains && !reject) {
+                    let grid: VirtualBoundaries;
+                    let diff: number;
+                    grid = this.getEndvalue(targetLeft, 'left');
+                    diff = targetLeft.gridX - grid.gridX;
+                    this.changeValue(targetLeft, diff, 'left');
+
+                    grid = this.getEndvalue(targetRight, 'right');
+                    diff = grid.gridX - targetRight.gridX;
+                    this.changeValue(targetRight, diff, 'right');
+
+                    grid = this.getEndvalue(targetTop, 'top');
+                    diff = targetTop.gridY - grid.gridY;
+                    this.changeValue(targetTop, diff, 'top');
+
+                    grid = this.getEndvalue(targetBottom, 'bottom');
+                    diff = targetBottom.gridY - grid.gridY;
+                    this.changeValue(targetBottom, diff, 'top');
+
+
+                }
+            }
+        }
+    }
+    private contains(rect1: Rect, rect2: Rect): boolean {
+        return rect1.left <= rect2.left && rect1.right >= rect2.right && rect1.top <= rect2.top && rect1.bottom >= rect2.bottom;
+    }
+    private getEndvalue(target: VirtualBoundaries, direction: string): VirtualBoundaries {
+        if (!this.gridCollection[target.gridX][target.gridY].walkable) {
+            if (direction === 'left') {
+                return this.getEndvalue(this.gridCollection[target.gridX - 1][target.gridY], direction);
+            }
+            if (direction === 'right') {
+                return this.getEndvalue(this.gridCollection[target.gridX + 1][target.gridY], direction);
+            }
+            if (direction === 'top') {
+                return this.getEndvalue(this.gridCollection[target.gridX][target.gridY - 1], direction);
+            }
+            if (direction === 'bottom') {
+                return this.getEndvalue(this.gridCollection[target.gridX][target.gridY + 1], direction);
+            }
+
+        } else {
+            return target;
+        }
+        return target;
+    }
+    private changeValue(targetLeft: VirtualBoundaries, diff: number, direction: string): void {
+        if (!targetLeft.walkable) {
+            this.considerWalkable.push(targetLeft);
+        }
+        let grid: VirtualBoundaries;
+        for (let i: number = 0; i <= diff; i++) {
+            if (direction === 'left') {
+                grid = this.gridCollection[targetLeft.gridX - i][targetLeft.gridY];
+            } else if (direction === 'right') {
+                grid = this.gridCollection[targetLeft.gridX + i][targetLeft.gridY];
+            } else if (direction === 'top') {
+                grid = this.gridCollection[targetLeft.gridX][targetLeft.gridY - i];
+            } else if (direction === 'bottom') {
+                grid = this.gridCollection[targetLeft.gridX][targetLeft.gridY + i];
+            }
+            if (!grid.walkable) {
+                this.considerWalkable.push(grid);
             }
         }
     }
@@ -626,8 +749,9 @@ export class LineRouting {
 
     private isWalkable(x: number, y: number, isparent?: boolean): boolean {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
-            let grid: VirtualBoundaries = this.gridCollection[x][y];
-            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId)) &&
+            const grid: VirtualBoundaries = this.gridCollection[x][y];
+            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId
+                || (this.considerWalkable.indexOf(grid) !== -1))) &&
                 (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
                     this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {

@@ -111,6 +111,9 @@ export class MonthEvent extends EventBase {
                 }
             }
             this.parent.notify(events.scrollUiUpdate, data);
+            if (!this.parent.enablePersistence) {
+                this.parent.notify(events.contentReady, {});
+            }
         }
         this.parent.renderTemplates();
     }

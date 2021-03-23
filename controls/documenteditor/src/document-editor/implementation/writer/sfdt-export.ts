@@ -358,9 +358,11 @@ export class SfdtExport {
         section.sectionFormat.headerDistance = bodyWidget.sectionFormat.headerDistance;
         section.sectionFormat.footerDistance = bodyWidget.sectionFormat.footerDistance;
         section.sectionFormat.bidi = bodyWidget.sectionFormat.bidi;
-        if (!isNullOrUndefined(bodyWidget.page.endnoteWidget || bodyWidget.page.footnoteWidget)) {
+        if (bodyWidget.sectionFormat.restartPageNumbering) {
             section.sectionFormat.restartPageNumbering = bodyWidget.sectionFormat.restartPageNumbering;
             section.sectionFormat.pageStartingNumber = bodyWidget.sectionFormat.pageStartingNumber;
+        }
+        if (!isNullOrUndefined(bodyWidget.page.endnoteWidget || bodyWidget.page.footnoteWidget)) {
             section.sectionFormat.endnoteNumberFormat = bodyWidget.sectionFormat.endnoteNumberFormat;
             section.sectionFormat.footNoteNumberFormat = bodyWidget.sectionFormat.footNoteNumberFormat;
             section.sectionFormat.restartIndexForFootnotes = bodyWidget.sectionFormat.restartIndexForFootnotes;

@@ -2397,6 +2397,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(classes.CLS_EXPAND_OPEN);
         }
         this.setContentHeight('', isExpand);
+        this.notify(events.windowResize, null);
     }
 
     private scrollHandler(e: Event): void {

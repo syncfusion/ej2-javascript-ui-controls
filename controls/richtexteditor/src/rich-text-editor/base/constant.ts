@@ -153,6 +153,11 @@ export const imageToolbarAction: string = 'image-toolbar-action';
  * @deprecated
  */
 export const linkToolbarAction: string = 'link-toolbar-action';
+/**
+ * @hidden
+ * @deprecated
+ */
+ export const windowResize: string = 'resize';
 /** 
  * @hidden
  * @deprecated

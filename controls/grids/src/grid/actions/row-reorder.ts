@@ -186,51 +186,53 @@ export class RowDD {
             }
         }
 
-        if ((!gObj.groupSettings.columns.length || e.target.classList.contains('e-selectionbackground')) &&
-            !this.isDropGrid.element.querySelector('.e-emptyrow')) {
-            if (parentsUntil(target, 'e-grid') && parentsUntil(target, 'e-grid').id === this.isDropGrid.element.id) {
-                this.updateScrollPostion(e.event, target);
-            }
-            if (((this.isOverflowBorder || this.parent.frozenRows > this.dragTarget) &&
-                (parseInt(this.startedRow.getAttribute('aria-rowindex'), 10) !== this.dragTarget || this.istargetGrid))
-                || (this.istargetGrid && trElement && this.isDropGrid.getRowByIndex(this.isDropGrid.getCurrentViewRecords().length - 1).
-                    getAttribute('data-uid') === trElement.getAttribute('data-uid'))) {
-                this.moveDragRows(e, this.startedRow, trElement);
-            } else {
-                let islastRowIndex: boolean;
-                if (this.parent.enableVirtualization) {
-                    islastRowIndex = trElement && parseInt(trElement.getAttribute('aria-rowindex'), 10) ===
-                        this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
+        if (parentsUntil(this.isDropGrid.element, 'e-grid')) {
+            if ((!this.isDropGrid.groupSettings.columns.length || e.target.classList.contains('e-selectionbackground')) &&
+                !this.isDropGrid.element.querySelector('.e-emptyrow')) {
+                if (parentsUntil(target, 'e-grid') && parentsUntil(target, 'e-grid').id === this.isDropGrid.element.id) {
+                    this.updateScrollPostion(e.event, target);
+                }
+                if (((this.isOverflowBorder || this.parent.frozenRows > this.dragTarget) &&
+                    (parseInt(this.startedRow.getAttribute('aria-rowindex'), 10) !== this.dragTarget || this.istargetGrid))
+                    || (this.istargetGrid && trElement && this.isDropGrid.getRowByIndex(this.isDropGrid.getCurrentViewRecords().length - 1).
+                        getAttribute('data-uid') === trElement.getAttribute('data-uid'))) {
+                    this.moveDragRows(e, this.startedRow, trElement);
                 } else {
-                    islastRowIndex = trElement &&
-                        this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
-                        trElement.getAttribute('data-uid');
-                }
-                if (islastRowIndex && !this.parent.rowDropSettings.targetID) {
-                    let bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
-                    let gridcontentEle: Element = this.parent.getContent();
-                    bottomborder.style.width = (this.parent.element as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
-                    if (!gridcontentEle.querySelectorAll('.e-lastrow-dragborder').length) {
-                        gridcontentEle.classList.add('e-grid-relative');
-                        gridcontentEle.appendChild(bottomborder);
-                        bottomborder.style.bottom = this.getScrollWidth() + 'px';
+                    let islastRowIndex: boolean;
+                    if (this.parent.enableVirtualization) {
+                        islastRowIndex = trElement && parseInt(trElement.getAttribute('aria-rowindex'), 10) ===
+                            this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
+                    } else {
+                        islastRowIndex = trElement &&
+                            this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
+                            trElement.getAttribute('data-uid');
                     }
+                    if (islastRowIndex && !this.parent.rowDropSettings.targetID) {
+                        let bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
+                        let gridcontentEle: Element = this.parent.getContent();
+                        bottomborder.style.width = (this.parent.element as HTMLElement).offsetWidth - this.getScrollWidth() + 'px';
+                        if (!gridcontentEle.querySelectorAll('.e-lastrow-dragborder').length) {
+                            gridcontentEle.classList.add('e-grid-relative');
+                            gridcontentEle.appendChild(bottomborder);
+                            bottomborder.style.bottom = this.getScrollWidth() + 'px';
+                        }
+                    }
+                    this.removeBorder(trElement);
                 }
+            }
+            if (target && target.classList.contains('e-content') && !this.isDropGrid.element.querySelector('.e-emptyrow')
+                && this.istargetGrid) {
                 this.removeBorder(trElement);
-            }
-        }
-        if (target && target.classList.contains('e-content') && !this.isDropGrid.element.querySelector('.e-emptyrow')
-            && this.istargetGrid) {
-            this.removeBorder(trElement);
-            let rowIndex: number = this.isDropGrid.getCurrentViewRecords().length - 1;
-            let selector: string = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
-            let rowElement: HTMLElement[] = [];
-            rowElement = [].slice.call(this.isDropGrid.getRowByIndex(rowIndex).querySelectorAll(selector));
-            if (this.isDropGrid.isFrozenGrid()) {
-                rowElement = this.borderRowElement(rowIndex, selector);
-            }
-            if (rowElement.length > 0) {
-                addRemoveActiveClasses(rowElement, true, 'e-dragborder');
+                let rowIndex: number = this.isDropGrid.getCurrentViewRecords().length - 1;
+                let selector: string = '.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse';
+                let rowElement: HTMLElement[] = [];
+                rowElement = [].slice.call(this.isDropGrid.getRowByIndex(rowIndex).querySelectorAll(selector));
+                if (this.isDropGrid.isFrozenGrid()) {
+                    rowElement = this.borderRowElement(rowIndex, selector);
+                }
+                if (rowElement.length > 0) {
+                    addRemoveActiveClasses(rowElement, true, 'e-dragborder');
+                }
             }
         }
     }
@@ -257,13 +259,15 @@ export class RowDD {
             (<{getModuleName?: Function}>dropElement.ej2_instances[0]).getModuleName() === 'grid') {
             dropElement.ej2_instances[0].getContent().classList.remove('e-allowRowDrop');
         }
-        this.stopTimer();
-        this.isDropGrid.enableHover = this.hoverState;
-        this.isDropGrid.getContent().classList.remove('e-grid-relative');
-        this.removeBorder(targetEle);
-        let stRow: Element = this.isDropGrid.element.querySelector('.e-dragstartrow');
-        if (stRow) {
-            stRow.classList.remove('e-dragstartrow');
+        if (parentsUntil(this.isDropGrid.element, 'e-grid')) {
+            this.stopTimer();
+            this.isDropGrid.enableHover = this.hoverState;
+            this.isDropGrid.getContent().classList.remove('e-grid-relative');
+            this.removeBorder(targetEle);
+            let stRow: Element = this.isDropGrid.element.querySelector('.e-dragstartrow');
+            if (stRow) {
+                stRow.classList.remove('e-dragstartrow');
+            }
         }
         this.processArgs(target);
         if (this.parent.enableVirtualization && isNullOrUndefined(this.rows[0])) {

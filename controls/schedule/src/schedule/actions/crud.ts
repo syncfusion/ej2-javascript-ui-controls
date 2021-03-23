@@ -51,9 +51,11 @@ export class Crud {
             if (args.requestType === 'eventCreated' || args.requestType === 'eventRemoved') {
                 this.crudObj.isCrudAction = true;
                 this.crudObj.sourceEvent = [];
-                let crudData: { [key: string]: Object }[] =
-                    (args.data instanceof Array ? args.data : ((typeof args.data === 'string' || typeof args.data === 'number') &&
-                        args.requestType === 'eventRemoved') ? args.editParms.deletedRecords : [args.data]) as { [key: string]: Object }[];
+                const crudData: { [key: string]: Object }[] = args.data instanceof Array ? (args.data.length === 0 &&
+                    // tslint:disable:no-any
+                    args.requestType === 'eventRemoved' ? (args.promise as any).deletedRecords : args.data) :
+                    ((typeof args.data === 'string' || typeof args.data === 'number') && args.requestType === 'eventRemoved') ?
+                        args.editParms.deletedRecords : [args.data];
                 for (let data of crudData) {
                     this.crudObj.isCrudAction = !(args.requestType === 'eventRemoved' && !isNullOrUndefined(data.parent));
                     let groupIndex: number = this.parent.eventBase.getGroupIndexFromEvent(data);

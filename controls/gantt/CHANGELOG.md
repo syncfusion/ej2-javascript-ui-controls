@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 18.4.48 (2021-03-16)
+## 18.4.49 (2021-03-23)
+
+### Gantt
+
+#### New Features
+
+- `#317550` - Provided support to define `valueAccessor` as string.
+
+## 18.4.49 (2021-03-16)
+
+### Gantt
+
+#### Bug Fixes
+
+- Console error when end date of segments is given as string has been fixed.
+
+## 18.4.47 (2021-03-09)
 
 ### Gantt
 

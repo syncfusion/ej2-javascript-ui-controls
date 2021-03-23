@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.4.49 (2021-03-23)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F22773` - An issue with editor freezes when saving a task to repeat yearly on the last day of a month has been fixed.
+- `#F163215` - An issue with one day block event renders for two days has been fixed.
+- `#I316945` - An issue with recurrence events are not deleted properly in overview sample has been fixed.
+- `#I317560` - An issue with Schedule events getting overlapped issue has been fixed.
+- `#I313557` - An issue with scheduler resource header when enabled `rowAutoHeight` and `height` properties has been fixed.
+- `#317799` - An issue with memory leak in Scheduler has been fixed.
+
 ## 18.4.48 (2021-03-16)
 
 ### Schedule
@@ -10,6 +23,7 @@
 
 - `#I313966` - An issue with scheduler toolbar popup items are hidden in iPhone has been fixed.
 - `#I313459` - An issue with scheduler content width is not properly adjusted while loading large number of resources in IOS device has been fixed.
+- `#I315617` -  An issue with scheduler `refreshDataManager` method invokes before active view has been fixed.
 
 ## 18.4.47 (2021-03-09)
 

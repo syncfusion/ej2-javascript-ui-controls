@@ -1057,7 +1057,7 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line
-    private renderHighlightAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, isPrint: boolean, pageIndex: number): void {
+    private renderHighlightAnnotation(bounds: any[], opacity: number, color: string, context: any, factor: number, isPrint: boolean, pageIndex: number): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // tslint:disable-next-line
             let bound: any = bounds[i];
@@ -1152,7 +1152,8 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line:max-line-length
-    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: CanvasRenderingContext2D, pageNumber: number): void {
+    // tslint:disable-next-line
+    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: any, pageNumber: number): void {
         context.globalAlpha = opacity;
         context.beginPath();
         let pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber];
@@ -1978,6 +1979,9 @@ export class TextMarkupAnnotation {
     public clearCurrentSelectedAnnotation(): void {
         if (this.currentTextMarkupAnnotation) {
             this.clearAnnotationSelection(this.selectTextMarkupCurrentPage);
+            // tslint:disable-next-line
+            let currentAnnot: any = this.currentTextMarkupAnnotation;
+            this.pdfViewer.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
             this.clearCurrentAnnotation();
         }
     }

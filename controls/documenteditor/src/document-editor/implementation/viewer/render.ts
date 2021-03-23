@@ -1481,6 +1481,9 @@ export class Renderer {
                 : TableCellWidget.getCellBottomBorder(tableCell);
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
+            if (border.lineStyle === 'None' && tableCell.previousWidget && tableCell.previousWidget instanceof TableCellWidget) {
+                border = (tableCell.previousWidget as TableCellWidget).cellFormat.borders.bottom;
+            }
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
             this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth);

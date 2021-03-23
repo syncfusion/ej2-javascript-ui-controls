@@ -222,9 +222,8 @@ export class Annotation {
         } else if (type === 'Ink') {
             this.inkAnnotationModule.setAnnotationMode();
         } else if (type === 'StickyNotes') {
-            if (this.pdfViewer.toolbar) {
-                this.pdfViewer.toolbar.isCommentIconAdded = true;
-            }
+            this.pdfViewerBase.isCommentIconAdded = true;
+            this.pdfViewerBase.isAddComment = true;
             // tslint:disable-next-line:max-line-length
             let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
             if (pageDiv) {
@@ -444,7 +443,9 @@ export class Annotation {
     // tslint:disable-next-line
     public getCustomData(annotation: any): object {
         let customData: object;
-        if (annotation.CustomData === null) {
+        if (annotation.ExistingCustomData && !annotation.CustomData) {
+            customData = JSON.parse(annotation.ExistingCustomData);
+        } else if (annotation.CustomData === null) {
             if (annotation.shapeAnnotationType === 'sticky') {
                 customData = this.pdfViewer.stickyNotesSettings.customData;
             }
@@ -462,6 +463,9 @@ export class Annotation {
             }
             if (annotation.shapeAnnotationType === 'textMarkup') {
                 customData = this.getTextMarkupData(annotation.subject);
+            }
+            if (annotation.shapeAnnotationType === 'Ink') {
+                customData = this.pdfViewer.inkAnnotationSettings.customData;
             }
         } else {
             customData = annotation.CustomData;
@@ -4341,15 +4345,18 @@ export class Annotation {
 
     // tslint:disable-next-line
     private updateFreeTextFontStyle(font: any): number {
-        let fontStyle: number = 0;
+        // tslint:disable-next-line
+        let fontStyle: any = 0;
         if (font.isBold === 1) {
-            fontStyle = 1;
+            fontStyle = { isBold: true };
         } else if (font.isItalic === 2) {
-            fontStyle = 2;
+            fontStyle = { isItalic: true };
         } else if (font.isUnderline === 4) {
-            fontStyle = 4;
+            fontStyle = { isUnderline: true };
         } else if (font.isStrikeout) {
-            fontStyle = 8;
+            fontStyle = { isStrikeout: true };
+        } else {
+            fontStyle = { isBold: font.isBold, isItalic: font.isItalic, isUnderline: font.isUnderline, isStrikeout: font.isUnderline };
         }
         return fontStyle;
     }

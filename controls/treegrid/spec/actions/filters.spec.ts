@@ -7,6 +7,7 @@ import { Filter } from '../../src/treegrid/actions/filter';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { CellSaveEventArgs } from '../../src';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { Query } from '@syncfusion/ej2-data';
 
 /**
  * Grid base spec 
@@ -1002,6 +1003,68 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         destroy(gridObj);
       });
     });
+    
+      describe('EJ2-47011: Filtering using query', () => {
+      let gridObj: TreeGrid;
+      let actionComplete: ()=>void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true, 
+            filterSettings: { hierarchyMode: 'Parent' },
+            columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+          },
+          done
+        );
+      });
+  
+      it('Checked filtered rows against query', (done: Function) => {
+          actionComplete = (args?: Object): void => {
+              expect((args as any).rows.length == 2).toBe(true);
+              done();
+          }
+          gridObj.grid.actionComplete = actionComplete;
+          gridObj.query = new Query().where("taskID", "equal", 2);
+       });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+
+    describe('EJ2-47011: Searching using query', () => {
+      let gridObj: TreeGrid;
+      let actionComplete: ()=>void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            toolbar: ['Search'],
+            allowFiltering: true, 
+            filterSettings: { hierarchyMode: 'Parent' },
+            columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+          },
+          done
+        );
+      });
+  
+      it('Checked searched rows against query', (done: Function) => {
+          actionComplete = (args?: Object): void => {
+              expect((args as any).rows.length == 10).toBe(true);
+              done();
+          }
+          gridObj.grid.actionComplete = actionComplete;
+          gridObj.query = new Query().search("Phase", ["taskName"]);
+       });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+
     it('memory leak', () => {
       profile.sample();
       let average: any = inMB(profile.averageChange)

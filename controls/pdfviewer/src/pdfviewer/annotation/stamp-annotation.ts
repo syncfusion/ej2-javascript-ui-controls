@@ -417,7 +417,7 @@ export class StampAnnotation {
                 let author: any = existingAnnotation['Author'];
                 annotation.Author = author;
                 // tslint:disable-next-line
-                let customData: any = existingAnnotation['CustomData'];
+                let customData: any = existingAnnotation['CustomData'] ? existingAnnotation['CustomData'] : this.pdfViewer.annotation.getCustomData(existingAnnotation);;
                 // tslint:disable-next-line
                 annotation.allowedInteractions = existingAnnotation['AllowedInteractions'];
                 annotation.CustomData = customData;
@@ -710,7 +710,7 @@ export class StampAnnotation {
                 bounds: { left: position.left, top: position.top, width: position.width, height: position.height }, stampFillcolor: '', isDynamicStamp: false,
                 annotName: annotationName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'stamp',
                 // tslint:disable-next-line:max-line-length
-                annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotationModule.getData('image'), isPrint: isPrint, isCommentLock: isCommentsLock
+                annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: isCommentsLock
             };
             this.storeStampInSession(pageIndex, annotationObject);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);

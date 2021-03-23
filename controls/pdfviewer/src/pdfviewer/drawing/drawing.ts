@@ -750,7 +750,8 @@ export class Drawing {
     public getAdornerLayerSvg(diagramId: string, index?: number): SVGSVGElement {
         let adornerLayerSvg: SVGSVGElement = null;
         let diagramElement: HTMLElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
-        let elementcoll: NodeList;
+        // tslint:disable-next-line
+        let elementcoll: any;
         if (diagramElement) {
             elementcoll = diagramElement.getElementsByClassName('e-adorner-layer' + index);
             adornerLayerSvg = elementcoll[0] as SVGSVGElement;
@@ -839,7 +840,7 @@ export class Drawing {
                             if (node.annotName !== '') {
                                 if (helper && (node === helper)) {
                                     // tslint:disable-next-line:max-line-length
-                                    if (!this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded) {
+                                    if (!this.pdfViewer.viewerBase.isAddComment && !this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove && !this.pdfViewer.viewerBase.isInkAdded) {
                                         this.pdfViewer.viewerBase.isAnnotationSelect = true;
                                         this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
                                     }

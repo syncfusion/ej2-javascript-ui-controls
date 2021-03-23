@@ -81,15 +81,6 @@ export class Toolbar {
     /**
      * @private
      */
-    public isCommentIconAdded: boolean;
-    /**
-     * @private
-     */
-    public isAddComment: boolean = false;
-
-    /**
-     * @private
-     */
     constructor(viewer: PdfViewer, viewerBase: PdfViewerBase) {
         this.pdfViewer = viewer;
         this.pdfViewerBase = viewerBase;
@@ -1272,8 +1263,8 @@ export class Toolbar {
                 break;
             case this.pdfViewer.element.id + '_comment':
             case this.pdfViewer.element.id + '_commentIcon':
-                this.isAddComment = true;
-                this.isCommentIconAdded = true;
+                this.pdfViewerBase.isAddComment = true;
+                this.pdfViewerBase.isCommentIconAdded = true;
                 this.addComments(args.originalEvent.target as HTMLElement);
                 break;
             case this.pdfViewer.element.id + '_submitForm':
@@ -1310,8 +1301,8 @@ export class Toolbar {
                 }
             }
         } else {
-            this.isAddComment = true;
-            this.isCommentIconAdded = true;
+            this.pdfViewerBase.isAddComment = true;
+            this.pdfViewerBase.isCommentIconAdded = true;
             let commentsButton: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_comment');
             commentsButton.classList.add('e-pv-select');
         }

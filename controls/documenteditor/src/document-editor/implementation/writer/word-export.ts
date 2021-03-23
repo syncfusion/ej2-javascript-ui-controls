@@ -1005,6 +1005,11 @@ export class WordExport {
         //     }
         //     writer.WriteEndElement();
         // }
+        if (pageSetup.restartPageNumbering) {
+            writer.writeStartElement(undefined, 'pgNumType', this.wNamespace);
+            writer.writeAttributeString(undefined, 'start', this.wNamespace, pageSetup.pageStartingNumber.toString());
+            writer.writeEndElement();
+        }
         writer.writeStartElement(undefined, 'pgBorders', this.wNamespace);
         // //zOrder
         // if (pageSetup.PageBordersApplyType === PageBordersApplyType.FirstPage)
@@ -4008,9 +4013,9 @@ export class WordExport {
             for (let i: number = prevIndex; i < currentIndex; i++) {
                 collKey = prevIndex + 1;
                 prevIndex += 1;
-            }
-            if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
-                mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
+                if (collKey === 0 && mVerticalMerge.containsKey(collKey)) {
+                    mVerticalMerge = this.createMerge(writer, collKey, cell, mVerticalMerge);
+                }
             }
         }
         if (cellFormat.rowSpan > 1) {

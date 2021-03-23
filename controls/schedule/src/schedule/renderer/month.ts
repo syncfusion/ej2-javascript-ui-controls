@@ -84,9 +84,14 @@ export class Month extends ViewBase implements IRenderer {
             content.scrollTop = args.scrollPosition.top as number;
             content.scrollLeft = args.scrollPosition.left as number;
         } else {
-            let headerCell: HTMLElement = document.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
+            let headerCell: HTMLElement = this.element.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
                 + this.parent.getMsFromDate(this.parent.selectedDate) + '"]');
-            content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
+            if (!isNullOrUndefined(headerCell)) {
+                content.scrollLeft = !this.parent.enableRtl ?
+                    headerCell.offsetLeft : -(this.parent.getContentTable().offsetWidth - headerCell.offsetLeft - headerCell.offsetWidth);
+            } else {
+                content.scrollLeft = 0;
+            }
         }
         this.retainScrollPosition();
     }

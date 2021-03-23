@@ -1150,6 +1150,7 @@ describe('Quick Popups', () => {
         it('Cell click and insert event', () => {
             (schObj.element.querySelector('.' + cls.WORK_HOURS_CLASS) as HTMLElement).click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            (<HTMLInputElement>eventPopup.querySelector('.' + cls.SUBJECT_CLASS)).value = '';
             (<HTMLInputElement>eventPopup.querySelector('.' + cls.EVENT_CREATE_CLASS)).click();
             expect((<HTMLElement>document.querySelector('.e-schedule-error')).style.display).toEqual('');
         });

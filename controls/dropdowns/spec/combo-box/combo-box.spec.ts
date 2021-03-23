@@ -2330,3 +2330,167 @@ describe('EJ2-43971 : After cleared the typed value, popup not shown the entire 
         comboBoxObj.hidePopup();
     });
 });
+describe(' EJ2-47195 ', () => {
+    let comboBoxObj: any;
+    let element: HTMLElement;
+    let keyEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        keyCode: 74
+    };
+    let mouseEventArgs: any = {
+        preventDefault: (): void => { /** NO Code */ },
+        target: null
+    };
+    let empList: { [key: string]: Object }[] = [
+        { Name: 'Mona Sak',  country: 'USA' },
+        { Name: 'Kapil Sharma', country: 'Germany' },
+        { Name: 'Erik Linden',  country: 'England' },
+        { Name: 'Kavi Tam',  country: 'Italy' },
+        { Name: "Harish Sree",  country: 'India' },
+    ];
+    beforeAll(() => {
+        element = createElement('input', { id: 'combobox' });
+        document.body.appendChild(element);
+    });
+    afterAll(() => {
+        if (comboBoxObj) {
+            comboBoxObj.destroy();
+            element.remove();
+            document.body.innerHTML = '';
+        }
+    });
+    it('Update Data source while rendering then filtering value', () => {
+        comboBoxObj = new ComboBox({
+            dataSource: empList,
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.inputElement.value = "e";
+        comboBoxObj.onInput(keyEventArgs);
+        comboBoxObj.onFilterUp(keyEventArgs);
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
+        comboBoxObj.hidePopup();
+    });
+    it('Update Data source as dynamic then filtering value', () => {
+        comboBoxObj = new ComboBox({
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.dataSource = empList;
+        comboBoxObj.dataBind();
+        comboBoxObj.inputElement.value = "e";
+        comboBoxObj.onInput(keyEventArgs);
+        comboBoxObj.onFilterUp(keyEventArgs);
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
+        comboBoxObj.hidePopup();
+    });
+    it('Update Data source while rendering then open popup', () => {
+        comboBoxObj = new ComboBox({
+            dataSource: empList,
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.showPopup();
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(5);
+        comboBoxObj.hidePopup();
+    });
+    it('Update Data source as dynamic then open popup', () => {
+        comboBoxObj = new ComboBox({
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.dataSource = empList;
+        comboBoxObj.dataBind();
+        comboBoxObj.showPopup();
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(5);
+        comboBoxObj.hidePopup();
+    });
+    it('Update Data source while rendering and testing that all data are loaded after filtering', () => {
+        comboBoxObj = new ComboBox({
+            dataSource: empList,
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.inputElement.value = "e";
+        comboBoxObj.onInput(keyEventArgs);
+        comboBoxObj.onFilterUp(keyEventArgs);
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
+        let item: HTMLElement[] = comboBoxObj.popupObj.element.querySelectorAll('li')[0];
+        mouseEventArgs.target = item;
+        mouseEventArgs.type = 'click';
+        comboBoxObj.onMouseClick(mouseEventArgs);
+        comboBoxObj.showPopup();
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(5);
+        comboBoxObj.hidePopup();
+    });
+    it('Update Data source as dynamic and testing that all data are loaded after filtering', () => {
+        comboBoxObj = new ComboBox({
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.dataSource = empList;
+        comboBoxObj.dataBind();
+        comboBoxObj.inputElement.value = "e";
+        comboBoxObj.onInput(keyEventArgs);
+        comboBoxObj.onFilterUp(keyEventArgs);
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
+        let item: HTMLElement[] = comboBoxObj.popupObj.element.querySelectorAll('li')[0];
+        mouseEventArgs.target = item;
+        mouseEventArgs.type = 'click';
+        comboBoxObj.onMouseClick(mouseEventArgs);
+        comboBoxObj.showPopup();
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(5);
+        comboBoxObj.hidePopup();
+    });
+    it('Update Data source as dynamic and testing dynamic value update', () => {
+        comboBoxObj = new ComboBox({
+            fields: { text: 'Name', value: 'country' },
+            popupHeight: "200px",
+            allowFiltering: true,
+            showClearButton : true,
+            itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
+        });
+        comboBoxObj.appendTo('#combobox');
+        comboBoxObj.dataSource = empList;
+        comboBoxObj.dataBind();
+        comboBoxObj.inputElement.value = "e";
+        comboBoxObj.onInput(keyEventArgs);
+        comboBoxObj.onFilterUp(keyEventArgs);
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(1);
+        let item: HTMLElement[] = comboBoxObj.popupObj.element.querySelectorAll('li')[0];
+        mouseEventArgs.target = item;
+        mouseEventArgs.type = 'click';
+        comboBoxObj.onMouseClick(mouseEventArgs);
+        comboBoxObj.showPopup();
+        comboBoxObj.value = 'India';
+        comboBoxObj.dataBind();
+        expect(comboBoxObj.inputElement.value).toBe("Harish Sree");
+        comboBoxObj.showPopup();
+        expect(comboBoxObj.list.querySelectorAll('li').length).toBe(5);
+        comboBoxObj.hidePopup();
+    });
+});

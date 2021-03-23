@@ -473,8 +473,10 @@ export class QuickPopups {
         if (subjectElement) {
             Input.createInput({ element: subjectElement, properties: { placeholder: this.l10n.getConstant('addTitle') } });
         }
-        if (!isNullOrUndefined(this.parent.eventSettings.fields.subject.default)) {
+        if (this.parent.eventSettings.fields.subject.default !== 'Add title') {
             subjectElement.value = this.parent.eventSettings.fields.subject.default;
+        } else {
+            subjectElement.value = this.l10n.getConstant('addTitle');
         }
         let closeIcon: HTMLButtonElement = quickCellPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
         if (closeIcon) {
@@ -786,7 +788,8 @@ export class QuickPopups {
 
     private getFormattedString(eventData: { [key: string]: Object }): { [key: string]: Object } {
         let fields: EventFieldsMapping = this.parent.eventFields;
-        let eventSubject: string = (eventData[fields.subject] || this.l10n.getConstant('noTitle')) as string;
+        this.parent.eventWindow.subjectValue(eventData);
+        let eventSubject: string = (eventData[fields.subject] || this.l10n.getConstant('addTitle')) as string;
         let startDate: Date = eventData[fields.startTime] as Date;
         let endDate: Date = eventData[fields.endTime] as Date;
         let format: string = 'MMMM d, y';

@@ -196,7 +196,8 @@ export class LinkAnnotation {
         for (let i: number = 0; i < this.pdfViewerBase.pageCount - 1; i++) {
             let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + i);
             if (pageDiv) {
-                let aElement: NodeListOf<HTMLAnchorElement> = pageDiv.getElementsByTagName('a');
+                // tslint:disable-next-line
+                let aElement: any = pageDiv.getElementsByTagName('a');
                 if (aElement.length !== 0) {
                     for (let index: number = aElement.length - 1; index >= 0; index--) {
                         aElement[index].parentNode.removeChild(aElement[index]);

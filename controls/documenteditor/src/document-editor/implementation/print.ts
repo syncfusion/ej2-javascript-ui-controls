@@ -66,6 +66,27 @@ export class Print {
             500);
     }
     /**
+     * Generate Document Image.
+     * @private
+     */
+    public generateDoumentImages(documentHelper: DocumentHelper, pageNumber: number): HTMLImageElement {
+        let image: HTMLImageElement;
+        if (!isNullOrUndefined(pageNumber) && pageNumber <= documentHelper.pages.length && pageNumber >= 1) {
+            let printPage: Page = documentHelper.pages[(pageNumber - 1)];
+            let pageHeight: number = printPage.boundingRectangle.height;
+            let pageWidth: number = printPage.boundingRectangle.width;
+            documentHelper.render.isPrinting = true;
+            documentHelper.render.renderWidgets(printPage, 0, 0, 0, 0);
+            let canvasURL: string = documentHelper.render.pageCanvas.toDataURL();
+            documentHelper.render.isPrinting = false;
+            image = new Image();
+            image.src = canvasURL;
+            // tslint:disable-next-line:max-line-length
+            image.setAttribute('style', 'margin:0px;display:block;width:' + pageWidth.toString() + 'px;height:' + pageHeight.toString() + 'px;');
+        }
+        return image;
+    }
+    /**
      * Generates print content.
      * @private
      */

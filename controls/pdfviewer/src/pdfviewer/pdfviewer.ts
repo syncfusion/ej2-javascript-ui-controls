@@ -4916,7 +4916,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public async firePrintStart(): Promise<void> {
-        let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName, cancel: false };
+        let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName ? this.downloadFileName : this.fileName, cancel: false };
         if (isBlazor) {
             eventArgs = await this.triggerEvent('printStart', eventArgs) as PrintStartEventArgs || eventArgs;
         } else {
@@ -5117,7 +5117,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         // tslint:disable-next-line
         let annotation: any = this.selectedItems.annotations[0];
         if (annotationSelect) {
+            // tslint:disable-next-line
+            let currentAnnot: any = this.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
             this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
+            this.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
         }
         if (!multipleSelection) {
             if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {

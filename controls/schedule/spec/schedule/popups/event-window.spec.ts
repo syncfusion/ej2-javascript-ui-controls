@@ -629,7 +629,7 @@ describe('Schedule event window initial load', () => {
             let allDayElement: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_ALL_DAY_CLASS + ' input');
             let timezoneElement: HTMLElement = dialogElement.querySelector('.' + cls.TIME_ZONE_CLASS + ' input');
             expect(formElement.getAttribute('data-id')).toEqual('3');
-            expect(subjectElement.value).toEqual('');
+            expect(subjectElement.value).toEqual('Add title');
             expect(locationElement.value).toEqual('');
             expect(descriptionElement.value).toEqual('');
             expect(((timezoneElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(false);

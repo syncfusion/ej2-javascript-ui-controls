@@ -1707,7 +1707,13 @@ export class DialogEdit {
         inputModel.enabled = !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
             if (!isNullOrUndefined(column.valueAccessor)) {
-                inputModel.value = (column.valueAccessor as Function)(column.field, ganttData, column);
+                // eslint-disable-next-line
+                if (typeof column.valueAccessor === 'string') {
+                    const valueAccessor: Function = getObject(column.valueAccessor, window);
+                    inputModel.value = valueAccessor(column.field, ganttData, column);
+                } else {
+                    inputModel.value = (column.valueAccessor as Function)(column.field, ganttData, column);
+                }
             } else if (isNullOrUndefined(column.edit)) {
                 let ganttProp: ITaskData = ganttData.ganttProperties;
                 inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);

@@ -467,7 +467,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let appointmentExpandCollapse: Element = createElement('div', {
             attrs: {
                 'tabindex': '0', 'role': 'list',
-                title: 'Expand-all-day-section', 'aria-disabled': 'false', 'aria-label': 'Expand section'
+                title: this.parent.localeObj.getConstant('expandAllDaySection'), 'aria-disabled': 'false', 'aria-label': 'Expand section'
             },
             className: cls.ALLDAY_APPOINTMENT_SECTION_CLASS + ' ' + cls.APPOINTMENT_ROW_EXPAND_CLASS + ' ' +
                 cls.ICON + ' ' + cls.DISABLE_CLASS,

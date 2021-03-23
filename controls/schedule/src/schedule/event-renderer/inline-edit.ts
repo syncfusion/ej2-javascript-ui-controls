@@ -25,6 +25,10 @@ export class InlineEdit {
 
     private inlineEdit(args: InlineClickArgs): void {
         this.parent.quickPopup.quickPopupHide();
+        const moreWrapper: Element = this.parent.element.querySelector('.e-more-popup-wrapper ');
+        if (moreWrapper && moreWrapper.classList.contains(cls.POPUP_OPEN)) {
+           this.parent.quickPopup.morePopup.hide();
+        }
         if (args.type === 'Cell') {
             this.removeInlineAppointmentElement();
             this.cellEdit(args);

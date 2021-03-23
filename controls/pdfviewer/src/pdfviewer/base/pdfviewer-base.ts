@@ -515,6 +515,14 @@ export class PdfViewerBase {
      */
     // tslint:disable-next-line
     public restrictionList: any;
+    /**
+     * @private
+     */
+    public isAddComment: boolean = false;
+    /**
+     * @private
+     */
+    public isCommentIconAdded: boolean;
 
     constructor(viewer: PdfViewer) {
         this.pdfViewer = viewer;
@@ -685,9 +693,6 @@ export class PdfViewerBase {
         }
         documentData = this.checkDocumentData(documentData);
         this.setFileName();
-        if (!this.pdfViewer.downloadFileName) {
-            this.pdfViewer.downloadFileName = this.pdfViewer.fileName;
-        }
         let jsonObject: object = this.constructJsonObject(documentData, password);
         this.createAjaxRequest(jsonObject, documentData, password);
     }
@@ -1540,7 +1545,6 @@ export class PdfViewerBase {
             this.pdfViewer.fireDocumentUnload(this.pdfViewer.fileName);
         }
         this.pdfViewer.fileName = null;
-        this.pdfViewer.downloadFileName = null;
     }
     /**
      * @private
@@ -4084,7 +4088,8 @@ public mouseDownHandler(event: MouseEvent): void {
 
     // tslint:disable-next-line
     private onPageRender(data: any, pageIndex: number, pageDiv: HTMLElement): void {
-        let aElement: NodeListOf<HTMLAnchorElement> = pageDiv.getElementsByTagName('a');
+        // tslint:disable-next-line
+        let aElement: any = pageDiv.getElementsByTagName('a');
         let isAnnotationRendered: boolean = false;
         if (aElement.length !== 0) {
             for (let index: number = aElement.length - 1; index >= 0; index--) {
@@ -4736,7 +4741,8 @@ public mouseDownHandler(event: MouseEvent): void {
             (anchorElement as HTMLAnchorElement).href = blobUrl;
             (anchorElement as HTMLAnchorElement).target = '_parent';
             if ('download' in anchorElement) {
-                (anchorElement as HTMLAnchorElement).download = this.pdfViewer.downloadFileName;
+                // tslint:disable-next-line:max-line-length
+                (anchorElement as HTMLAnchorElement).download = this.pdfViewer.downloadFileName ? this.pdfViewer.downloadFileName : this.pdfViewer.fileName;
             }
             (document.body || document.documentElement).appendChild(anchorElement);
             anchorElement.click();
@@ -5080,7 +5086,8 @@ public mouseDownHandler(event: MouseEvent): void {
     // tslint:disable-next-line
     private createRequestForDownload(): void {
         let proxy: PdfViewerBase = this;
-        proxy.pdfViewer.fireDownloadStart(proxy.pdfViewer.downloadFileName);
+        let downloadFileName: string = proxy.pdfViewer.downloadFileName ? proxy.pdfViewer.downloadFileName : proxy.pdfViewer.fileName;
+        proxy.pdfViewer.fireDownloadStart(downloadFileName);
         // tslint:disable-next-line
         let jsonObject: any = this.constructJsonDownload();
         this.dowonloadRequestHandler = new AjaxHandler(this.pdfViewer);
@@ -5107,15 +5114,15 @@ public mouseDownHandler(event: MouseEvent): void {
                 if (data) {
                     let blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
                     if (Browser.isIE || Browser.info.name === 'edge') {
-                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.downloadFileName);
+                        window.navigator.msSaveOrOpenBlob(blobUrl, downloadFileName);
                     } else {
                         proxy.downloadDocument(blobUrl);
                     }
-                    proxy.pdfViewer.fireDownloadEnd(proxy.pdfViewer.downloadFileName, data);
+                    proxy.pdfViewer.fireDownloadEnd(downloadFileName, data);
                 }
                 proxy.updateDocumentAnnotationCollections();
             } else {
-                proxy.pdfViewer.fireDownloadEnd(proxy.pdfViewer.downloadFileName, 'PDF Document saved in server side successfully');
+                proxy.pdfViewer.fireDownloadEnd(downloadFileName, 'PDF Document saved in server side successfully');
             }
         };
         // tslint:disable-next-line
@@ -6229,6 +6236,8 @@ public mouseDownHandler(event: MouseEvent): void {
                 cursorType = this.setResizerCursorType();
                 eventTarget.style.cursor = isNullOrUndefined(cursorType) ? 's-resize' : cursorType;
             }
+        } else if (this.isCommentIconAdded && this.isAddComment) {
+            eventTarget.style.cursor = 'crosshair';
         } else if (this.pdfViewer.enableHandwrittenSignature && this.isNewSignatureAdded && this.tool instanceof StampTool) {
             eventTarget.style.cursor = 'crosshair';
         } else if (this.tool instanceof MoveTool) {
@@ -6458,6 +6467,7 @@ public mouseDownHandler(event: MouseEvent): void {
                 this.eventArgs.clickCount = evt.detail;
                 this.tool.mouseUp(this.eventArgs);
                 this.isAnnotationMouseDown = false;
+                this.isAddComment = false;
                 // tslint:disable-next-line:max-line-length
                 if ((this.tool instanceof NodeDrawingTool || this.tool instanceof LineTool || this.tool instanceof PolygonDrawingTool) && !this.tool.dragging) {
                     this.inAction = false;

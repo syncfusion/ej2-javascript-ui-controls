@@ -61,6 +61,7 @@ export class Image {
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.keyUp, this.onKeyUp, this);
         this.parent.on(events.insertImage, this.insertImage, this);
+        this.parent.on(events.windowResize, this.onWindowResize, this);
         this.parent.on(events.insertCompleted, this.showImageQuickToolbar, this);
         this.parent.on(events.imageToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.imageCaption, this.caption, this);
@@ -80,6 +81,7 @@ export class Image {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.keyUp, this.onKeyUp);
+        this.parent.off(events.windowResize, this.onWindowResize);
         this.parent.off(events.insertImage, this.insertImage);
         this.parent.off(events.insertCompleted, this.showImageQuickToolbar);
         this.parent.off(events.imageCaption, this.caption);
@@ -288,7 +290,6 @@ export class Image {
     private calcPos(elem: HTMLElement): OffsetPosition {
         let ignoreOffset: string[] = ['TD', 'TH', 'TABLE', 'A'];
         let parentOffset: OffsetPosition = { top: 0, left: 0 };
-        let offset: OffsetPosition = elem.getBoundingClientRect();
         let doc: Document = elem.ownerDocument;
         let offsetParent: Node = ((elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption') ||
             ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ?
@@ -302,8 +303,8 @@ export class Image {
             parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
         }
         return {
-            top: offset.top - parentOffset.top,
-            left: offset.left - parentOffset.left
+            top: elem.offsetTop,
+            left: elem.offsetLeft
         };
     }
     private setAspectRatio(img: HTMLImageElement, expectedX: number, expectedY: number): void {
@@ -346,6 +347,11 @@ export class Image {
                 img.setAttribute('width', expectedX.toString());
                 img.setAttribute('height', expectedX.toString());
             }
+        }
+    }
+    private onWindowResize(): void {
+        if (!isNOU(this.contentModule.getEditPanel().querySelector('.e-img-resize'))) {
+            this.cancelResizeAction();
         }
     }
     private pixToPerc(expected: number, parentEle: Element): number {
@@ -1193,7 +1199,11 @@ export class Image {
         }
         if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
             if (target.tagName !== 'IMG') { this.removeResizeEle(); }
-            if (!isNOU(this.prevSelectedImgEle)) { this.prevSelectedImgEle.style.outline = ''; }
+            if (target.tagName !== 'IMG' && !isNOU(this.imgEle)) {
+                this.imgEle.style.outline = '';
+            } else if (!isNOU(this.prevSelectedImgEle) && this.prevSelectedImgEle !== target) {
+                this.prevSelectedImgEle.style.outline = '';
+            }
         }
     }
 

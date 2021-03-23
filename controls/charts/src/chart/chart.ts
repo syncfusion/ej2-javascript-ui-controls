@@ -1370,6 +1370,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public svgId: string;
     /** @private */
     public isBlazor: boolean;
+    /** @private */
+    public isRedrawSelection: boolean;
     /**
      * Touch object to unwire the touch event from element
      */

@@ -331,7 +331,8 @@ export class InkAnnotation {
                     let isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
                     // tslint:disable-next-line
                     let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
-                    let customData: object = currentAnnotation.CustomData ? currentAnnotation.CustomData : this.pdfViewer.inkAnnotationSettings.customData;
+                    // tslint:disable-next-line
+                    let customData: any = this.pdfViewer.annotation.getCustomData(currentAnnotation);
                     let isPrint: boolean = currentAnnotation.IsPrint;
                     // tslint:disable-next-line:max-line-length
                     currentAnnotation.allowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);

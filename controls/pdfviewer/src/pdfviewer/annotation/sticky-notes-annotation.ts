@@ -212,7 +212,9 @@ export class StickyNotesAnnotation {
             } else {
                 annotationName = this.pdfViewer.annotation.createGUID();
                 commentsDivid = proxy.addComments('sticky', pageIndex + 1);
-                document.getElementById(commentsDivid).id = annotationName;
+                if (commentsDivid) {
+                    document.getElementById(commentsDivid).id = annotationName;
+                }
                 // tslint:disable-next-line
                 let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                 let isPrint: boolean = this.pdfViewer.stickyNotesSettings.isPrint;
@@ -221,7 +223,7 @@ export class StickyNotesAnnotation {
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: this.getDateAndTime(),
                     shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity, isPrint: isPrint
                 };
-                if (proxy.pdfViewer.toolbarModule.isAddComment) {
+                if (proxy.pdfViewerBase.isAddComment) {
                     // tslint:disable-next-line:max-line-length
                     // tslint:disable-next-line
                     let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
@@ -232,7 +234,6 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line:max-line-length
                     proxy.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 }
-                proxy.pdfViewer.toolbar.isAddComment = false;
                 // tslint:disable-next-line:max-line-length
                 let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
                 // tslint:disable-next-line
@@ -1957,13 +1958,13 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     public drawIcons(event: any): void {
         // tslint:disable-next-line
-        if (this.pdfViewer.toolbar.isCommentIconAdded) {
+        if (this.pdfViewerBase.isCommentIconAdded) {
             let pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
             let pageCurrentRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex).getBoundingClientRect();
             let zoomValue: number = this.pdfViewerBase.getZoomFactor();
             // tslint:disable-next-line:max-line-length
             this.pdfViewer.annotation.stickyNotesAnnotationModule.drawStickyNotes((event.clientX - pageCurrentRect.left) / zoomValue, (event.clientY - pageCurrentRect.top) / zoomValue, 30, 30, pageIndex, null);
-            this.pdfViewer.toolbar.isCommentIconAdded = false;
+            this.pdfViewerBase.isCommentIconAdded = false;
             let commentsButton: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_comment');
             if (commentsButton.classList.contains('e-pv-select')) {
                 commentsButton.classList.remove('e-pv-select');
@@ -3102,7 +3103,9 @@ export class StickyNotesAnnotation {
                     updateAnnotation.state = '';
                     updateAnnotation.stateModel = '';
                     this.pdfViewer.annotationModule.storeAnnotations(annotation.pageIndex, updateAnnotation, '_annotations_' + type);
-                    this.createCommentsContainer(updateAnnotation, annotation.pageIndex + 1, true);
+                    if (this.pdfViewer.enableCommentPanel) {
+                        this.createCommentsContainer(updateAnnotation, annotation.pageIndex + 1, true);
+                    }
                     if (isCut) {
                         this.pdfViewer.annotationModule.removedAnnotationCollection = [];
                     }

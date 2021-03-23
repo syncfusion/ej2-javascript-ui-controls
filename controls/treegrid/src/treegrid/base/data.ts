@@ -464,8 +464,14 @@ public isRemote(): boolean {
     let results: ITreeData[] = dataObj instanceof DataManager ? (<DataManager>dataObj).dataSource.json : <ITreeData[]>dataObj;
     let count: number = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
                         : results.length;
+    const qry: Query = new Query(); let gridQuery: Query = getObject('query', args);
+    let filterQuery: QueryOptions[]; let searchQuery: QueryOptions[];
+    if (!isNullOrUndefined(gridQuery)) {
+        filterQuery = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onWhere');
+        searchQuery = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onSearch');
+    }
     if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
-         (this.parent.grid.searchSettings.key.length > 0)) {
+       (this.parent.grid.searchSettings.key.length > 0) || (!isNullOrUndefined(gridQuery) && (filterQuery.length || searchQuery.length))) {
       let qry: Query = new Query(); let gridQuery: Query = getObject('query', args);
       if (isNullOrUndefined(gridQuery)) {
         gridQuery = new Query(); gridQuery = getValue('grid.renderModule.data', this.parent).filterQuery(gridQuery);
@@ -521,11 +527,9 @@ public isRemote(): boolean {
         results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData, isSort);
       }
     }
-    count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
-            : results.length;
+    count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource) : results.length;
     let temp: BeforeDataBoundArgs = this.paging(results, count, isExport, isPrinting, exportType, args);
-    results = temp.result; count = temp.count;
-    args.result = results; args.count = count;
+    results = temp.result; count = temp.count; args.result = results; args.count = count;
     this.parent.notify('updateResults', args);
   }
   private paging(results: ITreeData[], count: number, isExport: boolean,

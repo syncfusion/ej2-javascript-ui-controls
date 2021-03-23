@@ -50,8 +50,9 @@ export class TimelineViews extends VerticalView {
         if (isNullOrUndefined(date)) {
             return;
         }
-        this.getScrollableElement().scrollLeft =
+        let scrollLeft: number =
             isNullOrUndefined(scrollDate) ? this.getLeftFromDateTime(null, date) : this.getLeftFromDateTime([index], date);
+        this.getScrollableElement().scrollLeft = !this.parent.enableRtl ? scrollLeft : -scrollLeft;
     }
     public generateColumnLevels(): TdData[][] {
         let levels: TdData[][] = [];

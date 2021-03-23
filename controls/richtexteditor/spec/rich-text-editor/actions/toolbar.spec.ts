@@ -1,10 +1,11 @@
 /**
  * Toolbar spec
  */
-import { selectAll, select, Browser, createElement, getUniqueID, detach, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { selectAll, select, Browser, createElement, getUniqueID, detach, isNullOrUndefined, closest } from "@syncfusion/ej2-base";
 import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index";
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy } from "./../render.spec";
+import { NodeSelection } from "../../../src/selection/index";
 
 describe("Toolbar - Actions Module", () => {
     beforeAll(() => {
@@ -1587,6 +1588,54 @@ describe("Toolbar - Actions Module", () => {
         it("Check class", () => {
            expect(rteObj.element.querySelector('.e-scroll-right-nav')).not.toBe('null');
            expect(rteObj.element.querySelector('.e-scroll-left-nav')).not.toBe('null');
+        });
+    });
+
+    describe("EJ2-46687 - Warning occurs when using the ‘executeCommand’ public method with ‘insertHorizontalRule’", () => {
+        let rteObj: any;
+        let range: Range;
+        let selection: NodeSelection = new NodeSelection();
+
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [
+                        {
+                            tooltipText: 'Insert HR',
+                            template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;">_</div></button>',
+                            click: function() {
+                                range = selection.getRange(document);
+                                var currentEle =
+                                  range.startContainer.nodeName === "#text"
+                                    ? range.startContainer.parentElement
+                                    : range.startContainer;
+                                if (currentEle === rteObj.inputElement || closest(currentEle, '.e-content') === null) {
+                                  var allElements = rteObj.inputElement.childNodes;
+                                  for (var i = 0; allElements.length; i++) {
+                                    if (allElements[i].nodeName != "HR") {
+                                      selection.setCursorPoint(document, allElements[i] as Element, 0);
+                                      break;
+                                    }
+                                  }
+                                }
+                                rteObj.executeCommand("insertHorizontalRule");
+                                rteObj.formatter.saveData();
+                            },
+                            undo: true
+                        }, '|', 'FullScreen']
+                }
+            });
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it("Warning availability testing", () => {
+            console.warn = jasmine.createSpy("warn");
+            document.getElementById('custom_tbar').click();
+            expect(rteObj.element.querySelectorAll('.e-content hr').length).toBe(1);
+            expect(console.warn).not.toHaveBeenCalled();
         });
     });
 });

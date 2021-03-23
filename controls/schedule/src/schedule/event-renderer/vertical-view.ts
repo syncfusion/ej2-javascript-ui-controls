@@ -594,13 +594,23 @@ export class VerticalEvent extends EventBase {
             }
             this.overlapList.forEach((obj: { [key: string]: Object }) => {
                 let filterList: Object[] = appointmentList.filter((data: { [key: string]: Object }) =>
-                    data[fieldMapping.endTime] >= obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime]);
+                    data[fieldMapping.endTime] > obj[fieldMapping.startTime] && data[fieldMapping.startTime] <= obj[fieldMapping.endTime]);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     filterList = this.filterEventsByResource(this.resources[resource], filterList);
                 }
-                let collection: Object[] = this.overlapList.filter((val: Object) => filterList.indexOf(val) === -1);
-                return appointment.concat(collection);
+                let collection: object[] = filterList.filter((val: object) =>
+                    this.overlapList.indexOf(val) === -1);
+                if (collection.length > 0) {
+                    appointment = appointment.concat(collection);
+                }
             });
+            for (let i: number = 0; i < appointment.length - 1; i++) {
+                for (let j: number = i + 1; j < appointment.length; j++) {
+                    if ((appointment[i] as { [key: string]: Object }).Id === (appointment[j] as { [key: string]: Object }).Id) {
+                        appointment.splice(j, 0); j--;
+                    }
+                }
+            }
             this.overlapList = this.overlapList.concat(appointment);
             eventsList = this.overlapList;
             for (let event of eventsList) {
@@ -609,6 +619,16 @@ export class VerticalEvent extends EventBase {
                 (isNullOrUndefined(this.overlapEvents[index])) ? this.overlapEvents[index] = [event] :
                     this.overlapEvents[index].push(event);
             }
+        }
+        if (!isAllDay) {
+            eventsList = eventsList.filter((obj: { [key: string]: Object }) => {
+                return obj[fieldMapping.startTime] === record[fieldMapping.startTime] &&
+                    obj[fieldMapping.endTime] > record[fieldMapping.endTime] ||
+                    obj[fieldMapping.endTime] > record[fieldMapping.startTime] &&
+                    obj[fieldMapping.startTime] < record[fieldMapping.endTime] ||
+                    obj[fieldMapping.endTime] === record[fieldMapping.startTime] &&
+                    obj[fieldMapping.startTime] === record[fieldMapping.endTime];
+            });
         }
         if (eventsList.length > 0) {
             let appLevel: Object[] = eventsList.map((obj: { [key: string]: Object }) => obj.Index);
